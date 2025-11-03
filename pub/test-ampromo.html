@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Amasty Promo Test</title>
+    <script>
+        // Simple test to check if Amasty Promo functionality is available
+        window.addEventListener('load', function() {
+            console.log('Page loaded');
+            
+            // Check if Amasty Promo objects are available
+            if (typeof Amasty !== 'undefined' && typeof Amasty.Promo !== 'undefined') {
+                console.log('Amasty Promo is available');
+                document.getElementById('result').innerHTML = 'Amasty Promo is properly loaded';
+            } else {
+                console.log('Amasty Promo is not available');
+                document.getElementById('result').innerHTML = 'Amasty Promo is NOT loaded - there may be a JavaScript issue';
+            }
+            
+            // Check for any errors
+            window.addEventListener('error', function(e) {
+                console.log('Error occurred:', e.error);
+                document.getElementById('errors').innerHTML += '<p>Error: ' + e.error + '</p>';
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Amasty Promo Test</h1>
+    <p>This page tests if Amasty Promo JavaScript is properly loaded.</p>
+    
+    <div id="result">Checking...</div>
+    <div id="errors"></div>
+    
+    <h2>Debugging Steps:</h2>
+    <ol>
+        <li>Open your browser's developer tools (F12)</li>
+        <li>Go to the Console tab</li>
+        <li>Check for any JavaScript errors</li>
+        <li>Add products to your cart and check the console for Amasty Promo messages</li>
+        <li>If you see "Amasty Promo is properly loaded", the JavaScript is working</li>
+        <li>If you see "Amasty Promo is NOT loaded", there's a JavaScript issue</li>
+    </ol>
+    
+    <h2>Common Issues:</h2>
+    <ul>
+        <li>JavaScript errors preventing Amasty Promo from loading</li>
+        <li>Conflicts with other JavaScript libraries</li>
+        <li>Missing or incorrect requirejs-config.js configuration</li>
+        <li>Cache issues preventing updated JavaScript from loading</li>
+    </ul>
+</body>
+</html>

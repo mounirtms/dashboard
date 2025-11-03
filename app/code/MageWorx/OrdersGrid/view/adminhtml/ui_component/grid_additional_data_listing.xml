@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright © MageWorx. All rights reserved.
+See LICENSE.txt for license details.
+-->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">grid_additional_data_listing.grid_additional_data_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>grid_additional_data_columns</spinner>
+        <deps>
+            <dep>grid_additional_data_listing.grid_additional_data_listing_data_source</dep>
+        </deps>
+        <buttons>
+            <button name="add">
+                <label translate="true">Add new mark</label>
+                <class>primary</class>
+                <url path="*/*/new"/>
+            </button>
+        </buttons>
+    </settings>
+    <dataSource name="grid_additional_data_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <dataProvider class="MageWorx\OrdersGrid\Ui\DataProvider\GridAdditionalData\GridAdditionalDataDataProvider" name="grid_additional_data_listing_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters" />
+        <massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">
+            <action name="delete">
+                <settings>
+                    <confirm>
+                        <message translate="true">Delete selected items?</message>
+                        <title translate="true">Delete items</title>
+                    </confirm>
+                    <url path="mageworx_ordersgrid/gridAdditionalData/massDelete"/>
+                    <type>delete</type>
+                    <label translate="true">Delete</label>
+                </settings>
+            </action>
+            <action name="status">
+                <settings>
+                    <type>status</type>
+                    <label translate="true">Change status</label>
+                    <actions>
+                        <action name="0">
+                            <type>enable</type>
+                            <label translate="true">Enable</label>
+                            <url path="mageworx_ordersgrid/gridAdditionalData/massStatus">
+                                <param name="is_active">1</param>
+                            </url>
+                        </action>
+                        <action name="1">
+                            <type>disable</type>
+                            <label translate="true">Disable</label>
+                            <url path="mageworx_ordersgrid/gridAdditionalData/massStatus">
+                                <param name="is_active">0</param>
+                            </url>
+                        </action>
+                    </actions>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+
+    <columns name="grid_additional_data_columns" class="Magento\Ui\Component\Listing\Columns">
+        <settings>
+            <childDefaults>
+                <param name="fieldAction" xsi:type="array">
+                    <item name="provider" xsi:type="string">grid_additional_data_listing.grid_additional_data_listing.grid_additional_data_columns.actions</item>
+                    <item name="target" xsi:type="string">applyAction</item>
+                    <item name="params" xsi:type="array">
+                        <item name="0" xsi:type="string">edit</item>
+                        <item name="1" xsi:type="string">${ $.$data.rowIndex }</item>
+                    </item>
+                </param>
+            </childDefaults>
+        </settings>
+        <selectionsColumn name="ids" sortOrder="0">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="entity_id" sortOrder="10">
+            <settings>
+                <addField>true</addField>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="name" sortOrder="30">
+            <settings>
+                <addField>true</addField>
+                <filter>text</filter>
+                <label translate="true">Name</label>
+            </settings>
+        </column>
+        <column name="shipping_methods"
+                component="Magento_Ui/js/grid/columns/select"
+                class="MageWorx\OrdersGrid\Ui\Component\Listing\Columns\GridAdditionalDataListing\ShippingMethods"
+                sortOrder="40">
+            <settings>
+                <addField>true</addField>
+                <options class="MageWorx\OrdersGrid\Model\Config\Source\ShippingMethods"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Shipping method(s)</label>
+            </settings>
+        </column>
+        <column name="payment_methods"
+                component="Magento_Ui/js/grid/columns/select"
+                class="MageWorx\OrdersGrid\Ui\Component\Listing\Columns\GridAdditionalDataListing\PaymentMethods"
+                sortOrder="50">
+            <settings>
+                <addField>true</addField>
+                <options class="Magento\Payment\Ui\Component\Listing\Column\Method\Options"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Payment method(s)</label>
+            </settings>
+        </column>
+        <column name="order_statuses"
+                component="Magento_Ui/js/grid/columns/select"
+                class="MageWorx\OrdersGrid\Ui\Component\Listing\Columns\GridAdditionalDataListing\OrderStatuses"
+                sortOrder="60">
+            <settings>
+                <addField>true</addField>
+                <options class="Magento\Sales\Ui\Component\Listing\Column\Status\Options"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Order status</label>
+            </settings>
+        </column>
+        <column name="sort_order" sortOrder="70">
+            <settings>
+                <addField>true</addField>
+                <filter>textRange</filter>
+                <label translate="true">Sort Order</label>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="is_active" component="Magento_Ui/js/grid/columns/select" sortOrder="80">
+            <settings>
+                <addField>true</addField>
+                <options class="MageWorx\OrdersGrid\Model\Config\Source\IsActiveStatus"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="row_color"
+                component="MageWorx_OrdersGrid/js/grid_additional_data/cells/row_color"
+                sortOrder="90">
+            <settings>
+                <sorting>false</sorting>
+                <addField>true</addField>
+                <dataType>text</dataType>
+                <label translate="true">Row Color</label>
+            </settings>
+        </column>
+        <column name="icon_image"
+                class="MageWorx\OrdersGrid\Ui\Component\Listing\Columns\GridAdditionalDataListing\IconImage"
+                component="Magento_Ui/js/grid/columns/thumbnail"
+                sortOrder="100">
+            <settings>
+                <sorting>false</sorting>
+                <addField>true</addField>
+                <dataType>text</dataType>
+                <label translate="true">Icon</label>
+                <altField>name</altField>
+                <hasPreview>1</hasPreview>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="MageWorx\OrdersGrid\Ui\Component\Listing\Columns\GridAdditionalDataListing\RowActions" sortOrder="2000">
+            <settings>
+                <indexField>entity_id</indexField>
+                <draggable>true</draggable>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
+         colors="true"
+         bootstrap="../../../dev/tests/unit/framework/bootstrap.php"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         beStrictAboutTestsThatDoNotTestAnything="false"
+         verbose="true">
+    <testsuites>
+        <testsuite name="MAB Core Tests">
+            <directory suffix="Test.php">Core/Test</directory>
+        </testsuite>
+        <testsuite name="MAB SocialLogin Tests">
+            <directory suffix="Test.php">SocialLogin/Test</directory>
+        </testsuite>
+        <testsuite name="All MAB Module Tests">
+            <directory suffix="Test.php">*/Test</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <ini name="date.timezone" value="America/Los_Angeles"/>
+        <ini name="xdebug.max_nesting_level" value="200"/>
+        <env name="MagentoEnvFilePath" value="../../../dev/tests/unit/etc/install-config-mysql.php"/>
+    </php>
+
+    <filter>
+        <whitelist addUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">Core</directory>
+            <directory suffix=".php">SocialLogin</directory>
+            <exclude>
+                <directory suffix=".php">*/Test</directory>
+                <directory suffix=".php">*/vendor</directory>
+                <directory suffix=".php">*/registration.php</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

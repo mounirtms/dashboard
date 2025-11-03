@@ -1,0 +1,183 @@
+##header_start##
+<div class="pdf-holder">
+	<header>
+		<div class="company-info">
+			<h3>{{config path="general/store_information/name"}}</h3>
+			{{depend store_information_if.city}}
+			<div class="address">
+				{{config path="general/store_information/street_line1"}}<br/>
+				{{config path="general/store_information/postcode}} {{config path="general/store_information/city}}<br/>
+				{{config path="general/store_information/country_id"}}<br/>
+			</div>
+			{{/depend}}
+			{{depend store_information_if.phone}}
+			<div class="icon-row">
+				<img width="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAVCAYAAABLy77vAAAABGdBTUEAALGPC/xhBQAAAftJREFUOBHNU89LVFEUvt97oxOJIDqboChoUcto8g8QWgiCi4jQdVDkb6anMJPCA3MMR1FzBAWXLQo30SbCNi50495AFxYRLaxcKKjjvHf87sgdntNTfDsvvHe+e35895zDOUpdtoOoCU26fbeKhaOcUtjkt1JTW7PakX6zE5kol+lcFFGPTQIkEOIvkYjGh3qSUvTWGHk6Dti2DPNFpHj+yH8kDISSzWhESt0Pe5DpbUQisoFWvv+3kswXfDtda6VHyH1qsPdOwfO+ssfXtZkEomzcjpSRDrQ8/x8gVzQ+OVjqf53fipnrReWBkmnmkDD+UJjXOFJGuUx3CytpL5MAv5Pxhk+RiDjRdSIyZ0i0hKiOJtctalwuLZ/tbNjfQxfn5AVffTeQnXW0gz5jmb57xcOjRcJSg0tKYM7J5j+WMH+YeJW6IVLo95U8Ze1XjcG20PZyJP8hl+5+LvCnaCs3GMC6nah6kEpN7ht/cHe+c3duGkVA7jJgieU8CugUoH5CrGZndGY9qGezsRtUBHBtJQlZluNiJStJdIzFnqwGgs+EHLy3jdWJhz2jM9thTmw2VtjcZ2FGzsgh9e8Rs2ed4em1MB+ji1moXhY58JiZzdR9bvIvGrdE8Bnx+ILjTvwxzufJ0q6Np7vuVtmWdy1W/+OJ6xbOCzjLdgyx6qIlBHavdQAAAABJRU5ErkJggg==">
+				&nbsp;<span>{{config path="general/store_information/phone"}}</span>
+			</div>
+			{{/depend}}
+			<div class="icon-row">
+				<img width="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAABGdBTUEAALGPC/xhBQAAAYBJREFUOBGtkj1Lw2AQx++epE1baDPY4suioy849QOoWEUQRBxKVxcnpYtY/AbipKNOLkIXnQQHxwpqHf0CXbQdgpAi1Sbtc97TGgn4Elp9INzl8v//nrtwAP908GivYNbtRg6QhvtiElYTZqyo2/WXGwZMAPWFYRMBM/ICCZ1+EZ4PAVwBRmQREa69Ys8R8VaH0JIAt5kzhkQGEI97hQiEk1Q4OdeGVlaQlIdvNSoOmLFtBLHBwMBR1SiAsBkNp7YsxzqVRAei0wXR6rPdKCNQSUOc4VEff+4On4TQZrUwXDUc646I1pS2C+KEC+MSqEwSRkKgp7mz0heYqhnRtIT2oHTwnj2TnuYT9FGIS5BnLrTz5uj0vBC4z8CWelQ+Fk5mhPua58vOGZLwICrq/hcvZ9GuXXmY0o3QuubQgaojkaw41gW3vuDp/PFbUFdAK62mU+H/dckYjYCWefcifrM//wXUkcWJIKu2N+jwKkAtSBT0HRGrAoW28xeY8iKKwjvv/IgeTFWfYQAAAABJRU5ErkJggg==">
+				&nbsp;<span>{{config path="trans_email/ident_general/email"}}</span>
+			</div>
+		</div>
+		<!-- /.company-info -->
+
+		<div class="logo">
+			<img src="{{var logo_url}}" style="max-width: 90px; max-height: 90px;">
+		</div>
+		<!-- /.logo-holder -->
+
+		<div class="barcode">
+			<div class="space"></div>
+			{{var barcode_qr_shipment.increment_id}}
+		</div>
+		<!-- /.barcode -->
+
+		<div class="clear"></div>
+	</header>
+</div>
+##header_end##
+##body_start##
+<div class="pdf-holder">
+	<div class="document-info">
+		<div class="info-item">
+			<div class="title">{{trans "Packing Slip"}}</div>
+			<div class="row">
+				<strong>{{trans "Shipment #"}}:</strong> {{var shipment.increment_id}}
+			</div>
+			<!-- /.icon-row -->
+			<div class="row">
+				<strong>{{trans "Date"}}:</strong> {{var formatted_shipment.created_at}}
+			</div>
+			<!-- /.icon-row -->
+			<div class="row">
+				<strong>{{trans "Order #"}}:</strong> {{var order.increment_id}}
+			</div>
+			<!-- /.icon-row -->
+		</div>
+	</div>
+
+	<div class="content-space"></div>
+	<div class="content-info">
+
+		<!--<div class="info-box">
+			<div class="title">
+				{{trans "Billing Address"}}
+			</div>
+
+			<div class="text">
+				{{var formattedBillingAddress|raw}}
+			</div>
+		</div>-->
+		<!-- /.info-box -->
+
+		<div class="info-box">
+			<div class="title">
+				{{trans "Shipping Address"}}
+			</div>
+
+			<div class="text">
+				{{var formattedShippingAddress|raw}}
+			</div>
+			<!-- /.text -->
+		</div>
+		<!-- /.info-box -->
+
+		<!--<div class="info-box">
+			<div class="title">
+				{{trans "Payment Method"}}
+			</div>
+
+			<div class="text">
+				{{var order.getPaymentMethodTitle()}}
+			</div>
+		</div>-->
+		<!-- /.info-box -->
+
+		<div class="info-box">
+			<div class="title">
+				{{trans "Shipping Method"}}
+			</div>
+
+			<div class="text">
+				{{var order.getShippingDescription()}}
+			</div>
+			<!-- /.text -->
+		</div>
+	</div>
+
+	<div class="order-table-space"></div>
+    <div class="order-table">
+   		<table width="100%" borderspace="0" cellpadding="0" cellspacing="0">
+   			<thead>
+   				<tr>
+   					<th class="tleft" colspan="2">{{trans "Product"}}</th>
+					<th width="80">{{trans "Qty"}}</th>
+    				<th width="20"></th>
+   				</tr>
+   			</thead>
+   			<tbody>
+			##items_start##
+			<tr>
+				<td class="img">
+					{{var order_item_product.thumbnail_image_html}}
+				</td>
+				<td class="info">
+					<h4>{{var item.name}}</h4>
+					<div class="catalog-number">{{var item.sku}}</div>
+					<br/>
+					<div style="text-align: center">{{var barcode_c39_item.sku}}</div>
+				</td>
+				<td>
+					{{var formatted_item.qty}}
+				</td>
+				<td width="16">
+					<input type="checkbox" checked/>
+				</td>
+			</tr>
+            ##items_end##
+   			</tbody>
+			<tfoot>
+			<tr class="first final">
+				<td colspan="2"></td>
+				<td colspan="1" class="label">
+					<strong>{{trans "Total Qty"}}:</strong>
+				</td>
+				<td class="value">
+					{{var formatted_shipment.total_qty}}
+				</td>
+			</tr>
+{{depend shipment_if.total_weight}}
+			<tr class="final">
+				<td colspan="2"></td>
+				<td colspan="1" class="label">
+					<strong>{{trans "Total Weight"}}:</strong>
+				</td>
+				<td class="value">
+					{{var formatted_shipment.total_weight}}
+				</td>
+			</tr>
+{{/depend}}
+			</tfoot>
+   		</table>
+   	</div>
+   	<!-- /.order-table -->
+	<br/><br/><br/>
+</div>
+##body_end##
+##footer_start##
+	<footer>
+		<div class="note">
+			<div class="label-row">
+				<div class="line"></div>
+				<div class="label">{{trans "Note"}}</div>
+				<div class="line"></div>
+			</div>
+			<div class="text">{{trans "You can expect to receive your order within 2-3 business days."}}</div>
+		</div>
+		<br/><br/>
+		<div class="title">{{trans "Thank you for your business!"}}</div>
+		<br/>
+	</footer>
+##footer_end##

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mab_checkout>
+            <general>
+                <enabled>1</enabled>
+                <debug_mode>0</debug_mode>
+                <display_errors>0</display_errors>
+            </general>
+            <discount_settings>
+                <disable_discount_code>1</disable_discount_code>
+                <custom_message>Discount codes are currently disabled.</custom_message>
+                <error_message>An error occurred while processing your discount code. Please try again.</error_message>
+            </discount_settings>
+            <checkout_steps>
+                <enable_shipping_step>1</enable_shipping_step>
+                <enable_payment_step>1</enable_payment_step>
+                <enable_review_step>1</enable_review_step>
+                <allow_guest_checkout>1</allow_guest_checkout>
+                <validation_messages>
+                    <shipping_method_required>Please select a shipping method.</shipping_method_required>
+                    <payment_method_required>Please select a payment method.</payment_method_required>
+                    <review_required>Please review your order before proceeding.</review_required>
+                </validation_messages>
+            </checkout_steps>
+            <layout_settings>
+                <custom_css></custom_css>
+                <display_progress_bar>1</display_progress_bar>
+                <responsive_design>1</responsive_design>
+                <error_message_style>notice</error_message_style>
+            </layout_settings>
+            <performance>
+                <enable_caching>1</enable_caching>
+                <cache_lifetime>3600</cache_lifetime>
+                <minify_checkout_js>1</minify_checkout_js>
+                <minify_checkout_css>1</minify_checkout_css>
+            </performance>
+        </mab_checkout>
+    </default>
+</config>

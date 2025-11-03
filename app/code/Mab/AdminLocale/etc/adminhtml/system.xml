@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="mab_extensions" translate="label" sortOrder="200">
+            <label>MAB Extensions</label>
+        </tab>
+        <section id="mab_admin_locale" translate="label" type="text" sortOrder="400" showInDefault="1" showInWebsite="0" showInStore="0">
+            <label>Admin Locale Control</label>
+            <tab>mab_extensions</tab>
+            <resource>Mab_AdminLocale::locale_config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General Settings</label>
+                <field id="force_english" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Force English in Admin</label>
+                    <comment>Force the admin interface to use English (en_US) only, regardless of other locale settings</comment>
+                    <source_model>Mab\Core\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="hide_locale_selector" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Hide Locale Selector</label>
+                    <comment>Hide the locale selector in admin user account settings</comment>
+                    <source_model>Mab\Core\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="force_english">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="info" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Information</label>
+                <field id="current_admin_locale" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Current Admin Locale</label>
+                    <comment>The currently active locale in the admin area</comment>
+                    <frontend_model>Mab\AdminLocale\Block\Adminhtml\System\Config\CurrentLocale</frontend_model>
+                </field>
+                <field id="available_locales" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Available Admin Locales</label>
+                    <comment>List of locales available in the admin area</comment>
+                    <frontend_model>Mab\AdminLocale\Block\Adminhtml\System\Config\AvailableLocales</frontend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

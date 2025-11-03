@@ -1,0 +1,153 @@
+<?php
+/**
+ * Tawk.to
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to support@tawk.to so we can send you a copy immediately.
+ *
+ * @copyright   Copyright (c) 2024 Tawk.to
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+?>
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "tawk-widget-select" : {
+                "domain" : "<?= $block->escapeUrl($block->mainurl()) ?>",
+                "baseUrl" : "<?= $block->escapeUrl($block->getBaseUrl()) ?>",
+                "storedWidgetUrl" : "<?= $block->escapeUrl($block->getStoreWidget()) ?>",
+                "removeWidgetUrl" : "<?= $block->escapeUrl($block->getRemoveUrl()) ?>",
+                "form" : {
+                    "key" : "<?= $block->escapeJs($block->getFormKey()) ?>",
+                    "action" : "<?= $block->escapeUrl($block->getFormAction()) ?>"
+                }
+            }
+        }
+    }
+</script>
+
+<label for="websiteids" class="websiteids-label">Select Store</label>
+<select name="websiteids" id="websiteids" class="websiteids">
+<?= /* @noEscape */ $block->getWebSiteoptions(); ?>
+</select>
+
+<iframe
+    id="tawk_widget_customization"
+    style="border:none; width:100%; margin: 0; padding: 0; margin-top: 24px; min-height: 300px"
+    src="<?= $block->escapeUrl($block->getIframeUrl()) ?>">
+</iframe>
+
+<div id="visibility_options">
+    <div id="visibility">
+        <h3>Visibility Options</h3>
+        <div class="tawk-fields">
+            <label for="alwaysdisplay" class="websiteids-label">Always Display widget</label>
+            <label class="switch">
+            <input type="checkbox" id= "alwaysdisplay" name="alwaysdisplay"  class="tawk_check">
+            <div class="slider round"></div>
+            </label>
+        </div>
+        <div class="tawk-fields" id="exlucded_urls_container">
+            <label for="excludeurl">
+                (Exception) hide tawk.to widget to the following URLs or paths. Separate each entry with a comma(,).
+            </label>
+            <div class="tawk-tooltip">
+                Examples of accepted patterns
+                <ul class="tawk-tooltiptext">
+                    <li>*</li>
+                    <li>*/to/somewhere</li>
+                    <li>/*/to/somewhere</li>
+                    <li>/path/*/somewhere</li>
+                    <li>/path/*/lead/*/somewhere</li>
+                    <li>/path/*/*/somewhere</li>
+                    <li>/path/to/*</li>
+                    <li>/path/to/*/</li>
+                    <li>*/to/*/page</li>
+                    <li>/*/to/*/page</li>
+                    <li>/path/*/other/*</li>
+                    <li>/path/*/other/*/</li>
+                    <li>http://www.example.com/</li>
+                    <li>http://www.example.com/*</li>
+                    <li>http://www.example.com/*/to/somewhere</li>
+                    <li>http://www.example.com/path/*/somewhere</li>
+                    <li>http://www.example.com/path/*/lead/*/somewhere</li>
+                    <li>http://www.example.com/path/*/*/somewhere</li>
+                    <li>http://www.example.com/path/to/*</li>
+                    <li>http://www.example.com/path/to/*/</li>
+                    <li>http://www.example.com/*/to/*/page</li>
+                    <li>http://www.example.com/path/*/other/*</li>
+                    <li>http://www.example.com/path/*/other/*/</li>
+                </ul>
+            </div>
+            <br />
+            <textarea name="excludeurl" id="excludeurl" rows="10" style="width:80%;" ></textarea>
+        </div>
+        <div class="tawk-fields">
+            <label for="donotdisplay" class="websiteids-label">Do not Display widget</label>
+            <label class="switch">
+            <input type="checkbox" value="0" id= "donotdisplay" name="donotdisplay"  class="tawk_check">
+            <div class="slider round"></div>
+            </label>
+        </div>
+        <div class="tawk-fields"  id="included_urls_container">
+            <label for="includeurl">
+                (Exception) display tawk.to widget to the following URLs or paths. Separate each entry with a comma(,).
+            </label>
+            <div class="tawk-tooltip">
+                Examples of accepted patterns
+                <ul class="tawk-tooltiptext">
+                    <li>*</li>
+                    <li>*/to/somewhere</li>
+                    <li>/*/to/somewhere</li>
+                    <li>/path/*/somewhere</li>
+                    <li>/path/*/lead/*/somewhere</li>
+                    <li>/path/*/*/somewhere</li>
+                    <li>/path/to/*</li>
+                    <li>/path/to/*/</li>
+                    <li>*/to/*/page</li>
+                    <li>/*/to/*/page</li>
+                    <li>/path/*/other/*</li>
+                    <li>/path/*/other/*/</li>
+                    <li>http://www.example.com/</li>
+                    <li>http://www.example.com/*</li>
+                    <li>http://www.example.com/*/to/somewhere</li>
+                    <li>http://www.example.com/path/*/somewhere</li>
+                    <li>http://www.example.com/path/*/lead/*/somewhere</li>
+                    <li>http://www.example.com/path/*/*/somewhere</li>
+                    <li>http://www.example.com/path/to/*</li>
+                    <li>http://www.example.com/path/to/*/</li>
+                    <li>http://www.example.com/*/to/*/page</li>
+                    <li>http://www.example.com/path/*/other/*</li>
+                    <li>http://www.example.com/path/*/other/*/</li>
+                </ul>
+            </div>
+            <br />
+            <textarea name="includeurl" id="includeurl" rows="10" style="width:80%;" ></textarea>
+        </div>
+    </div>
+
+    <BR />
+
+    <div id="privacy" style>
+        <h3>Privacy Options</h3>
+        <div class="tawk-fields">
+            <label for="enable_visitor_recognition" class="websiteids-label">Enable Visitor Recognition</label>
+            <label class="switch">
+                <input type="checkbox" id="enable_visitor_recognition"
+                    name="enable_visitor_recognition" class="tawk_check">
+                <div class="slider round"></div>
+            </label>
+        </div>
+    </div>
+
+    <div class="tawk-fields">
+        <a class="savesettingsbtn" href="#">Save Settings</a>
+    </div>
+</div>

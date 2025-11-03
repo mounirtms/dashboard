@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mab_core>
+            <module_management>
+                <checkout_customization_enabled>1</checkout_customization_enabled>
+                <visual_effects_enabled>1</visual_effects_enabled>
+                <social_login_enabled>0</social_login_enabled>
+            </module_management>
+            <general_settings>
+                <debug_mode>0</debug_mode>
+                <log_enabled>0</log_enabled>
+            </general_settings>
+            <firebase>
+                <enabled>0</enabled>
+                <api_key></api_key>
+                <project_id></project_id>
+            </firebase>
+        </mab_core>
+    </default>
+</config> 

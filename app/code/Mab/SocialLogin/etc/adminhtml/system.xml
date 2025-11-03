@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="mab_social_login" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label><![CDATA[Social Login]]></label>
+            <tab>mab_extensions</tab>
+            <resource>Mab_SocialLogin::config</resource>
+            
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Social Login</label>
+                    <comment>Enable social login functionality</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="show_on_login" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show on Customer Login Page</label>
+                    <comment>Display social login buttons on customer login page</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="show_on_register" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show on Customer Registration Page</label>
+                    <comment>Display social login buttons on customer registration page</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="show_in_header" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show in Header</label>
+                    <comment>Display Google sign-in button in header for quick access</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            
+            <group id="providers" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Social Providers</label>
+                <field id="google_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Google Login</label>
+                    <comment>Enable Google OAuth authentication</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="facebook_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Facebook Login</label>
+                    <comment>Enable Facebook authentication</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            
+            <group id="google" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Google Configuration</label>
+                <field id="client_id" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Google Client ID</label>
+                    <comment><![CDATA[Get your Google Client ID from <a href="https://console.developers.google.com/" target="_blank">Google Developers Console</a><br/>
+                    <strong>Important:</strong> Add your domain to authorized origins: https://beta.technostationery.com<br/>
+                    <strong>Redirect URI:</strong> https://beta.technostationery.com/mab_social/auth/callback]]></comment>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="client_secret" translate="label comment" type="obscure" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Google Client Secret</label>
+                    <comment>Your Google application client secret</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <validate>required-entry</validate>
+                </field>
+            </group>
+            
+            <group id="session" translate="label" type="text" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Session Management</label>
+                <comment><![CDATA[Configure session lifetime and persistence for social login users.]]></comment>
+                <field id="extended_lifetime_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Extended Session Lifetime</label>
+                    <comment>Allow social login users to stay logged in for extended periods (especially useful for mobile)</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="session_lifetime" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Social Login Session Lifetime (hours)</label>
+                    <comment>Session lifetime in hours for social login users (default: 720 hours = 30 days)</comment>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="extended_lifetime_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="mobile_extended_lifetime" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mobile Session Lifetime (hours)</label>
+                    <comment>Extended session lifetime for mobile devices (default: 2160 hours = 90 days)</comment>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="extended_lifetime_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="remember_me_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable "Remember Me" for Social Login</label>
+                    <comment>Allow users to choose to stay logged in permanently on trusted devices</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="extended_lifetime_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="session_renewal" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Automatic Session Renewal</label>
+                    <comment>Automatically renew sessions when users are active</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="extended_lifetime_enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+            
+            <group id="firebase" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Firebase Configuration</label>
+                <comment><![CDATA[Firebase integration for advanced social authentication features.]]></comment>
+                <field id="firebase_enabled" translate="label comment" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Firebase Integration</label>
+                    <comment>Use Firebase for social authentication (recommended)</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="config" translate="label comment" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Firebase Configuration JSON</label>
+                    <comment><![CDATA[Enter your Firebase configuration JSON. <a href="https://console.firebase.google.com" target="_blank">Get Firebase Config</a>]]></comment>
+                </field>
+                <field id="project_id" translate="label comment" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Firebase Project ID</label>
+                    <comment>Your Firebase project identifier</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:framework:Ui/etc/ui_configuration.xsd">
+    <listingToolbar name="listing_top">
+        <massaction name="listing_massaction">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/tree-massactions</item>
+                </item>
+            </argument>
+            <action name="pdf_customizer_order">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">pdf_customizer_order</item>
+                        <item name="label" xsi:type="string" translate="true">Print PDF: Order</item>
+                        <item name="url" xsi:type="url" path="xtento_pdf/order_massaction/printpdf"/>
+                    </item>
+                </argument>
+                <argument name="actions" xsi:type="object">Xtento\PdfCustomizer\Ui\Component\Sales\Order\Masspdf\Pdftemplates</argument>
+            </action>
+            <action name="pdf_customizer_invoice">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">pdf_customizer_order_invoice</item>
+                        <item name="label" xsi:type="string" translate="true">Print PDF: Invoice</item>
+                        <item name="url" xsi:type="url" path="xtento_pdf/order_massaction/printpdfinvoice"/>
+                    </item>
+                </argument>
+                <argument name="actions" xsi:type="object">Xtento\PdfCustomizer\Ui\Component\Sales\Order\Invoice\Masspdf\Pdftemplates</argument>
+            </action>
+            <action name="pdf_customizer_shipment">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">pdf_customizer_order_shipment</item>
+                        <item name="label" xsi:type="string" translate="true">Print PDF: Shipment</item>
+                        <item name="url" xsi:type="url" path="xtento_pdf/order_massaction/printpdfshipment"/>
+                    </item>
+                </argument>
+                <argument name="actions" xsi:type="object">Xtento\PdfCustomizer\Ui\Component\Sales\Order\Shipment\Masspdf\Pdftemplates</argument>
+            </action>
+            <action name="pdf_customizer_creditmemo">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">pdf_customizer_order_creditmemo</item>
+                        <item name="label" xsi:type="string" translate="true">Print PDF: Credit Memo</item>
+                        <item name="url" xsi:type="url" path="xtento_pdf/order_massaction/printpdfcreditmemo"/>
+                    </item>
+                </argument>
+                <argument name="actions" xsi:type="object">Xtento\PdfCustomizer\Ui\Component\Sales\Order\Creditmemo\Masspdf\Pdftemplates</argument>
+            </action>
+            <action name="pdf_customizer_all">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">pdf_customizer_order_all</item>
+                        <item name="label" xsi:type="string" translate="true">Print PDF: All</item>
+                        <item name="url" xsi:type="url" path="xtento_pdf/order_massaction/printpdfdocuments"/>
+                    </item>
+                </argument>
+            </action>
+        </massaction>
+    </listingToolbar>
+</listing>
+
+
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-10-09T12:56:16+00:00
+ * File:          view/adminhtml/ui_component/sales_order_grid.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

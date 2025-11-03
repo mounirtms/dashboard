@@ -1,0 +1,621 @@
+Created At,Nom / اللقب,Prénom / الإسم,Age / العمر,Wilaya / الولاية  *,E-mail /البريد الإلكتروني,Téléphone رقم الهاتف,Photo de l’œuvre /صورة العمل الفني,Titre de l’œuvre /عنوان العمل الفني,Dimension / مقاس اللوحة,Techniques utilisées / التقنيات المستعملة,Source d’inspiration / مصدر الإلهام,Comment avez-vous pris connaissance du Concours ?
+2025-09-29 21:26:43,عياش,خالد,32,Constantine,khaledayeche9@gmail.com,698814441,inbound7784278629892121894.pdf,"عزتي في وطني",لا شيء,لا شيء,الوطن,Facebook
+2025-10-02 9:00:25,Hamidou,"Amel Kamila",43,Alger,amelkamilahamidou@hotmail.com,558200411,20250717_201259.jpg,"Sans titre",40x80,Mixtes,"Architectures et design/ modernisme",Autre
+2025-10-02 12:08:50,خير الدين,أحلام,23,Tébessa,ahah69278@gmail.com,663344228,inbound3372140541737041297.jpg,"إبتسامة الأمل",35/40,"ألوان زيتية","الإلهام جاء من رغبة في تجسيد لحظة إنسانية صافية، لحظة فرح نقي يجعل المشاهد يحس بالدفء",Facebook
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concours National d'Art 2025 - Galerie des Œuvres</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #ff8a00, #e52e71, #1a2a6c);
+            animation: headerLine 3s linear infinite;
+        }
+
+        @keyframes headerLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(45deg, #ff8a00, #ffffff, #e52e71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto 25px;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 25px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ff8a00;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            margin-top: 5px;
+            color: #ccc;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .filter-section {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #ff8a00;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            flex: 1;
+            min-width: 200px;
+            backdrop-filter: blur(5px);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #ff8a00;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .art-card {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .art-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(255, 138, 0, 0.4);
+            border-color: rgba(255, 138, 0, 0.4);
+        }
+
+        .art-image-container {
+            height: 250px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .art-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .art-card:hover .art-image {
+            transform: scale(1.1);
+        }
+
+        .art-info {
+            padding: 20px;
+        }
+
+        .art-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #ff8a00;
+        }
+
+        .artist-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .art-details {
+            margin: 15px 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            min-width: 120px;
+            color: #ff8a00;
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+
+        .no-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: rgba(50, 50, 50, 0.5);
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 10px;
+        }
+
+        .page-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover, .page-btn.active {
+            background: #ff8a00;
+            border-color: #ff8a00;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .stats {
+                gap: 15px;
+            }
+            
+            .stat-box {
+                padding: 10px 15px;
+            }
+            
+            .stat-number {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filter-select {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-palette"></i> Concours National d'Art 2025</h1>
+        <p class="subtitle">Découvrez les œuvres exceptionnelles soumises par les artistes talentueux du pays dans ce concours prestigieux</p>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number" id="total-artists">0</div>
+                <div class="stat-label">Artistes</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="total-works">0</div>
+                <div class="stat-label">Œuvres</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="total-regions">0</div>
+                <div class="stat-label">Wilayas</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="filter-section">
+            <h2 class="filter-title"><i class="fas fa-filter"></i> Filtres</h2>
+            <div class="filters">
+                <select class="filter-select" id="wilaya-filter">
+                    <option value="">Toutes les Wilayas</option>
+                </select>
+                <select class="filter-select" id="technique-filter">
+                    <option value="">Toutes les Techniques</option>
+                </select>
+                <select class="filter-select" id="source-filter">
+                    <option value="">Toutes les Sources</option>
+                </select>
+            </div>
+        </section>
+
+        <div class="gallery" id="art-gallery">
+            <!-- Art cards will be dynamically inserted here -->
+        </div>
+
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be inserted here -->
+        </div>
+    </div>
+
+    <footer>
+        <p>Concours National d'Art 2025 &copy; Tous droits réservés</p>
+        <p>Organisé par l'Association Nationale des Artistes</p>
+    </footer>
+
+    <script>
+        // Global array to store art data
+        const artData = [];
+        
+        // Function to parse CSV data
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',').map(header => header.trim().replace(/['"]/g, ''));
+            
+            // Map French headers to our internal property names
+            const headerMap = {
+                'Created At': 'date',
+                'Nom / اللقب': 'nom',
+                'Prénom / الإسم': 'prenom',
+                'Age / العمر': 'age',
+                'Wilaya / الولاية  *': 'wilaya',
+                'E-mail /البريد الإلكتروني': 'email',
+                'Téléphone رقم الهاتف': 'telephone',
+                'Photo de l’œuvre /صورة العمل الفني': 'photo',
+                'Titre de l’œuvre /عنوان العمل الفني': 'titre',
+                'Dimension / مقاس اللوحة': 'dimension',
+                'Techniques utilisées / التقنيات المستعملة': 'techniques',
+                'Source d’inspiration / مصدر الإلهام': 'inspiration',
+                'Comment avez-vous pris connaissance du Concours ?': 'source',
+                'Téléphone 2 رقم الهاتف': 'telephone2'
+            };
+            
+            const result = [];
+            for (let i = 1; i < lines.length; i++) {
+                const currentLine = lines[i];
+                if (!currentLine.trim()) continue;
+                
+                // Parse CSV line handling quoted values
+                const values = [];
+                let currentValue = '';
+                let inQuotes = false;
+                
+                for (let j = 0; j < currentLine.length; j++) {
+                    const char = currentLine[j];
+                    
+                    if (char === '"' && (j === 0 || currentLine[j-1] !== '\\')) {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(currentValue.trim().replace(/^["']|["']$/g, ''));
+                        currentValue = '';
+                    } else {
+                        currentValue += char;
+                    }
+                }
+                values.push(currentValue.trim().replace(/^["']|["']$/g, ''));
+                
+                // Create object with mapped properties
+                const obj = { id: i };
+                headers.forEach((header, index) => {
+                    const propName = headerMap[header] || header.toLowerCase();
+                    obj[propName] = values[index] || '';
+                });
+                
+                result.push(obj);
+            }
+            
+            return result;
+        }
+        
+        // Function to load data from CSV file
+        async function loadCSVData() {
+            try {
+                const response = await fetch('csv.csv');
+                const csvText = await response.text();
+                const parsedData = parseCSV(csvText);
+                artData.push(...parsedData);
+                renderArtCards(artData);
+                populateFilters();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading CSV data:', error);
+                // Fallback to sample data if CSV fails to load
+                artData.push(...sampleData);
+                renderArtCards(artData);
+                populateFilters();
+                updateStats();
+            }
+        }
+        
+        // Sample data as fallback
+        const sampleData = [
+            {
+                id: 1,
+                nom: "عياش",
+                prenom: "خالد",
+                age: 32,
+                wilaya: "Constantine",
+                email: "khaledayeche9@gmail.com",
+                telephone: "698814441",
+                photo: "inbound7784278629892121894.pdf",
+                titre: "عزتي في وطني",
+                dimension: "لا شيء",
+                techniques: "لا شيء",
+                inspiration: "الوطن",
+                source: "Facebook",
+                date: "2025-09-29 21:26:43"
+            },
+            {
+                id: 2,
+                nom: "Hamidou",
+                prenom: "Amel Kamila",
+                age: 43,
+                wilaya: "Alger",
+                email: "amelkamilahamidou@hotmail.com",
+                telephone: "558200411",
+                photo: "20250717_201259.jpg",
+                titre: "Sans titre",
+                dimension: "40x80",
+                techniques: "Mixtes",
+                inspiration: "Architectures et design/ modernisme",
+                source: "Autre",
+                date: "2025-10-02 9:00:25"
+            },
+            {
+                id: 3,
+                nom: "خير الدين",
+                prenom: "أحلام",
+                age: 23,
+                wilaya: "Tébessa",
+                email: "ahah69278@gmail.com",
+                telephone: "663344228",
+                photo: "inbound3372140541737041297.jpg",
+                titre: "إبتسامة الأمل",
+                dimension: "35/40",
+                techniques: "ألوان زيتية",
+                inspiration: "الإلهام جاء من رغبة في تجسيد لحظة إنسانية صافية، لحظة فرح نقي يجعل المشاهد يحس بالدفء",
+                source: "Facebook",
+                date: "2025-10-02 12:08:50"
+            }
+        ];
+        
+        // Function to render art cards
+        function renderArtCards(data) {
+            const gallery = document.getElementById('art-gallery');
+            gallery.innerHTML = '';
+            
+            data.forEach(artwork => {
+                const card = document.createElement('div');
+                card.className = 'art-card';
+                
+                // Check if photo exists
+                const photoUrl = artwork.photo ;
+                 
+                
+                card.innerHTML = `
+                    <div class="art-image-container">
+                        ${photoUrl ? 
+                            `<img src="${photoUrl}" alt="${artwork.titre}" class="art-image" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>Image non disponible</div>'">` : 
+                            `<div class="no-image">Image non disponible</div>`}
+                    </div>
+                    <div class="art-info">
+                        <h3 class="art-title">${artwork.titre || 'Titre non spécifié'}</h3>
+                        <div class="artist-name">${artwork.prenom} ${artwork.nom}</div>
+                        <div class="art-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Wilaya:</span>
+                                <span class="detail-value">${artwork.wilaya}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Âge:</span>
+                                <span class="detail-value">${artwork.age} ans</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Dimensions:</span>
+                                <span class="detail-value">${artwork.dimension}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Techniques:</span>
+                                <span class="detail-value">${artwork.techniques}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Inspiré par:</span>
+                                <span class="detail-value">${artwork.inspiration}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Source:</span>
+                                <span class="detail-value">${artwork.source}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                gallery.appendChild(card);
+            });
+        }
+
+        // Function to populate filters
+        function populateFilters() {
+            const wilayas = [...new Set(artData.map(item => item.wilaya))].sort();
+            const techniques = [...new Set(artData.map(item => item.techniques))].sort();
+            const sources = [...new Set(artData.map(item => item.source))].sort();
+            
+            const wilayaFilter = document.getElementById('wilaya-filter');
+            const techniqueFilter = document.getElementById('technique-filter');
+            const sourceFilter = document.getElementById('source-filter');
+            
+            wilayas.forEach(wilaya => {
+                const option = document.createElement('option');
+                option.value = wilaya;
+                option.textContent = wilaya;
+                wilayaFilter.appendChild(option);
+            });
+            
+            techniques.forEach(technique => {
+                const option = document.createElement('option');
+                option.value = technique;
+                option.textContent = technique;
+                techniqueFilter.appendChild(option);
+            });
+            
+            sources.forEach(source => {
+                const option = document.createElement('option');
+                option.value = source;
+                option.textContent = source;
+                sourceFilter.appendChild(option);
+            });
+        }
+
+        // Function to update statistics
+        function updateStats() {
+            document.getElementById('total-artists').textContent = [...new Set(artData.map(item => `${item.prenom} ${item.nom}`))].length;
+            document.getElementById('total-works').textContent = artData.length;
+            document.getElementById('total-regions').textContent = [...new Set(artData.map(item => item.wilaya))].length;
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCSVData();
+        });
+    </script>
+</body>
+</html>

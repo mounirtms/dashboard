@@ -1,0 +1,78 @@
+html, body { margin: 0; padding: 0; }
+body { color: #30313d; font-size: 10px; font-family: 'Play', sans-serif; }
+
+.pdf-holder { width: 640px; margin: 0 auto; }
+.clear { height: 0; display: block; clear: both; }
+.fa { font-family: fontawesome; }
+
+/**/header { padding-top: 40px; margin-bottom: 24px; height: 170px; }
+	header .logo-holder { width: 50%; padding-right: 2px; float: left; }
+		header .logo-holder img { /* Note: Define max-height/max-width as inline style on element */ }
+	header .company-info { line-height: 14px; text-align: right; float: right; }
+		header .company-info h3 { line-height: 18px; font-size: 12px; font-weight: bold; margin: 0 0 4px 0; padding: 0; }
+		header .company-info .address { margin-bottom: 2px; }
+		header .company-info .icon-row table { width: 100%; }
+/**/			header .company-info .icon-row td { line-height: 14px; font-size: 10px; text-align: right; padding: 2px 0; }
+/**/				header .company-info .icon-row td.icon { width: 18px; color: rgba(48, 49, 61, 0.6); font-size: 10px; font-family: fontawesome; font-style: normal; text-align: right; }
+
+.main-info { margin-top: 10px; }
+.order-number h2 { line-height: 18px; font-size: 14px; font-weight: normal; margin: 0 0 4px 0; padding: 0; }
+.order-number table { margin-left: -4px; }
+.order-number .order-number-item { line-height: 14px; background: #f2f4f7; color: rgba(48, 49, 61, 0.8); font-size: 10px; text-align: center; padding: 4px 16px; vertical-align: top; }
+	.order-number .order-number-item h4 { margin: 0 0 2px 0; padding: 0; }
+.barcode { text-align: right; margin-bottom: 8px; }
+
+.customer-info { width: 50%; font-size: 10px; margin-bottom: 36px; float: left; }
+	.customer-info h2 { font-size: 12px; font-weight: bold; margin: 0 0 4px 0; padding: 0; }
+		.customer-info .icon-row table,
+		.footer-customer .icon-row table { width: 100%; }
+		.customer-info .icon-row table tbody tr td,
+		.footer-customer .icon-row table tbody tr td  { line-height: 14px; font-size: 10px; padding: 2px 0; }
+			.customer-info .icon-row table tbody tr td.icon,
+			.footer-customer .icon-row table tbody tr td.icon { width: 14px; color: rgba(48, 49, 61, 0.6); font-size: 10px; font-family: fontawesome; font-style: normal; }
+
+			.footer-customer .icon { font-family: fontawesome; }
+
+.invoice-number-cnt { width: 45%; padding-top: 4px; float: right; }
+.invoice-number table { width: 100%; }
+.invoice-number h2 { line-height: 18px; font-size: 14px; font-weight: normal; margin: 0 0 4px 0; padding: 0; }
+.invoice-number .invoice-number-item { line-height: 14px; background: #f2f4f7; color: rgba(48, 49, 61, 0.8); font-size: 10px; text-align: center; padding: 4px; vertical-align: top; }
+	.invoice-number .invoice-number-item h4 { margin: 0 0 2px 0; padding: 0; }
+
+.info-boxes { margin-bottom: 16px; }
+	.info-boxes .info-box { width: 50%; float: left; }
+		.info-boxes .info-box .on-left { padding-right: 8px; }
+		.info-boxes .info-box .on-right { padding-left: 8px; }
+/**/		.info-boxes .info-box .heading,
+/**/		.info-boxes .info-box-full .heading { background: #d5d9de; font-size: 10px; font-weight: bold; padding: 6px 8px; }
+		.info-boxes .info-box-cnt { background: #f2f4f7; padding: 8px; }
+		.info-boxes .info-box .address,
+		.info-boxes .info-box-full .address { line-height: 14px; margin-bottom: 4px; }
+		.info-boxes .info-box .icon-row table { width: 100%; }
+			.info-boxes .info-box .icon-row table tbody tr td { line-height: 14px; font-size: 10px; padding: 2px 0; }
+				.info-boxes .info-box .icon-row table tbody tr td.icon { width: 14px; color: rgba(48, 49, 61, 0.6); font-size: 10px; font-family: fontawesome; font-style: normal; }
+
+.table-holder { padding-top: 16px; margin-bottom: 24px; }
+	.table-holder table { width: 100%; }
+		.table-holder table thead tr th { color: #30313d; font-size: 9px; font-weight: bold; text-align: center; border-bottom: 2px solid #d5d9de; padding: 6px 4px; }
+			.table-holder table thead tr th.tleft { text-align: left; }
+		.table-holder table tbody tr td { color: #30313d; font-size: 10px; text-align: center; border-bottom: 1px solid #d5d9de; padding: 4px; }
+			.table-holder table tbody tr td.img { width: 32px; border-right: 0; padding-right: 0; }
+			.table-holder table tbody tr td.info { text-align: left; }
+				.table-holder table tbody tr td.info h4 { font-size: 10px; margin: 0 0 2px 0; padding: 0; }
+				.table-holder table tbody tr td.info h5 { font-size: 10px; font-weight: normal; margin: 0 0 2px 0; padding: 0; }
+			.table-holder table tbody tr td strong { color: #30313d; }
+		.table-holder table tfoot tr td { color: #30313d; font-size: 10px; text-align: center; padding: 6px 4px; }
+			.table-holder table tfoot tr td.label,
+			.table-holder table tfoot tr td.value { border-bottom: 1px solid #d5d9de; }
+			.table-holder table tfoot tr td.label { text-align: left; }
+			.table-holder table tfoot tr td.final { color: #30313d; }
+			.table-holder table tfoot tr td strong { color: #30313d; }
+				.table-holder table tfoot tr td.final strong { color: #30313d; }
+
+/**/footer { width: 640px; margin: 0 auto; padding-bottom: 30px; }
+	footer .title { line-height: 18px; font-size: 14px; font-weight: bold; text-align: right; }
+	footer .table-cnt { background: #f2f4f7; margin-top: 4px; padding: 16px; }
+	footer table { width: 100%; }
+		footer table tr td { width: 33.33%; vertical-align: top; }
+			footer table tr td.small { width: 28%; }

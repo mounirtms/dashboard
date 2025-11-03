@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <!-- Backup quote data for order -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/backup" method="POST">
+        <service class="MageWorx\OrderEditor\Api\OrderManagerInterface" method="backupOrdersQuoteByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+
+    <!-- Restore quote data for order -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/restoreQuote" method="POST">
+        <service class="MageWorx\OrderEditor\Api\OrderManagerInterface" method="restoreOrdersQuoteByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+
+    <!-- Edit/Add/Remove order items using quote -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/items" method="GET">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" method="getOrderItemsByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/item/:itemId" method="DELETE">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" method="removeItemFromOrderById"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/items/:itemIds" method="DELETE">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" method="removeItemsFromOrderById"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/quoteItems" method="GET">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" method="getQuoteItemsByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/item" method="POST">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" method="addItemToOrderById"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/items" method="POST">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" method="addItemsToOrderById"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/item" method="PUT">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" method="editItem"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <!-- Commit order changes (move changes from the quote to the order) -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/commit" method="POST">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" method="commit"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+
+    <!-- Edit Customer Information -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/customerInfo" method="GET">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\CustomerInfoManagerInterface" method="getCustomerInfoByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/customerInfo" method="PUT">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\CustomerInfoManagerInterface" method="updateCustomerInfoByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+
+    <!-- Edit Order Main Information -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/orderInfo" method="GET">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderInfoManagerInterface" method="getOrderInfoByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/orderInfo" method="PUT">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\OrderInfoManagerInterface" method="updateOrderInfoByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+
+    <!-- Edit Order Billing Address -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/billingAddress" method="GET">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\BillingAddressManagerInterface" method="getBillingAddressByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/billingAddress" method="PUT">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\BillingAddressManagerInterface" method="updateBillingAddressDataByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+
+    <!-- Edit Order Shipping Address -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/shippingAddress" method="GET">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\ShippingAddressManagerInterface" method="getShippingAddressByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/shippingAddress" method="PUT">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\ShippingAddressManagerInterface" method="updateShippingAddressDataByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+
+    <!-- Edit Order Payment -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/payment" method="GET">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\PaymentMethodManagerInterface" method="getPaymentMethodByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/payment" method="PUT">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\PaymentMethodManagerInterface" method="updatePaymentMethodByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+
+    <!-- Edit Order Shipping Method -->
+    <route url="/V1/mageworx/order-editor/order/:orderId/shippingMethod" method="GET">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\ShippingMethodManagerInterface" method="getShippingMethodByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+    <route url="/V1/mageworx/order-editor/order/:orderId/shippingMethod" method="PUT">
+        <service class="MageWorx\OrderEditor\Api\OrderManager\ShippingMethodManagerInterface" method="setShippingMethodByOrderId"/>
+        <resources>
+            <resource ref="MageWorx_OrderEditor::edit_order" />
+        </resources>
+    </route>
+</routes>

@@ -1,0 +1,53 @@
+html, body { margin: 0; padding: 0; }
+body { color: #414141; font-size: 10px; font-family: 'Open Sans', sans-serif; }
+
+.pdf-holder { }
+.clear { height: 0; display: block; clear: both; }
+
+header { background: #f0f8fc; padding: 24px 20px; }
+	header .logo { width: 100px; float: left; }
+	header .barcode { margin-top: 20px; }
+	header .company-info { width: 420px; margin-left: 12px; font-size: 8px; float: left; }
+		header .company-info h3 { font-size: 10px; font-weight: bold; margin: 0 0 2px 0; padding: 0; }
+		header .company-info .icon-row img { display: inline-block; vertical-align: middle; margin-right: 4px; }
+		header .company-info .icon-row span { display: inline-block; vertical-align: middle; }
+
+.document-info { background: #d6ecf6; color: #515151; /* margin-bottom: 10x; */ }
+	.document-info .title { width: 50%; font-size: 32px; font-family: 'Lora', sans-serif; padding: 6px 20px; float: left; }
+		.document-info .half-title { width: 48%; }
+	.document-info .item { width: 80px; font-size: 10px; text-align: center; text-transform: uppercase; padding-top: 6px; float: left; }
+		.document-info .item-big { width: 100px; }
+		.document-info .item h4 { font-size: 9px; font-weight: bold; margin: 4px 0 0 0; padding: 0; }
+	.document-info .space { width: 20px; height: 20px; float: left; }
+
+.content-space { width: 27px; height: 100px; float: left; }
+.content-info { width: 180px; float: left; }
+.info-title table tr td { font-size: 11px; font-weight: bold; font-family: 'Lora', sans-serif; }
+.info-text { font-size: 9px; border-left: 2px solid #d6ecf6; padding-left: 14px; padding-top: 6px; padding-bottom: 16px; margin-left: 6px; }
+	.noborder { border-left: 0; }
+	.info-text h5 { font-size: 9px; font-weight: normal; margin: 0 0 2px 0; padding: 0; }
+	.info-text .icon-row { margin-top: 2px; }
+		.info-text .icon-row img { display: inline-block; vertical-align: middle; margin-right: 4px; }
+		.info-text .icon-row span { display: inline-block; vertical-align: middle; }
+.note { font-size: 9px; padding-top: 6px; }
+
+.order-table-space { width: 12px; height: 100px; float: left; }
+.order-table { width: 574px; padding-top: 24px; float: left; }
+	.order-table table thead tr th { font-size: 9px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #000; padding: 4px 8px; }
+		.order-table table thead tr th.tleft { text-align: left; }
+	.order-table table tbody tr td { line-height: 12px; background: #f0f0f0; font-size: 9px; text-align: center; padding: 7px 4px; }
+		.order-table table tbody tr:nth-child(even) td { background: #f8f8f8; }
+		.order-table table tbody tr td.info { text-align: left; }
+		.order-table table tbody tr td.img { width: 30px; }
+	.order-table table tfoot tr td { font-size: 9px; padding: 6px 16px; }
+		.order-table table tfoot tr.first td { padding-top: 12px; }
+		.order-table table tfoot tr td.value { text-align: center; }
+		.order-table table tfoot tr.final td.label,
+		.order-table table tfoot tr.final td.value { background: #d6ecf6; color: #515151; }
+
+footer .title { color: #515151; font-size: 14px; font-family: 'Lora', sans-serif; text-align: right; border-bottom: 5px solid #d6ecf6; padding: 0 20px 4px 0; }
+footer .table-cnt { padding: 8px 20px 0 20px; }
+	footer .table-cnt table { width: 100%; }
+		footer .table-cnt table tr td { line-height: 12px; font-size: 9px; }
+	footer .icon-row img { display: inline-block; vertical-align: middle; margin-right: 4px; }
+	footer .icon-row span { display: inline-block; vertical-align: middle; }

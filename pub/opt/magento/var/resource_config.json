@@ -1,0 +1,17 @@
+{
+    "media_directory": "/home/technadminy7/public_html/pub/media",
+    "allowed_resources": [
+        "css",
+        "css_secure",
+        "js",
+        "theme",
+        "favicon",
+        "wysiwyg",
+        "catalog",
+        "custom_options",
+        "email",
+        "captcha",
+        "dhl"
+    ],
+    "update_time": "3600"
+}

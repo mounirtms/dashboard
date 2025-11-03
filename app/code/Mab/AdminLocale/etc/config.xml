@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mab_admin_locale>
+            <locale_settings>
+                <force_english_admin>1</force_english_admin>
+                <remove_french_files>0</remove_french_files>
+                <enforce_frontend_french>1</enforce_frontend_french>
+            </locale_settings>
+        </mab_admin_locale>
+    </default>
+</config>

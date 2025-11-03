@@ -1,0 +1,22 @@
+{
+    "name": "mageworx/module-ordersbase",
+    "description": "Extended Orders module for the Magento 2",
+    "require": {
+        "magento/framework": ">=102.0.0",
+        "magento/module-sales": ">=101.0.2 <104",
+        "magento/module-checkout": ">=100.3.0 < 101",
+        "magento/module-quote": ">=101.0.2 <102"
+    },
+    "type": "magento2-module",
+    "version": "2.0.2",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [ "registration.php" ],
+        "psr-4": {
+            "MageWorx\\OrdersBase\\": ""
+        }
+    }
+}

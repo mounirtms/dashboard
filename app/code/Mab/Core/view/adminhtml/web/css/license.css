@@ -1,0 +1,30 @@
+.mab-license-status {
+    padding: 10px;
+    margin: 5px 0;
+}
+
+.mab-license-status .license-module {
+    margin: 5px 0;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.mab-license-status .module-name {
+    font-weight: bold;
+}
+
+.mab-license-status .success {
+    background-color: #e8f6e8;
+    color: #006400;
+}
+
+.mab-license-status .error {
+    background-color: #fae5e5;
+    color: #e02b27;
+}
+
+.mab-license-status .status {
+    margin-left: 5px;
+    padding: 2px 5px;
+    border-radius: 2px;
+}

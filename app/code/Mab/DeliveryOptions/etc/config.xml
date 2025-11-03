@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <carriers>
+            <yalidine>
+                <active>1</active>
+                <title>Yalidine | Livraison à domicile / récupération agence</title>
+                <name>Yalidine</name>
+                <price>0.00</price>
+                <free_shipping_enabled>1</free_shipping_enabled>
+                <free_shipping_minimum>5000</free_shipping_minimum>
+                <free_shipping_eligible_skus></free_shipping_eligible_skus>
+                <free_shipping_excluded_skus></free_shipping_excluded_skus>
+                <debug_enabled>0</debug_enabled>
+                <specificerrmsg>Ce mode de livraison n'est pas disponible actuellement. Si vous pensez qu'il s'agit d'une erreur, contactez-nous.</specificerrmsg>
+                <sallowspecific>0</sallowspecific>
+                <sort_order>15</sort_order>
+                <model>Mab\DeliveryOptions\Model\Carrier\Yalidine</model>
+            </yalidine>
+        </carriers>
+    </default>
+</config>

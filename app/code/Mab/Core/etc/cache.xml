@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Cache/etc/cache.xsd">
+    <type name="mab_delivery" translate="label,description" instance="Mab\Core\Model\Cache\Type\Delivery">
+        <label>MAB Delivery Cache</label>
+        <description>Cache for delivery options and configurations</description>
+    </type>
+</config>

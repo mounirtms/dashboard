@@ -1,0 +1,8 @@
+#pdfcustomizer_tabs_preview_section_content #preview_base_fieldset {
+    padding: 0 !important;
+}
+
+.CodeMirror.cm-s-default {
+    border: 1px solid #eee;
+    font-size: 12px;
+}

@@ -1,0 +1,11 @@
+<!-- ko ifnot: $col.isEmpty($data.options) -->
+<div class="mw-og-one-item-option" data-bind="item-id: $data.item_id">
+    <!-- ko foreach: { data: $data.options, as: 'option' } -->
+    <div class="mw-og-one-option">
+        <span class="mw-og-one-option-label" data-bind="text: option.label"></span>
+        <span class="mw-og-one-option-value" data-bind="text: option.print_value"></span>
+    </div>
+    <!-- /ko -->
+</div>
+<hr/>
+<!-- /ko -->

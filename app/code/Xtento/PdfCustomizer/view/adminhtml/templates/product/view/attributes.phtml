@@ -1,0 +1,28 @@
+<?php
+// @codingStandardsIgnoreFile
+
+/**
+ * Product additional attributes template
+ *
+ * @var $block \Magento\Catalog\Block\Product\View\Attributes
+ */
+?>
+<?php
+$_helper = $this->helper('Magento\Catalog\Helper\Output');
+$_product = $block->getProduct()
+?>
+<?php if ($_additional = $block->attributeTableSource($_product)): ?>
+    <table class="data table additional-attributes" id="product-attribute-specs-table" width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+        <?php foreach ($_additional as $_data): ?>
+            <tr>
+                <td class="col label" scope="row"><?php echo $block->escapeHtml(__($_data['label'])) ?></td>
+                <td class="col data value">
+                    <?php /* @escapeNotVerified */
+                    echo $_helper->productAttribute($_product, $_data['value'], $_data['code']) ?>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php endif; ?>

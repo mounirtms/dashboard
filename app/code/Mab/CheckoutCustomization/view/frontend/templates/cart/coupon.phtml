@@ -1,0 +1,78 @@
+<?php
+/** @var $block \Magento\Checkout\Block\Cart\Coupon */
+?>
+<?php $disabled = $block->getData('is_discount_disabled') ?? false; ?>
+<?php // We should use strlen function because coupon code could be "0", converted to bool will lead to false ?>
+<?php $hasCouponCode = $block->getCouponCode() !== null && strlen($block->getCouponCode()) > 0; ?>
+<?php if (!$disabled): ?>
+<div class="block discount"
+     id="block-discount"
+     data-mage-init='{"collapsible":{"active": true, "openedState": "active", "saveState": false}}'>
+    <div class="title" data-role="title">
+        <strong id="block-discount-heading" role="heading" aria-level="2"><?= $block->escapeHtml(__('Appliquer un Code de Réduction')) ?></strong>
+    </div>
+    <div class="content" data-role="content" aria-labelledby="block-discount-heading">
+        <form id="discount-coupon-form"
+              action="<?= $block->escapeUrl($block->getUrl('checkout/cart/couponPost')) ?>"
+              method="post"
+              data-mage-init='{"discountCode":{"couponCodeSelector": "#coupon_code",
+                                               "removeCouponSelector": "#remove-coupon",
+                                               "applyButton": "button.action.apply",
+                                               "cancelButton": "button.action.cancel"}}'>
+            <div class="fieldset coupon<?= $hasCouponCode ? ' applied' : '' ?>">
+                <input type="hidden" name="remove" id="remove-coupon" value="0" />
+                <div class="field">
+                    <label for="coupon_code" class="label">
+                        <span><?= $block->escapeHtml(__('Entrez le code de réduction')) ?></span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               class="input-text"
+                               id="coupon_code"
+                               name="coupon_code"
+                               value="<?= $block->escapeHtmlAttr($block->getCouponCode()) ?>"
+                               placeholder="<?= $block->escapeHtmlAttr(__('Entrez le code de réduction')) ?>"
+                                <?php if ($hasCouponCode): ?>
+                                   disabled="disabled"
+                                <?php endif; ?>
+                        />
+                    </div>
+                </div>
+                <?php if ($hasCouponCode): ?>
+                    <!-- Removed discount-info section to hide additional details -->
+                <?php endif; ?>
+                <div class="actions-toolbar">
+                    <?php if (!$hasCouponCode): ?>
+                    <div class="primary">
+                        <button class="action apply primary" type="button"
+                                value="<?= $block->escapeHtmlAttr(__('Appliquer le Code de Réduction')) ?>">
+                            <span><?= $block->escapeHtml(__('Appliquer le Code de Réduction')) ?></span>
+                        </button>
+                    </div>
+                    <?php else: ?>
+                        <div class="primary">
+                            <button  type="button" class="action cancel primary"
+                                     value="<?= $block->escapeHtmlAttr(__('Annuler le bon de réduction')) ?>">
+                                <span><?= $block->escapeHtml(__('Annuler le bon de réduction')) ?></span>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Mab_CheckoutCustomization/js/discount-info": {
+                "hasCoupon": <?= $hasCouponCode ? 'true' : 'false' ?>,
+                "couponCode": "<?= $hasCouponCode ? $block->escapeJs($block->getCouponCode()) : '' ?>"
+            }
+        }
+    }
+</script>
+<style>
+    /* Removed styles for discount-info section */
+</style>
+<?php endif; ?>

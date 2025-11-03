@@ -1,0 +1,160 @@
+/**
+ * MAB Visual Effects - Admin Configuration Styles
+ * Professional UI/UX enhancements for admin interface
+ */
+
+/* Admin Section Header Styling */
+.mab-admin-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.mab-admin-section .section-config-title {
+    background: transparent !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+/* Admin Icons */
+.mab-admin-icon {
+    font-size: 16px;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+/* Form Field Enhancements */
+.mab-config-toggle select,
+.mab-config-select select {
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.mab-config-toggle select:focus,
+.mab-config-select select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.mab-config-input input[type="text"],
+.mab-config-input textarea {
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.mab-config-input input[type="text"]:focus,
+.mab-config-input textarea:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+/* Group Headers */
+.config-nav .mab-admin-icon {
+    color: #667eea;
+}
+
+/* Success/Error States */
+.mab-config-success {
+    border-left: 4px solid #28a745;
+    background: #d4edda;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.mab-config-error {
+    border-left: 4px solid #dc3545;
+    background: #f8d7da;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.mab-config-warning {
+    border-left: 4px solid #ffc107;
+    background: #fff3cd;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* License Status Styling */
+.mab-license-active {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.mab-license-inactive {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .mab-admin-section {
+        margin: 10px 0;
+        border-radius: 4px;
+    }
+    
+    .mab-admin-icon {
+        font-size: 14px;
+        margin-right: 6px;
+    }
+}
+
+/* Animation Effects */
+.mab-config-toggle select,
+.mab-config-select select,
+.mab-config-input input,
+.mab-config-input textarea {
+    animation: mab-fadeIn 0.3s ease-out;
+}
+
+@keyframes mab-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced Tooltips */
+.mab-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.mab-tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    animation: mab-tooltipFade 0.2s ease-in;
+}
+
+@keyframes mab-tooltipFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

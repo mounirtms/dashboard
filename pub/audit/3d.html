@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional 3D Rendering Software Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- 
+    Chosen Palette: Professional Corporate (Base: #F8F9FA, Text: #212529, Primary Accent: #D9232D (from logo), Secondary: #6C757D)
+    Application Structure Plan: Implemented a professional top navigation bar containing the company logo and report title for a more branded, corporate feel. The core tab-based navigation remains for intuitive content exploration. The UI has been refreshed with a cleaner color scheme, improved spacing, and refined card designs to enhance professionalism and readability.
+    Visualization & Content Choices: Report Info: Logo -> Goal: Branding -> Viz/Presentation: Image in top navigation bar -> Interaction: None -> Justification: Establishes a professional identity for the report. Report Info: Comparative metrics -> Goal: Enhance Professionalism & Clarity -> Viz/Presentation: Grouped Horizontal Bar Chart -> Interaction: Hover tooltips, legend filtering -> Justification: A bar chart provides a clearer, more direct comparison of metrics across multiple items than a radar chart, improving analytical capability.
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: #212529;
+        }
+
+        .nav-btn {
+            transition: all 0.3s ease;
+            color: #6C757D;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            padding-bottom: 0.5rem;
+        }
+
+        .nav-btn.active {
+            color: #D9232D;
+            border-bottom-color: #D9232D;
+        }
+
+        .nav-btn:hover:not(.active) {
+            color: #212529;
+        }
+
+        .content-panel {
+            display: none;
+        }
+
+        .content-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            height: 600px;
+            max-height: 75vh;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+            border: 1px solid #E9ECEF;
+        }
+
+        .icon {
+            margin-right: 0.75rem; 
+            font-size: 1.1rem; 
+            color: #D9232D; 
+            width: 20px; 
+            text-align: center;
+        }
+    </style>
+</head>
+
+
+
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img src="https://technostationery.com/media/logo/default/logo_techno.png" alt="Techno Logo"
+                    class="h-10">
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800 hidden sm:block">3D Rendering Software Analysis
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+
+        <header class="text-center mb-10">
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">An interactive report comparing leading 3D rendering
+                tools. Use the navigation to explore a high-level comparison or dive into detailed reviews of each
+                software.</p>
+        </header>
+
+        <nav id="navigation" class="flex flex-wrap justify-center gap-4 md:gap-8 mb-12 border-b border-gray-200">
+            <button data-tab="comparison" class="nav-btn font-semibold py-2 px-3">⭐ Overview</button>
+            <button data-tab="blender" class="nav-btn font-semibold py-2 px-3">Blender</button>
+            <button data-tab="light-tracer" class="nav-btn font-semibold py-2 px-3">Light Tracer</button>
+            <button data-tab="v-ray" class="nav-btn font-semibold py-2 px-3">V-Ray</button>
+            <button data-tab="keyshot" class="nav-btn font-semibold py-2 px-3">KeyShot</button>
+            <button data-tab="maverick" class="nav-btn font-semibold py-2 px-3">Maverick</button>
+            <button data-tab="substance" class="nav-btn font-semibold py-2 px-3">Substance 3D</button>
+        </nav>
+
+        <main id="content-container">
+            <!-- Comparison Panel -->
+            <div id="comparison-panel" class="content-panel">
+                <section class="mb-16">
+                    <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Visual Feature Comparison</h2>
+                    <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">This chart compares each tool across key
+                        performance metrics. Longer bars indicate a higher score in the respective category. Click a
+                        metric in the legend to toggle its visibility.</p>
+                    <div class="card overflow-x-auto">
+                        <div class="chart-container">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h2 class="text-3xl font-bold text-center mb-10 text-gray-800">Executive Summary & Recommendations
+                    </h2>
+                    <div class="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div class="card border-t-4 border-red-600">
+                            <h3 class="font-bold text-xl mb-2 text-gray-900">Best All-in-One Free Suite</h3>
+                            <p class="text-gray-700"><strong>Blender</strong> is the top choice for anyone needing a
+                                complete 3D pipeline for free. Its combination of modeling, sculpting, and powerful Cycles/Eevee renderers is unmatched by any other open-source tool, but be prepared for a steep
+                                learning curve.</p>
+                        </div>
+                        <div class="card border-t-4 border-blue-600">
+                            <h3 class="font-bold text-xl mb-2 text-gray-900">Best for Web Accessibility</h3>
+                            <p class="text-gray-700"><strong>Light Tracer Render</strong> remains the leader for ease of
+                                access. Its powerful, WebGPU-based platform allows users to create stunning renders from
+                                any modern device, making it perfect for beginners and those who need flexibility.</p>
+                        </div>
+                        <div class="card border-t-4 border-purple-600">
+                            <h3 class="font-bold text-xl mb-2 text-gray-900">Best for Product Design</h3>
+                            <p class="text-gray-700">For speed and ease-of-use in product visualization, <strong>KeyShot</strong> and <strong>Maverick Render</strong> excel. KeyShot offers broader CAD integration, while Maverick provides a streamlined, artist-friendly experience.</p>
+                        </div>
+                        <div class="card border-t-4 border-green-600">
+                            <h3 class="font-bold text-xl mb-2 text-gray-900">Best for Material Creation</h3>
+                            <p class="text-gray-700"><strong>Substance 3D</strong> is the unequivocal recommendation for
+                                professional material and texture authoring. It is the industry standard for creating
+                                realistic assets for games, film, and design.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Tool Panels -->
+            <div id="blender-panel" class="content-panel card max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Blender</h2>
+                <p class="mb-8 text-gray-600">A complete, free, and open-source 3D creation suite. It integrates the entire 3D pipeline, from modeling and sculpting to final rendering and compositing, making it a uniquely powerful all-in-one tool.</p>
+                <div class="grid md:grid-cols-2 gap-x-12 gap-y-8">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-star"></i>Key Features</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Dual Render Engines: Cycles for high-end, photorealistic path tracing and Eevee for production-quality real-time rendering.</li>
+                            <li>Advanced modeling, digital sculpting, and UV mapping tools.</li>
+                            <li>Grease Pencil for a full 2D animation pipeline within a 3D environment.</li>
+                            <li>Powerful node-based compositor and video editor built-in.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-up"></i>Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Completely free with no licensing fees for commercial or personal use.</li>
+                            <li>Extremely versatile; capable of handling nearly any 3D task from start to finish.</li>
+                            <li>Massive, active community providing endless tutorials, assets, and support.</li>
+                            <li>Rapid, open development cycle with frequent feature-rich updates.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-down"></i>Weaknesses</h3>
+                        <p class="text-gray-700">The comprehensive feature set results in a notoriously steep learning curve. The user interface can be intimidating for those accustomed to other 3D software.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-bullseye"></i>Best For</h3>
+                        <p class="text-gray-700">Indie developers, students, freelancers, and studios seeking a powerful, cost-effective, and complete 3D pipeline without licensing constraints.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-dollar-sign"></i>Pricing</h3>
+                        <p class="text-gray-700"><strong>Free</strong> and open-source, forever.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-globe"></i>Website</h3>
+                        <a href="https://www.blender.org" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:text-red-800 transition-colors">blender.org</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="v-ray-panel" class="content-panel card max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">V-Ray</h2>
+                <p class="mb-8 text-gray-600">A production-proven, Academy Award-winning rendering engine. It functions as a plugin for major 3D applications and is the industry standard for photorealism in architecture, design, and VFX.</p>
+                <div class="grid md:grid-cols-2 gap-x-12 gap-y-8">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-star"></i>Key Features</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Integrates with 3ds Max, Maya, SketchUp, Rhino, Cinema 4D, and more.</li>
+                            <li>Hybrid CPU and GPU+CPU rendering for speed and flexibility.</li>
+                            <li>Chaos Cosmos: A vast, curated library of high-quality 3D assets.</li>
+                            <li>Includes Chaos Vantage for real-time scene exploration and Chaos Cloud for one-click cloud rendering.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-up"></i>Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Unmatched photorealism and physical accuracy, trusted by top studios.</li>
+                            <li>Highly scalable with distributed rendering for massive scenes.</li>
+                            <li>Deep feature set for controlling every aspect of the final image.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-down"></i>Weaknesses</h3>
+                        <p class="text-gray-700">High subscription cost can be a barrier for freelancers. The extensive settings can be complex to master for optimal performance.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-bullseye"></i>Best For</h3>
+                        <p class="text-gray-700">Professional architectural visualization, automotive rendering, high-end advertising, and television/film visual effects.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-dollar-sign"></i>Pricing</h3>
+                        <p class="text-gray-700">Subscription-based. V-Ray Premium starts at <strong>$699/year</strong>.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-globe"></i>Website</h3>
+                        <a href="https://www.chaos.com/vray" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:text-red-800 transition-colors">chaos.com/vray</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="light-tracer-panel" class="content-panel card max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Light Tracer Render</h2>
+                <p class="mb-8 text-gray-600">A physically-based GPU renderer with a revolutionary web version powered by WebGPU, enabling fast, photorealistic results directly in your browser without installation.</p>
+                <div class="grid md:grid-cols-2 gap-x-12 gap-y-8">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-star"></i>Key Features</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Real-time PBR rendering with instant feedback on scene adjustments.</li>
+                            <li>Web-based platform runs on any modern device with a supported browser.</li>
+                            <li>Advanced lighting (HDRI, mesh lights) and AI-accelerated denoising.</li>
+                            <li>Also available as a standalone desktop application for Windows and macOS.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-up"></i>Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Incredibly accessible; no installation or powerful hardware required for the web version.</li>
+                            <li>Extremely user-friendly interface, ideal for beginners.</li>
+                            <li>Fast performance on both NVIDIA and AMD GPUs.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-down"></i>Weaknesses</h3>
+                        <p class="text-gray-700">Less mature for complex animation or VFX pipelines compared to established tools. Web version is dependent on browser WebGPU support and performance.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-bullseye"></i>Best For</h3>
+                        <p class="text-gray-700">Quick product mockups, concept art, 3D model showcasing, and users needing a powerful renderer on-the-go or on less powerful machines.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-dollar-sign"></i>Pricing</h3>
+                        <p class="text-gray-700">Generous free version available. Pro subscription for advanced features starts at <strong>$14/month</strong>.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-globe"></i>Website</h3>
+                        <a href="https://lighttracer.org/" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:text-red-800 transition-colors">lighttracer.org</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="keyshot-panel" class="content-panel card max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">KeyShot</h2>
+                <p class="mb-8 text-gray-600">A powerful, standalone 3D rendering and animation software known for its speed, ease of use, and laser focus on product design visualization.</p>
+                <div class="grid md:grid-cols-2 gap-x-12 gap-y-8">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-star"></i>Key Features</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Real-time ray tracing in a simple, intuitive workflow.</li>
+                            <li>Extensive library of over 700 scientifically accurate material presets.</li>
+                            <li>Advanced tools like Material Graph, Geometry Editor, and Physics Simulation.</li>
+                            <li>Powerful animation system for creating product explainers and marketing visuals.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-up"></i>Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Unmatched ease of use; go from CAD model to photorealistic render in minutes.</li>
+                            <li>Tight, seamless integration with all major CAD formats (SolidWorks, Rhino, etc.).</li>
+                            <li>Produces stunningly realistic results with minimal setup.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-down"></i>Weaknesses</h3>
+                        <p class="text-gray-700">Very high subscription cost. Less suited for organic environment or character rendering compared to general-purpose tools.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-bullseye"></i>Best For</h3>
+                        <p class="text-gray-700">Product designers, industrial engineers, and marketing teams who need to create high-quality visuals from CAD data quickly and efficiently.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-dollar-sign"></i>Pricing</h3>
+                        <p class="text-gray-700">Subscription-based. KeyShot Pro starts at <strong>$1,188/year</strong>.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-globe"></i>Website</h3>
+                        <a href="https://www.keyshot.com/" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:text-red-800 transition-colors">keyshot.com</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="maverick-panel" class="content-panel card max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Maverick Render</h2>
+                <p class="mb-8 text-gray-600">A GPU-accelerated, physically-based renderer designed for product designers and jewelers to create high-quality visuals with an intuitive, interactive workflow.</p>
+                <div class="grid md:grid-cols-2 gap-x-12 gap-y-8">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-star"></i>Key Features</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Proprietary, unbiased spectral GPU render engine for high fidelity.</li>
+                            <li>Interactive "Fire" render preview for real-time feedback.</li>
+                            <li>Drag-and-drop material library with native Adobe Substance support.</li>
+                            <li>Specialized tools like Turntable and Lightbox for studio setups.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-up"></i>Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Extremely user-friendly and artist-centric, ideal for non-experts.</li>
+                            <li>Optimized for speed and quality in product and jewelry rendering.</li>
+                            <li>Offers perpetual licenses, a rarity in the current market.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-down"></i>Weaknesses</h3>
+                        <p class="text-gray-700">Niche focus makes it less suitable for general 3D tasks. Windows-only platform limits accessibility for macOS users.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-bullseye"></i>Best For</h3>
+                        <p class="text-gray-700">Jewelry designers, product photographers, and engineers needing fast, high-quality "drag and drop" renders with minimal technical overhead.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-dollar-sign"></i>Pricing</h3>
+                        <p class="text-gray-700">Offers perpetual licenses. Maverick Studio is <strong>~€500</strong>.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-globe"></i>Website</h3>
+                        <a href="https://maverickrender.com/" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:text-red-800 transition-colors">maverickrender.com</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="substance-panel" class="content-panel card max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Substance 3D</h2>
+                <p class="mb-8 text-gray-600">The industry-standard suite of tools for creating, texturing, and authoring 3D materials. It is a foundational part of modern texturing pipelines for games, film, and design.</p>
+                <div class="grid md:grid-cols-2 gap-x-12 gap-y-8">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-star"></i>Key Features</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>Designer:</strong> Powerful node-based tool for creating procedural materials from scratch.</li>
+                            <li><strong>Painter:</strong> Intuitive 3D painting and texturing application.</li>
+                            <li><strong>Sampler:</strong> Creates high-quality materials from real-world photos.</li>
+                            <li><strong>Stager:</strong> Scene layout and rendering environment for showcasing assets.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-up"></i>Strengths</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Unmatched power and flexibility for creating any conceivable material.</li>
+                            <li>Seamless integration with most major 3D software and game engines.</li>
+                            <li>Access to a vast library of high-quality, tweakable assets via Substance 3D Assets.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-thumbs-down"></i>Weaknesses</h3>
+                        <p class="text-gray-700">It is a material authoring suite, not a dedicated production renderer. The node-based workflow in Designer has a steep learning curve.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-bullseye"></i>Best For</h3>
+                        <p class="text-gray-700">Professional texture artists, material artists, and game developers who require the most powerful and flexible tools for creating realistic PBR materials.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-dollar-sign"></i>Pricing</h3>
+                        <p class="text-gray-700">Subscription-based. The Substance 3D Collection plan starts at <strong>$49.99/month</strong>.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3 flex items-center"><i class="icon fas fa-globe"></i>Website</h3>
+                        <a href="https://www.adobe.com/products/substance3d.html" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:text-red-800 transition-colors">adobe.com/products/substance3d</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-16 py-8 border-t border-gray-200">
+            <p class="text-gray-500 text-sm">Interactive Report Enhanced by Gemini</p>
+            <p class="text-gray-400 text-xs mt-1">Last Updated: October 2, 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navigation = document.getElementById('navigation');
+            const contentPanels = document.querySelectorAll('.content-panel');
+            const navButtons = document.querySelectorAll('.nav-btn');
+
+            let chartInstance = null;
+
+            function showTab(tabId) {
+                navButtons.forEach(button => {
+                    button.classList.remove('active');
+                    if (button.dataset.tab === tabId) {
+                        button.classList.add('active');
+                    }
+                });
+
+                contentPanels.forEach(panel => {
+                    if (panel.id === `${tabId}-panel`) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            }
+
+            navigation.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON' && e.target.dataset.tab) {
+                    showTab(e.target.dataset.tab);
+                }
+            });
+
+            function createOrUpdateChart() {
+                const ctx = document.getElementById('comparisonChart')?.getContext('2d');
+                if (!ctx) return;
+
+                const chartData = {
+                    labels: ['Blender', 'Light Tracer', 'V-Ray', 'KeyShot', 'Maverick', 'Substance 3D'],
+                    datasets: [
+                        {
+                            label: 'Cost-Effectiveness', // Free > Perpetual > Subscription
+                            data: [5, 4, 2, 1, 3, 3],
+                            backgroundColor: '#4682B4',
+                        },
+                        {
+                            label: 'Ease of Use', // Higher is easier
+                            data: [2, 5, 3, 4, 5, 2],
+                            backgroundColor: '#5F9EA0',
+                        },
+                        {
+                            label: 'Rendering Quality & Speed', // Higher is better
+                            data: [5, 4, 5, 4, 4, 1],
+                            backgroundColor: '#6495ED',
+                        },
+                        {
+                            label: 'Platform & Integration', // Higher is more accessible/integrated
+                            data: [4, 5, 5, 4, 2, 5],
+                            backgroundColor: '#6A5ACD',
+                        },
+                        {
+                            label: 'Pipeline Versatility', // Higher is more versatile
+                            data: [5, 2, 4, 3, 2, 4],
+                            backgroundColor: '#483D8B',
+                        }
+                    ]
+                };
+
+                const chartConfig = {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                stacked: false,
+                                grid: {
+                                    drawOnChartArea: true,
+                                    color: '#E9ECEF',
+                                },
+                                ticks: {
+                                    color: '#6C757D',
+                                    precision: 0,
+                                    max: 5,
+                                    stepSize: 1
+                                }
+                            },
+                            y: {
+                                stacked: false,
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                ticks: {
+                                    color: '#212529',
+                                    font: {
+                                        weight: '500'
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                align: 'center',
+                                labels: {
+                                    font: { size: 14 },
+                                    color: '#212529',
+                                    padding: 25
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#212529',
+                                titleFont: { weight: 'bold' },
+                                bodyFont: { size: 13 },
+                                cornerRadius: 4,
+                                callbacks: {
+                                    label: function (context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.x !== null) {
+                                            label += context.parsed.x + ' / 5';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+                chartInstance = new Chart(ctx, chartConfig);
+            }
+
+            showTab('comparison');
+            createOrUpdateChart();
+        });
+    </script>
+</body>
+
+</html>

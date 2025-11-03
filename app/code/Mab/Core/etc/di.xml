@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    
+    <type name="Mab\Core\Model\License\Service">
+        <arguments>
+            <argument name="cacheFrontendPool" xsi:type="object">Magento\Framework\Cache\Frontend\Pool</argument>
+        </arguments>
+    </type>
+    
+    <type name="Magento\Framework\Module\Manager">
+        <plugin name="mab_core_module_output_enablement" 
+                type="Mab\Core\Plugin\Framework\Module\ModuleOutputEnablement" 
+                sortOrder="10"/>
+    </type>
+
+    <!-- Cache configuration -->
+    <type name="Magento\Framework\View\Element\Template">
+        <plugin name="mab_core_template_cache" 
+                type="Mab\Core\Plugin\View\Element\TemplateCaching" 
+                sortOrder="10"/>
+    </type>
+
+    <type name="Magento\Framework\View\Element\Html\Calendar">
+        <plugin name="mab_core_calendar_fix" 
+                type="Mab\Core\Plugin\Framework\View\Element\Html\CalendarPlugin" 
+                sortOrder="20"/>
+    </type>
+
+    <type name="Magento\Framework\App\Cache\Type\FrontendPool">
+        <arguments>
+            <argument name="typeFrontendMap" xsi:type="array">
+                <item name="mab_config" xsi:type="string">Magento\Framework\Cache\Frontend\Decorator\TagScope</item>
+                <item name="mab_delivery" xsi:type="string">Magento\Framework\Cache\Frontend\Decorator\TagScope</item>
+                <item name="mab_customer" xsi:type="string">Magento\Framework\Cache\Frontend\Decorator\TagScope</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Disable Magefan popup messages -->
+    <type name="Magento\Framework\Message\Manager">
+        <plugin name="mab_core_disable_magefan_popup" 
+                type="Mab\Core\Plugin\DisableMagefanPopup" 
+                sortOrder="10"/>
+    </type>
+
+    <!-- Global configuration caching -->
+    <preference for="Mab\Core\Api\CacheableInterface" type="Mab\Core\Model\Config\Data"/>
+</config>

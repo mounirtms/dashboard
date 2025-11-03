@@ -1,0 +1,27 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+// If this is an invoice template, you can also use $this->getInvoice() or $this->getShipment() for shipment templates. Make sure to define it in the {{block}} call in your PDF template using invoice=$invoice.entity_id and shipment=$shipment.entity_id
+// You must load the invoice/shipment then
+$orderId = $this->getOrder();
+$order = $objectManager->get('\Magento\Sales\Model\OrderFactory')->create()->load($orderId);
+// Or if used within ##items_start## and ##items_end## you can get the current item like this: $item = $this->getItem();
+
+/*$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$orderItemId = $this->getItem();
+$item = $objectManager->create('Magento\Sales\Model\Order\ItemFactory')->create()->load($orderItemId);
+if ($item->getParentItem()) {
+    $parentId = $item->getParentItem()->getProductId();
+    $product = $objectManager->create('Magento\Catalog\Model\Product')->load($parentId);
+    if ($product->getId() && $product->getData('some_attribute') == 'test') {
+        echo "Hello!";
+    }
+}*/
+
+// If this is a PRODUCT template (so not orders/invoices/.. but for pdf catalogs/product PDFs), you can also use $this->getProduct(). Make sure to define it in the {{block}} call in your PDF template using product=$product
+// {{block class="Magento\Backend\Block\Template" template="Xtento_PdfCustomizer::custom_block/sample.phtml" area="adminhtml" product=$product}}
+// Then in this file use: $product = $this->getProduct();
+?>
+
+This is a test. Order Number: <?php echo $order->getIncrementId(); ?><br/>
+<br/>
+Use this as a sample to write custom PHP logic and embed it in your PDF templates.

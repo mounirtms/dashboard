@@ -1,0 +1,487 @@
+Xtento_PdfCustomizer
+
+-------------
+  CHANGELOG
+-------------
+
+===== 2.2.5 =====
+ * Initial stable M2 release
+
+===== 2.2.6 =====
+ + Added 2nd simple template
+
+===== 2.2.7 =====
+ + Added basic product template
+ * Improved multi-store functionality
+
+===== 2.2.8 =====
+ * Various fixes
+
+===== 2.2.9 =====
+ * Product attributes output proper values now
+
+===== 2.3.0 =====
+ * Bugfix for "store depends" variables
+
+===== 2.3.1 =====
+ + Added billing_if and shipping_if variables that can be used with "depends" for example "depends billing.fax"
+
+===== 2.3.2 =====
+ + Added new theme: Stylish (Variant 1)
+ + Added ability to save backup copies of generated PDFs as well as read the backup copies if an order/invoice/... is re-printed
+ + Added ability to access billing and shipping.country_name
+ * Fixed order/invoice date being wrong
+ * Fixed customer details being empty for non-order PDFs (invoice PDF, etc.)
+
+===== 2.3.3 =====
+ + Established compatibility with Magento 2.3
+ + Added new theme: Stylish (Variant 2)
+ + Added new theme: Design
+ + Added new catalog/product theme: Design
+ + Added "Default Template" option when printing multiple documents from Sales grids. Correct template is automatically selected, based on store, etc.
+ + Added ability to sort products on order/invoice/... PDFs, see support wiki
+ * Updated theme: Stylish (Variant 1) - Using full page width now
+ * [2.3] Restored "Catalog > Products" mass action
+ * Various small improvements
+
+===== 2.3.4 =====
+ * Improved compatibility with Magento 2.1/2.2
+ * [2.3] Fixed email sending/attachments
+ * Composer fix
+
+===== 2.3.5 =====
+ + Added ability to select PDF template when printing from within orders view
+ + Added ability to add custom variables to $transport using event xtento_pdfcustomizer_build_transport_after
+ * Fixed mass actions not being usable for restricted admins
+
+===== 2.3.6 =====
+ * Fixed issue where product attributes didn't show proper text but instead option ID
+
+===== 2.3.7 =====
+ + Added ability to toggle whether template is default/not default from "PDF Templates" grid
+ * Removed mass action from "Customers" grid (wasn't supposed to be there)
+ * Improved filename generation when printing in bulk from Sales grids
+ * Fixed redirects when there are no printable documents for bulk prints
+
+===== 2.3.8 =====
+ + Added support for multiple tax rate environments: All tax rates/amounts are now shown in totals section
+
+===== 2.3.9 =====
+ * Fixed issue with code editor/preview functionality in production mode
+
+===== 2.4.0 =====
+ * Fixed issue with deployment process causing composer versions of this module to have broken javascript files
+
+===== 2.4.1 =====
+ * Fixed an issue that could sometimes happen during invoice creation ("Warning: Invalid argument supplied for foreach() in [...]/Order/Invoice/Relation.php on line 60")
+
+===== 2.4.2 =====
+ * Fixed error when customer has been deleted: "No such entity with customerId = 1234"
+
+===== 2.4.3 =====
+ * Important fix for product PDFs: Editing a product at Catalog > Products could cause unwanted store views switching.
+
+===== 2.4.4 =====
+ * Fixed localization in multi-store environments
+ * Fix for simple2 theme that caused header to overlap
+ * Improved memory usage when editing template/previewing variables
+
+===== 2.4.5 =====
+ + Added new feature for "attachment" PDF type: Upload static PDF file
+ + Added ability to access order gift message: {{var giftmessage.message}}
+ * Attachment file type: Removed variables and preview section
+ * Improved default values when creating template from scratch
+ * Fixed a bug when no template was set up for an entity such as orders
+ * Improved printing from within order to return correct PDF template and offer all available PDF templates
+ * Fixed frontend "Print" link that printed the page simply in some browsers and not the PDF
+ * Improved ACL / permissions to something that makes more sense. Mass actions are now usable without access to "Manage PDF Templates"
+
+===== 2.4.6 =====
+ + Added color picker to make color changes easier
+ * Improved attachment settings; shows currently uploaded file now
+
+===== 2.4.7 =====
+ * Fixed ACL for "Print Catalog" mass action
+
+===== 2.4.8 =====
+ + Added support for "media" variables in PDFs to retrieve and embed images from the "media" folder
+
+===== 2.4.9 =====
+ + Added ability to output multiple item blocks (##items_start##..##items_end##) within one document
+ + Added ability to access information of configurable product "child" product: child_item, child_order_item, child_order_item_product
+ * Fixed potential issue for mostly empty templates that don't utilize item variables
+
+===== 2.5.0 =====
+ * Fixed potential problem for items_start/items_end processing
+
+===== 2.5.1 =====
+ * Bugfix release for items/tax_rates areas
+
+===== 2.5.2 =====
+ + Added sample HTML template that can be embedded in PDF templates to realize custom if/then/else or PHP logic, see wiki for more details
+
+===== 2.5.3 =====
+ * Tax rate title for order templates is now the percentage, same as for invoice templates
+
+===== 2.5.4 =====
+ * Removed "Print PDF" button when creating a new product
+ * Thumbnails/images are resized now, making files much smaller
+
+===== 2.5.5 =====
+ * "Default Template" option (when printing from Sales grids) is only shown when there is more than 1 template
+ * Fixed tax information in tax rates section being wrong when using different currency than base currency
+ * Fix for hide_parent_items/
+ + Added "item.bundle_name" variable that contains bundle item options including the item name
+
+===== 2.5.6 =====
+ + Added ability to output base currency formatted variables: custom_order.base_grand_total is formatted in base currency now
+ * Fixed issues with Magento 2.1 or older
+
+===== 2.5.7 =====
+ * Improved support for other charsets such as Chinese, etc.
+
+===== 2.5.8 =====
+ + Added ability to access "parent_item" information using variables
+
+===== 2.5.9 =====
+ * Updated mpdf to version 8 and added mpdf/qrcode library
+
+===== 2.6.0 =====
+ * Fixed issue with i18n/translation file generation
+
+===== 2.6.1 =====
+ * [Magento >=2.2.8 && <2.3.0]: Fixed email attachments
+
+===== 2.6.2 =====
+ * Fixed issue for variable chooser when a customer doesn't exist (anymore) in Magento
+
+===== 2.6.3 =====
+ + Added ability to output page footer on every page of multi-sided documents (due to lots of items, for example): https://support.xtento.com/wiki/Magento_2_Extensions:PDF_Customizer#Footer:_Output_on_every_page_of_long_documents
+
+===== 2.6.4 =====
+ + Added ability to add custom fonts / manipulate the Mpdf configuration using events: https://support.xtento.com/wiki/Magento_2_Extensions:PDF_Customizer#Customizing_MPDF_config.3B_adding_custom_fonts
+ + Added ability to output product options (size, color, etc.): {{var item.product_options_formatted}}
+ * Fixed issue for order_item_product attributes not being in correct language/store view under certain conditions
+
+===== 2.6.5 =====
+ * Billing/shipping address template is now read from "Customer > Customer Configuration > Address Templates > PDF"
+ * Fixed issue for product options output
+
+===== 2.6.6 =====
+ + Added ability to output tracking numbers: https://support.xtento.com/wiki/Magento_2_Extensions:PDF_Customizer#Outputting_tracking_numbers_of_shipments_on_orders.2Finvoices.2Fshipments.2F...
+
+===== 2.6.7 =====
+ * Fix for billing/shipping address formatting
+
+===== 2.6.8 =====
+ + Added (in some cases) missing total fields for invoice exports
+ * Updated Xtento_XtCore to version 2.5.0
+
+===== 2.6.9 =====
+ * Fixed an issue for certain special attributes that could lead to "array to string conversion" exceptions/warnings
+
+===== 2.7.0 ====
+ + Improvement: If there is just one template defined for an entity such as orders, clicking that "Print" button in the sales orders grid will immediately print THAT template, reducing required clicks.
+
+===== 2.7.1 =====
+ + For "Customer" attributes added using our Order & Customer Attributes extension the option text is shown now
+
+===== 2.7.2 =====
+ * Fixed an issue for images/thumbnails not showing in certain environments, especially when PDF is generated in frontend
+
+===== 2.7.3 =====
+ + Added ability to export further product images, the path is returned so you have to wrap it in an "img" tag and specify the max-size: {{var product.custom_image_0}} etc.
+
+===== 2.7.4 =====
+ + Added ability to disable default Magento built-in "Print Invoice" etc. bulk actions, as those are not used anymore usually when our extension is installed. Enabled by default.
+ + Added ability for setting "outputFooterOnEveryPage" to be used for product PDFs as well
+ * Fixed an issue when importing PDF templates from other stores with different store IDs
+
+===== 2.7.5 =====
+ * Fixed custom_item.tax_percent field being formatted wrong
+
+===== 2.7.6 =====
+ + Added "item.is_last_item" variable to check if you are outputting the last item in items_start/items_end loop. Helpful for page breaks except on the last page: {{if item.is_last_item}}{{else}}<pagebreak>{{/if}}
+ * Fixed issue if product has been deleted from catalog that was used in order/invoice/...
+ * Fixed error "Notice: Undefined index: actions"
+ * Fixed an issue where ##items_start## and ##items_end## was output in PDF sometimes
+
+===== 2.7.7 =====
+ * Fixed an issue when printing multiple documents at the same time where some information was mixed up under certain conditions ("variables don't reset")
+ * Fixed error: Uncaught Error: Call to a member function getPath() on null
+
+===== 2.7.8 =====
+ * Fixed: Printing from Invoices, Credit Memos and Shipments grid failed if only one template existed
+ * Fixed an issue where custom blocks could not be used when tax_rates block is also in the template
+
+===== 2.7.9 =====
+ + Added ability to get formatted (using formatted_ prefix) variables of: child_item, child_order_item, child_order_item_product, parent_order_item_product, parent_item, parent_order_item
+ * Date fields are now formatted according to store locale
+ * Improved "mode:visible" for displayed items
+ * Changed "custom_" variable prefix to "formatted_" as it makes more sense. To get a formatted variable, prepend it with "formatted_", not "custom_" anymore.
+
+===== 2.8.0 =====
+ + Completely revamped "show variables" feature to show the really available and formatted variables
+ + Added item variable "tax_amount_div_qty" that contains the tax amount per item (i.e. tax_amount divided by qty)
+ * Renamed "order.item." variable to "order_item."
+ * Renamed "order.custom_item." variable to "formatted_order_item."
+ * Renamed "order.custom_item_if." variable to "order_item_if."
+ * Renamed "order_custom_item_product." variable to "formatted_order_item_product."
+ * Renamed "order_custom_item_product_if." variable to "order_item_product_if."
+ * Renamed "addAttachment" function in TransportBuilder to avoid potential conflicts
+
+===== 2.8.1 =====
+ + Added option to remove default "Print" buttons in frontend (Print Order, Print Invoice, etc.). Enabled by default.
+ * Fixed an issue for order PDFs where tax rates with decimals where missing the decimals in the percentage
+ * Improved tax rate calculation for non-order PDFs such as invoice PDFs
+ * Module code updated to comply with Magento Coding Standard as of August 2019
+ * Removed silenced errors ("@function") entirely. Improved logging in such cases so those errors are logged/reported.
+ * Logging improvements
+
+===== 2.8.2 =====
+ + Added check if PHP "mbstring" extension is installed as module is not operational without it (but it's also a core requirement of Magento 2 - so should be installed anyways, but sometimes it's not!)
+
+===== 2.8.3 =====
+ * Fixed an issue for tax calculation logic in case fallback logic is used
+
+===== 2.8.4 =====
+ + Added event "xtento_pdfcustomizer_attachment_add_before" that can be used to manipulate PDF attachments added to emails. For example, to NOT add a PDF to an email if order field X is Y
+
+===== 2.8.5 =====
+ * Fixed item.bundle_name variable for shipment PDFs
+
+===== 2.8.6 =====
+ + Added support to export fields stored by Amasty Order Attributes.
+ * Improved if/depend fields: Any field that is not empty returns "true" for those fields now. So you can test "if order.some_field", and only if it's not null/empty, depends/if will apply.
+
+===== 2.8.7 =====
+ + Implemented Magento 2 default PDF totals renderers. Now, not every total block must be output manually but instead output it as described here: https://support.xtento.com/wiki/Magento_2_Extensions:PDF_Customizer#Rendering_totals (Old templates may need to be updated manually, take a look at our sample templates)
+ * Fixed an issue with if/depend fields matching 0.0000 numeric fields, which they shouldn't
+ * Improved compatibility with Amasty Order Attributes
+ * Fixed an issue with permissions/ACL where catalogs could not be printed by limited-admins from the products grid
+ * Fixed an issue where tax rates where retrieved incorrectly
+ * Updated Xtento_XtCore to version 2.7.0
+
+===== 2.8.8 =====
+ * Established compatibility with Magento 2.2.10 / 2.3.3
+ * Established compatibility with PHP 7.3
+ * Updated Xtento_XtCore to version 2.8.0
+ * Fixed error "Class argument is invalid" after Magento update (related to mass actions)
+ * Fixed email sending errors after Magento update
+ * Fixed an issue for totals renderers not displaying amount (for certain third party extensions adding custom total renderers)
+
+===== 2.8.9 =====
+ * Fix for total renderers: Tax wrong (hidden tax), 3rd-party renderers
+
+===== 2.9.0 =====
+ * Fixed ACL issue for non-admin users with regards to catalog/product PDFs
+
+===== 2.9.1 =====
+ * Tax total renderer showed a 0 amount tax for "others" even though there was no others tax renderer required
+
+===== 2.9.2 =====
+ * Fixed an issue where depend/if fields weren't working if the amount is negative
+
+===== 2.9.3 =====
+ * Fixed an issue where only one email with attachments was sent (Magento >=2.3.3)
+ * Fixed an issue with PDF attachments
+ * Established compatibility with Magento patch "EmailMessageInterface backward compatibility issue patch for Magento 2.3.3"
+
+===== 2.9.4 =====
+ * Disabled totals calculation for shipments, not required and could cause errors
+ * Performance improvements where totals/tax/tracking/item processors are only loaded if required
+
+===== 2.9.5 =====
+ + Added ability to upload letter head / stationery PDF as background PDF which is used as the background of your PDF Templates then
+
+===== 2.9.6 =====
+ * Fixed issue with parent items
+
+===== 2.9.7 =====
+ * Further protection against errors with broken order items
+
+===== 2.9.8 =====
+ + Added barcode variables for parent/child items
+
+===== 2.9.9 =====
+ * Fixed issue for virtual orders
+
+===== 2.10.0 =====
+ * Established compatibility with Amasty COD module (Fixed issue: An ID is needed. Set the ID and try again)
+ + Added variables base_row_total_incl_tax_final and row_total_incl_tax_final which is minus discount
+
+===== 2.10.1 =====
+ + Added ability to hide currency symbol from amounts output in PDF. Put <!-- hideCurrencySymbol=true --> into your template
+ * Fixed an issue when using "array" fields of billing/shipping address in the PDF template such as billing.street
+
+===== 2.10.2 =====
+ * When printing just one order/invoice/... from the grids, the filename including variables is used. When printing multiple objects, the "collection" filename (without variables, and date instead) is used
+ * When printing objects from within the order view, the correct filename including variables is now used.
+
+===== 2.10.3 =====
+ * Fixed an issue with barcode_CODE_order_item_product barcodes not showing
+ * Only show "Default Template" option when printing from within order if there is more than one template for that entity type.
+
+===== 2.10.4 =====
+ + Added ability to export date/comment stored by Amasty Single Step Checkout extension
+
+===== 2.10.5 =====
+ + WEEE/FPT total is now output in totals section of documents
+
+===== 2.10.6 =====
+ * Fix for stock level variable for product templates not working
+ * Fix for "Design Product" template (for products) where additional images weren't shown
+
+===== 2.10.7 =====
+ * Fixed an issue with Amasty Single Step Checkout extension comments exporting wrong
+
+===== 2.10.8 =====
+ * Removed unused/outdated tests
+
+===== 2.10.9 =====
+ * Fixed an issue where values for child_order_item_product variables were from the wrong store view
+
+===== 2.11.0 =====
+ * Updated Xtento_XtCore to version 2.9.0
+
+===== 2.11.1 =====
+ * Fixed an issue for new PDF Templates where "Show variables" buttons don't work.
+
+===== 2.11.2 =====
+ + Added ability to use payment related variables from sales_order_payment table in PDFs: payment, formatted_payment, payment_if
+
+===== 2.11.3 =====
+ + Established compatibility with Magento 2.3.5 (Warning about session function being deprecated)
+ * Fixed issue with "new template"/template wizard modal not opening
+
+===== 2.11.4 =====
+ + Added more sample code in "custom_block.phtml" sample file on how to access product/attributes for order items
+ * For the "Print PDF" button when viewing an order, only the relevant PDF templates are shown - those, were the "store view" matches the template configuration.
+
+===== 2.11.5 =====
+ + Added event "xtento_pdfcustomizer_build_item_transport_after" that is dispatched after item variables are built, use this to customize item variables
+ + Added sample code for "product" PDFs in custom_block.phtml
+ * Fixed an issue in case objects that don't exist are tried to be printed (non-existing invoices, etc.)
+ * Fixed an issue where the Print PDF button within orders showed the option to print invoices even though no invoice exists for that order
+ * If just one order template (applies to all entities) exist, no template name will be shown in the sales orders view when printing a PDF
+ * Fixed an issue if base_currency is not order_currency for grand total renderer where eventually the order currency amount was shown
+ * Enhanced child item detection to also support bundle products
+ * Fixed an issue where subtotal/shipping displayed excluding tax even though it should be including tax
+
+===== 2.11.6 =====
+ * Fixed an issue for single-store environments where the print button didn't show any PDF templates
+
+===== 2.11.7 =====
+ + Added ability to export item level gift message from/to/message
+
+===== 2.11.8 =====
+ * Fixed an error when trying to retrieve gift message
+
+===== 2.11.9 =====
+ * Fixed an issue where no attachments where added to emails, in case PDF templates were defined but none was marked as the default template ("fallback to all templates" now)
+
+===== 2.12.0 =====
+ * Fixed rare issue: "Class 'mPDF' not found"
+
+===== 2.12.1 =====
+ + Added uninstall script so bin/magento module:uninstall removes database tables
+ * Fixed an issue with a wrongly named class ("PrintPDF" instead of "PrintPdf") that lead to no plugins being attachable
+
+===== 2.12.2 =====
+ * Established compatibility with Magento 2.4.0 and 2.3.5-p2
+ * Established compatibility with PHP 7.4, dropped support for PHP 5.x
+ * Updated Xtento_XtCore to version 2.10.0
+ * Fixed an issue where invoice emails didn't get the PDF attachment if "Separate email" was chosen
+ * [M2.4] Fixed an issue where all email templates couldn't access order/invoice/... information
+
+===== 2.12.3 =====
+ * Background PDFs are output on every page now (even for documents that consist of more than 1 page)
+
+===== 2.12.4 =====
+ + Added ability to store PDF template/CSS in files for easier versioning. In your PDF HTML/CSS fields in your PDF template, simply provide the path to the HTML/CSS file, for example ./media/pdf/some_template.html -- the dot will automatically be replaced with the path of the Magento root directory, so the path you enter is always relative to the Magento root directory. Alternatively, you can also provide an absolute path.
+
+===== 2.12.5 =====
+ * Fixed PDF templates becoming unstyled
+
+===== 2.12.6 =====
+ + Added ability to remove background PDF files again after uploading them within the PDF Template
+
+===== 2.12.7 =====
+ * Fixed "Trying to access array offset on value of type null in .../PdfCustomizer/Helper/Variable/Formatted.php"
+
+===== 2.12.8 =====
+ + Added ability to get product thumbnail/small img "URL" so you can output the <img> yourself: <img src="{{var order_item_product.product_thumbnail_image_url}}" style="max-width: 25px"/> (Possible values: product_thumbnail_image_url, product_small_image_url, product_base_image_url)
+
+===== 2.12.9 =====
+ * Fixed an issue where extension related images/JS cannot be loaded in the Magento backend. This could cause the profile wizard to stop working.
+ * Updated Xtento_XtCore to version 2.11.0 ("Added Content Security Policy (CSP) support. XTENTO resources are whitelisted.")
+
+===== 2.13.0 =====
+ + Added ability to access invoice fields in credit memo templates
+
+===== 2.13.1 =====
+ + Added variable "order.all_comments_text" for order PDFs that show all comments (even "not visible on frontend")
+ + Added variable "store_view_name" that contains just the store view name.
+ * Fixed "comments_text" variable not working for order PDFs
+
+===== 2.13.2 =====
+ * Improved compatibility with PDF attachment extensions. Error message that was fixed: "Call to a member function getBody() on null"
+
+===== 2.13.3 =====
+ * Fixed an issue related to "qty" fields being rounded (even though qty can be a float too)
+ * Fixed an issue related to bundle products causing an error
+
+===== 2.13.4 =====
+ + Added "hide_qty_zero_items" item filter (see wiki) to hide items which have qty 0
+
+===== 2.13.5 =====
+ + Added ability to print invoice/credit memo from within order view in the backend, specifically in the invoice/credit memo grids when viewing an order
+
+===== 2.13.6 =====
+ * Updated Xtento_XtCore to version 2.12.0 ("Removed phpinfo from debug information section due to possibly sensitive information being disclosed")
+
+===== 2.13.7 =====
+ + Established compatibility with Magento 2.4.3 (Error: "Class Pelago\Emogrifier does not exist")
+
+===== 2.13.8 =====
+ * Re-release of version 2.13.7 due to upload issues
+
+===== 2.13.9 =====
+ * Confirmed compatibility with Magento 2.3.7-p1 / 2.4.2-p2 / 2.4.3
+
+===== 2.14.0 =====
+ * Fixed an issue for item sorting that didn't take into account store views/localization
+
+===== 2.14.1 =====
+ * Fixed: Country name always in English and not in current locale
+ * Established compatibility with Magento 2.3.7-p3 / 2.4.3-p2 / 2.4.4
+ * Established compatibility with PHP 8.1
+ * Updated Xtento_XtCore to version 2.13.0 ("PHP 8.1 compatibility")
+
+===== 2.14.2 =====
+ * Updated Xtento_XtCore to version 2.14.0 ("Further PHP 8.1 fixes")
+
+===== 2.14.3 =====
+ * Fixed an issue for translation of "totals" area (Tax, Grand Total, etc.)
+ * Further PHP 8.1 fixes
+
+===== 2.14.4 =====
+ * Converted database install scripts to db_schema.xml - please check this upgrade carefully and take a DB backup before upgrading
+ * Updated Xtento_XtCore to version 2.16.0
+ * Dropped support for Magento 2.2.x. Earliest supported version is 2.3.x now.
+
+===== 2.14.5 =====
+ * Fixed an issue for translation for PDFs
+ * Further PHP 8.1 fixes
+ * Established compatibility with Magento 2.4.5, 2.4.4-p1, 2.4.3-p3, 2.3.7-p4
+ * Updated Xtento_XtCore to version 2.17.0 ("Fixed error "Area code not set" during installation/upgrade")
+
+===== 2.14.6 =====
+ * Further PHP 8.1 fixes
+
+===== 2.14.7 =====
+ * Fixed: InvalidArgumentException: Argument 'value' must be type of string, object given.
+
+===== 2.14.8 =====
+ + Improved sample custom PHP phtml template/block
+ * Further PHP 8.1 fixes

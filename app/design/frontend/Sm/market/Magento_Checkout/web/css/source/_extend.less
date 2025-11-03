@@ -1,0 +1,55 @@
+/**
+ * Custom checkout modifications
+ * Fallback CSS to hide any remaining discount elements
+ * Primary hiding is handled by component replacement
+ */
+
+// Fallback CSS - only needed if component replacement fails
+.checkout-index-index {
+    // Hide any remaining discount blocks as fallback
+    .block.discount,
+    #block-discount,
+    .discount-coupon,
+    .coupon-form:not(.giftcard-form),
+    #discount-coupon-form,
+    [data-bind*="discount"]:not([data-bind*="giftcard"]) {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    // Ensure gift card components remain visible
+    .giftcard,
+    .gift-card,
+    .giftCardAccount,
+    [data-bind*="giftcard"],
+    [data-bind*="gift-card"],
+    [data-bind*="giftCardAccount"] {
+        display: block !important;
+        visibility: visible !important;
+    }
+}
+
+// Additional fallback selectors
+.checkout-summary-block {
+    .discount-coupon,
+    .coupon-form:not(.giftcard-form) {
+        display: none !important;
+    }
+}
+
+// Hide any remaining discount-related elements
+[class*="discount"]:not([class*="giftcard"]):not([class*="gift-card"]) {
+    .checkout-index-index & {
+        display: none !important;
+    }
+}
+
+// Ensure gift card elements remain visible
+[class*="giftcard"],
+[class*="gift-card"] {
+    .checkout-index-index & {
+        display: block !important;
+    }
+}

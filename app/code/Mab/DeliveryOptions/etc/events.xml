@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- Disabled: handled via Mageplaza TableRate plugin -->
+    <!--
+    <event name="carrier_collect_rates">
+        <observer name="mab_delivery_options_filter_shipping_methods" instance="Mab\DeliveryOptions\Observer\FilterShippingMethods" />
+    </event>
+    -->
+</config>

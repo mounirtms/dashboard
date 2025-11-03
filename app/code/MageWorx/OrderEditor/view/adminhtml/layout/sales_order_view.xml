@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="MageWorx_OrderEditor::css/ordereditor.css" />
+    </head>
+    <body>
+        <referenceBlock name="page.actions.toolbar">
+            <block class="MageWorx\OrderEditor\Block\Adminhtml\Sales\Order\Edit\DeleteOrderButton" as="delete_order_button" />
+        </referenceBlock>
+        <referenceBlock name="content">
+            <block class="MageWorx\OrderEditor\Block\Adminhtml\Sales\Order\Edit\Wrapper"
+                   template="MageWorx_OrderEditor::wrapper.phtml"
+                   name="mageworx_ordereditor_wrapper" />
+            <block class="Magento\Backend\Block\Template"
+                   name="comments_js"
+                   template="MageWorx_OrderEditor::order/view/comments/js.phtml" />
+        </referenceBlock>
+        <referenceBlock name="order_items">
+            <block class="MageWorx\OrderEditor\Block\Adminhtml\Sales\Order\Grid\Thumbnail"
+                   name="column_thumbnail"
+                   template="MageWorx_OrderEditor::grid/column/thumbnail.phtml"
+                   group="column" />
+        </referenceBlock>
+        <referenceBlock name="order_history">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">MageWorx_OrderEditor::order/view/comments.phtml</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>

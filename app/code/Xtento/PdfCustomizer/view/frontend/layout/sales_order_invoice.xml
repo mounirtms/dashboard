@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="invoice_items">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Xtento_PdfCustomizer::order/invoice/items.phtml</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>
+
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-02-19T17:03:40+00:00
+ * File:          view/frontend/layout/sales_order_invoice.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

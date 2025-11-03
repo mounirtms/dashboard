@@ -1,0 +1,85 @@
+<?php declare(strict_types=1);
+
+/**
+ * GoogleTagManager2 plugin for Magento
+ *
+ * @author      Yireo (http://www.yireo.com/)
+ * @copyright   Copyright (c) 2019 Yireo (http://www.yireo.com/)
+ * @license     Open Software License
+ */
+
+use Magento\Framework\View\Element\Template;
+use Yireo\GoogleTagManager2\ViewModel\Commons;
+
+/** @var Template $block */
+/** @var Commons $commons */
+$commons = $block->getCommonsViewModel();
+?>
+<script>
+    window.addEventListener('private-content-loaded', function(event) {
+        window.dataLayer = window.dataLayer || [];
+
+        var isEmpty = function (variable) {
+            if (typeof variable === 'undefined') {
+                return true;
+            }
+
+            if (Array.isArray(variable) && variable.length === 0) {
+                return true;
+            }
+
+            return typeof variable === 'object' && Object.keys(variable).length === 0;
+        }
+
+        var getSectionNames = function () {
+            return ['cart', 'customer'];
+        }
+
+        getSectionNames().forEach(function (sectionName) {
+            if (!event.detail.data[sectionName].gtm) {
+                return;
+            }
+
+            const attributes = event.detail.data[sectionName].gtm;
+            if (!Object.keys(attributes).length > 0) {
+                return;
+            }
+
+            yireoGoogleTagManager2Pusher(attributes, 'push (attributes) [script-additions.phtml]');
+        });
+
+        let attributes = {};
+        getSectionNames().forEach(function (sectionName) {
+            if (!event.detail.data[sectionName].gtm_events) {
+                return;
+            }
+
+            const gtmEvents = event.detail.data[sectionName].gtm_events;
+            for (const [eventId, eventData] of Object.entries(gtmEvents)) {
+                yireoGoogleTagManager2Logger('found event in section "' + sectionName + '"', eventData);
+
+                const metaData = eventData.meta;
+                yireoGoogleTagManager2Pusher(eventData, 'push (customerData "' + sectionName + '"  event "' + eventId + '")');
+
+                if (!metaData || metaData.cacheable !== true) {
+                    yireoGoogleTagManager2Logger('removing event "' + eventId + '" from section "' + sectionName + '"')
+
+                    let mageCacheStorage = event.detail.data;
+
+                    if (mageCacheStorage !== null
+                        && typeof mageCacheStorage[sectionName] !== 'undefined'
+                        && typeof mageCacheStorage[sectionName].gtm_events !== 'undefined'
+                        && eventId in mageCacheStorage[sectionName].gtm_events) {
+                        delete mageCacheStorage[sectionName].gtm_events[eventId];
+                    }
+
+                    window.localStorage.setItem('mage-cache-storage', JSON.stringify(mageCacheStorage));
+                }
+            }
+        });
+
+        if (false === isEmpty(attributes)) {
+            yireoGoogleTagManager2Pusher(attributes, 'dataLayer (initial js) [script-additions.phtml]');
+        }
+    });
+</script>

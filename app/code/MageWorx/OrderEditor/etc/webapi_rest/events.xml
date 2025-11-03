@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="mageworx_log_changes_on_order_edit">
+        <observer
+                name="mageworx_log_changes_webapi_rest"
+                instance="MageWorx\OrderEditor\Observer\Logger\LogOrderChanges"
+                />
+    </event>
+    <event name="mageworx_save_logged_changes_for_order">
+        <observer
+            name="mageworx_save_logged_changes_webapi_rest"
+            instance="MageWorx\OrderEditor\Observer\Logger\SaveLoggedChanges"
+        />
+    </event>
+</config>

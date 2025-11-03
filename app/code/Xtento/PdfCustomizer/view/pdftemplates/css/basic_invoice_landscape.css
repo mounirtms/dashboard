@@ -1,0 +1,102 @@
+
+#thanks {
+    font-family: 'rubik';
+}
+
+.clearfix {
+    font-family: 'rubik';
+}
+
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+    font-family: 'rubik';
+}
+
+a {
+    color: #000;
+    text-decoration: none;
+}
+
+table tbody tr td {
+    background-color: #ffffff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin-bottom: 20px;
+    font-size: 9pt;
+    font-family: 'rubik';
+}
+
+table thead th {
+    font-weight: bold;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: #b3b3b3;
+    color: #ffffff;
+}
+
+table tfoot {
+    text-align: right;
+    font-size: 9px;
+}
+
+table tfoot td, table tfoot th {
+    padding-top: 10px;
+    border-bottom: none;
+    font-size: 9pt;
+    white-space: nowrap;
+    text-align: right;
+    font-weight: normal;
+}
+
+tbody .total {
+    font-weight: bold;
+}
+
+table tbody tr.even {
+    background-color: #f2f2f2;
+}
+
+.no {
+    text-align: left;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 2%;
+    padding-left: 10px;
+}
+
+.qty {
+    width: 6%;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.unit {
+    width: 8%;
+    text-align: left;
+}
+
+.sku {
+    width: 24%;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.desc {
+    width: 18%;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.total {
+    text-align: left;
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 10%;
+}

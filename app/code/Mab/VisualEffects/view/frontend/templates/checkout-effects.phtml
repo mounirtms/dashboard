@@ -1,0 +1,70 @@
+<?php
+/**
+ * @var \Mab\VisualEffects\Block\VisualEffects $block
+ */
+?>
+<?php if ($block->isEnabled()): ?>
+<div id="mab-checkout-effects-container" class="mab-checkout-effects">
+    <script type="text/javascript">
+    require([
+        'jquery',
+        'Mab_VisualEffects/js/visual-effects',
+        'domReady!'
+    ], function ($, VisualEffects) {
+        'use strict';
+        
+        var config = <?= /* @noEscape */ $block->getEffectConfigJson() ?>;
+        
+        if (config.enabled) {
+            // Initialize visual effects
+            VisualEffects.init(config);
+            
+            // Monitor checkout step completion
+            $(document).on('click', '.step-title, .checkout-step-title', function() {
+                var $step = $(this);
+                
+                if (config.checkout_effects.step_completion !== 'none') {
+                    $step.addClass('mab-' + config.checkout_effects.step_completion + '-effect');
+                    
+                    setTimeout(function() {
+                        $step.removeClass('mab-' + config.checkout_effects.step_completion + '-effect');
+                    }, config.animation_duration);
+                }
+            });
+            
+            // Enhanced loading animations for checkout
+            if (config.checkout_effects.loading_animations) {
+                $(document).on('click', '.action.primary.checkout', function() {
+                    var $button = $(this);
+                    $button.addClass('mab-enhanced-loading');
+                    
+                    // Add spinner
+                    var originalText = $button.text();
+                    $button.html('<span class="mab-loading-spinner"></span> ' + originalText);
+                });
+                
+                // Payment method selection effects
+                $(document).on('change', 'input[name="payment[method]"]', function() {
+                    var $method = $(this).closest('.payment-method');
+                    $method.addClass('mab-glow-effect');
+                    
+                    setTimeout(function() {
+                        $method.removeClass('mab-glow-effect');
+                    }, config.animation_duration);
+                });
+            }
+            
+            // Shipping method selection effects
+            $(document).on('change', 'input[name="shipping_method"]', function() {
+                var $method = $(this).closest('tr, .row');
+                $method.addClass('mab-pulse-effect');
+                
+                setTimeout(function() {
+                    $method.removeClass('mab-pulse-effect');
+                }, config.animation_duration);
+            });
+        }
+    });
+    </script>
+</div>
+<?php endif; ?>

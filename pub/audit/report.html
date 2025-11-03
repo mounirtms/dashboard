@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Magento Audit Report</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            margin: 2em;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2em;
+        }
+
+        header img {
+            height: 60px;
+            margin-right: 1em;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin: 0;
+        }
+
+        h2 {
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 0.2em;
+        }
+
+        .section {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2em;
+            padding: 1.5em 2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+            font-size: 0.95em;
+        }
+
+        th,
+        td {
+            border: 1px solid #e1e1e1;
+            padding: 0.6em;
+            text-align: left;
+        }
+
+        th {
+            background: #f0f3f5;
+            font-weight: 600;
+        }
+
+        .recommend {
+            color: #16a085;
+            font-weight: bold;
+        }
+
+        .issue {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .ok {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        ul {
+            margin: 0.5em 0 0.5em 1.5em;
+        }
+
+        footer {
+            margin-top: 3em;
+            text-align: center;
+            font-size: 0.85em;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <img src="https://technostationery.com/media/logo/default/logo_techno.png" alt="Techno Logo" class="h-10">
+        <h1>Magento Audit Report</h1>
+    </header>
+
+    <div class="section">
+        <h2>Database & Catalog Audit</h2>
+        <ul>
+            <li><b>Total EAV attributes:</b> 211 (188 unique codes)</li>
+            <li><b>Total products:</b> 9,043</li>
+            <li><b>Product attribute sets:</b> 12</li>
+            <li><b>Unused product attributes:</b> <span class="ok">None found</span></li>
+            <li><b>Attributes missing frontend labels:</b>
+                <ul>
+                    <li>old_id</li>
+                    <li>required_options</li>
+                    <li>has_options</li>
+                    <li>created_at</li>
+                    <li>updated_at</li>
+                    <li>url_path</li>
+                    <li>links_exist</li>
+                </ul>
+            </li>
+            <li><b>Unused media entries:</b> <span class="issue">5 orphaned images/files</span></li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Product Attribute Summary</h2>
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Count</th>
+            </tr>
+            <tr>
+                <td>Text</td>
+                <td>88</td>
+            </tr>
+            <tr>
+                <td>Dropdown (select)</td>
+                <td>45</td>
+            </tr>
+            <tr>
+                <td>Multiselect</td>
+                <td>17</td>
+            </tr>
+            <tr>
+                <td>Price</td>
+                <td>12</td>
+            </tr>
+            <tr>
+                <td>Date</td>
+                <td>9</td>
+            </tr>
+            <tr>
+                <td>Boolean (Yes/No)</td>
+                <td>40</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Product Types Used</h2>
+        <table>
+            <tr>
+                <th>Product Type</th>
+                <th>Count</th>
+            </tr>
+            <tr>
+                <td>Simple</td>
+                <td>6,742</td>
+            </tr>
+            <tr>
+                <td>Configurable</td>
+                <td>2,191</td>
+            </tr>
+            <tr>
+                <td>Virtual</td>
+                <td>31</td>
+            </tr>
+            <tr>
+                <td>Downloadable</td>
+                <td>52</td>
+            </tr>
+            <tr>
+                <td>Bundle</td>
+                <td>27</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Performance & Log Optimizations</h2>
+        <ul>
+            <li>Slow query log threshold set to <b>1 second</b></li>
+            <li>Disabled logging of non-indexed queries</li>
+            <li>Truncated error and slow logs to free disk space</li>
+            <li>Recommended <span class="recommend">logrotate</span> for MariaDB logs</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Code & Module Review</h2>
+        <ul>
+            <li>Custom module <code>Mab_Core</code> uses abstract license validation</li>
+            <li>All modules detected: Amasty, Magefan, Mageplaza, Mirasvit, etc.</li>
+            <li>No critical issues found in <code>Mab/Core/Helper/AbstractLicense.php</code></li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Frontend & Cache Issues</h2>
+        <ul>
+            <li><b>Too many cookies:</b> <span class="issue">21 cookies (limit is 20)</span></li>
+            <li><b>Large page size:</b> <span class="issue">5.9 MB</span></li>
+            <li><b>Large static file:</b> <span class="issue">1.9 MB CSS</span> in <code>_cache/merged/xxx.css</code>
+            </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Frontend & Cache Recommendations</h2>
+        <ul>
+            <li>Audit and reduce cookie count (check third-party modules)</li>
+            <li>Split and minify CSS/JS files using Magento tools</li>
+            <li>Use <span class="recommend">CDN</span> for faster static file delivery</li>
+            <li>Remove unused JS/CSS from theme/modules</li>
+            <li>Optimize images for web use (e.g. WebP format)</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Recommendations & Next Steps</h2>
+        <ul>
+            <li>Add frontend labels for all attribute fields for better admin UX</li>
+            <li>Clean unused media assets</li>
+            <li>Schedule log rotation on server</li>
+            <li>Expand future audits to include:
+                <ul>
+                    <li>Product visibility and stock status</li>
+                    <li>Category depth and structure</li>
+                    <li>SEO attribute presence (meta_title, description, canonical)</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="section">
+        <h2>Database Tables: Stocks, Sources, Stores</h2>
+        <ul>
+            <li><b>Stock Management:</b> Magento uses <code>cataloginventory_stock</code>,
+                <code>inventory_source</code>, <code>inventory_stock</code>, and related tables to manage product stock,
+                sources (warehouses), and multi-source inventory (MSI).</li>
+            <li><b>Best Practices:</b> Regularly audit stock quantities, ensure sources are correctly mapped to stores,
+                and monitor for orphaned or inconsistent stock/source records.</li>
+            <li><b>Store Configuration:</b> Each store view and website is mapped in <code>store</code>,
+                <code>store_group</code>, and <code>store_website</code> tables. Ensure all stores are active and
+                correctly configured for catalog and inventory.</li>
+            <li><b>Recommended:</b> Periodically check for disabled stores, unused sources, and stock inconsistencies.
+                Use Magento's built-in indexers to keep stock and source data up to date.</li>
+        </ul>
+    </div>
+    <div class="section">
+        <h2>Modules & Features: Implemented, Disabled, and To Be Implemented</h2>
+        <ul>
+            <li><b>Installed Modules:</b> Core Magento modules (Catalog, Inventory, Sales, Checkout, etc.), Amasty, Magefan, Mageplaza, Mirasvit, Xtento, Mab_Core, and others.</li>
+            <li><b>Features Implemented:</b> Multi-source inventory (MSI), advanced catalog management, custom modules (e.g., Mab_Core), Amasty store locator, Magefan blog, PDF customizer, and more.</li>
+            <li><b>Modules Disabled/Recommended for Removal:</b>
+                <ul>
+                    <li>Amasty_Storelocator <span class="recommend">(disabled to reduce category query load)</span></li>
+                    <li>Magefan_Blog <span class="recommend">(disabled if not used)</span></li>
+                    <li>Sm_MegaMenu <span class="recommend">(disabled if not used)</span></li>
+                    <li>Amasty_LayeredNavigation <span class="recommend">(disable if not needed)</span></li>
+                    <li>Magento_LayeredNavigation <span class="recommend">(disable if not needed)</span></li>
+                </ul>
+                <span style="color:#888;font-size:0.95em">Disabling unused/unused modules reduces DB load and improves performance.</span>
+            </li>
+            <li><b>To Be Implemented:</b>
+                <ul>
+                    <li>Frontend label completion for attributes</li>
+                    <li>Orphaned media cleanup</li>
+                    <li>Logrotate for MariaDB and Magento logs</li>
+                    <li>Further catalog health checks (disabled products, missing images, attribute usage stats)</li>
+                    <li>Advanced cache and CDN for media/static files</li>
+                    <li>Module conflict review and resolution</li>
+                </ul>
+            </li>
+            <li><b>Recent Fixes & Customizations:</b>
+                <ul>
+                    <li><b>2025-07-07:</b> <span class="ok">Custom module <code>Mab_GuestCheckout</code> implemented and enabled.</span> This module ensures that after guest checkout, if the customer registers, the <code>quote.customer_id</code> is always set and synchronized with the order. It also sets <code>customer_is_guest = 0</code> and updates <code>customer_group_id</code> for full backoffice compatibility. This resolves admin errors when editing shipping or order details for guest orders that later become customer orders.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="section">
+        <h2>Best Recommended Settings & Optimizations</h2>
+        <ul>
+            <li>Enable and configure all relevant Magento caches (FPC, block, config, layout, etc.)</li>
+            <li>Use Redis or Memcached for cache and session storage</li>
+            <li>Set up log rotation for all logs (MariaDB, Magento, system)</li>
+            <li>Deploy static content for all locales and themes</li>
+            <li>Minify and merge CSS/JS, split large static files</li>
+            <li>Use a CDN for static and media files</li>
+            <li>Regularly reindex and clean up generated, cache, and static files</li>
+            <li>Monitor for module conflicts and keep all modules up to date</li>
+            <li>Periodically review enabled modules and disable/remove those not in use to reduce attack surface and improve performance.</li>
+        </ul>
+    </div>
+    <div class="section">
+        <h2>Module Conflict & Build Script Review</h2>
+        <ul>
+            <li><b>Module Conflicts:</b> Review for overlapping plugins, observers, or preferences, especially among Amasty, Magefan, Mageplaza, and custom modules. Use <code>bin/magento setup:di:compile</code> and <code>bin/magento module:status</code> to check for issues. <span class="recommend">Regularly audit and disable unused modules.</span></li>
+            <li><b>Build Scripts:</b> Scripts in <code>scripts/magento/</code> automate build, deploy, cache, indexer, and permissions. Review for:
+                <ul>
+                    <li>Proper backup and restore of media and config</li>
+                    <li>Exclusion of sensitive files from sync</li>
+                    <li>Post-deployment cache clean, reindex, and permission fixes</li>
+                </ul>
+            </li>
+            <li><b>Optimizations to Add:</b> Integrate image optimization (e.g., <code>imagemin</code>), static asset minification, and automated cache/media cleanup in build scripts.</li>
+        </ul>
+    </div>
+    <div class="section">
+        <h2>Media & Static File Caching</h2>
+        <ul>
+            <li>Leverage browser and server-side caching for <code>pub/media</code> and <code>pub/static</code></li>
+            <li>Configure NGINX/Apache to set long cache headers for static assets</li>
+            <li>Use a CDN for global delivery and offload bandwidth</li>
+            <li>Regularly audit and clean up unused media files</li>
+            <li>Automate image optimization in the build process</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Recent Maintenance & Recovery Actions</h2>
+        <ul>
+            <li><b>2025-07-26:</b> <span class="ok">Maintenance mode detected and disabled.</span> The website was inaccessible due to maintenance mode being enabled. Maintenance mode was turned off using:<br>
+                <code>php bin/magento maintenance:disable</code>
+            </li>
+            <li><b>2025-07-26:</b> <span class="ok">Magento cache flushed.</span> To ensure the latest changes were applied and the site loaded correctly, the following command was run:<br>
+                <code>php bin/magento cache:flush</code>
+            </li>
+            <li><b>2025-07-26:</b> <span class="ok">Website status checked.</span> Verified HTTP 200 OK response from the web server, confirming the site is accessible.</li>
+            <li><b>SSH Access Issue:</b> The SSH access problem for user <code>technadminy7</code> is outside Magento and requires server admin review (check user account status, authorized_keys, and server logs).</li>
+        </ul>
+        <h3>Commands Executed</h3>
+        <table>
+            <tr><th>Date</th><th>Command</th><th>Description</th></tr>
+            <tr><td>2025-07-26</td><td><code>php bin/magento maintenance:disable</code></td><td>Disabled maintenance mode</td></tr>
+            <tr><td>2025-07-26</td><td><code>php bin/magento cache:flush</code></td><td>Flushed Magento cache</td></tr>
+            <tr><td>2025-07-26</td><td><code>curl -I http://localhost</code></td><td>Checked website HTTP status</td></tr>
+        </table>
+        <h3>Professional Tunings & Recommendations</h3>
+        <ul>
+            <li>Regularly monitor <code>var/log/system.log</code> and <code>exception.log</code> for errors.</li>
+            <li>Automate cache flush and maintenance mode checks in deployment scripts.</li>
+            <li>Set up server monitoring for disk space, PHP-FPM, and web server health.</li>
+            <li>Review SSH access and user permissions regularly for security.</li>
+            <li>Document all recovery actions in this audit report for future reference.</li>
+        </ul>
+    </div>
+    <footer>
+        <p>Generated by automated audit tool - <strong>July 26, 2025</strong><br>Techno Stationery Magento Ops</p>
+    </footer>
+
+</body>
+
+</html>

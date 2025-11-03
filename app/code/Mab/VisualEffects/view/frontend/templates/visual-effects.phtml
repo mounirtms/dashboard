@@ -1,0 +1,141 @@
+<?php
+/**
+ * @var \Mab\VisualEffects\Block\VisualEffects $block
+ */
+?>
+<?php if ($block->isEnabled()): ?>
+<div id="mab-visual-effects-container" <?php if ($block->isPerformanceModeEnabled()): ?>class="mab-performance-mode"<?php endif; ?>>
+    <?php $customCSS = $block->getCustomCSS(); ?>
+    <?php if ($customCSS): ?>
+    <style type="text/css">
+        <?= /* @noEscape */ $customCSS ?>
+    </style>
+    <?php endif; ?>
+</div>
+
+<script type="text/x-magento-init">
+{
+    "*": {
+        "Mab_VisualEffects/js/visual-effects": <?= /* @noEscape */ $block->getEffectConfigJson() ?>
+    }
+}
+</script>
+
+<script>
+require([
+    'jquery',
+    'Mab_VisualEffects/js/visual-effects',
+    'Magento_Customer/js/customer-data',
+    'domReady!'
+], function ($, VisualEffects, customerData) {
+    'use strict';
+    
+    // Initialize visual effects
+    var config = <?= /* @noEscape */ $block->getEffectConfigJson() ?>;
+    
+    console.log('[MAB Visual Effects] Initializing with config:', config);
+    
+    if (config.enabled) {
+        VisualEffects.init(config);
+        
+        // Enhanced cart monitoring
+        $(document).ready(function() {
+            console.log('[MAB Visual Effects] DOM ready, setting up event listeners');
+            
+            // Monitor add to cart buttons
+            $(document).on('click', '[data-role="tocart-form"] button[type="submit"], .action.tocart, #product-addtocart-button', function(e) {
+                console.log('[MAB Visual Effects] Add to cart button clicked');
+                var $button = $(this);
+                
+                setTimeout(function() {
+                    $(document).trigger('ajax:addToCart', {
+                        element: $button[0],
+                        timestamp: Date.now()
+                    });
+                    
+                    // Trigger effect immediately for testing
+                    if (window.MabVisualEffects) {
+                        window.MabVisualEffects.triggerEffect('add_to_cart', {
+                            element: $button[0]
+                        });
+                    }
+                }, 100);
+            });
+            
+            // Monitor checkout step navigation
+            $(document).on('click', '.checkout-step-title, .step-title', function() {
+                console.log('[MAB Visual Effects] Checkout step clicked');
+                var stepName = $(this).text().trim();
+                $(document).trigger('checkout:stepComplete', {
+                    step: stepName,
+                    timestamp: Date.now()
+                });
+            });
+            
+            // Monitor cart updates
+            var cart = customerData.get('cart');
+            cart.subscribe(function(updatedCart) {
+                console.log('[MAB Visual Effects] Cart updated:', updatedCart);
+                if (window.MabVisualEffects) {
+                    window.MabVisualEffects.handleCartUpdate(updatedCart);
+                }
+            });
+            
+            // Monitor order success page
+            if ($('.checkout-success').length > 0) {
+                $(document).trigger('order:success', {
+                    page: 'success',
+                    timestamp: Date.now()
+                });
+            }
+            
+            // Monitor shipping method selection for free shipping
+            $(document).on('change', 'input[name="shipping_method"]', function() {
+                var $method = $(this);
+                var $priceElement = $method.closest('tr').find('.price, .col-price');
+                var priceText = $priceElement.text().toLowerCase();
+                
+                var isFree = priceText.indexOf('0') !== -1 || 
+                           priceText.indexOf('free') !== -1 || 
+                           priceText.indexOf('gratuit') !== -1;
+                
+                if (isFree) {
+                    setTimeout(function() {
+                        $(document).trigger('shipping:freeShippingAchieved', {
+                            method: $method.val(),
+                            timestamp: Date.now()
+                        });
+                        
+                        if (window.MabVisualEffects) {
+                            window.MabVisualEffects.triggerEffect('free_shipping_celebration', {
+                                method: $method.val()
+                            });
+                        }
+                    }, 500);
+                }
+            });
+            
+            // Auto-trigger progress bar update on page load
+            setTimeout(function() {
+                if (window.MabVisualEffects && window.MabVisualEffects.updateProgressBar) {
+                    window.MabVisualEffects.updateProgressBar();
+                }
+            }, 1000);
+            
+            // Test button for debugging
+            if (config.debug) {
+                $('body').append('<div id="mab-debug-panel" style="position: fixed; top: 10px; right: 10px; z-index: 10000; background: white; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);"><strong>MAB Visual Effects Debug</strong><br><button onclick="window.MabVisualEffects.triggerEffect(\'confetti\', {})">Test Confetti</button><br><button onclick="window.MabVisualEffects.triggerEffect(\'add_to_cart\', {})">Test Add to Cart</button><br><button onclick="window.MabVisualEffects.updateProgressBar()">Update Progress</button></div>');
+            }
+        });
+    } else {
+        console.log('[MAB Visual Effects] Module is disabled');
+    }
+});
+</script>
+<?php endif; ?>
+
+<!-- Preload effect libraries for better performance -->
+<?php if ($block->isEnabled()): ?>
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" as="script">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" as="script">
+<?php endif; ?>

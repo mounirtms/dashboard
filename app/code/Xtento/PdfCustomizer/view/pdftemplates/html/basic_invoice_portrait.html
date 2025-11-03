@@ -1,0 +1,118 @@
+##header_start##
+<div class="clearfix header" style="padding-top: 30px; display: inline; text-align: right; margin-bottom: 200px;">
+    <div style="width: 49%; float: left; text-align: left;">
+        <img style="height: 80px;" src="{{var logo_url}}"/>
+    </div>
+    <div style="float: right; width: 49%; font-size: 11pt;">
+        <div style="float: right;">{{config path="general/store_information/name"}}</div>
+        {{depend store_information_if.city}}
+            <div style="float: right;">{{config path="general/store_information/street_line1"}}<br/>
+            {{config path="general/store_information/postcode}} {{config path="general/store_information/city}}, {{config path="general/store_information/country_id"}}
+            </div>
+        {{/depend}}
+        {{depend store_information_if.phone}}
+            <div style="float: right;">{{trans "Tel"}}: {{config path="general/store_information/phone"}}</div>
+        {{/depend}}
+        <div style="float: right;">{{trans "Email"}}: {{config path="trans_email/ident_general/email"}}
+            <p>{{var barcode_c39_invoice.increment_id}}</p>
+        </div>
+    </div>
+</div>
+##header_end##
+##body_start##
+<div>
+    <div class="body" style="position: relative; width: 21cm; height: 29.7cm; margin: 0 auto; background: #FFFFFF;">
+        <div class="main">
+            <div id="details" class="clearfix" style="margin-bottom: 20px;">
+                <table id="client" style="width: 100%; border-collapse: collapse; border-spacing: 0;">
+                    <tbody>
+                    <tr>
+                        <td class="name" style="text-align: left; width: 25%; padding-top: 20px;">
+                            <p style="color: #808080; margin-bottom: 20px; font-weight: bold; font-size: 14pt;">{{trans "BILL TO"}}</p>
+                            <div style="font-size: 11pt;">{{var formattedBillingAddress|raw}}</div>
+                        </td>
+                        <td class="name" style="text-align: left; width: 25%; padding-top: 20px;">
+                            <p style="color: #808080; margin-bottom: 20px; font-weight: bold; font-size: 14pt;">{{trans "SHIP TO"}}</p>
+                            <div style="font-size: 11pt;">{{var formattedShippingAddress|raw}}</div>
+                        </td>
+                        <td id="invoice" style="text-align: right; width: 50%; padding-top: 20px;">
+                            <div style="font-size: 18pt; text-transform: uppercase; font-weight: normal;">{{trans "Invoice"}} #{{var invoice.increment_id}}</div>
+                            <div class="date" style="padding: 5px 0; color: #666666;">{{trans "Invoice Date"}}: {{var formatted_invoice.created_at}}</div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <table class="table" style="width: 100%; border-collapse: collapse; border-spacing: 0; margin-bottom: 20px;" border="0">
+                <thead>
+                <tr>
+                    <th class="no">#</th>
+                    <th class="desc">{{trans "Product"}}</th>
+                    <th class="sku"></th>
+                    <th class="unit">{{trans "Price w/ Tax"}}</th>
+                    <th class="unit">{{trans "Price w/o Tax"}}</th>
+                    <th class="qty">{{trans "Qty"}}</th>
+                    <th class="unit">{{trans "Tax"}}</th>
+                    <th class="unit">{{trans "Tax %"}}</th>
+                    <th class="unit">{{trans "Total w/o Tax"}}</th>
+                    <th class="total">{{trans "Total w/ Tax"}}</th>
+                </tr>
+                </thead>
+                <tbody>
+                ##items_start##
+                <tr>
+                    <td class="no">
+                        <p>{{var item.position}}</p>
+                    </td>
+                    <td class="desc">
+                        <p>{{var item.name}}</p>
+                        <p>{{var item.sku}}</p>
+                    </td>
+                    <td class="desc">
+                        <p>{{var barcode_c39_item.sku}}</p>
+                    </td>
+                    <td class="unit">
+                        <p>{{var formatted_item.price_incl_tax}}</p>
+                    </td>
+                    <td class="unit">
+                        <p>{{var formatted_item.price}}</p>
+                    </td>
+                    <td class="qty">
+                        <p>{{var formatted_item.qty}}</p>
+                    </td>
+                    <td class="unit">
+                        <p>{{var formatted_item.tax_amount}}</p>
+                    </td>
+                    <td class="unit">
+                        <p>{{var item.tax_percent}}</p>
+                    </td>
+                    <td class="unit">
+                        <p>{{var formatted_item.row_total}}</p>
+                    </td>
+                    <td class="total">{{var formatted_item.row_total_incl_tax}}</td>
+                </tr>
+                ##items_end##
+                </tbody>
+                <tfoot>
+                ##totals_start##
+                <tr>
+                    <td></td>
+                    {{if total.is_bold}}
+                        <td class="grandtotal" style="font-weight: bold; font-size: 14pt; padding-right: 10px;" colspan="8">{{var total.label}}</td>
+                        <td class="grandtotal" style="font-weight: bold; font-size: 14pt; text-align: left; padding-left: 10px;">{{var total_formatted.amount}}</td>
+                    {{else}}
+                        <td style="padding-right: 10px;" colspan="8">{{var total.label}} {{depend total.is_tax}}({{var total.tax_percent}}){{/depend}}</td>
+                        <td style="text-align: left; font-weight: bold; padding-left: 10px;">{{var total_formatted.amount}}</td>
+                    {{/if}}
+                </tr>
+                ##totals_end##
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+##body_end##
+##footer_start##
+<div id="thanks" style="font-size: 11pt; margin-top: 50px; font-style: italic; font-family: 'rubik;';">{{trans "Dear"}} {{var order.getCustomerName()}},</div>
+<div id="thanks" style="font-size: 11pt; padding-bottom: 30px; font-weight: bold; font-family: 'rubik;">{{trans "Thank you!"}}</div>
+##footer_end##

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Config/etc/config.xsd">
+    <default>
+        <mab_sourceselector>
+            <general>
+                <enabled>1</enabled>
+                <enable_dropdown>1</enable_dropdown>
+                <default_succursale>16</default_succursale>
+                <enable_filtering>1</enable_filtering>
+                <debug>0</debug>
+            </general>
+        </mab_sourceselector>
+    </default>
+</config>

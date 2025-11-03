@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="xtento_pdf_templates" resource="default" engine="innodb" comment="XTENTO PDF Customizer Templates">
+    <column xsi:type="smallint" name="template_id" padding="6" unsigned="false" nullable="false" identity="true" comment="Template Id"/>
+    <column xsi:type="smallint" name="is_active" padding="6" unsigned="false" nullable="false" identity="false" default="1" comment="Template active?"/>
+    <column xsi:type="varchar" name="template_name" nullable="false" length="100" comment="Template name"/>
+    <column xsi:type="text" name="template_description" nullable="false" comment="Template description"/>
+    <column xsi:type="boolean" name="template_default" nullable="false" comment="Template default"/>
+    <column xsi:type="smallint" name="template_type" padding="6" unsigned="false" nullable="false" identity="false" default="1" comment="Template type"/>
+    <column xsi:type="mediumtext" name="template_html" nullable="true" comment="Template HTML"/>
+    <column xsi:type="mediumtext" name="template_css" nullable="false" comment="Template css"/>
+    <column xsi:type="varchar" name="template_file_name" nullable="false" length="100" comment="Template file name"/>
+    <column xsi:type="smallint" name="template_paper_form" padding="6" unsigned="false" nullable="false" identity="false" default="0" comment="Paper format"/>
+    <column xsi:type="smallint" name="template_custom_form" padding="6" unsigned="false" nullable="false" identity="false" default="0" comment="Paper custom format"/>
+    <column xsi:type="decimal" name="template_custom_h" scale="0" precision="10" unsigned="false" nullable="false" default="1" comment="Custom template height"/>
+    <column xsi:type="decimal" name="template_custom_w" scale="0" precision="10" unsigned="false" nullable="false" default="1" comment="Custom template width"/>
+    <column xsi:type="decimal" name="template_custom_t" scale="0" precision="10" unsigned="false" nullable="false" default="1" comment="Custom template top margin"/>
+    <column xsi:type="decimal" name="template_custom_b" scale="0" precision="10" unsigned="false" nullable="false" default="1" comment="Custom template bottom margin"/>
+    <column xsi:type="decimal" name="template_custom_l" scale="0" precision="10" unsigned="false" nullable="false" default="1" comment="Custom template left margin"/>
+    <column xsi:type="decimal" name="template_custom_r" scale="0" precision="10" unsigned="false" nullable="false" default="1" comment="Custom template right margin"/>
+    <column xsi:type="smallint" name="template_paper_ori" padding="6" unsigned="false" nullable="false" identity="false" default="0" comment="Paper orientation"/>
+    <column xsi:type="timestamp" name="creation_time" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Creation Time"/>
+    <column xsi:type="timestamp" name="update_time" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Update Time"/>
+    <column xsi:type="smallint" name="customer_group_id" padding="5" unsigned="true" nullable="false" identity="false" default="0" comment="Customer group id the template is for"/>
+    <column xsi:type="text" name="source" nullable="false" comment="Source ID"/>
+    <column xsi:type="text" name="attachments" nullable="false" comment="Attachments comma separated"/>
+    <column xsi:type="boolean" name="save_pdf_in_backup_folder" nullable="false" default="true" comment="Save backup PDFs in folder"/>
+    <column xsi:type="boolean" name="read_pdf_from_backup_folder" nullable="false" default="true" comment="If already generated, read PDF from backup folder"/>
+    <column xsi:type="text" name="attachment_pdf_file" nullable="false" comment="Attachment PDF File Name"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="template_id"/>
+    </constraint>
+    <index referenceId="TEMPLATE_ID_TEMPLATE_ID" indexType="btree">
+      <column name="template_id"/>
+    </index>
+  </table>
+  <table name="xtento_pdf_store" resource="default" engine="innodb" comment="XTENTO PDF Generator to store linkage table">
+    <column xsi:type="smallint" name="template_id" padding="6" unsigned="false" nullable="false" identity="false" comment="Template ID"/>
+    <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store ID"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="template_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="XTENTO_PDF_STORE_TEMPLATE_ID_XTENTO_PDF_TEMPLATES_TEMPLATE_ID" table="xtento_pdf_store" column="template_id" referenceTable="xtento_pdf_templates" referenceColumn="template_id" onDelete="CASCADE"/>
+    <index referenceId="XTENTO_PDF_STORE_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+  </table>
+</schema>
+
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2022-06-23T21:38:49+00:00
+ * File:          etc/db_schema.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

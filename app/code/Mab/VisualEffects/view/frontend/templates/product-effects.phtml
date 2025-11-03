@@ -1,0 +1,54 @@
+<?php
+/**
+ * @var \Mab\VisualEffects\Block\VisualEffects $block
+ */
+?>
+<?php if ($block->isEnabled()): ?>
+<div id="mab-product-effects-container" class="mab-product-effects">
+    <script type="text/javascript">
+    require([
+        'jquery',
+        'Mab_VisualEffects/js/visual-effects',
+        'domReady!'
+    ], function ($, VisualEffects) {
+        'use strict';
+        
+        // Initialize visual effects for product page
+        var config = <?= /* @noEscape */ $block->getEffectConfigJson() ?>;
+        
+        if (config.enabled) {
+            // Enhanced add to cart monitoring
+            $(document).on('click', '#product-addtocart-button, .action.tocart.primary', function(e) {
+                var $button = $(this);
+                var $form = $button.closest('form');
+                
+                // Add loading animation
+                $button.addClass('mab-enhanced-loading');
+                
+                // Trigger add to cart effect after successful addition
+                setTimeout(function() {
+                    $button.removeClass('mab-enhanced-loading');
+                    $(document).trigger('ajax:addToCart', {
+                        element: $button[0],
+                        form: $form[0],
+                        timestamp: Date.now()
+                    });
+                }, 500);
+            });
+            
+            // Product image hover effects
+            $('.product.media .product-image-main img').hover(
+                function() {
+                    if (config.cart_effects.add_to_cart !== 'none') {
+                        $(this).addClass('mab-glow-effect');
+                    }
+                },
+                function() {
+                    $(this).removeClass('mab-glow-effect');
+                }
+            );
+        }
+    });
+    </script>
+</div>
+<?php endif; ?>

@@ -1,0 +1,51 @@
+.admin__menu .item-mab.level-0 {
+    > a {
+        position: relative;
+        
+        &:before {
+            content: '\e602';
+            font-family: 'Admin Icons';
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+            color: #ffffff;
+        }
+
+        &:hover:before {
+            transform: scale(1.1);
+        }
+    }
+    
+    &._active > a:before {
+        filter: brightness(1.2);
+    }
+}
+
+
+.admin__menu .item-mab-delivery.level-1 > a:before {
+    content: '\e616'; /* Magento's truck icon */
+}
+
+.admin__menu .item-mab-checkout.level-1 > a:before {
+    content: '\e60e'; /* Magento's checkout icon */
+}
+
+.admin__menu .item-mab .submenu {
+    border-left: 3px solid #eb5202;
+}
+
+.admin__menu .item-mab.level-0 > a {
+    color: #fff !important;
+}
+
+.admin__menu .item-mab.level-0._active > a {
+    background-color: #eb5202;
+}
+
+.admin__menu .item-mab .submenu {
+    box-shadow: 0 0 3px rgba(0,0,0,0.2);
+}

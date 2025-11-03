@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="standard">
+        <route id="xtento_pdf" frontName="xtento_pdf">
+            <module name="Xtento_PdfCustomizer"/>
+        </route>
+    </router>
+</config>
+
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-02-05T17:13:45+00:00
+ * File:          etc/frontend/routes.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

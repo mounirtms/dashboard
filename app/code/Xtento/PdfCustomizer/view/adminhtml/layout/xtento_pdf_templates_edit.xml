@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="editor"/>
+    <head>
+        <link src="Xtento_PdfCustomizer::js/pdfcustomizer.js"/>
+        <css src="Xtento_PdfCustomizer::css/codemirror.css"/>
+        <css src="Xtento_PdfCustomizer::css/addon/codemirror-colorpicker.css"/>
+        <css src="Xtento_PdfCustomizer::css/custom.css"/>
+    </head>
+
+    <body>
+        <referenceContainer name="content">
+            <block class="Xtento\PdfCustomizer\Block\Adminhtml\PdfTemplate\Edit" name="pdftemplate_edit"/>
+            <block class="Xtento\PdfCustomizer\Block\Adminhtml\PdfTemplate\Edit\DefaultTemplatePopup" name="default_template_popup" template="Xtento_PdfCustomizer::edit/template/default_template_popup.phtml"/>
+        </referenceContainer>
+        <referenceContainer name="left">
+            <block class="Xtento\PdfCustomizer\Block\Adminhtml\PdfTemplate\Edit\Tabs" name="pdftemplate_edit_tabs">
+                <block class="Xtento\PdfCustomizer\Block\Adminhtml\PdfTemplate\Edit\Tab\General" name="pdftemplate_edit_tab_general"/>
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">general_section</argument>
+                    <argument name="block" xsi:type="string">pdftemplate_edit_tab_general</argument>
+                </action>
+                <block class="Xtento\PdfCustomizer\Block\Adminhtml\PdfTemplate\Edit\Tab\Settings" name="pdftemplate_edit_tab_settings"/>
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">settings_section</argument>
+                    <argument name="block" xsi:type="string">pdftemplate_edit_tab_settings</argument>
+                </action>
+                <block class="Xtento\PdfCustomizer\Block\Adminhtml\PdfTemplate\Edit\Tab\Template" name="pdftemplate_edit_tab_template"/>
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">template_section</argument>
+                    <argument name="block" xsi:type="string">pdftemplate_edit_tab_template</argument>
+                </action>
+                <block class="Xtento\PdfCustomizer\Block\Adminhtml\PdfTemplate\Edit\Tab\Preview" name="pdftemplate_edit_tab_preview"/>
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">preview_section</argument>
+                    <argument name="block" xsi:type="string">pdftemplate_edit_tab_preview</argument>
+                </action>
+            </block>
+        </referenceContainer>
+    </body>
+</page>
+
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-02-08T13:36:32+00:00
+ * File:          view/adminhtml/layout/xtento_pdf_templates_edit.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

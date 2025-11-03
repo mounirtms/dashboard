@@ -1,0 +1,11 @@
+"Admin Locale Management","Gestion des Paramètres Régionaux Admin"
+"Locale Settings","Paramètres Régionaux"
+
+"Force English Admin","Forcer l'Admin en Anglais"
+"Force the admin interface to use English only (recommended for performance)","Forcer l'interface d'administration à utiliser uniquement l'anglais (recommandé pour les performances)"
+"Remove French Admin Files","Supprimer les Fichiers Admin Français"
+"Remove French language files from admin areas to improve performance","Supprimer les fichiers de langue française des zones d'administration pour améliorer les performances"
+
+"Admin locale has been optimized for English-only usage","Les paramètres régionaux d'administration ont été optimisés pour un usage anglais uniquement"
+"French admin language files have been removed successfully","Les fichiers de langue française de l'administration ont été supprimés avec succès"
+"Admin interface is now English-only for better performance","L'interface d'administration est maintenant en anglais uniquement pour de meilleures performances"

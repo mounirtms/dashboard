@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mab_visual_effects>
+            <general>
+                <enabled>1</enabled>
+                <debug_mode>0</debug_mode>
+                <performance_mode>0</performance_mode>
+            </general>
+            <shipping_effects>
+                <free_shipping_celebration>confetti</free_shipping_celebration>
+                <progress_bar_enabled>1</progress_bar_enabled>
+                <progress_bar_style>modern</progress_bar_style>
+                <threshold_notification>1</threshold_notification>
+                <notification_thresholds>50,75,90</notification_thresholds>
+            </shipping_effects>
+            <cart_effects>
+                <add_to_cart_effect>bounce</add_to_cart_effect>
+                <cart_update_effect>pulse</cart_update_effect>
+                <cart_milestone_effects>1</cart_milestone_effects>
+                <milestone_amounts>[{"amount":100,"effect":"sparkles"},{"amount":500,"effect":"confetti"},{"amount":1000,"effect":"fireworks"}]</milestone_amounts>
+            </cart_effects>
+            <checkout_effects>
+                <step_completion_effect>glow</step_completion_effect>
+                <order_success_effect>celebration</order_success_effect>
+                <loading_animations>1</loading_animations>
+            </checkout_effects>
+            <advanced_settings>
+                <animation_duration>1000</animation_duration>
+                <effect_intensity>moderate</effect_intensity>
+                <mobile_optimized>1</mobile_optimized>
+                <custom_css></custom_css>
+            </advanced_settings>
+        </mab_visual_effects>
+    </default>
+</config>

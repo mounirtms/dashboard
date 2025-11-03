@@ -1,0 +1,36 @@
+<?php
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+?>
+
+<?php
+/**
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Magento\Quote\Model\Quote\Address\Rate $rate
+ */
+$_code = $block->getData('code');
+$rate = $block->getData('rate');
+$pos = $block->getData('pos');
+
+if ($_code !== '' && $locations = $rate->getData('child_elements')) :?>
+    <label class="options-<?= $block->escapeHtmlAttr($_code) ?>">
+        <b><?= $block->escapeHtml(__('Pick a store')) ?></b>
+        <?php if (count($locations)) : ?>
+            <select
+                name="shipping_method[<?= $block->escapeHtmlAttr($_code) ?>][mageworx_pickup_location_id]">
+                <?php foreach ($locations as $code => $data) :
+                    $name = is_array($data) ? $data['name'] ?? '' : $data;
+                    $attributes = is_array($data) ? $data['attributes'] ?? '' : '';
+                    ?>
+                    <option value="<?= $block->escapeHtml($code) ?>" <?= $block->escapeHtmlAttr($attributes) ?>><?= $block->escapeHtml($name) ?></option>
+                <?php endforeach; ?>
+            </select>
+        <?php else : ?>
+            <?= $block->escapeHtml(__('There are no available stores for pickup')) ?>
+        <?php endif; ?>
+    </label>
+    <br/>
+<?php endif; ?>

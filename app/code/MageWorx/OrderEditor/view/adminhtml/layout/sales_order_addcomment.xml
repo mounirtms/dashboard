@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/layout_generic.xsd">
+    <referenceContainer name="root">
+        <block class="Magento\Backend\Block\Template"
+               name="comments_js"
+               after="order_history"
+               template="MageWorx_OrderEditor::order/view/comments/js.phtml" />
+        <referenceBlock name="order_history">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">MageWorx_OrderEditor::order/view/comments.phtml</argument>
+            </action>
+        </referenceBlock>
+    </referenceContainer>
+</layout>

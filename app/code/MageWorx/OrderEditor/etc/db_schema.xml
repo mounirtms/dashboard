@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mageworx_order_editor_quote_data">
+        <column xsi:type="int" name="entity_id" padding="10" identity="true"  unsigned="true" nullable="false" comment="Id"/>
+        <column xsi:type="int" name="quote_id" padding="10" unsigned="true" nullable="false" comment="Quote Id"/>
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" comment="Order Id"/>
+        <column xsi:type="text" name="data_serialized" nullable="true" comment="Data Serialized (JSON)"/>
+        <column xsi:type="datetime" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <column xsi:type="datetime" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign"
+                    referenceId="OE_QUOTE_DATA_QUOTE_ID_MAGENTO_QUOTE_ID"
+                    table="mageworx_order_editor_quote_data"
+                    column="quote_id"
+                    referenceTable="quote"
+                    referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+        <constraint xsi:type="foreign"
+                    referenceId="OE_QUOTE_DATA_ORDER_ID_MAGENTO_ORDER_ID"
+                    table="mageworx_order_editor_quote_data"
+                    column="order_id"
+                    referenceTable="sales_order"
+                    referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+    </table>
+    <table name="quote_address">
+        <column xsi:type="boolean" name="edit_in_progress" nullable="true" default="false" comment="Is order edit in progress"/>
+    </table>
+    <table name="quote_item">
+        <column xsi:type="boolean" name="edit_in_progress" nullable="true" default="false" comment="Is order edit in progress"/>
+        <column xsi:type="boolean" name="temp_item" nullable="true" default="false" comment="Is it a temporary item (Order Edit Process)"/>
+    </table>
+    <table name="mageworx_order_editor_webhook_queue">
+        <column xsi:type="int"      name="entity_id" padding="10" identity="true" unsigned="true" nullable="false" comment="Id"/>
+        <column xsi:type="varchar"  name="event_name" nullable="false" length="64" comment="Event Name"/>
+        <column xsi:type="datetime" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <column xsi:type="text"     name="data_serialized" nullable="true" comment="Data Serialized (JSON)"/>
+        <column xsi:type="int"      name="number_of_attempts" padding="10" unsigned="true" nullable="true" comment="Number of attempts"/>
+        <column xsi:type="boolean"  name="status" nullable="true" default="false" comment="Is webhook received successfully"/>
+        <column xsi:type="int"      name="website_id" unsigned="false" nullable="false" identity="false" default="0" comment="Website ID"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+    </table>
+</schema>

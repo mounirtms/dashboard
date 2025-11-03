@@ -1,0 +1,193 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="xtento_pdfcustomizer" translate="label" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>PDF Customizer</label>
+            <tab>xtento</tab>
+            <resource>Xtento_PdfCustomizer::configuration</resource>
+            <group id="general" translate="label" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="10">
+                <label>Extension Configuration</label>
+                <attribute type="expanded">1</attribute>
+                <frontend_model>Xtento\XtCore\Block\System\Config\Form\Xtento\Module</frontend_model>
+                <fieldset_css>Xtento_PdfCustomizer|Xtento\PdfCustomizer\Model\System\Config\Backend\Server</fieldset_css>
+                <comment>
+                    <![CDATA[
+                    <script>
+                    requirejs(['jquery', 'prototype'], function() {
+                        function setCommentHtml(message) {
+                            if (Prototype.Browser.IE) {
+                                $('xtento_pdfcustomizer_general_serial').next('p').outerHTML = message;
+                            } else {
+                                $('xtento_pdfcustomizer_general_serial').next('p').innerHTML = message;
+                            }
+                        }
+
+                        function initSystemConfiguration() {
+                            if ($('xtento_pdfcustomizer_general_server_name')) {
+                                $('xtento_pdfcustomizer_general_server_name').style.backgroundColor='#f0f0f0';
+                                $('xtento_pdfcustomizer_general_server_name').disable();
+                                if ($('row_xtento_pdfcustomizer_general_server')) {
+                                    $('row_xtento_pdfcustomizer_general_server').hide();
+                                }
+                            }
+
+                            if ($('xtento_pdfcustomizer_general_serial') && $('xtento_pdfcustomizer_general_serial').value !== '' && $('xtento_pdfcustomizer_general_server') && $('xtento_pdfcustomizer_general_server').value !== '') {
+                                if ($('xtento_pdfcustomizer_general_serial').value.length !== 40) {
+                                    setCommentHtml('<a href="http://www.xtento.com" target="_blank"><img src="//www.xtento.com/license/check/?d='+$('xtento_pdfcustomizer_general_server').value+'" border="0" style="margin-top: 4px;"/></a>');
+                                } else {
+                                    if (typeof $('xtento_pdfcustomizer_general_serial').nextSibling !== 'undefined' && typeof $('xtento_pdfcustomizer_general_serial').nextSibling.nextSibling !== 'undefined') {
+                                        setCommentHtml('<a href="http://www.xtento.com" target="_blank"><img src="//www.xtento.com/license/check/?d='+$('xtento_pdfcustomizer_general_server').value+'" border="0" style="margin-top: 4px;"/></a>');
+                                    }
+                                }
+                            } else {
+                                if ($('xtento_pdfcustomizer_general_server').value !== '') {
+                                    setCommentHtml('<a href="http://www.xtento.com" target="_blank"><img src="//www.xtento.com/license/check/?d='+$('xtento_pdfcustomizer_general_server').value+'" border="0" style="margin-top: 4px;"/></a>');
+                                }
+                            }
+                        }
+                        jQuery(document).ready(function () {
+                            initSystemConfiguration();
+                        });
+                    });
+                    </script>
+                    ]]>
+                </comment>
+                <field id="heading" translate="label" sortOrder="10" showInDefault="1">
+                    <label>General Configuration</label>
+                    <frontend_model>Magento\Config\Block\System\Config\Form\Field\Heading</frontend_model>
+                </field>
+                <field id="server_name" translate="label" sortOrder="20" showInDefault="1">
+                    <label>Server Name</label>
+                    <frontend_model>Xtento\XtCore\Block\System\Config\Form\Xtento\Servername</frontend_model>
+                </field>
+                <field id="serial" translate="label" sortOrder="30" showInDefault="1">
+                    <label>License Key</label>
+                    <comment>Please enter your license key here.</comment>
+                    <backend_model>Xtento\XtCore\Model\System\Config\Backend\License</backend_model>
+                </field>
+                <field id="enabled" translate="label" type="select" sortOrder="40" showInDefault="1">
+                    <label>Module Enabled</label>
+                    <comment>A valid license key is required in order to enable the module.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="server" translate="label" type="hidden" sortOrder="50" showInDefault="1">
+                    <label/>
+                    <backend_model>Xtento\PdfCustomizer\Model\System\Config\Backend\Server</backend_model>
+                </field>
+            </group>
+            <group id="order" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Order PDF</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <comment>If enabled, order PDFs will be customized by your settings made at "Stores - Manage PDF Templates". Also, bulk actions to print your customized PDFs will show up in the grid.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="email" translate="label comment" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Attach to email</label>
+                    <comment>Attach generated PDF file to order email?</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="frontend_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Print in frontend</label>
+                    <comment>If enabled, a link to print the PDF (using the default PDF Template you configure for this entity) will be shown to the customer at My Orders.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="invoice" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Invoice PDF</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <comment>If enabled, invoice PDFs will be customized by your settings made at "Stores - Manage PDF Templates". Also, bulk actions to print your customized PDFs will show up in the grid.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="email" translate="label comment" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Attach to email</label>
+                    <comment>Attach generated PDF file to invoice email?</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="frontend_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Print in frontend</label>
+                    <comment>If enabled, a link to print the PDF (using the default PDF Template you configure for this entity) will be shown to the customer at My Orders.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="shipment" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Shipment PDF</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <comment>If enabled, shipment PDFs will be customized by your settings made at "Stores - Manage PDF Templates". Also, bulk actions to print your customized PDFs will show up in the grid.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="email" translate="label comment" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Attach to email</label>
+                    <comment>Attach generated PDF file to shipment email?</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="frontend_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Print in frontend</label>
+                    <comment>If enabled, a link to print the PDF (using the default PDF Template you configure for this entity) will be shown to the customer at My Orders.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="creditmemo" translate="label" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Credit Memo PDF</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <comment>If enabled, credit memo PDFs will be customized by your settings made at "Stores - Manage PDF Templates". Also, bulk actions to print your customized PDFs will show up in the grid.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="email" translate="label comment" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Attach to email</label>
+                    <comment>Attach generated PDF file to credit memo email?</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="frontend_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Print in frontend</label>
+                    <comment>If enabled, a link to print the PDF (using the default PDF Template you configure for this entity) will be shown to the customer at My Orders.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="product" translate="label" type="text" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Product PDF</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <comment>If enabled, product PDFs will be customized by your settings made at "Stores - Manage PDF Templates". Also, bulk actions to print your customized PDFs will show up in the grid.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="frontend_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Print in frontend</label>
+                    <comment>If enabled, a link to print the product PDF (using the default product PDF Template you configure) will be shown on the product page.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="advanced" translate="label" type="text" sortOrder="600" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced Configuration</label>
+                <field id="disable_default_bulk_actions" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Backend: Disable built-in print actions</label>
+                    <comment>If enabled, all default "Print" actions built into Magento backend out of the box (which are not related to our extension, and thus will not be used very likely) will be hidden in the "Sales" grids, such as the Sales orders grid.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="disable_default_print_actions" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Frontend: Disable built-in print actions</label>
+                    <comment>If enabled, all default "Print" actions built into Magento frontend out of the box (which are not related to our extension, and thus will not be used very likely) will be hidden in the frontend.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="disable_print_label_action" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Disable "Print Shipping Label" action</label>
+                    <comment>If enabled, the "Print Shipping Label" action will be removed from the Sales orders grid.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
+
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-08-30T13:48:15+00:00
+ * File:          etc/adminhtml/system.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

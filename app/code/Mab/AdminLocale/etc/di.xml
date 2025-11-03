@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Force admin locale to English only and frontend to French -->
+    <type name="Magento\Framework\Locale\Resolver">
+        <plugin name="mab_frontend_locale_resolver" type="Mab\AdminLocale\Plugin\FrontendLocaleResolver" sortOrder="5"/>
+        <plugin name="mab_admin_locale_force_english" type="Mab\AdminLocale\Plugin\LocaleResolver" sortOrder="10"/>
+    </type>
+
+    <!-- Override locale config for admin area -->
+    <type name="Magento\Framework\Locale\Config">
+        <plugin name="mab_admin_locale_config" type="Mab\AdminLocale\Plugin\LocaleConfig" sortOrder="10"/>
+    </type>
+
+    <!-- Register console commands -->
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="mab_admin_remove_french" xsi:type="object">Mab\AdminLocale\Console\Command\RemoveFrenchAdmin</item>
+                <item name="mab_frontend_audit_translations" xsi:type="object">Mab\AdminLocale\Console\Command\AuditFrontendTranslations</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

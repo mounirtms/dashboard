@@ -1,0 +1,25 @@
+@media (min-width: 1200px) {
+    .ontop-element.menu-on-top {
+        .desktop-menu .vertical-menu-block {
+            .vertical-menu-content {
+                display: none !important;
+            }
+
+            &:hover {
+                .vertical-menu-content {
+                    display: block !important;
+                }
+            }
+        }
+    }
+    .desktop-menu .sm_megamenu_wrapper_vertical_menu ul.sm_megamenu_menu > li > a.sm_megamenu_head {
+        padding: 15px 5px !important;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .desktop-menu .horizontal-block .sm_megamenu_menu > li > a {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}

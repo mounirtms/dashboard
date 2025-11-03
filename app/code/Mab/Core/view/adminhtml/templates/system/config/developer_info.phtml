@@ -1,0 +1,160 @@
+<?php
+/**
+ * MAB Core - Developer Info Template
+ * 
+ * @category    Mab
+ * @package     Mab_Core
+ * @author      Mounir Abderrahmani <mounir.webdev@gmail.com>
+ * @copyright   Copyright (c) 2025 MAB Extensions
+ * 
+ * @var \Mab\Core\Block\Adminhtml\System\Config\DeveloperInfo $block
+ */
+?>
+
+<?php if ($block->isMabConfigPage()): ?>
+<div class="mab-developer-signature" style="position: fixed; bottom: 2px; right: 20px; z-index: 1000; background: white; border: 2px solid #4361ee; border-radius: 10px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 300px;">
+    <div style="text-align: center;">
+        <a href="<?= $block->escapeUrl($block->getPortfolioUrl()) ?>" target="_blank" style="text-decoration: none;">
+            <img src="<?= $block->escapeUrl($block->getMabSignatureUrl()) ?>" 
+                 alt="MAB Extensions" 
+                 style="width: 150px; height: auto; margin-bottom: 2px;" />
+        </a>
+    <!-- 
+        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+            Professional Magento 2 Extensions
+        </div>
+        <a href="<?= $block->escapeUrl($block->getPortfolioUrl()) ?>" 
+           target="_blank" 
+           class="portfolio-link" 
+           style="display: inline-block; background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%); color: white; padding: 6px 15px; border-radius: 20px; text-decoration: none; font-size: 11px; font-weight: bold; transition: all 0.3s ease;">
+            Visit Portfolio
+        </a>
+-->
+    </div>
+</div>
+
+<script type="text/javascript">
+require(['jquery'], function($) {
+    $(document).ready(function() {
+        // Add MAB styling to configuration sections
+        $('.section-config').each(function() {
+            var $section = $(this);
+            var sectionId = $section.attr('id');
+            
+            if (sectionId && (sectionId.indexOf('mab_') === 0 || sectionId.indexOf('carriers_yalidine') === 0)) {
+                $section.addClass('mab-extension-section');
+                
+                // Add professional badge to MAB sections
+                var $heading = $section.find('.config-heading');
+                if ($heading.length && !$heading.find('.mab-professional-badge').length) {
+                    $heading.append('<span class="mab-professional-badge">Professional</span>');
+                }
+            }
+        });
+        
+        // Add click tracking for portfolio link
+        $('.portfolio-link').on('click', function() {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'click', {
+                    'event_category': 'MAB Extensions',
+                    'event_label': 'Portfolio Link',
+                    'value': 1
+                });
+            }
+        });
+        
+        // Add hover effects to MAB configuration fields
+        $('.mab-extension-section .form-field').hover(
+            function() {
+                $(this).css('background-color', 'rgba(67, 97, 238, 0.02)');
+            },
+            function() {
+                $(this).css('background-color', '');
+            }
+        );
+    });
+});
+</script>
+
+<style>
+.mab-extension-section {
+    border: 1px solid #4361ee !important;
+    border-radius: 8px !important;
+    background: linear-gradient(135deg, rgba(67, 97, 238, 0.02) 0%, rgba(114, 9, 183, 0.02) 100%) !important;
+    margin: 15px 0 !important;
+    padding: 20px !important;
+}
+
+.mab-extension-section .config-heading {
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    font-weight: bold !important;
+    font-size: 18px !important;
+}
+
+.mab-professional-badge {
+    display: inline-block !important;
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%) !important;
+    color: white !important;
+    padding: 3px 10px !important;
+    border-radius: 15px !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-left: 10px !important;
+    vertical-align: middle !important;
+}
+
+.portfolio-link:hover {
+    background: linear-gradient(135deg, #3a0ca3 0%, #f72585 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3) !important;
+}
+</style>
+<?php endif; ?>
+
+<?php if ($block->getRequest()->getParam('section') === 'mab_core'): ?>
+<div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #4361ee;">
+    <h3 style="color: #4361ee; margin-bottom: 15px;">
+        <img src="<?= $block->escapeUrl($block->getMabIconUrl()) ?>" 
+             alt="MAB" 
+             style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;" />
+        MAB Extensions Overview
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-top: 20px;">
+        <?php foreach ($block->getMabModules() as $moduleName => $moduleData): ?>
+        <div class="mab-extension-card" style="background: white; border: 1px solid #e3e3e3; border-radius: 6px; padding: 15px;">
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                    <img src="<?= $block->escapeUrl($block->getMabIconUrl()) ?>" 
+                         alt="MAB" 
+                         style="width: 16px; height: 16px; filter: brightness(0) invert(1);" />
+                </div>
+                <div>
+                    <h4 style="margin: 0; font-size: 14px; color: #333;"><?= $block->escapeHtml(str_replace('Mab_', '', $moduleName)) ?></h4>
+                    <div style="font-size: 11px; color: #666;">v<?= $block->escapeHtml($moduleData['setup_version'] ?? '1.0.0') ?></div>
+                </div>
+            </div>
+            <p style="font-size: 12px; color: #666; margin: 0; line-height: 1.4;">
+                <?= $block->escapeHtml($block->getModuleDescription($moduleName)) ?>
+            </p>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    
+    <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e3e3e3;">
+        <p style="color: #666; margin-bottom: 15px; font-style: italic;">
+            "Crafting professional Magento 2 solutions with precision and innovation"
+        </p>
+        <a href="<?= $block->escapeUrl($block->getPortfolioUrl()) ?>" 
+           target="_blank" 
+           style="display: inline-block; background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%); color: white; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-weight: bold; transition: all 0.3s ease;">
+            🚀 Explore My Portfolio
+        </a>
+    </div>
+</div>
+<?php endif; ?>

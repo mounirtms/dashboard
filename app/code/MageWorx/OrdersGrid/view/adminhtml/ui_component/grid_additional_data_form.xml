@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+-->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">grid_additional_data_form.grid_additional_data_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">General Information</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="save_and_continue" class="MageWorx\OrdersGrid\Block\Adminhtml\GridAdditionalData\Edit\SaveAndContinueButton"/>
+            <button name="save" class="MageWorx\OrdersGrid\Block\Adminhtml\GridAdditionalData\Edit\SaveButton"/>
+            <button name="delete" class="MageWorx\OrdersGrid\Block\Adminhtml\GridAdditionalData\Edit\DeleteButton"/>
+            <button name="back" class="MageWorx\OrdersGrid\Block\Adminhtml\GridAdditionalData\Edit\BackButton"/>
+        </buttons>
+        <namespace>grid_additional_data_form</namespace>
+        <dataScope>data.general</dataScope>
+        <deps>
+            <dep>grid_additional_data_form.grid_additional_data_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="grid_additional_data_form_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="mageworx_ordersgrid/gridAdditionalData/save"/>
+        </settings>
+        <dataProvider class="MageWorx\OrdersGrid\Ui\DataProvider\GridAdditionalData\GridAdditionalDataDataProvider" name="grid_additional_data_form_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="general">
+        <settings>
+            <label>General</label>
+            <collapsible>false</collapsible>
+        </settings>
+        <field name="entity_id" formElement="input">
+            <settings>
+                <dataType>text</dataType>
+                <visible>false</visible>
+                <dataScope>entity_id</dataScope>
+            </settings>
+        </field>
+        <field name="is_active" sortOrder="10" formElement="checkbox">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Enabled</label>
+                <dataScope>is_active</dataScope>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                        <prefer>toggle</prefer>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="name" formElement="input" sortOrder="70">
+            <settings>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+                <dataType>text</dataType>
+                <label translate="true">Name</label>
+                <notice translate="true">Internal name of the mark.</notice>
+                <dataScope>name</dataScope>
+            </settings>
+        </field>
+
+        <field name="sort_order" formElement="input" sortOrder="80">
+            <settings>
+                <visible>true</visible>
+                <dataScope>sort_order</dataScope>
+                <dataType>number</dataType>
+                <label translate="true">Sort Order</label>
+                <notice translate="true">Mark Rules with the lowest sort order will be applied first.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                    <rule name="validate-greater-than-zero" xsi:type="boolean">true</rule>
+                    <rule name="validate-number" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+
+        <field name="row_color" formElement="colorPicker" sortOrder="90">
+            <settings>
+                <label translate="true">Row Color</label>
+                <componentType>colorPicker</componentType>
+                <placeholder translate="true">No Color</placeholder>
+                <validation>
+                    <rule name="validate-color" xsi:type="boolean">true</rule>
+                </validation>
+                <dataScope>row_color</dataScope>
+                <additionalClasses>
+                    <class name="admin__field-medium">true</class>
+                </additionalClasses>
+            </settings>
+            <formElements>
+                <colorPicker>
+                    <settings>
+                        <colorPickerMode>full</colorPickerMode>
+                        <colorFormat>rgb</colorFormat>
+                    </settings>
+                </colorPicker>
+            </formElements>
+        </field>
+
+        <field name="icon_image_data" sortOrder="100" formElement="imageUploader">
+            <settings>
+                <elementTmpl>ui/form/element/uploader/image</elementTmpl>
+                <componentType>imageUploader</componentType>
+                <dataType>string</dataType>
+                <label translate="true">Icon</label>
+                <visible>true</visible>
+                <required>false</required>
+                <dataScope>icon_image_data</dataScope>
+            </settings>
+            <formElements>
+                <imageUploader>
+                    <settings>
+                        <required>false</required>
+                        <isMultipleFiles>false</isMultipleFiles>
+                        <uploaderConfig>
+                            <param xsi:type="url" name="url" path="mageworx_ordersgrid/gridAdditionalData_image/upload"/>
+                        </uploaderConfig>
+                        <allowedExtensions>jpg jpeg gif png</allowedExtensions>
+                        <maxFileSize>500000</maxFileSize>
+                    </settings>
+                </imageUploader>
+            </formElements>
+        </field>
+    </fieldset>
+
+    <fieldset name="conditions">
+        <settings>
+            <label>Conditions</label>
+            <collapsible>false</collapsible>
+        </settings>
+
+        <!-- Shipping Methods Limitation -->
+        <field name="order_statuses"
+               formElement="multiselect"
+               component="Magento_Ui/js/form/element/multiselect"
+               sortOrder="120">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Order status</label>
+                <dataScope>order_statuses</dataScope>
+                <notice translate="true">Apply this mark to the orders with the selected statuses. Leave blank for all.</notice>
+            </settings>
+            <formElements>
+                <multiselect>
+                    <settings>
+                        <options class="Magento\Sales\Ui\Component\Listing\Column\Status\Options"/>
+                    </settings>
+                </multiselect>
+            </formElements>
+        </field>
+
+        <field name="payment_methods"
+               formElement="multiselect"
+               component="Magento_Ui/js/form/element/multiselect"
+               sortOrder="130">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Payment method(s)</label>
+                <dataScope>payment_methods</dataScope>
+                <notice translate="true">Apply this mark to the orders with the selected shipping methods. Leave blank for all.</notice>
+            </settings>
+            <formElements>
+                <multiselect>
+                    <settings>
+                        <options class="Magento\Payment\Ui\Component\Listing\Column\Method\Options"/>
+                    </settings>
+                </multiselect>
+            </formElements>
+        </field>
+
+        <field name="shipping_methods"
+               formElement="multiselect"
+               component="Magento_Ui/js/form/element/multiselect"
+               sortOrder="140">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Shipping method(s)</label>
+                <dataScope>shipping_methods</dataScope>
+                <notice translate="true">Apply this mark to the orders with the selected payment methods. Leave blank for all.</notice>
+            </settings>
+            <formElements>
+                <multiselect>
+                    <settings>
+                        <options class="MageWorx\OrdersGrid\Model\Config\Source\ShippingMethods"/>
+                    </settings>
+                </multiselect>
+            </formElements>
+        </field>
+    </fieldset>
+</form>

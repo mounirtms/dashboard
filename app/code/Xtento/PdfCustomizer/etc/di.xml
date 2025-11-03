@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Xtento\PdfCustomizer\Api\Data\TemplatesInterface"
+                type="Xtento\PdfCustomizer\Model\PdfTemplate" />
+    <preference for="Xtento\PdfCustomizer\Api\TemplatesRepositoryInterface"
+                type="Xtento\PdfCustomizer\Model\PdfTemplateRepository" />
+    <preference for="Magento\Sales\Block\Order\Invoice\Items"
+                type="Xtento\PdfCustomizer\Block\Sales\Order\Invoice\Items" />
+    <preference for="Magento\Shipping\Block\Items"
+                type="Xtento\PdfCustomizer\Block\Sales\Shipment\Items" />
+    <preference for="Magento\Sales\Block\Order\Creditmemo\Items"
+                type="Xtento\PdfCustomizer\Block\Sales\Order\Creditmemo\Items" />
+    <preference for="\Magento\Framework\Mail\Template\TransportBuilder"
+                type="Xtento\PdfCustomizer\Model\Email\TransportBuilder"/>
+    <preference for="\Magento\Sales\Model\Order\Email\SenderBuilder"
+                type="Xtento\PdfCustomizer\Model\Email\SenderBuilder"/>
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="xtento_pdf_templates_data_source" xsi:type="string">Xtento\PdfCustomizer\Model\ResourceModel\PdfTemplate\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Xtento\PdfCustomizer\Model\ResourceModel\PdfTemplate\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">xtento_pdf_templates</argument>
+            <argument name="eventPrefix" xsi:type="string">xtento_pdf_templates_grid_collection</argument>
+            <argument name="eventObject" xsi:type="string">templates_grid_collection</argument>
+            <argument name="resourceModel" xsi:type="string">Xtento\PdfCustomizer\Model\ResourceModel\PdfTemplate</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="TemplatesGridDataProvider" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Xtento\PdfCustomizer\Model\Resource\PdfTemplate\Grid\Collection</argument>
+            <argument name="filterPool" xsi:type="object" shared="false">TemplatesGirdFilterPool</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Xtento\PdfCustomizer\Ui\Component\Sales\Order\Masspdf\Pdftemplates">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item name="urlPath" xsi:type="string">xtento_pdf/order_massaction/printpdf</item>
+                <item name="paramName" xsi:type="string">template_id</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Xtento\PdfCustomizer\Ui\Component\Sales\Order\Invoice\Masspdf\Pdftemplates">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item name="urlPath" xsi:type="string">xtento_pdf/order_massaction/printpdfinvoice</item>
+                <item name="paramName" xsi:type="string">template_id</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Xtento\PdfCustomizer\Ui\Component\Sales\Invoice\Masspdf\Pdftemplates" type="Xtento\PdfCustomizer\Ui\Component\Sales\Order\Invoice\Masspdf\Pdftemplates">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item name="urlPath" xsi:type="string">xtento_pdf/order_massaction_invoice/printpdf</item>
+                <item name="paramName" xsi:type="string">template_id</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Xtento\PdfCustomizer\Ui\Component\Sales\Order\Shipment\Masspdf\Pdftemplates">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item name="urlPath" xsi:type="string">xtento_pdf/order_massaction/printpdfshipment</item>
+                <item name="paramName" xsi:type="string">template_id</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Xtento\PdfCustomizer\Ui\Component\Sales\Shipment\Masspdf\Pdftemplates" type="Xtento\PdfCustomizer\Ui\Component\Sales\Order\Shipment\Masspdf\Pdftemplates">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item name="urlPath" xsi:type="string">xtento_pdf/order_massaction_shipment/printpdf</item>
+                <item name="paramName" xsi:type="string">template_id</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Xtento\PdfCustomizer\Ui\Component\Sales\Order\Creditmemo\Masspdf\Pdftemplates">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item name="urlPath" xsi:type="string">xtento_pdf/order_massaction/printpdfcreditmemo</item>
+                <item name="paramName" xsi:type="string">template_id</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Xtento\PdfCustomizer\Ui\Component\Sales\Creditmemo\Masspdf\Pdftemplates" type="Xtento\PdfCustomizer\Ui\Component\Sales\Order\Creditmemo\Masspdf\Pdftemplates">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item name="urlPath" xsi:type="string">xtento_pdf/order_massaction_creditmemo/printpdf</item>
+                <item name="paramName" xsi:type="string">template_id</item>
+            </argument>
+        </arguments>
+    </virtualType>
+</config>
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-10-09T13:02:46+00:00
+ * File:          etc/di.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

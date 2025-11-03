@@ -1,0 +1,227 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="mab_extensions" translate="label" sortOrder="200">
+            <label>MAB Extensions</label>
+        </tab>
+        
+        <section id="mab_delivery_options" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label><![CDATA[MAB Delivery Options]]></label>
+            <tab>mab_extensions</tab>
+            <resource>Mab_DeliveryOptions::delivery_config</resource>
+            
+            <!-- Mageplaza Integration Group -->
+            <group id="mageplaza_integration" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Mageplaza Integration Settings</label>
+                
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Mageplaza Integration</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable integration with Mageplaza Table Rate Shipping</comment>
+                </field>
+                
+                <field id="override_methods" translate="label" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Override Shipping Methods</label>
+                    <source_model>Mab\DeliveryOptions\Model\Config\Source\MageplazaMethods</source_model>
+                    <comment>Select Mageplaza methods to override with MAB delivery options</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="yalidine_method_codes" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Yalidine Method Codes</label>
+                    <comment>Comma-separated list of Mageplaza method codes for Yalidine (default: 2,24)</comment>
+                    <validate>validate-alphanum-with-spaces</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="hide_yalidine_carrier" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Hide Yalidine Carrier</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Hide the native Yalidine carrier when Mageplaza methods 2,24 are active</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="debug_mageplaza" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Debug Mageplaza Integration</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Log Mageplaza integration activities</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+            
+            <!-- Amasty Integration Group -->
+            <group id="amasty_integration" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Amasty Integration Settings</label>
+                
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Amasty Integration</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable integration with Amasty Store Locator</comment>
+                </field>
+                
+                <field id="store_pickup_enabled" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Store Pickup</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Allow customers to pick up orders from stores</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="pickup_fee" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Store Pickup Fee</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <comment>Fee for store pickup (0 for free pickup)</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="store_pickup_enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="pickup_time_slots" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Pickup Time Slots</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable time slot selection for store pickup</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="store_pickup_enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="debug_amasty" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Debug Amasty Integration</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Log Amasty integration activities</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+        
+        <section id="carriers">
+            <group id="yalidine" translate="label" type="text" sortOrder="340" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label><![CDATA[Yalidine Shipping by MAB]]></label>
+                
+                <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable Yalidine carrier</comment>
+                </field>
+                
+                <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <comment>Carrier title displayed to customers</comment>
+                </field>
+                
+                <field id="name" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Method Name</label>
+                    <comment>Method name displayed to customers</comment>
+                </field>
+                
+                <field id="price" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Default Price</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <comment>Default shipping price (will be overridden by free shipping rules)</comment>
+                </field>
+                
+                <!-- Free Shipping Override Configuration -->
+                <field id="free_shipping_enabled" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Free Shipping Override</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Override Mageplaza Yalidin methods (codes 2 and 24) to make them free when conditions are met</comment>
+                </field>
+                
+                <field id="free_shipping_minimum" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Minimum Order Amount for Free Shipping</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <comment>Minimum cart total to qualify for free Yalidin shipping (in base currency). Only applies to Algeria destinations.</comment>
+                    <depends>
+                        <field id="free_shipping_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="free_shipping_eligible_skus" translate="label" type="textarea" sortOrder="65" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Eligible SKUs (optional)</label>
+                    <comment>Comma or line separated list of SKUs allowed for free Yalidine shipping. If set, at least one cart item must be in this list.</comment>
+                    <depends>
+                        <field id="free_shipping_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="free_shipping_excluded_skus" translate="label" type="textarea" sortOrder="66" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Excluded SKUs (optional)</label>
+                    <comment>Comma or line separated list of SKUs that disqualify the cart from free Yalidine shipping. Any excluded SKU in cart prevents free shipping.</comment>
+                    <depends>
+                        <field id="free_shipping_enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="free_shipping_customer_groups" translate="label" type="multiselect" sortOrder="67" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Eligible Customer Groups</label>
+                    <comment>Select customer groups eligible for free shipping (leave empty for all groups)</comment>
+                    <source_model>Magento\Customer\Model\Customer\Source\Group</source_model>
+                    <depends>
+                        <field id="free_shipping_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="free_shipping_categories" translate="label" type="multiselect" sortOrder="68" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Eligible Categories</label>
+                    <comment>Select categories eligible for free shipping (leave empty for all categories)</comment>
+                    <source_model>Magento\Catalog\Model\Config\Source\Category</source_model>
+                    <depends>
+                        <field id="free_shipping_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="free_shipping_time_restrictions" translate="label" type="select" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Time Restrictions</label>
+                    <comment>Enable time-based restrictions for free shipping</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="free_shipping_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="free_shipping_days_of_week" translate="label" type="multiselect" sortOrder="72" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Eligible Days of Week</label>
+                    <comment>Select days when free shipping is available</comment>
+                    <source_model>Mab\DeliveryOptions\Model\Config\Source\DaysOfWeek</source_model>
+                    <depends>
+                        <field id="free_shipping_enabled">1</field>
+                        <field id="free_shipping_time_restrictions">1</field>
+                    </depends>
+                </field>
+
+                <field id="free_shipping_visual_effects" translate="label" type="select" sortOrder="73" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Visual Effects</label>
+                    <comment>Show visual effects when free shipping conditions are met (requires Visual Effects module)</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="free_shipping_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="debug_enabled" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Debug Logging</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Log shipping rate calculations for debugging (logs to system.log with [MAB Delivery] prefix)</comment>
+                </field>
+
+                <field id="sort_order" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <validate>validate-number</validate>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,409 @@
+/**
+ * MAB Extensions - Admin Interface Styling
+ * 
+ * @category    Mab
+ * @package     Mab_Core
+ * @author      Mounir Abderrahmani <mounir.webdev@gmail.com>
+ * @copyright   Copyright (c) 2025 MAB Extensions
+ */
+
+/* MAB Extensions Tab Styling - Enhanced Professional Look */
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab"] .admin__page-nav-link {
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+    color: white !important;
+    border-radius: 6px;
+    margin: 3px 0;
+    padding: 12px 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(67, 97, 238, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab"] .admin__page-nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab"] .admin__page-nav-link:hover {
+    background: linear-gradient(135deg, #3a0ca3 0%, #f72585 100%);
+    transform: translateX(5px) translateY(-1px);
+    box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+}
+
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab"] .admin__page-nav-link:hover::before {
+    left: 100%;
+}
+
+/* MAB Logo in Menu - Enhanced Professional Integration */
+.admin__menu .item-mab-core--mab.level-0 > a:before {
+    content: '\e602';
+    font-family: 'Admin Icons';
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    margin-right: 10px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+    color: #ffffff;
+}
+
+/* MAB Extensions Menu Item Highlighting - Professional Style */
+.admin__menu .item-mab-core--mab.level-0 > a {
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%) !important;
+    color: white !important;
+    border-radius: 6px;
+    margin: 3px 6px;
+    padding: 10px 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+    position: relative;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.admin__menu .item-mab-core--mab.level-0 > a:hover {
+    background: linear-gradient(135deg, #3a0ca3 0%, #f72585 100%) !important;
+    transform: translateX(4px) scale(1.02);
+    box-shadow: 0 4px 16px rgba(67, 97, 238, 0.5);
+}
+
+.admin__menu .item-mab-core--mab.level-0 > a:hover:before {
+    transform: scale(1.1);
+}
+
+/* MAB Configuration Section Headers - Professional Enhancement */
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_core"] .admin__page-nav-link,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_delivery"] .admin__page-nav-link,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_checkout"] .admin__page-nav-link,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_admin"] .admin__page-nav-link,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_social"] .admin__page-nav-link,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_source"] .admin__page-nav-link,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_guest"] .admin__page-nav-link,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_theme"] .admin__page-nav-link,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_license"] .admin__page-nav-link {
+    position: relative;
+    padding-left: 45px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_core"] .admin__page-nav-link:before,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_delivery"] .admin__page-nav-link:before,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_checkout"] .admin__page-nav-link:before,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_admin"] .admin__page-nav-link:before,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_social"] .admin__page-nav-link:before,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_source"] .admin__page-nav-link:before,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_guest"] .admin__page-nav-link:before,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_theme"] .admin__page-nav-link:before,
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab_license"] .admin__page-nav-link:before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    background-image: url('../images/mab-icon.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 1px 3px rgba(67, 97, 238, 0.3));
+}
+
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab"] .admin__page-nav-link:hover:before {
+    transform: translateY(-50%) scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 2px 6px rgba(67, 97, 238, 0.5));
+}
+
+/* Yalidine Carrier Styling */
+.carriers-yalidine .section-config {
+    border: 2px solid #4361ee;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(114, 9, 183, 0.05) 100%);
+    padding: 20px;
+    margin: 10px 0;
+}
+
+.carriers-yalidine .section-config .config-heading {
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* MAB Checkout Customization Styling */
+.mab-checkout .section-config {
+    border: 2px solid #7209b7;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(114, 9, 183, 0.05) 0%, rgba(67, 97, 238, 0.05) 100%);
+    padding: 20px;
+    margin: 10px 0;
+}
+
+.mab-checkout .section-config .config-heading {
+    background: linear-gradient(135deg, #7209b7 0%, #4361ee 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Professional Badge */
+.mab-professional-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+/* MAB Extension Cards */
+.mab-extension-card {
+    background: white;
+    border: 1px solid #e3e3e3;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.mab-extension-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(67, 97, 238, 0.15);
+    border-color: #4361ee;
+}
+
+.mab-extension-card .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mab-extension-card .card-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mab-extension-card .card-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+.mab-extension-card .card-description {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* Developer Signature */
+.mab-developer-signature {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(114, 9, 183, 0.05) 100%);
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.mab-developer-signature img {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.mab-developer-signature .signature-text {
+    color: #666;
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
+.mab-developer-signature .portfolio-link {
+    display: inline-block;
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.mab-developer-signature .portfolio-link:hover {
+    background: linear-gradient(135deg, #3a0ca3 0%, #f72585 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .mab-extension-card .card-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .mab-extension-card .card-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .mab-developer-signature img {
+        max-width: 150px;
+    }
+}
+
+/* Animation for MAB elements - Enhanced Professional Animations */
+@keyframes mab-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes mab-glow {
+    0% { box-shadow: 0 0 5px rgba(67, 97, 238, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(67, 97, 238, 0.6), 0 0 30px rgba(114, 9, 183, 0.4); }
+    100% { box-shadow: 0 0 5px rgba(67, 97, 238, 0.3); }
+}
+
+@keyframes mab-slideIn {
+    0% { transform: translateX(-20px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+.mab-animated {
+    animation: mab-pulse 3s infinite ease-in-out;
+}
+
+.mab-glow-effect {
+    animation: mab-glow 4s infinite ease-in-out;
+}
+
+.mab-slide-in {
+    animation: mab-slideIn 0.6s ease-out;
+}
+
+/* Professional MAB Branding Badge */
+.mab-professional-signature {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 10px 0;
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    transition: all 0.3s ease;
+}
+
+.mab-professional-signature:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(67, 97, 238, 0.5);
+}
+
+.mab-professional-signature::before {
+    content: '⚡';
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+/* Enhanced Tab Icon Integration */
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab"] {
+    position: relative;
+}
+
+.config-nav-block .admin__page-nav-item[data-ui-id*="mab"]::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: mab-pulse 2s infinite;
+}
+
+/* Success Messages */
+.mab-success-message {
+    background: linear-gradient(135deg, #00d4aa 0%, #4361ee 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+}
+
+.mab-success-message:before {
+    content: '✓';
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Loading States */
+.mab-loading {
+    position: relative;
+    opacity: 0.7;
+}
+
+.mab-loading:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #4361ee;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: mab-spin 1s linear infinite;
+}
+
+@keyframes mab-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

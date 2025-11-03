@@ -1,0 +1,274 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="mab_extensions" translate="label" sortOrder="200">
+            <label><![CDATA[<img src="{{view url="Mab_Core::images/mab-icon.svg"}}" alt="MAB" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"/>MAB Extensions]]></label>
+        </tab>
+        <section id="mab_core" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label><![CDATA[Core Settings]]></label>
+            <tab>mab_extensions</tab>
+            <resource>Mab_Core::core_config</resource>
+            <group id="license" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>License Settings</label>
+                <field id="key" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>License Key</label>
+                    <comment>Enter your MAB extensions license key</comment>
+                </field>
+                <field id="status" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>License Status</label>
+                    <frontend_model>Mab\Core\Block\Adminhtml\System\Config\LicenseStatus</frontend_model>
+                </field>
+            </group>
+
+            <group id="module_management" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Module Management</label>
+                <comment><![CDATA[Control the activation status of all MAB modules from this central location.]]></comment>
+                
+                <field id="delivery_options_enabled" translate="label comment" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Delivery Options</label>
+                    <comment>Enable or disable the Mab_DeliveryOptions module (Yalidine integration)</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="checkout_customization_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Checkout Customization</label>
+                    <comment>Enable or disable the Mab_CheckoutCustomization module</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="admin_locale_enabled" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Admin Locale Control</label>
+                    <comment>Enable or disable the Mab_AdminLocale module</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="source_selector_enabled" translate="label comment" type="select" sortOrder="17" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Source Selector</label>
+                    <comment>Enable or disable the Mab_SourceSelector module</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="visual_effects_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Visual Effects</label>
+                    <comment>Enable or disable the Mab_VisualEffects module</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="social_login_enabled" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Social Login</label>
+                    <comment>Enable or disable the Mab_SocialLogin module</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="guest_checkout_enabled" translate="label comment" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Guest Checkout</label>
+                    <comment>Enable or disable the Mab_GuestCheckout module</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="theme_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Theme Settings</label>
+                    <comment>Enable or disable the Mab_Theme module</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="general_settings" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+                <field id="logo_enabled" translate="label comment" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Custom Logo</label>
+                    <comment>Enable custom logo for MAB extensions</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="logo_path" translate="label comment" type="image" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Upload Logo</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
+                    <upload_dir>mab/logo</upload_dir>
+                    <base_url type="media" scope_info="1">mab/logo</base_url>
+                    <comment>Allowed file types: jpg, jpeg, gif, png, svg</comment>
+                    <depends>
+                        <field id="logo_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="debug_mode" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Debug Mode</label>
+                    <comment>Enable debug mode for MAB modules</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="log_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Logging</label>
+                    <comment>Enable logging for MAB modules</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="verbose_logging" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Verbose Logging</label>
+                    <comment>Enable detailed verbose logging for debugging</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="log_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="performance_monitoring" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Performance Monitoring</label>
+                    <comment>Enable performance monitoring and metrics collection</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            
+            <group id="debugging" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced Debugging</label>
+                <comment><![CDATA[Advanced debugging options for MAB modules troubleshooting.]]></comment>
+                
+                <field id="delivery_debug" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery Options Debug</label>
+                    <comment>Enable detailed debugging for delivery options and shipping methods</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="checkout_debug" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Checkout Debug</label>
+                    <comment>Enable debugging for checkout customization</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="api_debug" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Debug</label>
+                    <comment>Enable API debugging for external integrations</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="debug_log_file" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Debug Log File</label>
+                    <comment>Custom log file name for MAB debugging (default: mab_debug.log)</comment>
+                </field>
+            </group>
+            
+            <group id="performance" translate="label" type="text" sortOrder="27" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Performance Optimization</label>
+                <comment><![CDATA[Settings to optimize system performance and reduce resource usage.]]></comment>
+                
+                <group id="elasticsearch" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Elasticsearch Performance</label>
+                    <field id="batch_size" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Bulk Indexing Batch Size</label>
+                        <comment>Number of products to index in each batch during Elasticsearch reindexing operations. Lower values reduce CPU usage but increase total indexing time. (Default: 100)</comment>
+                        <validate>validate-number validate-zero-or-greater</validate>
+                        <backend_model>Mab\Core\Model\Config\Backend\ElasticsearchBatchSize</backend_model>
+                    </field>
+                    <field id="refresh_interval" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Refresh Interval</label>
+                        <comment>Controls how often Elasticsearch refreshes indices. Setting to -1 disables automatic refreshing, reducing CPU usage during heavy indexing.</comment>
+                        <source_model>Mab\Core\Model\Config\Source\RefreshInterval</source_model>
+                    </field>
+                    <field id="replica_count" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Replica Count During Indexing</label>
+                        <comment>Setting replica count to 0 during indexing reduces cluster overhead and improves indexing performance.</comment>
+                        <source_model>Mab\Core\Model\Config\Source\ReplicaCount</source_model>
+                    </field>
+                    <field id="disable_during_indexing" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Disable During Indexing</label>
+                        <comment>Temporarily disable Elasticsearch during heavy indexing operations to preserve system resources.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                </group>
+                
+                <group id="database" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Database Performance</label>
+                    <field id="query_batch_size" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Query Batch Size</label>
+                        <comment>Number of records to process in each database query. Lower values reduce memory usage but increase total processing time. (Default: 1000)</comment>
+                        <validate>validate-number validate-zero-or-greater</validate>
+                    </field>
+                    <field id="indexing_disabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Disable Non-Essential Indexing</label>
+                        <comment>Disabling non-essential indexing operations during peak hours can significantly reduce database load.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                </group>
+            </group>
+            
+            <group id="firebase" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Firebase Configuration &amp; Licensing</label>
+                <comment><![CDATA[Firebase integration for license validation and analytics. All modules are in beta and licensed by default.]]></comment>
+                
+                <field id="enabled" translate="label comment" type="select" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Firebase Integration</label>
+                    <comment>Enable Firebase for licensing and analytics</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="config" translate="label comment" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Firebase Configuration JSON</label>
+                    <comment><![CDATA[Enter your Firebase configuration JSON. <a href="https://console.firebase.google.com" target="_blank">Get Firebase Config</a>]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="project_id" translate="label comment" type="text" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Firebase Project ID</label>
+                    <comment>Your Firebase project identifier</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="api_key" translate="label comment" type="obscure" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Firebase API Key</label>
+                    <comment>Your Firebase web API key</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="license_collection" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>License Collection Name</label>
+                    <comment>Firestore collection name for license validation (default: mab_licenses)</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="beta_mode" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Beta Mode</label>
+                    <comment>Enable beta mode (all modules automatically licensed)</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="license_status" translate="label" type="text" sortOrder="35" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Current License Status</label>
+                    <frontend_model>Mab\Core\Block\Adminhtml\System\Config\Firebase\LicenseStatus</frontend_model>
+                </field>
+                
+                <field id="sync_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable License Sync</label>
+                    <comment>Automatically sync license status with Firebase</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+            
+            <group id="documentation" translate="label" type="text" sortOrder="35" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Documentation &amp; README Access</label>
+                <comment><![CDATA[Access comprehensive documentation for all MAB modules.]]></comment>
+                
+                <field id="readme_viewer" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Module Documentation</label>
+                    <frontend_model>Mab\Core\Block\Adminhtml\System\Config\Documentation\ReadmeViewer</frontend_model>
+                </field>
+                
+                <field id="troubleshooting_guide" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Troubleshooting Guide</label>
+                    <frontend_model>Mab\Core\Block\Adminhtml\System\Config\Documentation\TroubleshootingGuide</frontend_model>
+                </field>
+                
+                <field id="deployment_guide" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Deployment Guide</label>
+                    <frontend_model>Mab\Core\Block\Adminhtml\System\Config\Documentation\DeploymentGuide</frontend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="xtento_pdfcustomizer_build_transport_after">
+        <observer instance="Xtento\PdfCustomizer\Observer\CustomVariables\AmastyOrderAttributes" name="xtento_pdfcustomizer_custom_variables_amasty_orderattributes"/>
+        <observer instance="Xtento\PdfCustomizer\Observer\CustomVariables\AmastySingleStepCheckout" name="xtento_pdfcustomizer_custom_variables_amasty_singlestepcheckout"/>
+    </event>
+</config>
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-12-04T13:49:34+00:00
+ * File:          etc/events.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

@@ -1,0 +1,65 @@
+<?php declare(strict_types=1);
+
+/**
+ * GoogleTagManager2 plugin for Magento
+ *
+ * @author      Yireo (http://www.yireo.com/)
+ * @copyright   Copyright (c) 2023 Yireo (http://www.yireo.com/)
+ * @license     Open Software License
+ */
+?>
+<script>
+    function yireoGoogleTagManager2Pusher(eventData, message, callback) {
+        window.YIREO_GOOGLETAGMANAGER2_PAST_EVENTS = window.YIREO_GOOGLETAGMANAGER2_PAST_EVENTS || [];
+
+        function doCallback(cb) {
+            if (undefined === cb) {
+                return;
+            }
+
+            cb();
+        }
+
+        
+        const copyEventData = Object.assign({}, eventData);
+        let metaData = {};
+        if (copyEventData.meta) {
+            metaData = copyEventData.meta;
+            delete copyEventData.meta;
+        }
+
+        const eventHash = btoa(encodeURIComponent(JSON.stringify(copyEventData)));
+        if (window.YIREO_GOOGLETAGMANAGER2_PAST_EVENTS.includes(eventHash)) {
+            yireoGoogleTagManager2Logger('Warning: Event already triggered', eventData);
+            doCallback(callback);
+            return;
+        }
+
+        if (metaData && metaData.allowed_pages && metaData.allowed_pages.length > 0
+            && false === metaData.allowed_pages.some(page => window.location.pathname.includes(page))) {
+            yireoGoogleTagManager2Logger('Warning: Skipping event, not in allowed pages', window.location.pathname, eventData);
+            doCallback(callback);
+            return;
+        }
+
+        if (!message) {
+            message = 'push (unknown) [unknown]';
+        }
+
+        yireoGoogleTagManager2Logger(message, eventData);
+        window.dataLayer = window.dataLayer || [];
+
+        if (eventData.ecommerce) {
+            window.dataLayer.push({ecommerce: null});
+        }
+
+        try {
+            window.dataLayer.push(eventData);
+            window.YIREO_GOOGLETAGMANAGER2_PAST_EVENTS.push(eventHash);
+        } catch(error) {
+            doCallback(callback);
+        }
+
+        doCallback(callback);
+    }
+</script>

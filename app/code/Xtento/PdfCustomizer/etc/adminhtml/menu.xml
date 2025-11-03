@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Xtento_PdfCustomizer::configuration" title="PDF Customizer" module="Xtento_PdfCustomizer" sortOrder="151" parent="Xtento_XtCore::extensions" action="adminhtml/system_config/edit/section/xtento_pdfcustomizer" resource="Xtento_PdfCustomizer::configuration"/>
+        <add id="Xtento_PdfCustomizer::menu" title="PDF Customizer" module="Xtento_PdfCustomizer" sortOrder="100" parent="Magento_Backend::stores" resource="Xtento_PdfCustomizer::menu"/>
+        <add id="Xtento_PdfCustomizer::templates" title="Manage PDF Templates" module="Xtento_PdfCustomizer" sortOrder="10" parent="Xtento_PdfCustomizer::menu" action="xtento_pdf/templates" resource="Xtento_PdfCustomizer::templates"/>
+    </menu>
+</config>
+
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-02-05T17:13:45+00:00
+ * File:          etc/adminhtml/menu.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

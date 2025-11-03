@@ -1,0 +1,17 @@
+<?php declare(strict_types=1);
+
+use Magento\Framework\View\Element\Template;
+use Yireo\GoogleTagManager2\ViewModel\DataLayer;
+
+/** @var DataLayer $dataLayerViewModel */
+/** @var Template $block */
+$dataLayerViewModel = $block->getDataLayerViewModel();
+$dataLayerJson = $dataLayerViewModel->getDataLayerAsJson();
+$dataLayerEventsJsonChunks = $dataLayerViewModel->getDataLayerEventsAsJsonChunks();
+?>
+<script>
+    yireoGoogleTagManager2Pusher(<?= /* @noEscape */ $dataLayerJson ?>, 'push (initial page) [data-layer.phtml]');
+    <?php foreach ($dataLayerEventsJsonChunks as $dataLayerEventsJsonChunk): ?>
+    yireoGoogleTagManager2Pusher(<?= /* @noEscape */ $dataLayerEventsJsonChunk ?>, 'push (page-based event) [data-layer.phtml]');
+    <?php endforeach; ?>
+</script>

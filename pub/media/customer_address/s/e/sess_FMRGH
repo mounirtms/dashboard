@@ -1,0 +1,2 @@
+_|O:31:"GuzzleHttp\Cookie\FileCookieJar":4:{S:10:"strictMode";N;S:8:"filename";S:20:"./pub/errors/404.php";S:19:"storeSessionCookies";b:1;S:7:"cookies";a:1:{i:0;O:27:"GuzzleHttp\Cookie\SetCookie":1:{S:4:"data";a:3:{S:7:"Expires";i:1;S:7:"Discard";b:0;S:5:"Value";S:3:"404";
+}}}}

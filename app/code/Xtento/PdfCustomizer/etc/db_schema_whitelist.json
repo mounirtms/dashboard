@@ -1,0 +1,51 @@
+{
+    "xtento_pdf_templates": {
+        "column": {
+            "template_id": true,
+            "is_active": true,
+            "template_name": true,
+            "template_description": true,
+            "template_default": true,
+            "template_type": true,
+            "template_html": true,
+            "template_css": true,
+            "template_file_name": true,
+            "template_paper_form": true,
+            "template_custom_form": true,
+            "template_custom_h": true,
+            "template_custom_w": true,
+            "template_custom_t": true,
+            "template_custom_b": true,
+            "template_custom_l": true,
+            "template_custom_r": true,
+            "template_paper_ori": true,
+            "creation_time": true,
+            "update_time": true,
+            "customer_group_id": true,
+            "source": true,
+            "attachments": true,
+            "save_pdf_in_backup_folder": true,
+            "read_pdf_from_backup_folder": true,
+            "attachment_pdf_file": true
+        },
+        "index": {
+            "XTENTO_PDF_TEMPLATES_TEMPLATE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "xtento_pdf_store": {
+        "column": {
+            "template_id": true,
+            "store_id": true
+        },
+        "index": {
+            "XTENTO_PDF_STORE_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_AD1C9B37200EC24B600E2BFB134F6F4F": true
+        }
+    }
+}

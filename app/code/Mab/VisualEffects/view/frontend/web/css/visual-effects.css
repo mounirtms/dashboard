@@ -1,0 +1,477 @@
+/**
+ * MAB Visual Effects - CSS Styles
+ * 
+ * @author Mounir AB
+ * @organization Techno DZ
+ */
+
+/* Progress Bar Styles */
+.mab-free-shipping-progress {
+    margin: 15px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.mab-free-shipping-progress .progress-container {
+    position: relative;
+}
+
+.mab-free-shipping-progress .progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.mab-free-shipping-progress .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 10px;
+    transition: width 0.8s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.mab-free-shipping-progress .progress-text {
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+/* Progress Bar Style Variations */
+.mab-progress-modern .progress-fill {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.mab-progress-classic .progress-fill {
+    background: #007bff;
+}
+
+.mab-progress-animated .progress-fill {
+    background: linear-gradient(
+        45deg,
+        #007bff 25%,
+        transparent 25%,
+        transparent 50%,
+        #007bff 50%,
+        #007bff 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 20px 20px;
+    animation: mab-progress-stripes 1s linear infinite;
+}
+
+.mab-progress-neon .progress-fill {
+    background: #00ff88;
+    box-shadow: 0 0 10px #00ff88, inset 0 0 10px rgba(0,255,136,0.3);
+    animation: mab-neon-pulse 2s ease-in-out infinite alternate;
+}
+
+.mab-progress-minimal .progress-bar {
+    height: 4px;
+    background: #dee2e6;
+}
+
+.mab-progress-minimal .progress-fill {
+    background: #28a745;
+}
+
+.mab-progress-circular {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mab-progress-circular .progress-bar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: conic-gradient(#28a745 0deg, #e9ecef 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.mab-progress-circular .progress-bar::before {
+    content: '';
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    position: absolute;
+}
+
+.mab-progress-circular .progress-text {
+    position: absolute;
+    z-index: 1;
+    margin: 0;
+    font-size: 12px;
+}
+
+/* Animation Keyframes */
+@keyframes mab-progress-stripes {
+    0% { background-position: 0 0; }
+    100% { background-position: 20px 0; }
+}
+
+@keyframes mab-neon-pulse {
+    0% { box-shadow: 0 0 5px #00ff88, inset 0 0 5px rgba(0,255,136,0.2); }
+    100% { box-shadow: 0 0 20px #00ff88, inset 0 0 20px rgba(0,255,136,0.5); }
+}
+
+/* Effect Animations */
+.mab-bounce-effect {
+    animation: mab-bounce 0.6s ease-in-out;
+}
+
+@keyframes mab-bounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        transform: translate3d(0, -15px, 0);
+    }
+    70% {
+        transform: translate3d(0, -7px, 0);
+    }
+    90% {
+        transform: translate3d(0, -2px, 0);
+    }
+}
+
+.mab-pulse-effect {
+    animation: mab-pulse 1s ease-in-out;
+}
+
+@keyframes mab-pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.mab-glow-effect {
+    animation: mab-glow 1.5s ease-in-out;
+}
+
+@keyframes mab-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.8), 0 0 30px rgba(40, 167, 69, 0.6);
+    }
+}
+
+.mab-shake-effect {
+    animation: mab-shake 0.8s ease-in-out;
+}
+
+@keyframes mab-shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+.mab-zoom-effect {
+    animation: mab-zoom 0.6s ease-in-out;
+}
+
+@keyframes mab-zoom {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Sparkle Effect */
+.mab-sparkle {
+    animation: mab-sparkle-float 2s ease-out forwards;
+    user-select: none;
+    pointer-events: none;
+}
+
+@keyframes mab-sparkle-float {
+    0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px) rotate(180deg);
+    }
+}
+
+/* Notification Styles */
+.mab-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    max-width: 300px;
+    border-left: 4px solid #007bff;
+}
+
+.mab-notification.show {
+    transform: translateX(0);
+}
+
+.mab-notification-success {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.mab-notification-info {
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+}
+
+.mab-notification-warning {
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+.mab-notification-error {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+.mab-notification .notification-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.mab-notification .notification-message {
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+    line-height: 1.4;
+}
+
+/* Loading Animations */
+.mab-loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: mab-spin 1s linear infinite;
+}
+
+@keyframes mab-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.mab-loading-dots {
+    display: inline-block;
+}
+
+.mab-loading-dots::after {
+    content: '';
+    animation: mab-dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes mab-dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+/* Enhanced Loading States */
+.mab-enhanced-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.mab-enhanced-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.4),
+        transparent
+    );
+    animation: mab-loading-shimmer 1.5s infinite;
+}
+
+@keyframes mab-loading-shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Milestone Achievement Styles */
+.mab-milestone-achievement {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 10001;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: mab-milestone-appear 0.5s ease-out;
+}
+
+@keyframes mab-milestone-appear {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.mab-milestone-achievement h3 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.mab-milestone-achievement p {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .mab-free-shipping-progress {
+        margin: 10px 0;
+        padding: 8px;
+    }
+    
+    .mab-notification {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100%);
+    }
+    
+    .mab-notification.show {
+        transform: translateY(0);
+    }
+    
+    .mab-milestone-achievement {
+        left: 10px;
+        right: 10px;
+        transform: translateY(-50%);
+        padding: 20px;
+    }
+    
+    .mab-milestone-achievement.show {
+        transform: translateY(-50%);
+    }
+}
+
+/* Performance Mode Styles */
+.mab-performance-mode .mab-bounce-effect,
+.mab-performance-mode .mab-pulse-effect,
+.mab-performance-mode .mab-glow-effect,
+.mab-performance-mode .mab-shake-effect,
+.mab-performance-mode .mab-zoom-effect {
+    animation-duration: 0.3s;
+}
+
+.mab-performance-mode .mab-progress-animated .progress-fill {
+    animation: none;
+    background: #007bff;
+}
+
+.mab-performance-mode .mab-progress-neon .progress-fill {
+    animation: none;
+    box-shadow: none;
+    background: #00ff88;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .mab-bounce-effect,
+    .mab-pulse-effect,
+    .mab-glow-effect,
+    .mab-shake-effect,
+    .mab-zoom-effect,
+    .mab-sparkle,
+    .mab-progress-animated .progress-fill,
+    .mab-progress-neon .progress-fill,
+    .mab-loading-spinner,
+    .mab-enhanced-loading::before {
+        animation: none;
+    }
+    
+    .mab-notification {
+        transition: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .mab-free-shipping-progress {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .mab-free-shipping-progress .progress-bar {
+        background: #4a5568;
+    }
+    
+    .mab-free-shipping-progress .progress-text {
+        color: #e2e8f0;
+    }
+    
+    .mab-notification {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .mab-notification .notification-message {
+        color: #e2e8f0;
+    }
+}

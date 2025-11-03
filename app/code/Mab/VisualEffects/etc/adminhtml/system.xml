@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="mab_extensions" translate="label" sortOrder="200">
+            <label>MAB Extensions</label>
+        </tab>
+        <section id="mab_visual_effects" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label><![CDATA[<span class="mab-admin-icon">✨</span> Visual Effects]]></label>
+            <tab>mab_extensions</tab>
+            <resource>Mab_VisualEffects::visual_effects_config</resource>
+            <header_css>mab-admin-section</header_css>
+            
+            <group id="license" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label><![CDATA[<span class="mab-admin-icon">🔑</span> License Information]]></label>
+                <frontend_model>Mab\Core\Block\Adminhtml\System\Config\License</frontend_model>
+                
+                <field id="key" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>License Key</label>
+                    <comment><![CDATA[Enter your MAB Visual Effects license key. <a href="https://mab-extensions.com/my-account" target="_blank">Get License Key</a>]]></comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                
+                <field id="enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>License Status</label>
+                    <comment>Automatically validated license status</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <frontend_model>Mab\Core\Block\Adminhtml\System\Config\LicenseStatus</frontend_model>
+                </field>
+            </group>
+            
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label><![CDATA[<span class="mab-admin-icon">⚙️</span> General Settings]]></label>
+                <comment><![CDATA[Configure basic visual effects functionality and performance settings.]]></comment>
+                
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Visual Effects</label>
+                    <comment><![CDATA[Enable or disable all visual effects functionality. <strong>Note:</strong> Effects will only work on licensed domains.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <frontend_class>mab-config-toggle</frontend_class>
+                </field>
+                
+                <field id="display_pages" translate="label comment" type="multiselect" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display On Pages</label>
+                    <comment>Select pages where visual effects should be active</comment>
+                    <source_model>Mab\VisualEffects\Model\Config\Source\Pages</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="debug_mode" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Debug Mode</label>
+                    <comment>Enable debug mode for visual effects (shows effect triggers and logs)</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="performance_mode" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Performance Mode</label>
+                    <comment>Optimize effects for better performance (may reduce visual quality)</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="shipping_effects" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label><![CDATA[<span class="mab-admin-icon">🚚</span> Shipping Visual Effects]]></label>
+                <comment><![CDATA[Configure visual effects for shipping-related interactions and free shipping progress.]]></comment>
+                
+                <field id="free_shipping_celebration" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Free Shipping Celebration Effect</label>
+                    <comment><![CDATA[Visual effect displayed when free shipping is achieved. <strong>Recommended:</strong> Confetti or Fireworks]]></comment>
+                    <source_model>Mab\VisualEffects\Model\Config\Source\EffectType</source_model>
+                    <frontend_class>mab-config-select</frontend_class>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="progress_bar_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Free Shipping Progress Bar</label>
+                    <comment><![CDATA[Show animated progress bar towards free shipping threshold. <strong>Highly recommended</strong> for increasing conversions.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <frontend_class>mab-config-toggle</frontend_class>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="progress_bar_style" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Progress Bar Style</label>
+                    <comment><![CDATA[Choose visual style for progress bar. <strong>Modern</strong> style recommended for best user experience.]]></comment>
+                    <source_model>Mab\VisualEffects\Model\Config\Source\ProgressBarStyle</source_model>
+                    <frontend_class>mab-config-select</frontend_class>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="progress_bar_enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="threshold_notification" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Threshold Notifications</label>
+                    <comment><![CDATA[Show notifications when approaching free shipping threshold. Helps drive additional purchases.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <frontend_class>mab-config-toggle</frontend_class>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                
+                <field id="notification_thresholds" translate="label comment" type="text" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Notification Thresholds (%)</label>
+                    <comment><![CDATA[Comma-separated percentages when to show notifications (e.g., 50,75,90). <strong>Default:</strong> 50,75,90]]></comment>
+                    <validate>validate-digits-range digits-range-1-100</validate>
+                    <frontend_class>mab-config-input</frontend_class>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="threshold_notification">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="cart_effects" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Cart Visual Effects</label>
+                <field id="add_to_cart_effect" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Add to Cart Effect</label>
+                    <comment>Visual effect when adding items to cart</comment>
+                    <source_model>Mab\VisualEffects\Model\Config\Source\EffectType</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="cart_update_effect" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Cart Update Effect</label>
+                    <comment>Visual effect when cart is updated</comment>
+                    <source_model>Mab\VisualEffects\Model\Config\Source\EffectType</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="cart_milestone_effects" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Cart Milestone Effects</label>
+                    <comment>Show effects when reaching cart value milestones</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="milestone_amounts" translate="label comment" type="textarea" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Milestone Amounts</label>
+                    <comment>JSON array of milestone amounts and effects (e.g., [{"amount":100,"effect":"confetti"},{"amount":500,"effect":"fireworks"}])</comment>
+                    <validate>validate-json</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="cart_milestone_effects">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="checkout_effects" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Checkout Visual Effects</label>
+                <field id="step_completion_effect" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Step Completion Effect</label>
+                    <comment>Visual effect when completing checkout steps</comment>
+                    <source_model>Mab\VisualEffects\Model\Config\Source\EffectType</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="order_success_effect" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Order Success Effect</label>
+                    <comment>Celebration effect on successful order placement</comment>
+                    <source_model>Mab\VisualEffects\Model\Config\Source\EffectType</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="loading_animations" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Loading Animations</label>
+                    <comment>Enhanced loading animations during checkout</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="advanced_settings" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced Settings</label>
+                <field id="animation_duration" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Default Animation Duration (ms)</label>
+                    <comment>Default duration for animations in milliseconds</comment>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="effect_intensity" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Effect Intensity</label>
+                    <comment>Overall intensity of visual effects</comment>
+                    <source_model>Mab\VisualEffects\Model\Config\Source\EffectIntensity</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="mobile_optimized" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mobile Optimized Effects</label>
+                    <comment>Use lighter effects on mobile devices for better performance</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_css" translate="label comment" type="textarea" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Custom CSS</label>
+                    <comment>Additional CSS for custom visual effects</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

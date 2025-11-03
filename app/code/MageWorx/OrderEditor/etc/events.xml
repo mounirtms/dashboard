@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- Webhooks for order edit: admin and rest api both -->
+    <event name="mageworx_order_updated">
+        <!-- Collect all events with data and path it into queue -->
+        <observer name="mageworx_order_editor_webhooks" instance="MageWorx\OrderEditor\Observer\WebhooksCollector" />
+    </event>
+    <!-- APO compatibility -->
+    <event name="mageworx_apo_add_independedt_quote_items">
+        <observer name="mageworx_order_editor_add_independent_items_to_order" instance="MageWorx\OrderEditor\Observer\APO\AddIndependentQuoteItemsToOrder"/>
+    </event>
+</config>

@@ -1,0 +1,21 @@
+{
+    "name": "mageworx/module-ordersgrid",
+    "description": "Extended Orders Grid module for the Magento 2",
+    "require": {
+        "magento/framework": ">=102.0.0",
+        "magento/module-sales" : ">=102.0.0 <104",
+        "mageworx/module-ordersbase" : ">=2.0.1"
+    },
+    "type": "magento2-module",
+    "version": "1.2.11",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [ "registration.php" ],
+        "psr-4": {
+            "MageWorx\\OrdersGrid\\": ""
+        }
+    }
+}

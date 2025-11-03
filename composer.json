@@ -1,0 +1,220 @@
+{
+    "name": "magento/project-community-edition",
+    "description": "eCommerce Platform for Growth (Community Edition)",
+    "type": "project",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "magento/composer-dependency-version-audit-plugin": true,
+            "magento/magento-composer-installer": true,
+            "magento/inventory-composer-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "magento/composer-root-update-plugin": true,
+            "laminas/laminas-dependency-plugin": true
+        }
+    },
+    "version": "2.4.6",
+    "require": {
+        "php": "~8.1.0||~8.2.0",
+        "ext-bcmath": "*",
+        "ext-ctype": "*",
+        "ext-curl": "*",
+        "ext-dom": "*",
+        "ext-gd": "*",
+        "ext-hash": "*",
+        "ext-iconv": "*",
+        "ext-intl": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-pdo_mysql": "*",
+        "ext-simplexml": "*",
+        "ext-soap": "*",
+        "ext-sodium": "*",
+        "ext-xsl": "*",
+        "ext-zip": "*",
+        "lib-libxml": "*",
+        "amasty/amp": "^1.3",
+        "amasty/blog": "^2.18",
+        "amasty/cron-scheduler": "^1.0",
+        "amasty/feed": "^3.0",
+        "amasty/gift-card-pro": "^2.14",
+        "amasty/module-advanced-msi": "^1.4",
+        "amasty/module-b2b-suite-premium": "^1.5",
+        "amasty/module-blog-pro-to-builder": "^1.0",
+        "amasty/module-custom-forms-lite": "^1.20",
+        "amasty/module-elastic-search-pro": "^2.2",
+        "amasty/module-one-step-checkout-premium-package": "^2.3",
+        "amasty/module-product-status-premium": "^1.0",
+        "amasty/module-promo-banners-pro-package": "^1.12",
+        "amasty/module-promotion-suite-premium-package": "^1.2",
+        "amasty/module-report-builder": "^1.5",
+        "amasty/module-reports-lite": "^1.10",
+        "amasty/module-security-suite": "^1.0",
+        "amasty/module-seo-toolkit": "^2.5",
+        "amasty/module-shipping-suite": "^1.3",
+        "amasty/order-management-suite-premium": "^1.2",
+        "amasty/pgrid": "^1.12",
+        "bsscommerce/bundle-option-image": "^1.0",
+        "bsscommerce/facebook-pixel": "^1.0",
+        "colinmollenhour/cache-backend-file": "^1.4",
+        "colinmollenhour/cache-backend-redis": "^1.14",
+        "colinmollenhour/credis": "^1.13",
+        "colinmollenhour/php-redis-session-abstract": "^1.5",
+        "composer/composer": "^2.0, !=2.2.16",
+        "doctrine/annotations": "^1.13",
+        "elasticsearch/elasticsearch": "~7.17.0 || ~8.5.0",
+        "ezyang/htmlpurifier": "^4.16",
+        "guzzlehttp/guzzle": "^7.5",
+        "kreait/firebase-php": "^7.0",
+        "laminas/laminas-captcha": "^2.12",
+        "laminas/laminas-code": "^4.5",
+        "laminas/laminas-db": "^2.15",
+        "laminas/laminas-di": "^3.7",
+        "laminas/laminas-escaper": "^2.10",
+        "laminas/laminas-eventmanager": "^3.5",
+        "laminas/laminas-feed": "^2.17",
+        "laminas/laminas-file": "^2.11",
+        "laminas/laminas-filter": "^2.17",
+        "laminas/laminas-http": "^2.15",
+        "laminas/laminas-i18n": "^2.17",
+        "laminas/laminas-mail": "^2.16",
+        "laminas/laminas-mime": "^2.9",
+        "laminas/laminas-modulemanager": "^2.11",
+        "laminas/laminas-mvc": "^3.3",
+        "laminas/laminas-oauth": "^2.4",
+        "laminas/laminas-permissions-acl": "^2.10",
+        "laminas/laminas-servicemanager": "^3.16",
+        "laminas/laminas-soap": "^2.10",
+        "laminas/laminas-stdlib": "^3.11",
+        "laminas/laminas-uri": "^2.9",
+        "laminas/laminas-validator": "^2.23",
+        "league/flysystem": "^2.4",
+        "league/flysystem-aws-s3-v3": "^2.4",
+        "magefan/module-blog": "^2.13",
+        "magefan/module-blog-graph-ql": "^2.1.10",
+        "magefan/module-community": "^2.2.10",
+        "magefan/module-wysiwyg-advanced": "^2.0.18",
+        "magento/composer": "^1.9.0",
+        "magento/composer-dependency-version-audit-plugin": "^0.1",
+        "magento/composer-root-update-plugin": "^2.0",
+        "magento/magento-composer-installer": ">=0.4.0",
+        "magento/module-config": "^101.2",
+        "magento/module-grouped-product": "^100.4",
+        "magento/product-community-edition": "2.4.6",
+        "magento/quality-patches": "^1.1",
+        "magento/zend-cache": "^1.16",
+        "magento/zend-db": "^1.16",
+        "magento/zend-pdf": "^1.16",
+        "mageplaza/magento-2-french-language-pack": "dev-master",
+        "mageplaza/module-core": "^1.4",
+        "mirasvit/module-rma": "*",
+        "monolog/monolog": "^2.7",
+        "mpdf/mpdf": "^8.2",
+        "opensearch-project/opensearch-php": "^1.0 || ^2.0, <2.0.1",
+        "pelago/emogrifier": "^7.0",
+        "php-amqplib/php-amqplib": "^3.2",
+        "phpseclib/mcrypt_compat": "^2.0",
+        "phpseclib/phpseclib": "^3.0",
+        "ramsey/uuid": "^4.2",
+        "setasign/fpdi": "^2.6",
+        "symfony/console": "^5.4",
+        "symfony/intl": "^5.4",
+        "symfony/process": "^5.4",
+        "symfony/string": "^5.4",
+        "tedivm/jshrink": "^1.4",
+        "tubalmartin/cssmin": "^4.1",
+        "web-token/jwt-framework": "^3.1",
+        "webonyx/graphql-php": "^15.0",
+        "wikimedia/less.php": "^3.2",
+        "yireo/magento2-csp-utilities": "1.0.1"
+    },
+    "autoload": {
+        "exclude-from-classmap": [
+            "**/dev/**",
+            "**/update/**",
+            "**/Test/**"
+        ],
+        "files": [
+            "app/etc/NonComposerComponentRegistration.php"
+        ],
+        "psr-0": {
+            "": [
+                "app/code/",
+                "generated/code/"
+            ]
+        },
+        "psr-4": {
+            "Magento\\": "app/code/Magento/",
+            "Magento\\Framework\\": "lib/internal/Magento/Framework/",
+            "Magento\\Setup\\": "setup/src/Magento/Setup/"
+        }
+    },
+    "require-dev": {
+        "allure-framework/allure-phpunit": "^2",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
+        "dg/bypass-finals": "^1.4",
+        "friendsofphp/php-cs-fixer": "^3.8",
+        "lusitanian/oauth": "^0.8",
+        "magento/magento-coding-standard": "*",
+        "magento/magento2-functional-testing-framework": "^4.2.1",
+        "pdepend/pdepend": "^2.10",
+        "phpmd/phpmd": "^2.12",
+        "phpstan/phpstan": "^1.9",
+        "phpunit/phpunit": "^9.5",
+        "sebastian/phpcpd": "^6.0",
+        "symfony/finder": "^5.4"
+    },
+    "conflict": {
+        "gene/bluefoot": "*"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Magento\\PhpStan\\": "dev/tests/static/framework/Magento/PhpStan/",
+            "Magento\\Sniffs\\": "dev/tests/static/framework/Magento/Sniffs/",
+            "Magento\\TestFramework\\Inspection\\": "dev/tests/static/framework/Magento/TestFramework/Inspection/",
+            "Magento\\TestFramework\\Utility\\": "dev/tests/static/framework/Magento/TestFramework/Utility/",
+            "Magento\\Tools\\": "dev/tools/Magento/Tools/",
+            "Magento\\Tools\\Sanity\\": "dev/build/publication/sanity/Magento/Tools/Sanity/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "repositories": {
+        "amasty_account1": {
+            "type": "composer",
+            "url": "https://composer1.amasty.com/community/"
+        },
+        "bsscommerce": {
+            "type": "composer",
+            "url": "https://composer.bsscommerce.com/community"
+        },
+        "amasty": {
+            "type": "composer",
+            "url": "https://composer.amasty.com/community/"
+        },
+        "mirasvit-rma2": {
+            "type": "composer",
+            "url": "https://49698:ZLCOJH6SN7@packages.mirasvit.com/49698:ZLCOJH6SN7/"
+        },
+        "xtento": {
+            "type": "composer",
+            "url": "https://repo.xtento.com"
+        },
+        "mageworx_packages": {
+            "type": "composer",
+            "url": "https://packages.mageworx.com/"
+        },
+        "0": {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    },
+    "extra": {
+        "magento-force": "override"
+    }
+}

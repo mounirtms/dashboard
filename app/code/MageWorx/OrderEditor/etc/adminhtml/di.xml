@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Plugins -->
+    <!-- Disable stock validation when edit an order -->
+    <type name="Magento\InventoryConfigurationApi\Model\IsSourceItemManagementAllowedForProductTypeInterface">
+        <plugin name="mageworx_ordereditor_disable_msi"
+                type="MageWorx\OrderEditor\Plugin\DisableMSI" />
+    </type>
+    <type name="Magento\InventorySalesApi\Api\IsProductSalableInterface">
+        <plugin name="mageworx_ordereditor_disable_inventory_detection"
+                type="MageWorx\OrderEditor\Plugin\DisableInventoryDetectionPlugin" />
+    </type>
+    <!-- Disabling qty validation -->
+    <type name="Magento\InventorySales\Plugin\StockState\CheckQuoteItemQtyPlugin">
+        <plugin name="mageworx_ordereditor_disable_qty_validation"
+                type="MageWorx\OrderEditor\Plugin\DisableQtyValidationPlugin" />
+    </type>
+    <!-- Disable backorder validation (MSI) -->
+    <type name="Magento\CatalogInventory\Observer\QuantityValidatorObserver">
+        <plugin name="mageworx_ordereditor_disable_qty_validation_for_backorders"
+                type="MageWorx\OrderEditor\Plugin\DisableBackordersQtyValidationPlugin" />
+    </type>
+
+    <!-- Edit order-->
+    <type name="Magento\GiftCardAccount\Model\Plugin\TotalsCollector">
+        <plugin name="mageworx_order_editor_void_giftcard_totals"
+                type="MageWorx\OrderEditor\Plugin\BeforeCollectTotalsPlugin"/>
+    </type>
+
+    <!-- store credit -->
+    <type name="Magento\CustomerBalance\Model\Total\Quote\Customerbalance">
+        <plugin name="mageworx_order_editor_disable_storecredit_totals_collect"
+                type="MageWorx\OrderEditor\Plugin\CollectCustomerBalancePlugin"/>
+    </type>
+
+    <!-- Authorize.net Capture actual amount -->
+    <type name="Magento\Payment\Model\Method\Adapter">
+        <plugin name="mageworx_ordereditor_authorizenet_capture_actual_amount_correct_amount"
+                type="MageWorx\OrderEditor\Plugin\AuthorizeNet\SetActualAmountBeforeCapturePlugin"/>
+    </type>
+    <type name="Magento\AuthorizenetAcceptjs\Gateway\Request\CaptureDataBuilder">
+        <plugin name="mageworx_ordereditor_authorizenet_capture_actual_amount_add_amount"
+                type="MageWorx\OrderEditor\Plugin\AuthorizeNet\CaptureActualAmountPlugin"/>
+    </type>
+
+    <!-- Check invoice -->
+    <type name="Magento\Sales\Model\Service\InvoiceService">
+        <plugin name="mageworx_ordereditor_check_invoice_totals"
+                type="MageWorx\OrderEditor\Plugin\InvoiceService\CheckTotals"/>
+    </type>
+
+    <!-- Update order items template (grid in sales_order_view) -->
+    <type name="Magento\Sales\Block\Adminhtml\Order\View\Items">
+        <plugin name="mageworx_ordereditor_update_items_grid" type="MageWorx\OrderEditor\Plugin\Block\Sales\Adminhtml\Order\View\Items" />
+    </type>
+
+    <!-- Fix creditmemo tax template issue #191 -->
+    <type name="Magento\Sales\Block\Adminhtml\Order\Totals\Tax">
+        <plugin name="mageworx_ordereditor_fix_tax_with_array_rates" type="MageWorx\OrderEditor\Plugin\TaxHelper" />
+    </type>
+
+    <!-- Check "Return To Stock" checkbox when creating new creditmemo -->
+    <type name="Magento\Sales\Block\Adminhtml\Order\Creditmemo\Create\Items">
+        <plugin name="mageworx_ordereditor_check_return_to_stock" type="MageWorx\OrderEditor\Plugin\Creditmemo\CheckReturnToStock" />
+    </type>
+
+    <!-- Add admin name to the regular comment: order, invoice, creditmemo, shipment -->
+    <!-- Save tags which is stripped by regular controller when comment is saving -->
+    <type name="Magento\Sales\Model\Order">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment_save_tags" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToCommentOrder" />
+    </type>
+    <!-- Add comment action -->
+    <type name="Magento\Sales\Controller\Adminhtml\Order\AddComment">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToCommentOrder" />
+    </type>
+    <type name="Magento\Sales\Controller\Adminhtml\Order\Creditmemo\AddComment">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToComment" />
+    </type>
+    <type name="Magento\Sales\Controller\Adminhtml\Order\Invoice\AddComment">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToComment" />
+    </type>
+    <type name="Magento\Shipping\Controller\Adminhtml\Order\Shipment\AddComment">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToComment" />
+    </type>
+    <!-- Save entity with comment action -->
+    <type name="Magento\Sales\Controller\Adminhtml\Order\Create\Save">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment_create_order" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToCommentOnOrderCreate" />
+    </type>
+    <type name="Magento\Sales\Controller\Adminhtml\Order\Creditmemo\Save">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment_create_creditmemo" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToCommentOnCreditmemoCreate" />
+    </type>
+    <type name="Magento\Sales\Controller\Adminhtml\Order\Invoice\Save">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment_create_invoice" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToCommentOnInvoiceCreate" />
+    </type>
+    <type name="Magento\Shipping\Controller\Adminhtml\Order\Shipment\Save">
+        <plugin name="mageworx_ordereditor_add_admin_name_to_comment_create_shipment" type="MageWorx\OrderEditor\Plugin\Comment\AddAdminNameToCommentOnShipmentCreate" />
+    </type>
+
+    <!-- Ignore Cart Rules-->
+    <type name="Magento\SalesRule\Model\Validator\Pool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="discount" xsi:type="array">
+                    <item name="order_editor_validator" xsi:type="object">MageWorx\OrderEditor\Model\CartRulesValidator\Discount</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="MageWorx\OrderEditor\Block\Payment">
+        <arguments>
+            <argument name="config" xsi:type="object">MageWorx\OrderEditor\Model\Ui\ConfigProvider</argument>
+        </arguments>
+    </type>
+    <type name="MageWorx\OrderEditor\Block\Info">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item xsi:type="string" name="is_secure_mode">0</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Customer group price compatibility: add customer group id detector -->
+    <type name="MageWorx\CustomerGroupPrices\Api\CustomerGroupIdDetectorInterface">
+        <arguments>
+            <argument name="detectorsPool" xsi:type="array">
+                <item name="order_editor_order_customer_group_id" xsi:type="object">MageWorx\OrderEditor\Model\CustomerGroupPrices\DetectCustomerGroupIdFromEditedOrder</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

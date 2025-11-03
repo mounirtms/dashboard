@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <xtento_pdfcustomizer>
+            <order>
+                <enabled>1</enabled>
+            </order>
+            <invoice>
+                <enabled>1</enabled>
+                <email>1</email>
+            </invoice>
+            <shipment>
+                <enabled>1</enabled>
+            </shipment>
+            <creditmemo>
+                <enabled>1</enabled>
+            </creditmemo>
+            <product>
+                <enabled>1</enabled>
+            </product>
+            <advanced>
+                <disable_default_bulk_actions>1</disable_default_bulk_actions>
+                <disable_default_print_actions>1</disable_default_print_actions>
+                <disable_print_label_action>0</disable_print_label_action>
+            </advanced>
+        </xtento_pdfcustomizer>
+    </default>
+</config>
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2021-02-23T22:10:03+00:00
+ * File:          etc/config.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

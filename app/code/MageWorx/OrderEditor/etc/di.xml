@@ -1,0 +1,311 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Sales\Block\Adminhtml\Order\View\Items\Renderer\DefaultRenderer">
+        <plugin name="mageworx_order_editor_update_default_item_renderer"
+                type="MageWorx\OrderEditor\Plugin\Block\Sales\Adminhtml\Order\View\Items\DefaultRenderer"/>
+    </type>
+    <type name="Magento\Bundle\Block\Adminhtml\Sales\Order\View\Items\Renderer">
+        <plugin name="mageworx_order_editor_update_bundle_item_renderer"
+                type="MageWorx\OrderEditor\Plugin\Block\Sales\Adminhtml\Order\View\Items\BundleRenderer"/>
+    </type>
+    <!-- Adds edit_in_progress flag to the quote extension attributes -->
+    <type name="Magento\Quote\Api\CartRepositoryInterface">
+        <plugin name="mageworx_order_editor_add_edit_in_progress_extension_attribute"
+                type="MageWorx\OrderEditor\Plugin\Quote\AddEditInProgressExtensionAttributeToQuote" />
+    </type>
+    <!-- Correct is_last flag in case order has canceled items -->
+    <type name="Magento\Sales\Api\Data\InvoiceInterface">
+        <plugin name="mageworx_order_editor_correct_is_last_flag_invoice"
+                type="MageWorx\OrderEditor\Plugin\Invoice\CorrectIsLastFlag" />
+    </type>
+    <!-- Fix qty ordered in invoice and creditmemo with canceled order item qty -->
+    <type name="Magento\Sales\Api\Data\InvoiceItemInterface">
+        <plugin name="mageworx_order_editor_correct_qty_ordered"
+                type="MageWorx\OrderEditor\Plugin\Invoice\Item\CorrectQtyOrderedWhenCalculatingRowTotal" />
+    </type>
+    <type name="Magento\Sales\Api\Data\CreditmemoItemInterface">
+        <plugin name="mageworx_order_editor_correct_qty_ordered"
+                type="MageWorx\OrderEditor\Plugin\Creditmemo\Item\CorrectQtyOrderedWhenCalculatingRowTotal" />
+    </type>
+
+    <!-- Api preferences -->
+    <preference for="MageWorx\OrderEditor\Api\CustomerInterface" type="MageWorx\OrderEditor\Model\Customer"/>
+    <preference for="MageWorx\OrderEditor\Api\TaxManagerInterface" type="MageWorx\OrderEditor\Model\TaxManager"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderRepositoryInterface" type="MageWorx\OrderEditor\Model\Order\OrderRepository"/>
+    <preference for="MageWorx\OrderEditor\Api\QuoteRepositoryInterface" type="MageWorx\OrderEditor\Model\Quote\QuoteRepository"/>
+    <preference for="MageWorx\OrderEditor\Api\QuoteItemRepositoryInterface" type="MageWorx\OrderEditor\Model\Quote\QuoteItemRepository"/>
+    <preference for="MageWorx\OrderEditor\Api\QuoteAddressRepositoryInterface" type="MageWorx\OrderEditor\Model\Quote\QuoteAddressRepository"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderItemRepositoryInterface" type="MageWorx\OrderEditor\Model\Order\OrderItemRepository"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\OrderItemSearchResultInterface" type="MageWorx\OrderEditor\Model\ResourceModel\Order\Item\Collection"/>
+    <preference for="MageWorx\OrderEditor\Api\StockManagerInterface" type="MageWorx\OrderEditor\Model\Stock\DefaultCatalogInventoryManager"/>
+    <preference for="MageWorx\OrderEditor\Api\ShipmentManagerInterface" type="MageWorx\OrderEditor\Model\Order\ShipmentManager"/>
+    <preference for="MageWorx\OrderEditor\Api\ChangeLoggerInterface" type="MageWorx\OrderEditor\Model\Logger\ChangeLogger"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\LogMessageInterface" type="MageWorx\OrderEditor\Model\Logger\LogMessage"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\LogMessageGroupDataInterface" type="MageWorx\OrderEditor\Model\Logger\LogMessageGroup"/>
+    <preference for="MageWorx\OrderEditor\Api\LogMessageGroupInterface" type="MageWorx\OrderEditor\Model\Logger\LogMessageGroup"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\WebhookQueueEntityInterface" type="MageWorx\OrderEditor\Model\Webhooks\QueueEntity"/>
+    <preference for="MageWorx\OrderEditor\Api\WebhookSenderInterface" type="MageWorx\OrderEditor\Model\Webhooks\Sender"/>
+    <preference for="MageWorx\OrderEditor\Api\WebhookProcessorInterface" type="MageWorx\OrderEditor\Model\Webhooks\Processors\DefaultProcessor"/>
+    <preference for="MageWorx\OrderEditor\Api\PaymentMethodProcessorInterface" type="MageWorx\OrderEditor\Model\Invoice\PaymentMethodProcessor\DefaultProcessor"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\PaymentMethodProcessorDataInterface" type="MageWorx\OrderEditor\Model\Invoice\PaymentMethodProcessor\DefaultProcessor"/>
+    <preference for="MageWorx\OrderEditor\Api\SalesProcessorInterface" type="MageWorx\OrderEditor\Model\Order\SalesProcessor\KeepUntouchedSalesProcessor"/>
+    <preference for="MageWorx\OrderEditor\Api\InvoiceFinderInterface" type="MageWorx\OrderEditor\Model\InvoiceFinder"/>
+    <preference for="MageWorx\OrderEditor\Api\QuoteItemOptionsInterface" type="MageWorx\OrderEditor\Model\Quote\QuoteItemOptionsManager"/>
+
+    <!-- API Start: -->
+    <!-- Backup & Restore Quote -->
+    <preference for="MageWorx\OrderEditor\Api\RestoreQuoteInterface" type="MageWorx\OrderEditor\Model\RestoreQuote"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\QuoteDataBackupInterface" type="MageWorx\OrderEditor\Model\QuoteDataBackup"/>
+    <preference for="MageWorx\OrderEditor\Api\QuoteDataBackupRepositoryInterface" type="MageWorx\OrderEditor\Model\QuoteDataBackupRepository"/>
+
+    <!-- API Data Objects -->
+    <preference for="MageWorx\OrderEditor\Api\Data\OrderManager\CustomerInfoInterface" type="MageWorx\OrderEditor\Model\CustomerInfo"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\OrderManager\OrderInfoInterface" type="MageWorx\OrderEditor\Model\OrderInfo"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\OrderManager\PaymentMethodDataInterface" type="MageWorx\OrderEditor\Model\PaymentMethodData"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\OrderManager\ShippingMethodDataInterface" type="MageWorx\OrderEditor\Model\ShippingMethodData"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\OrderManager\TaxRateDataInterface" type="MageWorx\OrderEditor\Model\TaxRateData"/>
+    <preference for="MageWorx\OrderEditor\Api\Data\OrderManager\EditOrderItemDataInterface" type="MageWorx\OrderEditor\Model\EditOrderItem"/>
+
+    <!-- API Managers -->
+    <preference for="MageWorx\OrderEditor\Api\OrderManagerInterface" type="MageWorx\OrderEditor\Model\OrderManager"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderManager\CustomerInfoManagerInterface" type="MageWorx\OrderEditor\Model\OrderManager\CustomerInfoManager"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderManager\OrderInfoManagerInterface" type="MageWorx\OrderEditor\Model\OrderManager\OrderInfoManager"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderManager\BillingAddressManagerInterface" type="MageWorx\OrderEditor\Model\OrderManager\BillingAddressManager"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderManager\ShippingAddressManagerInterface" type="MageWorx\OrderEditor\Model\OrderManager\ShippingAddressManager"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderManager\PaymentMethodManagerInterface" type="MageWorx\OrderEditor\Model\OrderManager\PaymentMethodManager"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderManager\ShippingMethodManagerInterface" type="MageWorx\OrderEditor\Model\OrderManager\ShippingMethodManager"/>
+    <preference for="MageWorx\OrderEditor\Api\OrderManager\OrderItemsManagerInterface" type="MageWorx\OrderEditor\Model\OrderManager\OrderItemsManager"/>
+    <!-- API End; -->
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="ordereditor_select_customer_listing_data_source" xsi:type="string">Magento\Customer\Model\ResourceModel\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Webhook event handlers -->
+    <type name="MageWorx\OrderEditor\Api\WebhookProcessorInterface">
+        <arguments>
+            <argument name="actionHandlers" xsi:type="array">
+                <item name="update_order_items" xsi:type="object">MageWorx\OrderEditor\Model\Webhooks\Handlers\DefaultHandler</item>
+                <item name="update_order_billing_address" xsi:type="object">MageWorx\OrderEditor\Model\Webhooks\Handlers\DefaultHandler</item>
+                <item name="update_order_shipping_address" xsi:type="object">MageWorx\OrderEditor\Model\Webhooks\Handlers\DefaultHandler</item>
+                <item name="update_order_shipping_method" xsi:type="object">MageWorx\OrderEditor\Model\Webhooks\Handlers\DefaultHandler</item>
+                <item name="update_order_payment_method" xsi:type="object">MageWorx\OrderEditor\Model\Webhooks\Handlers\DefaultHandler</item>
+                <item name="update_order_customer_data" xsi:type="object">MageWorx\OrderEditor\Model\Webhooks\Handlers\DefaultHandler</item>
+                <item name="update_order_info" xsi:type="object">MageWorx\OrderEditor\Model\Webhooks\Handlers\DefaultHandler</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="MageWorx\OrderEditor\Model\Webhooks\Handlers\DefaultHandler">
+        <arguments>
+            <argument name="sensitiveDataKeys" xsi:type="array">
+                <item name="payment" xsi:type="string">payment</item>
+                <item name="status_histories" xsi:type="string">status_histories</item>
+                <item name="protect_code" xsi:type="string">protect_code</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Fields which must be transferred to the quote address after saving order address (edit order address) -->
+    <type name="MageWorx\OrderEditor\Model\Address">
+        <arguments>
+            <argument name="dataKeysToUpdate" xsi:type="array">
+                <item name="region_id" xsi:type="string">region_id</item>
+                <item name="fax" xsi:type="string">fax</item>
+                <item name="region" xsi:type="string">region</item>
+                <item name="postcode" xsi:type="string">postcode</item>
+                <item name="lastname" xsi:type="string">lastname</item>
+                <item name="street" xsi:type="string">street</item>
+                <item name="city" xsi:type="string">city</item>
+                <item name="email" xsi:type="string">email</item>
+                <item name="telephone" xsi:type="string">telephone</item>
+                <item name="country_id" xsi:type="string">country_id</item>
+                <item name="firstname" xsi:type="string">firstname</item>
+                <item name="prefix" xsi:type="string">prefix</item>
+                <item name="middlename" xsi:type="string">middlename</item>
+                <item name="suffix" xsi:type="string">suffix</item>
+                <item name="company" xsi:type="string">company</item>
+                <item name="vat_id" xsi:type="string">vat_id</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Payment Method Facade configuration -->
+    <type name="MageWorx\OrderEditor\Gateway\PaymentFacade">
+        <arguments>
+            <argument name="code" xsi:type="const">MageWorx\OrderEditor\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">MageWorx\OrderEditor\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">MageWorxOrderEditorPaymentGatewayValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">MageWorxOrderEditorPaymentGatewayCommandPool</argument>
+        </arguments>
+    </type>
+
+    <!-- Configuration reader -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">\MageWorx\OrderEditor\Model\Ui\ConfigProvider::CODE</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Logger, initialized with MageWorxOrderEditorPaymentGatewayConfig -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayLogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="config" xsi:type="object">MageWorxOrderEditorPaymentGatewayConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="MageWorx\OrderEditor\Gateway\Http\Client\ClientMock">
+        <arguments>
+            <argument name="logger" xsi:type="object">MageWorxOrderEditorPaymentGatewayLogger</argument>
+        </arguments>
+    </type>
+
+    <!-- Commands infrastructure -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="authorize" xsi:type="string">MageWorxOrderEditorPaymentGatewayAuthorizeCommand</item>
+                <item name="capture" xsi:type="string">MageWorxOrderEditorPaymentGatewayCaptureCommand</item>
+                <item name="void" xsi:type="string">MageWorxOrderEditorPaymentGatewayVoidCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorize command -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">MageWorxOrderEditorPaymentGatewayAuthorizationRequest</argument>
+            <argument name="handler" xsi:type="object">MageWorxOrderEditorPaymentGatewayResponseHandlerComposite</argument>
+            <argument name="transferFactory" xsi:type="object">MageWorx\OrderEditor\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">MageWorx\OrderEditor\Gateway\Http\Client\ClientMock</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorization Request -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayAuthorizationRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="transaction" xsi:type="string">MageWorx\OrderEditor\Gateway\Request\AuthorizationRequest</item>
+                <item name="mockData" xsi:type="string">MageWorx\OrderEditor\Gateway\Request\MockDataRequest</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="MageWorx\OrderEditor\Gateway\Request\AuthorizationRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">MageWorxOrderEditorPaymentGatewayConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Capture command -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayCaptureCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">MageWorx\OrderEditor\Gateway\Request\CaptureRequest</argument>
+            <argument name="handler" xsi:type="object">MageWorx\OrderEditor\Gateway\Response\TxnIdHandler</argument>
+            <argument name="transferFactory" xsi:type="object">MageWorx\OrderEditor\Gateway\Http\TransferFactory</argument>
+            <argument name="validator" xsi:type="object">MageWorx\OrderEditor\Gateway\Validator\ResponseCodeValidator</argument>
+            <argument name="client" xsi:type="object">MageWorx\OrderEditor\Gateway\Http\Client\ClientMock</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Capture Request -->
+    <type name="MageWorx\OrderEditor\Gateway\Request\CaptureRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">MageWorxOrderEditorPaymentGatewayConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Void command -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayVoidCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">MageWorx\OrderEditor\Gateway\Request\VoidRequest</argument>
+            <argument name="handler" xsi:type="object">MageWorx\OrderEditor\Gateway\Response\TxnIdHandler</argument>
+            <argument name="transferFactory" xsi:type="object">MageWorx\OrderEditor\Gateway\Http\TransferFactory</argument>
+            <argument name="validator" xsi:type="object">MageWorx\OrderEditor\Gateway\Validator\ResponseCodeValidator</argument>
+            <argument name="client" xsi:type="object">MageWorx\OrderEditor\Gateway\Http\Client\ClientMock</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Void Request -->
+    <type name="MageWorx\OrderEditor\Gateway\Request\VoidRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">MageWorxOrderEditorPaymentGatewayConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Response handlers -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayResponseHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="txnid" xsi:type="string">MageWorx\OrderEditor\Gateway\Response\TxnIdHandler</item>
+                <item name="fraud" xsi:type="string">MageWorx\OrderEditor\Gateway\Response\FraudHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Value handlers infrastructure -->
+    <virtualType name="MageWorxOrderEditorPaymentGatewayValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">MageWorxOrderEditorPaymentGatewayConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageWorxOrderEditorPaymentGatewayConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">MageWorxOrderEditorPaymentGatewayConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="MageWorx\OrderEditor\Block\Info">
+        <arguments>
+            <argument name="config" xsi:type="object">MageWorxOrderEditorPaymentGatewayConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Add correct serializer to the helper class -->
+    <type name="MageWorx\OrderEditor\Helper\Data">
+        <arguments>
+            <argument name="serializer" xsi:type="object">Magento\Framework\Serialize\Serializer\Json</argument>
+            <!-- Sales processors that support reauthorization -->
+            <argument name="processorsSupportReauthorization" xsi:type="array">
+                <item name="keep_untouched" xsi:type="string">keep_untouched</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Sales Processor configuration -->
+    <!-- Sales processors options -->
+    <type name="MageWorx\OrderEditor\Model\Config\Source\SalesProcessors">
+        <arguments>
+            <argument name="salesProcessors" xsi:type="array">
+                <item name="delete_and_create" xsi:type="array">
+                    <item name="value" xsi:type="string">delete_and_create</item>
+                    <item name="label" xsi:type="string" translatable="true">Delete Old Invoices and Creditmemos and Create New</item>
+                </item>
+                <item name="keep_untouched" xsi:type="array">
+                    <item name="value" xsi:type="string">keep_untouched</item>
+                    <item name="label" xsi:type="string" translatable="true">Keep Previous Invoices and Creditmemos and Create New</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- Sales Processors Factory (based on available options) -->
+    <type name="MageWorx\OrderEditor\Model\Order\SalesProcessorFactory">
+        <arguments>
+            <argument name="salesProcessors" xsi:type="array">
+                <item name="delete_and_create" xsi:type="string">MageWorx\OrderEditor\Model\Order\SalesProcessor\DeleteAndCreateSalesProcessor</item>
+                <item name="keep_untouched" xsi:type="string">MageWorx\OrderEditor\Model\Order\SalesProcessor\KeepUntouchedSalesProcessor</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

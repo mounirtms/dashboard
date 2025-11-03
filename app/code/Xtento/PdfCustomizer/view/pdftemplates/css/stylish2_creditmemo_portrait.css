@@ -1,0 +1,68 @@
+html, body { margin: 0; padding: 0; }
+body { color: #414141; font-size: 10px; font-family: 'Roboto', sans-serif; }
+
+.pdf-holder { }
+.clear { height: 0; display: block; clear: both; }
+
+header { background: #f8f8f8; border-bottom: 1px solid #00ab84; padding: 24px 20px; margin-bottom: 10px; }
+	header .logo { width: 100px; float: left; }
+	header .barcode { margin-top: 20px; }
+	header .company-info { width: 420px; margin-left: 12px; font-size: 8px; letter-spacing: 0.3px; float: left; }
+		header .company-info h3 { color: #00ab84; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; margin: 0 0 2px 0; padding: 0; }
+		header .company-info .icon-row img { display: inline-block; vertical-align: middle; margin-right: 4px; }
+		header .company-info .icon-row span { display: inline-block; vertical-align: middle; }
+
+.document-info { padding: 24px; }
+	.document-info .info-item { width: 236px; float: left; }
+		.document-info .info-item h1 { color: #00ab84; font-size: 24px; font-weight: 300; letter-spacing: 0.6px; margin: 0 0 6px 0; padding: 0; }
+		.document-info .info-item .icon-row { letter-spacing: 0.3px; }
+		.document-info .info-item .info-row { letter-spacing: 0.3px; margin-bottom: 4px; }
+			.document-info .info-item .icon-row img,
+			.document-info .info-item .info-row img { margin-right: 4px; }
+		.document-info .info-item table { width: 100%; margin-bottom: 4px; }
+			.document-info .info-item table tr td { font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0; padding: 0 2px 3px 2px; }
+			.document-info .info-item table tr td.icon { border-bottom-color: #00ab84; }
+		.document-info .info-item .address-data { line-height: 18px; font-size: 9px; }
+			.document-info .info-item .address-data strong { font-size: 10px; font-weight: normal; }
+	.document-info .info-item-space { width: 14px; height: 1px; float: left; } /**/
+	.document-info .shipping { margin-top: 1px; }
+
+.order-table { padding: 0 24px; }
+	.order-table table thead tr th { font-size: 9px; font-weight: 300; letter-spacing: 0.5px; border-bottom: 2px solid #00ab84; padding: 4px 8px; }
+		.order-table table thead tr th.tleft { text-align: left; }
+	.order-table table tbody tr td { line-height: 12px; background: #f8f8f8; font-size: 9px; text-align: center; letter-spacing: 0.3px; border-bottom: 1px solid #e0e0e0; padding: 7px 4px; }
+		.order-table table tbody tr:nth-child(even) td { background: #fbfbfb; }
+		.order-table table tbody tr td.info { text-align: left; }
+		.order-table table tbody tr td.img { width: 30px; }
+		.order-table table tbody tr td h4 { font-weight: normal; margin: 0; padding: 0; }
+.document-summary { padding: 0 24px; }
+.document-data { width: 515px; padding-top: 16px; float: left; }
+	.document-data .title-row tr td { font-size: 10px; letter-spacing: 0.5px; padding-right: 2px; }
+	.document-data .title-row .line { width: 90%; height: 5px; border-bottom: 1px solid #e0e0e0; padding-right: 0; }
+	.document-data .title-row .line-small { width: 55%; height: 5px; border-bottom: 1px solid #e0e0e0; padding-right: 0; }
+	.document-data .title-row .line-bottom { height: 3px; padding-right: 0; }
+	.document-data .note { line-height: 14px; font-size: 10px; letter-spacing: 0.3px; margin-top: 8px; margin-bottom: 16px; }
+	.document-data .data { line-height: 14px; font-size: 10px; letter-spacing: 0.3px; margin-top: 8px; }
+	.document-data .half-box { width: 250px; float: left; }
+	.document-data .half-space { width: 15px; height: 10px; float: left; }
+.summary-space { width: 39px; height: 10px; float: left; }
+.summary { width: 190px; float: left; }
+	.summary table tbody tr td { font-size: 9px; letter-spacing: 0.3px; padding: 8px 14px; }
+	.summary table tbody tr.border td.label,
+	.summary table tbody tr.border td.value { border-bottom: 1px solid #e0e0e0; }
+	.summary table tbody tr td.value { width: 36%; text-align: center; }
+	.summary table tbody tr.final td.label,
+	.summary table tbody tr.final td.value { background: #e5f6f2; color: #00ab84; border-top: 1px solid #00ab84; border-bottom: 1px solid #00ab84; }
+
+footer .footer-title { padding: 0 34px 8px 34px; }
+	footer .footer-title table tr td { font-size: 14px; font-weight: 300; letter-spacing: 0.3px; text-align: right; vertical-align: bottom; }
+	footer .footer-title table tr td.personal { line-height: 12px; font-size: 8px; text-align: left; padding-bottom: 4px; }
+	footer .footer-title table tr td.line { width: 72%; height: 5px; border-bottom: 2px solid #00ab84; padding-right: 0; }
+	footer .footer-title table tr td.line-small { width: 55%; padding-right: 0; }
+	footer .footer-title table tr td.line-bottom { height: 3px; padding-right: 0; }
+	footer .footer-title table tr td.line-bottom-small { height: 10px; border-top: 2px solid #00ab84; padding-right: 0; }
+footer .table-cnt { background: #f8f8f8; padding: 20px; }
+	footer .table-cnt table { width: 100%; }
+		footer .table-cnt table tr td { line-height: 12px; font-size: 9px; letter-spacing: 0.3px; }
+	footer .icon-row img { display: inline-block; vertical-align: middle; margin-right: 4px; }
+	footer .icon-row span { display: inline-block; vertical-align: middle; }

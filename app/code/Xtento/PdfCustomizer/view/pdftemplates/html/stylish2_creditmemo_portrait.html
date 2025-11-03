@@ -1,0 +1,279 @@
+##header_start##
+<div class="pdf-holder">
+	<header>
+		<div class="logo">
+			<img src="{{var logo_url}}" style="max-width: 90px; max-height: 90px;">
+		</div>
+		<!-- /.logo-holder -->
+
+		<div class="company-info">
+			<h3>{{config path="general/store_information/name"}}</h3>
+			{{depend store_information_if.city}}
+			<div class="address">
+				{{config path="general/store_information/street_line1"}}<br/>
+				{{config path="general/store_information/postcode}} {{config path="general/store_information/city}}<br/>
+				{{config path="general/store_information/country_id"}}<br/>
+			</div>
+			{{/depend}}
+			{{depend store_information_if.phone}}
+			<div class="icon-row">
+				<img width="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAOCAYAAAAbvf3sAAAABGdBTUEAALGPC/xhBQAAATVJREFUKBWVUbtKA0EUPXfcKAY7LRRsLEIqsdBCsMo3bO3jJ1L4wEZFxVqwUsFOkfhobGQRkvyAoKiINpI02lglu8n1zA4aN8WKCzO7597zuLMD/PORP/mlzUm02hOAVOEvPqQLgsDDe+UOilxsLHg2qQkf1YUfsiUqTLqgjdGEoeCpJ1HoBsfXN7gvZ1mecS2zn54goiTWYrIggtGDdMHFzhgHX48FKpfwl2sdwenGCM62xl0092B3AM3GIQ+ahcgnvEzR9gTn23mEYZGNWTYaMDLFf9GHMDphP29JxHPwl47sp4dmWOZ7yAKo9qKlV1zDRP004Bl07ZtsKR4zHunuBLYC2LmZzTFE5+GvlFzZ7TyDVH4XiN+4VpHh7XaRLY8JZo+OdZq+0vUFg9O3KBSipEkHfQENulYUaKa/hgAAAABJRU5ErkJggg==">
+				{{config path="general/store_information/phone"}}
+			</div>
+			{{/depend}}
+			<div class="icon-row">
+				<img width="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAKCAYAAACALL/6AAAABGdBTUEAALGPC/xhBQAAAMJJREFUGBmVkLEOAUEQhv+ZExJ6jyEqj0Ci8BSi8ACqaxRarRBR6VSUNKLQeQGJ0ktcYsd/Z5O9BHGmmvnn+/ffXeDPEmwmW8B6xXyyU4hVi8GkBDUFNGY3/2kSWfHwWGHuBJELRAc0JR+MCXdDMmeYHJmAMk0LmLUQaZtp92BK+6jDNzbh3JJMpRSW1scDDd6zC8Mo0xVTgrPsMA+mCbliCuzAK1xpvNG450wtVC7Bi4Y64MavyQLpO36rrN/UbwLZJ6ndNDvpI4sGAAAAAElFTkSuQmCC">
+				{{config path="trans_email/ident_general/email"}}
+			</div>
+		</div>
+		<!-- /.company-info -->
+
+		<div class="barcode">
+			{{var barcode_c39_creditmemo.increment_id}}
+		</div>
+		<!-- /.barcode -->
+
+		<div class="clear"></div>
+	</header>
+</div>
+##header_end##
+##body_start##
+<div class="pdf-holder">
+	<div class="document-info">
+		<div class="info-item">
+			<h1>{{trans "Credit Memo"}}</h1>
+			<div class="info-row">
+				<img width="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABGdBTUEAALGPC/xhBQAAASxJREFUKBWdkT9Lw1AUxV+SR4UQFBQE3YpbsQj9ApJ/BKFb3Sy4CS5uIlVw9Bs4O6ng4uSQ7+DUwambuDg4CUpI8vzdymuj4OKDm3PPufee9ydK/VpRFJ0lSTKwMvyO2LDctUkD96uq+hCepuk6MAiC4NXWHUlw6AE9x3FadV1fuq57Yox5Q9sE99BHhPF9/1bLAKRPYZdYhH6CQ9HBNWpieoRRVRTFveizFYbhAbvlViC/QRtZLvjjDph10J4aDR3P85pcObzIElvvSBN4DIwZnO7CMa7g59zpWWv9mOf5RCNu0XghA6w2sQrfZmiBaJEf0qPKsjylNpGm6YrjeIXzmizLlkWQf8Edxt/V+Xd2B9y6xAvbynMqXLu4/z1Aj6bheu6l3jF4aPD/pV+CKHVZCKOO+wAAAABJRU5ErkJggg==">
+				<span>{{trans "Credit Memo"}}: {{var creditmemo.increment_id}}</span>
+			</div>
+			<!-- /.icon-row -->
+			<div class="info-row">
+				<img width="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAOCAYAAAAbvf3sAAAABGdBTUEAALGPC/xhBQAAAV9JREFUKBVjYCARMMPUh4aGsomLi1cpKip+fPDgwUuQuAsQAPm+9+/fPwlTxwRjfPnyhR/IbmJiYrKGif39+zfw379/1TA+iGZ0dnZWAwruBLIVQAK4ACMj4zl2dnZHlv///+sDOWJA+gIuxVBxg1+/fsmwQDlX9+/fb4ZPg5OT01eQPEwDQ0JCAsejR486gGLLgDbaAukXQPoL0LkG+/btawQpBgG4p58/f84FdFY+UJEhkI4DYh+gp52AdAZEKYSE27Bz5853bm5uuvz8/A8+f/68ExhaP5iZmf/8+PFjClYNvr6+IsCgvfz27dssoIJsIL4KNP010MZQIFscpgluAwcHx6evX79WsLCwHP79+zfIg2+ANnwD+uEqTDGIhmtYvXr1LyC/Eyp5BUqDqANIbAYWoFtfA01RdnR0XIAsgc4GOo8V6Ip3jEAGIzCMY4FuVURXhMwHGnxmz549WwGNS40+LALbMAAAAABJRU5ErkJggg==">
+				<span>{{trans "Date"}}: {{var formatted_creditmemo.created_at}}</span>
+			</div>
+			<!-- /.icon-row -->
+			<div class="info-row">
+				<img width="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABGdBTUEAALGPC/xhBQAAASxJREFUKBWdkT9Lw1AUxV+SR4UQFBQE3YpbsQj9ApJ/BKFb3Sy4CS5uIlVw9Bs4O6ng4uSQ7+DUwambuDg4CUpI8vzdymuj4OKDm3PPufee9ydK/VpRFJ0lSTKwMvyO2LDctUkD96uq+hCepuk6MAiC4NXWHUlw6AE9x3FadV1fuq57Yox5Q9sE99BHhPF9/1bLAKRPYZdYhH6CQ9HBNWpieoRRVRTFveizFYbhAbvlViC/QRtZLvjjDph10J4aDR3P85pcObzIElvvSBN4DIwZnO7CMa7g59zpWWv9mOf5RCNu0XghA6w2sQrfZmiBaJEf0qPKsjylNpGm6YrjeIXzmizLlkWQf8Edxt/V+Xd2B9y6xAvbynMqXLu4/z1Aj6bheu6l3jF4aPD/pV+CKHVZCKOO+wAAAABJRU5ErkJggg==">
+				<span>{{trans "Order"}}: {{var order.increment_id}}</span>
+			</div>
+			<!-- /.icon-row -->
+		</div>
+		<div class="info-item-space"></div>
+		<div class="info-item">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td width="14" class="icon">
+						<img width="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAYAAAAiYZ4HAAAABGdBTUEAALGPC/xhBQAAAM5JREFUKBVjZFjTco3hP4MmAzYQWsPIsKb1OgMzkydDYOUDkBImnIphBvz/r8Hw999+hrU98hANMAlpLi4GkIkgGh38/6/A8P/nAZAmFrjc02/fGFa3MDA8/QYXQmGANDH83IHQADLZqug7w7E+TqAmiK4NbVoMAVWMyBoZgab+RxYgxGYipABdHuEkTmYhBp/K9+gKwPwt7YIM3/++A7ERGkCKcTnPpxLkdLBeCpwEshZkEjYAcRJYhvahhN8PWJILOU5ivIbNn9jFGK8BAJViQ0soALNUAAAAAElFTkSuQmCC"/>
+					</td>
+					<td>
+						{{trans "Billing Address"}}
+					</td>
+				</tr>
+			</table>
+			<div class="address-data">
+				{{var formattedBillingAddress|raw}}
+			</div>
+		</div>
+		<div class="info-item-space"></div>
+		<div class="info-item shipping">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td width="14" class="icon">
+						<img width="12" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAQCAYAAAAWGF8bAAAABGdBTUEAALGPC/xhBQAAAeBJREFUOBGllDFIHEEUhv+38dCIgsoFhJDCgIcYBAsLJYRgISmCQaIGgrWkSCqJFqfFCXKgRUh9WKcyopAUIUUKCanShqAgAQkEIqSR88zqjv+buV1dde4KH+zOvHnv/3b2vZ0V1LKPK50ohwUIRmyawWc0Zwp4PPfHJxNfAAo7DL/AmJ5UjshP3MwM+6BBKvm8Uw5fn8HkB6AXTR+gMY81eNap52saRkV2MZ7vs3nvizsE3k1KcIXYDwT+23xjmvGh1JTMHcTF6gI3l1sRhlPc1gF3sc4dDlDTicrfvaq2w44ai229mMOJmWH+I0zMd7mmrBVZ+GiGgOfMa2FwD423elDZ32bRbsdaN8pvNGVzqPzrh5zMsgRPuO56MbkgbmKiLcKmLUxVBncw+qLM+r1SN2W6pjEcfyVsjLFUY2MnmxIljtll/tvEtXNd81utplBl1nBDhhDJoEUEWEJkvnGe8yFrAw26CVhFo5mwgCOsshzdPpiu1wZqhtapIg91Sqfdjf57faDV1gfFj4ibEvvXGfdVfBEY8VPZYCXuW3ImuIdACsk5touXbjwEUoIEDzTiXlnkF4v9iR19g6d5fsxVG8vrD2HRXhvFXp6ISUR45qLyndspoaPtHYZfHlQVOAWH+Ifz1maFmwAAAABJRU5ErkJggg=="/>
+					</td>
+					<td>
+						{{trans "Shipping Address"}}
+					</td>
+				</tr>
+			</table>
+			<div class="address-data">
+				{{var formattedShippingAddress|raw}}
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+
+    <div class="order-table">
+   		<table width="100%" borderspace="0" cellpadding="0" cellspacing="0">
+   			<thead>
+   				<tr>
+   					<th class="tleft" colspan="2">{{trans "Product"}}</th>
+   					<th width="60">{{trans "Price"}}</th>
+   					<th width="60">{{trans "Qty"}}</th>
+   					<th width="70">{{trans "Row Total"}}</th>
+   				</tr>
+   			</thead>
+   			<tbody>
+            ##items_start##
+   				<tr>
+   					<td class="img">
+   						{{var order_item_product.thumbnail_image_html}}
+   					</td>
+   					<td class="info">
+   						<h4>{{var item.name}}</h4>
+   						<div class="catalog-number">{{var item.sku}}</div>
+   					</td>
+   					<td>
+                        {{var formatted_item.price}}
+   					</td>
+   					<td>
+                        {{var formatted_item.qty}}
+   					</td>
+   					<td>
+   						{{var formatted_item.row_total_incl_tax}}
+   					</td>
+   				</tr>
+            ##items_end##
+   			</tbody>
+   		</table>
+   	</div>
+   	<!-- /.order-table -->
+
+	<div class="document-summary">
+		<div class="document-data">
+			<table class="title-row" width="100%" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td width="14" rowspan="2">
+						<img width="12" src="data:image/png;base64,iVBORw0KGgoAAA-ANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAIBJREFUOBFjYKAQMIL1r2m5xvCfQZMksxgZrjOE1GgxgTWRqhmkCaoHYgBJVqMqHjWAgWHgw4AFNVLw8JhZtRiCyq+jqyDeAJDm1S3/4QYwMt5gCKnWJC8MGBkfMDCye4AMI90AiGYHhuCSh0gGMF6DOw0fA+RsRna4ZnxKiZYDAOExFocKof7BAAAAAElFTkSuQmCC"/>
+					</td>
+					<td rowspan="2">
+						{{trans "Note"}}
+					</td>
+					<td class="line"></td>
+				</tr>
+				<tr>
+					<td class="line-bottom"></td>
+				</tr>
+			</table>
+
+			<div class="note">
+				{{trans "Our general terms and conditions apply."}}
+			</div>
+			<!-- /.note -->
+
+			<div class="half-box">
+
+				<table class="title-row" width="100%" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="14" rowspan="2">
+							<img width="12" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAMCAYAAABiDJ37AAAABGdBTUEAALGPC/xhBQAAAS9JREFUKBWtU0FKA0EQrA6JxENuQQKCki/EByR3FW++RPCQaxAE/YEvUA9K4j0f8A0LgqCyNw8GV2y7etDdZcxgwILZ7a3pKnq2ewTXkykUe/gPCGZNNxPMITLHJ/YB3VnNW+7RgBWlI3o1XEyz7e6Jxb3VzDy751p6GIIhK8vyzKrb9JTqQ+QSrfUtX4wjmIZaPx0guJpolFMSC6y1NnBw/OrU7WkH78WLxe0ypR6FCutc+SVy92NGlsbkEkgbJoTLttKGqrvgMb/BmFwCzbBnrfcOR01po/i4wM35kecVizN7//L/5NH4J45cqJBz1O/2rUfcqEP1EMXbgy/GEUxDLT0MoUIOZZaL9fzZhjMencikQlCT5WOIDoOhXZdw9XzSK5l/DFUHljkwDw7h7Avucl9Rx5Cv1wAAAABJRU5ErkJggg=="/>
+						</td>
+						<td rowspan="2">
+							{{trans "Payment Method"}}
+						</td>
+						<td class="line-small"></td>
+					</tr>
+					<tr>
+						<td class="line-bottom"></td>
+					</tr>
+				</table>
+
+				<div class="data">
+					{{var order.getPaymentMethodTitle()}}
+				</div>
+				<!-- /.data -->
+
+			</div>
+			<!-- /.half-box -->
+
+			<div class="half-space"></div>
+
+			<div class="half-box">
+
+				<table class="title-row" width="100%" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td width="14" rowspan="2">
+							<img width="12" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAQCAYAAAAWGF8bAAAABGdBTUEAALGPC/xhBQAAAUZJREFUOBGlkj1Ow0AQhd+L0oBEk44DUNBxDoREE5cUSJwgoopTOJLjCiUXSEdp0yGOwBUoqCNSIBpESpZZm/WO49gGZaVk5+ft57ejJdzKkhFgIhhz5Eq1nfwEGGE4ntd6v4Web3TArDD/mOhalge2OdOADh2RxV8wONRn/hi/g0wwDBdaT53sjJ/nB1htNtUepyDOZASXMtMpgjBy/QL4X5fBhALrIZstBXStoe0Od7oThAXapaHkyF6/3zrD1dZNc4r6I78FeoOHZCD7WDqLZodN7hSvForzfllMY1PGNuhyVxH7xL9DX9sr8le2Dkkjb/IpJxLnMhff159p1n1UHVpYEF7kPwfWIBe36PwMgbXTq30tT+RY5UAav1XyIil1HkjeS+8W6ewx19grg3e1wx06Dzw9meDlVc6bqwIiMFvbXh26HwEOfhhU7hZwAAAAAElFTkSuQmCC"/>
+						</td>
+						<td rowspan="2">
+							{{trans "Shipping Method"}}
+						</td>
+						<td class="line-small"></td>
+					</tr>
+					<tr>
+						<td class="line-bottom"></td>
+					</tr>
+				</table>
+
+				<div class="data">
+					{{var order.getShippingDescription()}}
+				</div>
+				<!-- /.data -->
+
+			</div>
+			<!-- /.half-box -->
+
+			<div class="clear"></div>
+
+		</div>
+		<!-- /.document-data -->
+
+		<div class="summary-space"></div>
+
+		<div class="summary">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0">
+				<tbody>
+				##totals_start##
+				<tr class="{{if total.is_grand_total}}final{{else}}border{{/if}}">
+					<td class="label">
+						{{depend total.is_grand_total}}<strong>{{/depend}}{{var total.label}} {{depend total.is_tax}}({{var total.tax_percent}}){{/depend}}{{depend total.is_grand_total}}</strong>{{/depend}}
+					</td>
+					<td class="value">
+						{{depend total.is_grand_total}}<strong>{{/depend}}{{var total_formatted.amount}}{{depend total.is_grand_total}}</strong>{{/depend}}
+					</td>
+				</tr>
+				##totals_end##
+				</tbody>
+			</table>
+		</div>
+		<!-- /.summary -->
+
+		<div class="clear"></div>
+	</div>
+	<!-- /.document-summary -->
+	<br/><br/><br/>
+</div>
+##body_end##
+##footer_start##
+	<footer>
+		<div class="footer-title">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td class="line"></td>
+					<td rowspan="2">
+						{{trans "Thank you for your business!"}}
+					</td>
+				</tr>
+				<tr>
+					<td class="line-bottom"></td>
+				</tr>
+			</table>
+		</div>
+		<div class="table-cnt">
+			<table border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td width="50">
+					</td>
+					<td>
+						<strong>{{config path="general/store_information/name"}}</strong><br>
+						{{config path="general/store_information/street_line1"}}<br>
+						{{config path="general/store_information/postcode}} {{config path="general/store_information/city}}<br>
+						{{config path="general/store_information/country_id"}}
+					</td>
+					<td>
+						<br>
+						{{trans "Telephone"}}: {{config path="general/store_information/phone"}}<br>
+						{{trans "E-Mail"}}: {{config path="trans_email/ident_general/email"}}<br>
+						{{trans "Website"}}: www.example.com
+					</td>
+					<td>
+						<br>
+						{{trans "Company No."}}: {{config path="general/store_information/merchant_vat_number"}}<br/>
+						{{trans "Headquarters"}}: {{config path="general/store_information/city}}, {{config path="general/store_information/country_id"}}<br/>
+						<strong>{{trans "Any questions? Contact us!"}}</strong>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</footer>
+##footer_end##

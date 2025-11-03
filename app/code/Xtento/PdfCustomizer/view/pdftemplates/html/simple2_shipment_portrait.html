@@ -1,0 +1,231 @@
+##header_start##
+<!-- configuration: setAutoTopMargin="stretch" -->
+<div class="pdf-holder">
+    <header>
+        <div class="logo-holder">
+            <img src="{{var logo_url}}" style="max-width: 150px; max-height: 100px;">
+
+            <div class="main-info">
+                <div class="order-number">
+                    <h2>{{trans "Shipment"}} #<strong>{{var shipment.increment_id}}</strong></h2>
+                    <table borderspace="0" cellpadding="0" cellspacing="0">
+                        <tbody>
+                        <tr>
+                            <td class="order-number-item">
+                                <h4>{{trans "Date"}}</h4>
+                                {{var formatted_shipment.created_at}}
+                            </td>
+                            <td class="order-number-item">
+                                <h4>{{trans "Order Number"}}</h4>
+                                {{var order.increment_id}}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="clear"></div>
+                </div>
+                <!-- /.order-number -->
+                <div class="clear"></div>
+            </div>
+            <!-- /.main-info -->
+        </div>
+        <!-- /.logo-holder -->
+
+        <div class="company-info">
+            <div class="barcode">
+                {{var barcode_c39_shipment.increment_id}}
+            </div>
+            <!-- /.barcode -->
+
+            <h3>{{config path="general/store_information/name"}}</h3>
+            {{depend store_information_if.city}}
+            <div class="address">
+                {{config path="general/store_information/street_line1"}}, {{config path="general/store_information/postcode}} {{config path="general/store_information/city}}, {{config path="general/store_information/country_id"}}<br/>
+            </div>
+            {{/depend}}
+            {{depend store_information_if.phone}}
+            <div class="icon-row">
+                <table borderspace="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                    <tr>
+                        <td>
+                            {{config path="general/store_information/phone"}}
+                        </td>
+                        <td class="icon">
+                            &nbsp;&#xf095;
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            {{/depend}}
+            <div class="icon-row">
+                <table borderspace="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                    <tr>
+                        <td>
+                            {{config path="trans_email/ident_general/email"}}
+                        </td>
+                        <td class="icon">
+                            &nbsp;&#xf0e0;
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!--<div class="clean-row">
+                {{trans "VAT Number"}}: <strong>{{config path="general/store_information/merchant_vat_number"}}</strong>
+            </div>-->
+        </div>
+        <!-- /.company-info -->
+
+        <div class="clear"></div>
+    </header>
+</div>
+##header_end##
+##body_start##
+<div class="pdf-holder">
+    <div class="info-boxes">
+        <!--<div class="info-box">
+            <div class="on-left">
+                <div class="heading">{{trans "Billing Address"}}</div>
+                <div class="info-box-cnt">
+                    <div class="address">
+                        {{var formattedBillingAddress|raw}}
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <!-- /.info-box -->
+
+        <div class="info-box">
+            <div class="on-left">
+                <div class="heading">{{trans "Shipping Address"}}</div>
+                <div class="info-box-cnt">
+                    <div class="address">
+                        {{var formattedShippingAddress|raw}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.info-box -->
+
+        {{depend order.getIsNotVirtual()}}
+        <div class="info-box">
+            <div class="on-right">
+                <div class="heading">{{trans "Shipping Method"}}</div>
+                <div class="info-box-cnt">
+                    <div class="address">
+                        <strong>{{var order.getShippingDescription()}}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.info-box -->
+        {{/depend}}
+
+        <div class="clear"></div>
+    </div>
+    <!-- /.info-boxes -->
+
+    <div class="table-holder">
+        <table width="100%" borderspace="0" cellpadding="0" cellspacing="2">
+            <thead>
+            <tr>
+                <th width="50">{{trans "Product"}}</th>
+                <th class="tleft"></th>
+                <th width="70">{{trans "Qty"}}</th>
+                <th width="100"></th>
+                <th width="20"></th>
+            </tr>
+            </thead>
+            <tbody>
+            ##items_start##
+            <tr>
+                <td class="first">
+                    {{var order_item_product.thumbnail_image_html}}
+                </td>
+                <td class="info">
+                    <h4>{{var item.name}}</h4>
+                    <div class="catalog-number">{{trans "SKU"}}: {{var item.sku}}</div>
+                </td>
+                <td>
+                    {{var formatted_item.qty}}
+                </td>
+                <td>
+                    {{var barcode_c39_item.sku}}
+                </td>
+                <td>
+                    <input type="checkbox" checked />
+                </td>
+            </tr>
+            ##items_end##
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="1"></td>
+                <td colspan="1" class="label">
+                    {{trans "Total Qty"}}
+                </td>
+                <td class="value">
+                    <strong>{{var formatted_shipment.total_qty}}</strong>
+                </td>
+                <td colspan="2"></td>
+            </tr>
+            {{depend shipment_if.total_weight}}
+            <tr>
+                <td colspan="1"></td>
+                <td colspan="1" class="label">
+                    {{trans "Total Weight"}}
+                </td>
+                <td class="value">
+                    <strong>{{var shipment.total_weight}}</strong>
+                </td>
+                <td colspan="2"></td>
+            </tr>
+            {{/depend}}
+            </tfoot>
+        </table>
+    </div>
+    <!-- /.table-holder -->
+
+    <div class="info-boxes">
+        <div class="info-box-full">
+            <div class="heading">{{trans "Note"}}</div>
+            <div class="info-box-cnt">
+                <div class="address">
+                    {{trans "You can expect to receive your order within 2-3 business days."}}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.info-boxes -->
+</div>
+##body_end##
+##footer_start##
+<div class="pdf-holder">
+    <footer>
+        <div class="title">{{trans "Thank you for your business!"}}</div>
+        <br/><br/>
+    	<div class="table-cnt">
+    		<table border="0" cellpadding="0" cellspacing="0">
+    			<tr>
+    				<td>
+    					<strong>{{config path="general/store_information/name"}}</strong><br>
+                        {{config path="general/store_information/street_line1"}}, {{config path="general/store_information/postcode}} {{config path="general/store_information/city}}<br>{{config path="general/store_information/country_id"}}
+    				</td>
+    				<td>
+    					{{trans "Telephone"}}: {{config path="general/store_information/phone"}}<br>
+                        {{trans "E-Mail"}}: {{config path="trans_email/ident_general/email"}}<br>
+                        {{trans "Website"}}: www.example.com
+    				</td>
+    				<td class="small">
+                        {{trans "Company No."}}: {{config path="general/store_information/merchant_vat_number"}}<br/>
+                        {{trans "Headquarters"}}: {{config path="general/store_information/city}}, {{config path="general/store_information/country_id"}}
+    				</td>
+    			</tr>
+    		</table>
+    	</div>
+    </footer>
+</div>
+##footer_end##

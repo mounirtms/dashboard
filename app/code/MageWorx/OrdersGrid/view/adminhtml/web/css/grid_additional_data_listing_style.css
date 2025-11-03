@@ -1,0 +1,18 @@
+.mw__row-color-preview {
+    min-width: 100px;
+    min-height: 50px;
+    padding: 20px 10px;
+    border-radius: 5px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.mw__row-color-text {
+    font-style: italic;
+    font-weight: bold;
+    color: darkgray;
+    mix-blend-mode: difference;
+}
+.data-grid .data-grid-thumbnail-cell img {
+    border: none;
+}

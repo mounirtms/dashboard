@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Sales\Controller\Adminhtml\Order">
+        <plugin name="synchronizeOrderGrid"
+                type="MageWorx\OrdersGrid\Plugin\SynchronizeOrderGrid"
+                sortOrder="10"
+                disabled="false"/>
+    </type>
+    <!-- Fix capture action for offline payment methods -->
+    <type name="Magento\Payment\Model\MethodInterface">
+        <plugin name="fix_capture_for_offline_payment_methods"
+                type="MageWorx\OrdersGrid\Plugin\FixCaptureOfflinePaymentMethods"
+                sortOrder="10"
+                disabled="false"/>
+    </type>
+    <type name="MageWorx\OrdersGrid\Plugin\FixCaptureOfflinePaymentMethods">
+        <arguments>
+            <argument name="restrictedInvoiceActionNames" xsi:type="array">
+                <item name="new" xsi:type="string">new</item>
+                <item name="save" xsi:type="string">save</item>
+                <item name="updateQty" xsi:type="string">updateQty</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="MageWorx\OrdersGrid\Controller\Adminhtml\Order\Grid\MassShipInvoiceCapture">
+        <arguments>
+            <argument name="invoiceOrder" xsi:type="object">MageWorx\OrdersGrid\Model\Service\InvoiceOrder</argument>
+        </arguments>
+    </type>
+</config>

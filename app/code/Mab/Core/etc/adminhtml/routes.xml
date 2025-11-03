@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * MAB Core - Admin Routes Configuration
+ * 
+ * @category    Mab
+ * @package     Mab_Core
+ * @author      Mounir Abderrahmani <mounir.webdev@gmail.com>
+ * @copyright   Copyright (c) 2025 MAB Extensions
+ * @license     https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="admin">
+        <route id="mab_core" frontName="mab_core">
+            <module name="Mab_Core" />
+        </route>
+        <route id="mab_health" frontName="mab_health">
+            <module name="Mab_Core" />
+        </route>
+    </router>
+</config>

@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mageworx_ordersgrid_additional_data" resource="default" engine="innodb" comment="MageWorx Extended Orders Grid: Additional Data">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="boolean" name="is_active" nullable="false" default="0" comment="Is Active flag"/>
+        <column xsi:type="int" name="sort_order" padding="10" unsigned="true" nullable="false" default="0" comment="Sort Order"/>
+        <column xsi:type="varchar" name="name" length="128" nullable="false" comment="Name"/>
+        <column xsi:type="text" name="shipping_methods" nullable="true" comment="Shipping Methods Affected (with Carrier)"/>
+        <column xsi:type="text" name="payment_methods" nullable="true" comment="Payment Methods Affected"/>
+        <column xsi:type="text" name="order_statuses" nullable="true" comment="Order Statuses Affected"/>
+        <column xsi:type="varchar" name="row_color" length="32" nullable="true" comment="Row Color"/>
+        <column xsi:type="varchar" name="icon_image" length="255" nullable="true" comment="Icon"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+    </table>
+    <table name="mageworx_ordersgrid_additional_data_index" resource="default" engine="innodb" comment="MageWorx Extended Orders Grid: Additional Data Index Table">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="shipping_method" length="255" nullable="false" comment="Shipping Method Code"/>
+        <column xsi:type="varchar" name="payment_method" length="255" nullable="false" comment="Payment Method Code"/>
+        <column xsi:type="varchar" name="order_status" length="255" nullable="false" comment="Order Status Code"/>
+        <column xsi:type="int" name="rule_id" padding="10" unsigned="true" nullable="false" comment="Rule ID"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MAGEWORX_ORDERSGRID_ADIDX_ID_RULE_ID"
+                    table="mageworx_ordersgrid_additional_data_index"
+                    column="rule_id"
+                    referenceTable="mageworx_ordersgrid_additional_data"
+                    referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="SHIPPING_PAYMENT_ORDER_STATUS_UNQ_IDX">
+            <column name="shipping_method"/>
+            <column name="payment_method"/>
+            <column name="order_status"/>
+        </constraint>
+        <index referenceId="AD_SHIPPING_METHOD" indexType="btree">
+            <column name="shipping_method"/>
+        </index>
+        <index referenceId="AD_PAYMENT_METHOD" indexType="btree">
+            <column name="payment_method"/>
+        </index>
+        <index referenceId="AD_ORDER_STATUS" indexType="btree">
+            <column name="order_status"/>
+        </index>
+    </table>
+    <table name="mageworx_ordersgrid_grid" resource="default" engine="innodb" comment="MageWorx Extended Orders Grid table">
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Order ID"/>
+        <column xsi:type="varchar" name="coupon_code" nullable="true" length="255" comment="Coupon Code"/>
+        <column xsi:type="text" name="product_thumbnail" nullable="true" comment="Product Image"/>
+        <column xsi:type="text" name="product_name" nullable="true" comment="Product Name"/>
+        <column xsi:type="text" name="product_sku" nullable="true" comment="Product SKU"/>
+        <column xsi:type="text" name="invoices" nullable="true" comment="Invoices"/>
+        <column xsi:type="text" name="shipments" nullable="true" comment="Shipments"/>
+        <column xsi:type="varchar" name="applied_tax_code" nullable="true" length="255" comment="Applied Tax Code"/>
+        <column xsi:type="decimal" name="applied_tax_percent" unsigned="false" nullable="true" comment="Applied Tax Percent" scale="4" precision="12"/>
+        <column xsi:type="decimal" name="applied_tax_amount" scale="4" precision="12" unsigned="false" nullable="true" comment="Applied Tax Amount"/>
+        <column xsi:type="decimal" name="applied_tax_base_amount" scale="4" precision="12" unsigned="false" nullable="true" comment="Applied Tax Base Amount"/>
+        <column xsi:type="decimal" name="applied_tax_base_real_amount" scale="4" precision="12" unsigned="false" nullable="true" comment="Applied Tax Base Real Amount"/>
+        <column xsi:type="text" name="tracking_number" nullable="true" comment="Tracking Number"/>
+        <column xsi:type="varchar" name="billing_fax" nullable="true" length="64" comment="Fax (Billing)"/>
+        <column xsi:type="varchar" name="billing_region" nullable="true" length="255" comment="Region (Billing)"/>
+        <column xsi:type="varchar" name="billing_postcode" nullable="true" length="255" comment="Postcode (Billing)"/>
+        <column xsi:type="varchar" name="billing_city" nullable="true" length="255" comment="City (Billing)"/>
+        <column xsi:type="varchar" name="billing_telephone" nullable="true" length="255" comment="Telephone (Billing)"/>
+        <column xsi:type="varchar" name="billing_country_id" nullable="true" length="2" comment="Country Id (Billing)"/>
+        <column xsi:type="varchar" name="shipping_fax" nullable="true" length="64" comment="Fax (Shipping)"/>
+        <column xsi:type="varchar" name="shipping_region" nullable="true" length="255" comment="Region (Shipping)"/>
+        <column xsi:type="varchar" name="shipping_postcode" nullable="true" length="255" comment="Postcode (Shipping)"/>
+        <column xsi:type="varchar" name="shipping_city" nullable="true" length="255" comment="City (Shipping)"/>
+        <column xsi:type="varchar" name="shipping_telephone" nullable="true" length="255" comment="Telephone (Shipping)"/>
+        <column xsi:type="varchar" name="shipping_country_id" nullable="true" length="2" comment="Country Id (Shipping)"/>
+        <column xsi:type="decimal" name="subtotal_purchased" scale="4" precision="12" unsigned="false" nullable="true" comment="Subtotal (Purchased)"/>
+        <column xsi:type="decimal" name="weight" scale="4" precision="12" unsigned="false" nullable="true" comment="Weight"/>
+        <column xsi:type="timestamp" name="last_updated_time" on_update="false" nullable="true" comment="Last Updated Time"/>
+        <column xsi:type="decimal" name="discount_amount" scale="4" precision="12" unsigned="false" nullable="true" comment="Discount Amount"/>
+        <column xsi:type="text" name="product_quantity" nullable="true" comment="Product Quantity"/>
+        <column xsi:type="text" name="per_product_quantity" nullable="true" comment="Per Product Quantity"/>
+        <column xsi:type="text" name="per_product_custom_options" nullable="true" comment="Per Product Custom Options"/>
+        <column xsi:type="varchar" name="shipping_company" nullable="true" length="255" comment="Shipping Company"/>
+        <column xsi:type="varchar" name="billing_company" nullable="true" length="255" comment="Billing Company"/>
+        <column xsi:type="decimal" name="base_total_paid" scale="4" precision="12" unsigned="false" nullable="true" comment="Total Paid (Base)"/>
+        <column xsi:type="smallint" name="shipment_status" padding="2" unsigned="true" nullable="false" default="0" comment="Shipment status"/>
+        <column xsi:type="varchar" name="product_type" nullable="true" length="255" default="" comment="Involved product types"/>
+        <column xsi:type="varchar" name="row_color" nullable="true" length="24" comment="Color of the row according status"/>
+        <column xsi:type="text" name="icon_image" nullable="true" comment="Icon"/>
+        <column xsi:type="text" name="vat_id" nullable="true" comment="Tax/VAT Number"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="order_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MAGEWORX_ORDERSGRID_GRID_ORDER_ID_SALES_ORDER_GRID_ENTITY_ID" table="mageworx_ordersgrid_grid" column="order_id" referenceTable="sales_order_grid" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_SUBTOTAL_PURCHASED" indexType="btree">
+            <column name="subtotal_purchased"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_WEIGHT" indexType="btree">
+            <column name="weight"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_BILLING_REGION" indexType="btree">
+            <column name="billing_region"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_BILLING_POSTCODE" indexType="btree">
+            <column name="billing_postcode"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_BILLING_CITY" indexType="btree">
+            <column name="billing_city"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_BILLING_TELEPHONE" indexType="btree">
+            <column name="billing_telephone"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_BILLING_COUNTRY_ID" indexType="btree">
+            <column name="billing_country_id"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_SHIPPING_REGION" indexType="btree">
+            <column name="shipping_region"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_SHIPPING_POSTCODE" indexType="btree">
+            <column name="shipping_postcode"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_SHIPPING_CITY" indexType="btree">
+            <column name="shipping_city"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_SHIPPING_TELEPHONE" indexType="btree">
+            <column name="shipping_telephone"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_SHIPPING_COUNTRY_ID" indexType="btree">
+            <column name="shipping_country_id"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_APPLIED_TAX_CODE" indexType="btree">
+            <column name="applied_tax_code"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_APPLIED_TAX_PERCENT" indexType="btree">
+            <column name="applied_tax_percent"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_APPLIED_TAX_BASE_AMOUNT" indexType="btree">
+            <column name="applied_tax_base_amount"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_APPLIED_TAX_BASE_REAL_AMOUNT" indexType="btree">
+            <column name="applied_tax_base_real_amount"/>
+        </index>
+        <index referenceId="FTI_178EB852534F0CF58CDDA0E53DC8722C" indexType="fulltext">
+            <column name="coupon_code"/>
+            <column name="product_name"/>
+            <column name="product_sku"/>
+            <column name="invoices"/>
+            <column name="shipments"/>
+            <column name="tracking_number"/>
+            <column name="billing_fax"/>
+            <column name="shipping_fax"/>
+        </index>
+        <index referenceId="MAGEWORX_ORDERSGRID_GRID_DISCOUNT_AMOUNT" indexType="btree">
+            <column name="discount_amount"/>
+        </index>
+    </table>
+</schema>

@@ -1,0 +1,77 @@
+<?php
+/**
+ * @var \Mab\VisualEffects\Block\VisualEffects $block
+ */
+?>
+<?php if ($block->isEnabled()): ?>
+<div id="mab-cart-effects-container" class="mab-cart-effects">
+    <?php if ($block->getHelper()->isProgressBarEnabled()): ?>
+    <div class="mab-free-shipping-progress-wrapper">
+        <div class="mab-free-shipping-progress <?= $block->escapeHtmlAttr('mab-progress-' . $block->getHelper()->getProgressBarStyle()) ?>" id="mab-shipping-progress">
+            <div class="progress-container">
+                <div class="progress-bar" id="mab-progress-bar">
+                    <div class="progress-fill" id="mab-progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="mab-progress-text">
+                    <?= $block->escapeHtml(__('Loading shipping progress...')) ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+    
+    <script type="text/javascript">
+    require([
+        'jquery',
+        'Mab_VisualEffects/js/visual-effects',
+        'Magento_Customer/js/customer-data',
+        'domReady!'
+    ], function ($, VisualEffects, customerData) {
+        'use strict';
+        
+        var config = <?= /* @noEscape */ $block->getEffectConfigJson() ?>;
+        
+        if (config.enabled) {
+            // Initialize visual effects
+            VisualEffects.init(config);
+            
+            // Monitor cart updates
+            var cart = customerData.get('cart');
+            cart.subscribe(function (updatedCart) {
+                VisualEffects.handleCartUpdate(updatedCart);
+                
+                // Update progress bar
+                if (config.shipping_effects.progress_bar_enabled) {
+                    VisualEffects.updateProgressBar();
+                }
+            });
+            
+            // Monitor cart item updates
+            $(document).on('click', '.cart.item .action.action-delete', function() {
+                var $item = $(this).closest('.cart.item');
+                $item.addClass('mab-bounce-effect');
+                
+                setTimeout(function() {
+                    $item.fadeOut(config.animation_duration);
+                }, 200);
+            });
+            
+            // Quantity update effects
+            $(document).on('change', '.cart.item input[name*="qty"]', function() {
+                var $input = $(this);
+                $input.addClass('mab-pulse-effect');
+                
+                setTimeout(function() {
+                    $input.removeClass('mab-pulse-effect');
+                }, config.animation_duration);
+            });
+            
+            // Initialize progress bar immediately
+            if (config.shipping_effects.progress_bar_enabled) {
+                VisualEffects.updateProgressBar();
+            }
+        }
+    });
+    </script>
+</div>
+<?php endif; ?>

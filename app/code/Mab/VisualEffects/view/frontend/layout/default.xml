@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mab_VisualEffects::css/visual-effects.css"/>
+        <script src="Mab_VisualEffects::js/visual-effects.js"/>
+    </head>
+    <body>
+        <referenceContainer name="before.body.end">
+            <block class="Mab\VisualEffects\Block\VisualEffects" 
+                   name="mab.visual.effects" 
+                   template="Mab_VisualEffects::visual-effects.phtml"
+                   cacheable="false"/>
+        </referenceContainer>
+    </body>
+</page>

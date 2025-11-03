@@ -1,0 +1,86 @@
+.clearfix {
+    font-family: 'rubik';
+}
+
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+    font-family: 'rubik';
+}
+
+a {
+    color: #000;
+    text-decoration: none;
+}
+
+.pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin-bottom: 20px;
+    font-size: 9pt;
+    font-family: 'rubik';
+}
+
+.pdf-table thead th {
+    font-weight: bold;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: #b3b3b3;
+    color: #ffffff;
+}
+
+.pdf-table tbody tr td {
+    background-color: #ffffff;
+}
+
+.pdf-table tfoot {
+    text-align: right;
+    font-size: 9px;
+}
+
+.pdf-table tfoot td, .pdf-table tfoot th {
+    padding-top: 10px;
+    border-bottom: none;
+    font-size: 9pt;
+    white-space: nowrap;
+    text-align: right;
+    font-weight: normal;
+}
+
+.pdf-table tbody tr.even {
+    background-color: #f2f2f2;
+}
+
+.desc {
+    width: 50%;
+    text-align: left;
+}
+
+.images {
+    text-align: left;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 50%;
+}
+
+/* "Product Specification" table */
+.additional-attributes {
+    width: 100%;
+}
+
+.additional-attributes td {
+    text-align: left;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.additional-attributes .label {
+    width: 200px;
+    text-align: left;
+}
+
+.additional-attributes .data {
+    width: 74%;
+}

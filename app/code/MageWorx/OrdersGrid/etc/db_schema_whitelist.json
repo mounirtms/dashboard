@@ -1,0 +1,107 @@
+{
+    "mageworx_ordersgrid_grid": {
+        "column": {
+            "order_id": true,
+            "coupon_code": true,
+            "product_thumbnail": true,
+            "product_name": true,
+            "product_sku": true,
+            "product_type": true,
+            "invoices": true,
+            "shipments": true,
+            "applied_tax_code": true,
+            "applied_tax_percent": true,
+            "applied_tax_amount": true,
+            "applied_tax_base_amount": true,
+            "applied_tax_base_real_amount": true,
+            "tracking_number": true,
+            "billing_fax": true,
+            "billing_region": true,
+            "billing_postcode": true,
+            "billing_city": true,
+            "billing_telephone": true,
+            "billing_country_id": true,
+            "shipping_fax": true,
+            "shipping_region": true,
+            "shipping_postcode": true,
+            "shipping_city": true,
+            "shipping_telephone": true,
+            "shipping_country_id": true,
+            "subtotal_purchased": true,
+            "weight": true,
+            "last_updated_time": true,
+            "discount_amount": true,
+            "product_quantity": true,
+            "per_product_quantity": true,
+            "shipping_company": true,
+            "billing_company": true,
+            "base_total_paid": true,
+            "is_fully_shipped": true,
+            "color_label": true,
+            "per_product_custom_options": true,
+            "shipment_status": true,
+            "row_color": true,
+            "icon_image": true,
+            "vat_id": true
+        },
+        "index": {
+            "MAGEWORX_ORDERSGRID_GRID_SUBTOTAL_PURCHASED": true,
+            "MAGEWORX_ORDERSGRID_GRID_WEIGHT": true,
+            "MAGEWORX_ORDERSGRID_GRID_BILLING_REGION": true,
+            "MAGEWORX_ORDERSGRID_GRID_BILLING_POSTCODE": true,
+            "MAGEWORX_ORDERSGRID_GRID_BILLING_CITY": true,
+            "MAGEWORX_ORDERSGRID_GRID_BILLING_TELEPHONE": true,
+            "MAGEWORX_ORDERSGRID_GRID_BILLING_COUNTRY_ID": true,
+            "MAGEWORX_ORDERSGRID_GRID_SHIPPING_REGION": true,
+            "MAGEWORX_ORDERSGRID_GRID_SHIPPING_POSTCODE": true,
+            "MAGEWORX_ORDERSGRID_GRID_SHIPPING_CITY": true,
+            "MAGEWORX_ORDERSGRID_GRID_SHIPPING_TELEPHONE": true,
+            "MAGEWORX_ORDERSGRID_GRID_SHIPPING_COUNTRY_ID": true,
+            "MAGEWORX_ORDERSGRID_GRID_APPLIED_TAX_CODE": true,
+            "MAGEWORX_ORDERSGRID_GRID_APPLIED_TAX_PERCENT": true,
+            "MAGEWORX_ORDERSGRID_GRID_APPLIED_TAX_BASE_AMOUNT": true,
+            "MAGEWORX_ORDERSGRID_GRID_APPLIED_TAX_BASE_REAL_AMOUNT": true,
+            "FTI_178EB852534F0CF58CDDA0E53DC8722C": true,
+            "MAGEWORX_ORDERSGRID_GRID_DISCOUNT_AMOUNT": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGEWORX_ORDERSGRID_GRID_ORDER_ID_SALES_ORDER_GRID_ENTITY_ID": true
+        }
+    },
+    "mageworx_ordersgrid_additional_data": {
+        "column": {
+            "entity_id": true,
+            "is_active": true,
+            "sort_order": true,
+            "name": true,
+            "shipping_methods": true,
+            "payment_methods": true,
+            "order_statuses": true,
+            "row_color": true,
+            "icon_image": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageworx_ordersgrid_additional_data_index": {
+        "column": {
+            "entity_id": true,
+            "shipping_method": true,
+            "payment_method": true,
+            "order_status": true,
+            "rule_id": true
+        },
+        "index": {
+            "MAGEWORX_ORDERSGRID_ADDITIONAL_DATA_INDEX_SHIPPING_METHOD": true,
+            "MAGEWORX_ORDERSGRID_ADDITIONAL_DATA_INDEX_PAYMENT_METHOD": true,
+            "MAGEWORX_ORDERSGRID_ADDITIONAL_DATA_INDEX_ORDER_STATUS": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_8341DDC635E902433695C512B1DC85A0": true,
+            "UNQ_EA4197FDEA8F852CD16F08A5C830CC42": true
+        }
+    }
+}

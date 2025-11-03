@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<body>
+    <referenceContainer name="sales.order.info.buttons">
+        <block class="Xtento\PdfCustomizer\Block\Sales\Order\Info\Buttons" as="buttons.printpdf" name="sales.order.info.buttons.printpdf" cacheable="false"/>
+    </referenceContainer>
+</body>
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-02-05T17:13:45+00:00
+ * File:          view/frontend/layout/sales_order_view.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

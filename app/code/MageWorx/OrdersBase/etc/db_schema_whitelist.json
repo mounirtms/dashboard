@@ -1,0 +1,20 @@
+{
+    "mageworx_order_base_device_data": {
+        "column": {
+            "entity_id": true,
+            "order_id": true,
+            "device_code": true,
+            "area_code": true,
+            "device_name": true,
+            "area_name": true
+        },
+        "index": {
+            "MAGEWORX_ORDER_BASE_DEVICE_DATA_DEVICE_CODE": true,
+            "MAGEWORX_ORDER_BASE_DEVICE_DATA_AREA_CODE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGEWORX_ORDER_BASE_DEVICE_DATA_ORDER_ID": true
+        }
+    }
+}

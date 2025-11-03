@@ -1,0 +1,21 @@
+<?php
+//@codingStandardsIgnoreFile
+?>
+<?php $_order = $block->getOrder() ?>
+<?php if ($block->addPDFLink($_order)): ?>
+    <a href="<?php /* @escapeNotVerified */
+    echo $block->getPrintPDFUrl($_order) ?>"
+       onclick="this.target='_blank'"
+       class="action">
+        <span> <?php /* @escapeNotVerified */
+            echo __('Print Order PDF') ?>&nbsp;</span>
+    </a>
+<?php endif ?>
+
+<?php if ($block->hideBuiltInPrintActions()): ?>
+<style type="text/css">
+    .order-actions-toolbar .action.print {
+        display: none !important;
+    }
+</style>
+<?php endif; ?>

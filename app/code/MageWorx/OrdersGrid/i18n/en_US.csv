@@ -1,0 +1,160 @@
+Back,Back
+Delete,Delete
+"Are you sure you want to do this?","Are you sure you want to do this?"
+"Save and Continue Edit","Save and Continue Edit"
+Save,Save
+"Manually Synchronize Data","Manually Synchronize Data"
+"Requested model no longer exists.","Requested model no longer exists."
+"You deleted the data.","You deleted the data."
+"We can't delete the data right now. Please review the log and try again.","We can't delete the data right now. Please review the log and try again."
+"We can't find a data to delete.","We can't find a data to delete."
+"New Entity","New Entity"
+"Order Marks","Order Marks"
+"A total of %1 record(s) were deleted.","A total of %1 record(s) were deleted."
+"A total of %1 record(s) were updated.","A total of %1 record(s) were updated."
+"You saved the data.","You saved the data."
+"Something went wrong while saving the data. Please review the error log.","Something went wrong while saving the data. Please review the error log."
+"Successfully invoiced %1","Successfully invoiced %1"
+"Not invoiced %1","Not invoiced %1"
+"Successfully shipped %1","Successfully shipped %1"
+"Not shipped %1","Not shipped %1"
+"Successfully deleted: %1 , 
+                    Errors: %2","Successfully deleted: %1 , 
+                    Errors: %2"
+"Your invoice was updated.","Your invoice was updated."
+"Shipment was updated.","Shipment was updated."
+"Result: ","Result: "
+"Successfully invoiced: %1 ","Successfully invoiced: %1 "
+"Successfully captured: %1 ","Successfully captured: %1 "
+"Not captured %1","Not captured %1"
+"Successfully shipped: %1 ","Successfully shipped: %1 "
+"There are no printable documents related to selected orders.","There are no printable documents related to selected orders."
+"The order emails have been sent.","The order emails have been sent."
+"The invoice emails have been sent.","The invoice emails have been sent."
+"The shipment emails have been sent.","The shipment emails have been sent."
+"Synchronization completed successfully","Synchronization completed successfully"
+Active,Active
+Inactive,Inactive
+None,None
+Additional,Additional
+Complete,Complete
+"Delete Completely","Delete Completely"
+Synchronize,Synchronize
+"Notify Customer","Notify Customer"
+"Re-send Order Email","Re-send Order Email"
+"Re-send Invoice Email","Re-send Invoice Email"
+"Re-send Shipment Email","Re-send Shipment Email"
+Invoice,Invoice
+Capture,Capture
+"Invoice + Print","Invoice + Print"
+Ship,Ship
+"Ship + Print","Ship + Print"
+"Invoice + Capture","Invoice + Capture"
+"Invoice + Capture + Ship","Invoice + Capture + Ship"
+"Invoice + Capture + Ship + Print","Invoice + Capture + Ship + Print"
+"Capture + Ship","Capture + Ship"
+"Do Not Notify Customer","Do Not Notify Customer"
+No,No
+Yes,Yes
+Partially,Partially
+"Entity must be instance of \Magento\Framework\Model\AbstractModel","Entity must be instance of \Magento\Framework\Model\AbstractModel"
+"Could not save the entity: %1","Could not save the entity: %1"
+"Entity with id ""%1"" does not exist.","Entity with id ""%1"" does not exist."
+"Could not delete the entity: %1","Could not delete the entity: %1"
+"""Invoice Document Validation Error(s):\n"" .","""Invoice Document Validation Error(s):\n"" ."
+"Could not save an invoice, see error log for details","Could not save an invoice, see error log for details"
+"All Shipping Methods","All Shipping Methods"
+Edit,Edit
+"Apply Now","Apply Now"
+"Any Order Status","Any Order Status"
+"All Payment Methods","All Payment Methods"
+"Are you sure you want to complete selected items?","Are you sure you want to complete selected items?"
+"Are you sure you want to Delete Completely selected items?","Are you sure you want to Delete Completely selected items?"
+"Are you sure you want to synchronize selected orders?","Are you sure you want to synchronize selected orders?"
+"Are you sure you want to Capture selected items?","Are you sure you want to Capture selected items?"
+"Are you sure you want to Invoice selected items?","Are you sure you want to Invoice selected items?"
+"Are you sure you want to Invoice + Print selected items?","Are you sure you want to Invoice + Print selected items?"
+"Are you sure you want to Ship selected items?","Are you sure you want to Ship selected items?"
+"Are you sure you want to Ship + Print selected items?","Are you sure you want to Ship + Print selected items?"
+"Are you sure you want to Invoice + Capture selected items?","Are you sure you want to Invoice + Capture selected items?"
+"Are you sure you want to Invoice + Capture + Ship selected items?","Are you sure you want to Invoice + Capture + Ship selected items?"
+"Are you sure you want to Invoice + Capture + Ship + Print selected items?","Are you sure you want to Invoice + Capture + Ship + Print selected items?"
+"Are you sure you want to Capture + Ship selected items?","Are you sure you want to Capture + Ship selected items?"
+"We couldn't find any records.","We couldn't find any records."
+Columns,Columns
+Reset,Reset
+Close,Close
+Icon,Icon
+"Grid Colors & Icons","Grid Colors & Icons"
+"Order Management","Order Management"
+"Orders Grid","Orders Grid"
+"Main Settings","Main Settings"
+"Sync orders additional data","Sync orders additional data"
+"Sync order grid by opening","Sync order grid by opening"
+"Count of recent orders to sync","Count of recent orders to sync"
+"Sync order grid by cron","Sync order grid by cron"
+"When set to yes the life-time synchronization will be disabled. All orders will be synchronized every 5 minutes using cron.","When set to yes the life-time synchronization will be disabled. All orders will be synchronized every 5 minutes using cron."
+"Disabled mass actions in orders grid","Disabled mass actions in orders grid"
+"Disabled mass-actions will be hidden in the orders grid.","Disabled mass-actions will be hidden in the orders grid."
+"Order capture notification comment","Order capture notification comment"
+"Orders Grid Additional Data by Mageworx","Orders Grid Additional Data by Mageworx"
+"Orders Grid Additional Data Rules: Row Icon, Row Color etc. (Mageworx)","Orders Grid Additional Data Rules: Row Icon, Row Color etc. (Mageworx)"
+"General Information","General Information"
+Enabled,Enabled
+Name,Name
+"Internal name of the mark.","Internal name of the mark."
+"Sort Order","Sort Order"
+"Mark Rules with the lowest sort order will be applied first.","Mark Rules with the lowest sort order will be applied first."
+"Row Color","Row Color"
+"No Color","No Color"
+"Order status","Order status"
+"Apply this mark to the orders with the selected statuses. Leave blank for all.","Apply this mark to the orders with the selected statuses. Leave blank for all."
+"Payment method(s)","Payment method(s)"
+"Apply this mark to the orders with the selected shipping methods. Leave blank for all.","Apply this mark to the orders with the selected shipping methods. Leave blank for all."
+"Shipping method(s)","Shipping method(s)"
+"Apply this mark to the orders with the selected payment methods. Leave blank for all.","Apply this mark to the orders with the selected payment methods. Leave blank for all."
+"Add new mark","Add new mark"
+"Delete selected items?","Delete selected items?"
+"Delete items","Delete items"
+"Change status","Change status"
+Enable,Enable
+Disable,Disable
+ID,ID
+Status,Status
+"Product Type","Product Type"
+"Coupon Code","Coupon Code"
+"Discount Amount","Discount Amount"
+"Customer Id","Customer Id"
+Weight,Weight
+"Subtotal (Purchased)","Subtotal (Purchased)"
+Modified,Modified
+"Tax Code","Tax Code"
+"Tax Amount","Tax Amount"
+"Tax Amount (Base)","Tax Amount (Base)"
+"Tax Real Amount (Base)","Tax Real Amount (Base)"
+Invoices,Invoices
+"Total Paid (Base)","Total Paid (Base)"
+"Tax/VAT Number","Tax/VAT Number"
+Shipments,Shipments
+Shipped,Shipped
+"Tracking Numbers","Tracking Numbers"
+"Product Name","Product Name"
+SKU,SKU
+"Product Thumbnail","Product Thumbnail"
+"Product Quantity","Product Quantity"
+"Qty by SKU","Qty by SKU"
+"Custom Options","Custom Options"
+"Billing Fax","Billing Fax"
+"Billing Region","Billing Region"
+"Billing Postcode","Billing Postcode"
+"Billing City","Billing City"
+"Billing Company","Billing Company"
+"Billing Telephone","Billing Telephone"
+"Billing Country","Billing Country"
+"Shipping Fax","Shipping Fax"
+"Shipping Region","Shipping Region"
+"Shipping Postcode","Shipping Postcode"
+"Shipping City","Shipping City"
+"Shipping Company","Shipping Company"
+"Shipping Telephone","Shipping Telephone"
+"Shipping Country","Shipping Country"

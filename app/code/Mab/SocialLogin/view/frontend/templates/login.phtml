@@ -1,0 +1,67 @@
+<?php
+/** @var \Mab\SocialLogin\Block\Login $block */
+?>
+
+<div id="mab-social-login">
+    <?php if ($block->isGoogleEnabled()): ?>
+        <button id="google-login-button">Login with Google</button>
+    <?php endif; ?>
+    <?php if ($block->isFacebookEnabled()): ?>
+        <button id="facebook-login-button">Login with Facebook</button>
+    <?php endif; ?>
+</div>
+
+<script type="text/javascript">
+    require(['jquery', 'https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js', 'https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js'], function($, firebase) {
+        var firebaseConfig = <?php echo $block->getFirebaseConfig(); ?>;
+        firebase.initializeApp(firebaseConfig);
+
+        var auth = firebase.auth();
+
+        if (document.getElementById('google-login-button')) {
+            document.getElementById('google-login-button').addEventListener('click', function() {
+                var provider = new firebase.auth.GoogleAuthProvider();
+                auth.signInWithPopup(provider).then(function(result) {
+                    var user = result.user;
+                    $.ajax({
+                        url: '<?php echo $block->getUrl("mabsociallogin/account/login"); ?>',
+                        type: 'POST',
+                        data: { firebaseUser: JSON.stringify(user) },
+                        success: function(response) {
+                            if (response.success) {
+                                window.location.reload();
+                            } else {
+                                alert(response.message);
+                            }
+                        }
+                    });
+                }).catch(function(error) {
+                    alert(error.message);
+                });
+            });
+        }
+
+        if (document.getElementById('facebook-login-button')) {
+            document.getElementById('facebook-login-button').addEventListener('click', function() {
+                var provider = new firebase.auth.FacebookAuthProvider();
+                auth.signInWithPopup(provider).then(function(result) {
+                    var user = result.user;
+                    $.ajax({
+                        url: '<?php echo $block->getUrl("mabsociallogin/account/login"); ?>',
+                        type: 'POST',
+                        data: { firebaseUser: JSON.stringify(user) },
+                        success: function(response) {
+                            if (response.success) {
+                                window.location.reload();
+                            } else {
+                                alert(response.message);
+                            }
+                        }
+                    });
+                }).catch(function(error) {
+                    alert(error.message);
+                });
+            });
+        }
+    });
+</script>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+Copyright MageWorx. All rights reserved.
+See LICENSE.txt for license details.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="editor"/>
+    <update handle="styles"/>
+    <head>
+        <css src="MageWorx_OrdersGrid::css/colpick.css"/>
+    </head>
+    <body>
+        <referenceBlock name="menu">
+            <action method="setActive">
+                <argument name="itemId" xsi:type="string">MageWorx_OrdersGrid::grid_additional_data</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="page.title">
+            <action method="setTitleClass">
+                <argument name="class" xsi:type="string">complex</argument>
+            </action>
+        </referenceBlock>
+        <referenceContainer name="content">
+            <uiComponent name="grid_additional_data_form"/>
+        </referenceContainer>
+    </body>
+</page>

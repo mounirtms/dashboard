@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Catalog\Block\Product\AbstractProduct">
+        <plugin name="Yireo_GoogleTagManager2::addProductDetails" type="Yireo\GoogleTagManager2\Plugin\AddProductDetails"/>
+    </type>
+
+    <type name="Magento\Framework\View\Element\Template">
+        <plugin name="Yireo_GoogleTagManager2::addCspInlineScripts" type="Yireo\GoogleTagManager2\Plugin\AddCspInlineScripts"/>
+    </type>
+
+    <type name="Magento\Customer\CustomerData\Customer">
+        <plugin name="Yireo_GoogleTagManager2::addDataToCustomerSection" type="Yireo\GoogleTagManager2\Plugin\AddDataToCustomerSection"/>
+    </type>
+
+    <type name="Magento\Checkout\CustomerData\Cart">
+        <plugin name="Yireo_GoogleTagManager2::addAdditionalDataToCartSection" type="Yireo\GoogleTagManager2\Plugin\AddDataToCartSection"/>
+    </type>
+
+    <type name="Magento\Catalog\Block\Product\ListProduct">
+        <plugin name="Yireo_GoogleTagManager2::getProductsFromCategoryBlockPlugin" type="Yireo\GoogleTagManager2\Plugin\GetProductsFromCategoryBlockPlugin"/>
+    </type>
+
+    <type name="Magento\CatalogSearch\Controller\Result\Index">
+        <plugin name="Yireo_GoogleTagManager2::TriggerViewSearchResultDataLayerEvent" type="Yireo\GoogleTagManager2\Plugin\TriggerViewSearchResultDataLayerEvent"/>
+    </type>
+
+    <type name="Magento\Customer\CustomerData\SectionPoolInterface">
+        <arguments>
+            <argument name="sectionSourceMap" xsi:type="array">
+                <item name="gtm-checkout" xsi:type="string">Yireo\GoogleTagManager2\CustomerData\GtmCheckout</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

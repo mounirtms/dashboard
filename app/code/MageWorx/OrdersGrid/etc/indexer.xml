@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+    <indexer id="mageworx_ordersgrid_additional_data" view_id="mageworx_ordersgrid_additional_data_index" class="MageWorx\OrdersGrid\Model\Indexer\AdditionalData">
+        <title translate="true">Orders Grid Additional Data by Mageworx</title>
+        <description translate="true">Orders Grid Additional Data Rules: Row Icon, Row Color etc. (Mageworx)</description>
+    </indexer>
+</config>

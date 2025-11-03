@@ -1,0 +1,33 @@
+{
+    "mageworx_order_editor_quote_data": {
+        "column": {
+            "entity_id": true,
+            "quote_id": true,
+            "order_id": true,
+            "data_serialized": true,
+            "updated_at": true,
+            "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGEWORX_ORDER_EDITOR_QUOTE_DATA_QUOTE_ID_QUOTE_ENTITY_ID": true,
+            "MAGEWORX_ORDER_EDITOR_QUOTE_DATA_ORDER_ID_SALES_ORDER_ENTITY_ID": true
+        }
+    },
+    "quote": {
+        "column": {
+            "edit_in_progress": true
+        }
+    },
+    "quote_address": {
+        "column": {
+            "edit_in_progress": true
+        }
+    },
+    "quote_item": {
+        "column": {
+            "edit_in_progress": true,
+            "temp_item": true
+        }
+    }
+}

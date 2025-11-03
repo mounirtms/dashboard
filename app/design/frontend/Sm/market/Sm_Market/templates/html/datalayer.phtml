@@ -1,0 +1,85 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+
+// Get current URL path
+$currentUrlPath = parse_url($block->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]), PHP_URL_PATH);
+
+// Search page check
+$isSearchPage = strpos($currentUrlPath, '/search/') !== false;
+$searchTerm = $isSearchPage ? ($block->getRequest()->getParam('q') ?? '') : '';
+?>
+
+<script>
+    window.dataLayer = window.dataLayer || [];
+
+    // Always push page readiness
+    dataLayer.push({
+        event: "dataLayer_ready",
+        status_code: "200",
+        full_url: "<?= $block->escapeUrl($block->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true])) ?>"
+    });
+
+    <?php if ($isSearchPage && $searchTerm): ?>
+    (function trackSearchResults() {
+        const containerSelector = '.products.list.items.product-items';
+        const itemSelector = '.product-item';
+        const noResultsSelector = '.message.notice';
+
+        function pushSearchEvent(count) {
+            dataLayer.push({
+                event: "dataLayer_search",
+                searchTerm: "<?= $block->escapeJs($searchTerm) ?>",
+                searchResultsCount: count,
+                noResults: count === 0
+            });
+        }
+
+        function checkAndPush() {
+            const container = document.querySelector(containerSelector);
+            const noResults = document.querySelector(noResultsSelector);
+
+            if (container) {
+                const items = container.querySelectorAll(itemSelector);
+                pushSearchEvent(items.length);
+            } else if (noResults) {
+                // No product container, but message shown
+                pushSearchEvent(0);
+            } else {
+                // Still loading - wait
+                const observer = new MutationObserver(() => {
+                    const updatedContainer = document.querySelector(containerSelector);
+                    const updatedNoResults = document.querySelector(noResultsSelector);
+
+                    if (updatedContainer) {
+                        const updatedItems = updatedContainer.querySelectorAll(itemSelector);
+                        pushSearchEvent(updatedItems.length);
+                        observer.disconnect();
+                    } else if (updatedNoResults) {
+                        pushSearchEvent(0);
+                        observer.disconnect();
+                    }
+                });
+
+                observer.observe(document.body, { childList: true, subtree: true });
+
+                // Fallback after 10s
+                setTimeout(() => {
+                    const fallbackContainer = document.querySelector(containerSelector);
+                    const fallbackNoResults = document.querySelector(noResultsSelector);
+
+                    if (fallbackContainer) {
+                        const fallbackItems = fallbackContainer.querySelectorAll(itemSelector);
+                        pushSearchEvent(fallbackItems.length);
+                    } else if (fallbackNoResults) {
+                        pushSearchEvent(0);
+                    }
+
+                    observer.disconnect();
+                }, 10000);
+            }
+        }
+
+        checkAndPush();
+    })();
+    <?php endif; ?>
+</script>

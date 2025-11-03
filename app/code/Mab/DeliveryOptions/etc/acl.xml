@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Mab_Core::mab_menu">
+                    <resource id="Mab_DeliveryOptions::delivery" title="Delivery Options" translate="title" sortOrder="40">
+                        <resource id="Mab_DeliveryOptions::delivery_slots" title="Manage Delivery Slots" translate="title" sortOrder="10"/>
+                        <resource id="Mab_DeliveryOptions::config" title="Delivery Configuration" translate="title" sortOrder="20"/>
+                    </resource>
+                </resource>
+                
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Mab_DeliveryOptions::delivery_config" title="MAB Delivery Settings" translate="title"/>
+                            <resource id="Magento_Shipping::carriers" title="Shipping Methods" translate="title">
+                                <resource id="Mab_DeliveryOptions::yalidine_carrier" title="Yalidine Shipping" translate="title"/>
+                            </resource>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

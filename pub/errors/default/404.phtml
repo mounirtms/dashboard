@@ -1,0 +1,102 @@
+<?php
+/**
+ * Custom 404 Page - Techno Stationery
+ * Copyright © Techno Stationery
+ */
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Page Not Found | Techno Stationery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f4f4 url('images/techno.png') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      color: #333;
+    }
+    .container {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+    }
+    .logo img {
+      max-width: 180px;
+      margin-bottom: 20px;
+    }
+    .coffee img {
+      max-width: 120px;
+      margin: 20px auto;
+      display: block;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin: 0 0 20px;
+    }
+    p {
+      font-size: 1.1em;
+      margin: 0 0 10px;
+    }
+    .btn-home {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 25px;
+      background-color: #004f9e;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    .btn-home:hover {
+      background-color: #003b75;
+    }
+  </style>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-5LXKWLFR');</script>
+<!-- End Google Tag Manager -->
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      'event': '404_page_view',
+      'error_type': '404 Not Found',
+      'timestamp': new Date().toISOString()
+    });
+  </script>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5LXKWLFR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="images/logo_techno.png" alt="Techno Stationery Logo">
+    </div>
+    <h1>Oops! Page Not Found</h1>
+    <p>The page you’re looking for doesn't exist or has been moved.</p>
+    <p>While you're here, take a coffee break ☕</p>
+    <div class="coffee">
+      <img src="images/coffee_cup.png" alt="Cup of Coffee">
+    </div>
+    <a href="/" class="btn-home">Go to Homepage</a>
+  </div>
+</body>
+</html>

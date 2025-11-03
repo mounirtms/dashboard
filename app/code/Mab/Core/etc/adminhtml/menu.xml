@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <!-- Main MAB Extensions Menu -->
+        <add id="Mab_Core::mab" 
+             title="MAB Extensions" 
+             translate="title" 
+             module="Mab_Core" 
+             sortOrder="80" 
+             resource="Mab_Core::mab"
+             dependsOnModule="Mab_Core"
+             action="adminhtml/system_config/edit/section/mab_core"/>
+
+        <!-- Core Configuration -->
+        <add id="Mab_Core::configuration" 
+             title="Core Configuration" 
+             translate="title" 
+             module="Mab_Core" 
+             sortOrder="10" 
+             parent="Mab_Core::mab" 
+             action="adminhtml/system_config/edit/section/mab_core" 
+             resource="Mab_Core::config"/>
+
+        <!-- License Management -->
+        <add id="Mab_License::license" 
+             title="License Management" 
+             translate="title" 
+             module="Mab_License" 
+             sortOrder="20" 
+             parent="Mab_Core::mab" 
+             action="adminhtml/system_config/edit/section/mab_license" 
+             resource="Mab_License::config"/>
+
+        <!-- Delivery Options -->
+        <add id="Mab_DeliveryOptions::delivery" 
+             title="Delivery Options" 
+             translate="title" 
+             module="Mab_DeliveryOptions" 
+             sortOrder="40" 
+             parent="Mab_Core::mab" 
+             action="adminhtml/system_config/edit/section/mab_delivery_options" 
+             resource="Mab_DeliveryOptions::config"/>
+
+        <!-- Admin Locale Control -->
+        <add id="Mab_AdminLocale::locale" 
+             title="Admin Locale Control" 
+             translate="title" 
+             module="Mab_AdminLocale" 
+             sortOrder="50" 
+             parent="Mab_Core::mab" 
+             action="adminhtml/system_config/edit/section/mab_admin_locale" 
+             resource="Mab_AdminLocale::config"/>
+
+        <!-- Social Login -->
+        <add id="Mab_SocialLogin::social" 
+             title="Social Login" 
+             translate="title" 
+             module="Mab_SocialLogin" 
+             sortOrder="60" 
+             parent="Mab_Core::mab" 
+             action="adminhtml/system_config/edit/section/mab_social_login" 
+             resource="Mab_SocialLogin::config"/>
+
+        <!-- Source Selector -->
+        <add id="Mab_SourceSelector::selector" 
+             title="Source Selector" 
+             translate="title" 
+             module="Mab_SourceSelector" 
+             sortOrder="70" 
+             parent="Mab_Core::mab" 
+             action="adminhtml/system_config/edit/section/mab_sourceselector" 
+             resource="Mab_SourceSelector::config"/>
+
+        <!-- Theme Configuration -->
+        <add id="Mab_Theme::theme" 
+             title="Theme Configuration" 
+             translate="title" 
+             module="Mab_Theme" 
+             sortOrder="90" 
+             parent="Mab_Core::mab" 
+             action="adminhtml/system_config/edit/section/mab_theme" 
+             resource="Mab_Theme::config"/>
+    </menu>
+</config>

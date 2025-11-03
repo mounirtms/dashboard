@@ -1,0 +1,56 @@
+<?php /** @var $block \Xtento\PdfCustomizer\Block\Adminhtml\PdfTemplate\Edit\DefaultTemplatePopup */ ?>
+<div id="load_default_template_window" style="display: none;">
+    <section class="admin__page-section" id="default_template">
+        <div class="admin__page-section-title">
+            <span class="title">
+                <?= __('New PDF Template') ?>
+            </span>
+        </div>
+        <div class="admin__control-table-wrapper admin__page-subsection">
+            <p><?= __('Would you like to load one of our beautiful, ready-to-use PDF Templates to get your PDF template kickstarted? Preview them below.') ?></p>
+            <br/>
+            <table class="data-table admin__control-table">
+                <thead>
+                <tr>
+                    <th class="col-template"><?= __('Select Template') ?></th>
+                    <th class="col-preview"><?= __('PDF Preview') ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="col-template" style="max-width: 377px;">
+                        <div class="admin__control-addon">
+                            <select id="default_template_id" class="admin__control-select" style="background-color: #fff; max-width: 350px;">
+                                <option><?= __('Loading...') ?></option>
+                            </select>
+                        </div>
+                        <div class="page-actions" style="margin-top: 15px; float: left;">
+                            <div class="page-actions-buttons">
+                                <button class="action-primary" style="width: 350px; margin-left: 0;" type="button" onclick="previewPopupModal.loadTemplate()"><span><?= __('Load Template') ?></span>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="col-preview" style="text-align: center">
+                        <img id="template-preview-img" style="max-height: 1200px;" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="page-main-actions">
+            <div class="page-actions">
+                <div class="page-actions-buttons">
+                    <button class="action-secondary" type="button" onclick="previewPopupModal.close()"><span><?= __('Cancel') ?></span>
+                    </button>
+                    <button class="action-primary" type="button" onclick="previewPopupModal.loadTemplate()"><span><?= __('Load Template') ?></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script type="text/javascript">
+    window.loadDefaultTemplateUrl = '<?php echo $block->getUrl('xtento_pdf/templates/getDefaultTemplates'); ?>';
+</script>

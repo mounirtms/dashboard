@@ -1,0 +1,47 @@
+<?php
+use Xtento\PdfCustomizer\Model\Source\TemplateType;
+?>
+<div class="entry-edit" style="margin-top:20px;">
+    <div class="entry-edit-head">
+        <h2><?php echo __('Tools - Export Settings')?></h2>
+
+        <div class="form-buttons"></div>
+    </div>
+    <form id="export_form" name="export_form" method="post" action="<?php echo $block->getUrl('*/*/exportSettings')?>">
+        <input name="form_key" type="hidden" value="<?php echo $block->getFormKey() ?>"/>
+
+        <div class="fieldset fieldset-wide" id="base_fieldset">
+            <div class="hor-scroll">
+                    <?php echo __('<b>Note:</b> You can select PDF templates settings to export here, and later on import them into another Magento installation for example.')?>
+                <div style="position: relative; border: 1px solid #a6a6a6; display:table; width:99.5%; margin-top: 5px; padding: 3px 5px 5px;">
+                    <div style="padding-left: 10px; padding-top: 3px; display:table-row;">
+                        <strong><?php echo __('Select Templates')?></strong> [<a href="#" onclick="jQuery('#templates-ul > li > input').each(function(index, el){jQuery(el).attr('checked', true)})"><?php echo __('Select all')?></a>]
+                        <?php
+                        $templateCollection = $block->getTemplates();
+                        ?>
+                        <ul id="templates-ul" class="checkboxes" style="padding: 2px 8px 0;list-style-type: none;">
+                            <?php
+                            foreach ($templateCollection as $template) {
+                                ?>
+                                <li>
+                                    <input id="template_<?php echo $template->getId()?>" type="checkbox" name="template_ids[]" value="<?php echo $template->getId()?>">
+                                    <label for="template_<?php echo $template->getId()?>"><b><?php echo $template->getTemplateName()?></b> (<?php echo __('Entity: %1', ucwords(TemplateType::TYPES[$template->getTemplateType()]))?>)</label>
+                                </li>
+                                <?php
+                            }
+                            if ($templateCollection->getSize() == 0) {
+                                echo "<li>".__('No templates found.')."</li>";
+                            }
+                            ?>
+                        </ul>
+                    </div>
+                </div>
+                <div style="padding-top:5px; clear:both;">
+                    <button class="scalable save" type="submit" onclick="jQuery('#export_form').submit();">
+                        <span><?php echo __('Export Settings')?></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

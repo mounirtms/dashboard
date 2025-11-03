@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<body>
+    <referenceContainer name="product.info.social">
+        <block class="Xtento\PdfCustomizer\Block\Product\Pdf" name="product.info.pdf" template="Xtento_PdfCustomizer::product/pdf.phtml" ifconfig="xtento_pdfcustomizer/product/enabled" />
+    </referenceContainer>
+</body>
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-02-05T17:13:45+00:00
+ * File:          view/frontend/layout/catalog_product_view.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

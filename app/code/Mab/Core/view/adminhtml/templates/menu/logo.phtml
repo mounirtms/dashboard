@@ -1,0 +1,64 @@
+<?php
+/**
+ * MAB Extensions - Admin Menu Logo Template
+ * @var \Mab\Core\Block\Adminhtml\Menu\Logo $block
+ */
+?>
+<?php if ($block->isLogoEnabled()): ?>
+<div class="mab-admin-logo">
+    <img src="<?= $block->escapeUrl($block->getLogoUrl()) ?>" 
+         alt="MAB Extensions" 
+         class="mab-logo-image"
+         title="MAB Extensions - Professional Magento Solutions" />
+</div>
+<?php else: ?>
+<div class="mab-admin-logo mab-default-logo">
+    <span class="mab-logo-text">MAB</span>
+    <span class="mab-logo-subtitle">Extensions</span>
+</div>
+<?php endif; ?>
+
+<style>
+.mab-admin-logo {
+    display: inline-block;
+    margin: 5px 10px;
+    vertical-align: middle;
+}
+
+.mab-logo-image {
+    max-height: 32px;
+    max-width: 120px;
+    height: auto;
+    width: auto;
+}
+
+.mab-default-logo {
+    background: linear-gradient(45deg, #eb5202 0%, #ff6b35 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 60px;
+}
+
+.mab-logo-text {
+    display: block;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+.mab-logo-subtitle {
+    display: block;
+    font-size: 8px;
+    line-height: 1;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.mab-admin-logo:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+</style>

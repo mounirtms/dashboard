@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mageworx_order_management>
+            <order_grid>
+                <main>
+                    <sync_order_count>1</sync_order_count>
+                    <cron_sync_status>0</cron_sync_status>
+                    <capture_notification_comment><![CDATA[The invoice has been captured.]]></capture_notification_comment>
+                    <disabled_mass_actions>0</disabled_mass_actions>
+                </main>
+            </order_grid>
+        </mageworx_order_management>
+    </default>
+</config>

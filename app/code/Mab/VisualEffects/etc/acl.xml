@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Mab_Core::mab_menu">
+                    <resource id="Mab_VisualEffects::visual_effects" title="Visual Effects" translate="title" sortOrder="100">
+                        <resource id="Mab_VisualEffects::config" title="Visual Effects Configuration" translate="title" sortOrder="10"/>
+                    </resource>
+                </resource>
+                
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Mab_VisualEffects::visual_effects_config" title="MAB Visual Effects Settings" translate="title"/>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

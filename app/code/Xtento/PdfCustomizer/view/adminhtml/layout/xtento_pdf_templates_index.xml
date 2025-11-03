@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">   
+    <update handle="styles"/>
+    <body>
+        <referenceContainer name="content">
+            <uiComponent name="pdfcustomizer_templates_listing"/>
+            <block class="Xtento\PdfCustomizer\Block\Adminhtml\ImportExportButton" name="import_export_settings"/>
+            <block class="Xtento\PdfCustomizer\Block\Adminhtml\AddButton" name="template_list"/>
+        </referenceContainer>
+    </body>
+</page>
+<!--
+/**
+ * Product:       Xtento_PdfCustomizer
+ * ID:            %!uniqueid!%
+ * Last Modified: 2019-02-05T17:13:45+00:00
+ * File:          view/adminhtml/layout/xtento_pdf_templates_index.xml
+ * Copyright:     Copyright (c) XTENTO GmbH & Co. KG <info@xtento.com> / All rights reserved.
+ */
+-->

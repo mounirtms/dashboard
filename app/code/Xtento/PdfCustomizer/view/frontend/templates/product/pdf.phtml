@@ -1,0 +1,15 @@
+<?php
+// @codingStandardsIgnoreFile
+
+/** @var $block \Xtento\PdfCustomizer\Block\Product\Pdf */
+?>
+
+<div class="product-addto-links">
+    <?php if ($block->addPDFLink()):?>
+        <a href="<?php /* @escapeNotVerified */ echo $block->getPrintPDFUrl() ?>"
+           onclick="this.target='_blank'"
+           class="action">
+            <span><?php /* @escapeNotVerified */ echo __('Download PDF') ?></span>
+        </a>
+    <?php endif?>
+</div>
