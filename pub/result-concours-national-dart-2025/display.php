@@ -76,6 +76,8 @@ $answers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Process data for display
 $processedAnswers = [];
+$dimensionStats = []; // For dimension filtering
+
 foreach ($answers as $answer) {
     $data = json_decode($answer['response_json'], true);
     if ($data) {
@@ -84,6 +86,16 @@ foreach ($answers as $answer) {
         $ratingStmt->execute([$answer['answer_id']]);
         $ratingRow = $ratingStmt->fetch(PDO::FETCH_ASSOC);
         $rating = $ratingRow ? $ratingRow['rating'] : 0;
+        
+        $dimension = isset($data['textinput-dimension']['value']) ? $data['textinput-dimension']['value'] : '';
+        
+        // Collect dimension data for filtering
+        if (!empty($dimension)) {
+            if (!isset($dimensionStats[$dimension])) {
+                $dimensionStats[$dimension] = 0;
+            }
+            $dimensionStats[$dimension]++;
+        }
         
         $processedAnswer = [
             'id' => $answer['answer_id'],
@@ -100,7 +112,7 @@ foreach ($answers as $answer) {
                        $data['file-photo-oeuvre']['value']['filename'] : 
                        $data['file-photo-oeuvre']['value']) : '',
             'title' => isset($data['textinput-titre-oeuvre']['value']) ? $data['textinput-titre-oeuvre']['value'] : '',
-            'dimension' => isset($data['textinput-dimension']['value']) ? $data['textinput-dimension']['value'] : '',
+            'dimension' => $dimension,
             'techniques' => isset($data['textarea-techniques-utiliser']['value']) ? $data['textarea-techniques-utiliser']['value'] : '',
             'source' => isset($data['textarea-source']['value']) ? $data['textarea-source']['value'] : '',
             'source_concours' => isset($data['dropdown-1654516257917']['value']) ? $data['dropdown-1654516257917']['value'] : '',
@@ -146,6 +158,7 @@ foreach ($processedAnswers as $answer) {
 // Sort statistics
 arsort($wilayaStats);
 arsort($sourceStats);
+arsort($dimensionStats); // Sort dimension stats
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -272,7 +285,7 @@ arsort($sourceStats);
             background: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, );
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .view-options {
@@ -357,6 +370,87 @@ arsort($sourceStats);
             grid-template-columns: repeat(5, 1fr);
         }
 
+        /* Table view styles */
+        .table-view {
+            display: block;
+            overflow-x: auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eee;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            height: 40px;
+            vertical-align: middle;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .data-table .thumbnail {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .data-table .rating-stars i {
+            color: #ddd;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .data-table .rating-stars .filled {
+            color: #ff8a00;
+        }
+
+        .data-table .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .data-table .btn {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .data-table .btn-rate {
+            background: linear-gradient(45deg, #ff8a00, #e52e71);
+            color: white;
+        }
+
+        .data-table .btn-delete {
+            background: #f8f9fa;
+            color: #e74c3c;
+            border: 1px solid #eee;
+        }
+
         @media (max-width: 1600px) {
             .gallery.cols-5 {
                 grid-template-columns: repeat(4, 1fr);
@@ -413,6 +507,7 @@ arsort($sourceStats);
             height: 250px;
             overflow: hidden;
             position: relative;
+            cursor: pointer;
         }
 
         .card-image img {
@@ -682,6 +777,60 @@ arsort($sourceStats);
             background: linear-gradient(45deg, #F44336, #E91E63);
         }
 
+        /* Lightbox styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border: 3px solid white;
+            border-radius: 5px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 60px;
+            color: white;
+            cursor: pointer;
+            padding: 20px;
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+        }
+
         @media (max-width: 1200px) {
             .gallery {
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -763,6 +912,14 @@ arsort($sourceStats);
                 </select>
             </div>
             <div class="filter-box">
+                <select id="dimensionFilter">
+                    <option value="">Toutes les dimensions</option>
+                    <?php foreach (array_keys($dimensionStats) as $dimension): ?>
+                        <option value="<?php echo htmlspecialchars($dimension); ?>"><?php echo htmlspecialchars($dimension); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="filter-box">
                 <select id="ratingFilter">
                     <option value="">Toutes les notes</option>
                     <option value="5">5 étoiles</option>
@@ -782,20 +939,26 @@ arsort($sourceStats);
             </div>
             <div class="view-options">
                 <label>Affichage:</label>
-                <button id="view4" class="view-btn active" data-cols="4">4</button>
-                <button id="view5" class="view-btn" data-cols="5">5</button>
+                <button id="viewCards" class="view-btn active" data-view="cards">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button id="viewTable" class="view-btn" data-view="table">
+                    <i class="fas fa-table"></i>
+                </button>
             </div>
         </div>
 
-        <div class="gallery cols-4" id="gallery">
+        <!-- Cards view (default) -->
+        <div class="gallery cols-4" id="cardsView">
             <?php foreach ($processedAnswers as $answer): ?>
             <div class="card" 
                  data-id="<?php echo $answer['id']; ?>"
                  data-name="<?php echo htmlspecialchars(strtolower($answer['firstname'] . ' ' . $answer['lastname'])); ?>" 
                  data-title="<?php echo htmlspecialchars(strtolower($answer['title'])); ?>" 
                  data-wilaya="<?php echo htmlspecialchars($answer['wilaya']); ?>"
+                 data-dimension="<?php echo htmlspecialchars($answer['dimension']); ?>"
                  data-rating="<?php echo $answer['rating']; ?>">
-                <div class="card-image">
+                <div class="card-image" onclick="openLightbox('<?php echo htmlspecialchars($answer['photo']); ?>')">
                     <?php if (!empty($answer['photo'])): ?>
                         <?php if (pathinfo($answer['photo'], PATHINFO_EXTENSION) === 'pdf'): ?>
                             <img src="https://via.placeholder.com/400x250/4a4a4a/ffffff?text=PDF+Document" alt="Document PDF">
@@ -840,6 +1003,76 @@ arsort($sourceStats);
                 </div>
             </div>
             <?php endforeach; ?>
+        </div>
+
+        <!-- Table view -->
+        <div class="table-view" id="tableView" style="display: none;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Image</th>
+                        <th>Titre</th>
+                        <th>Artiste</th>
+                        <th>Wilaya</th>
+                        <th>Dimensions</th>
+                        <th>Date</th>
+                        <th>Note</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $rowNumber = 1; foreach ($processedAnswers as $answer): ?>
+                    <tr data-id="<?php echo $answer['id']; ?>"
+                        data-name="<?php echo htmlspecialchars(strtolower($answer['firstname'] . ' ' . $answer['lastname'])); ?>" 
+                        data-title="<?php echo htmlspecialchars(strtolower($answer['title'])); ?>" 
+                        data-wilaya="<?php echo htmlspecialchars($answer['wilaya']); ?>"
+                        data-dimension="<?php echo htmlspecialchars($answer['dimension']); ?>"
+                        data-rating="<?php echo $answer['rating']; ?>">
+                        <td><?php echo $rowNumber++; ?></td>
+                        <td>
+                            <?php if (!empty($answer['photo'])): ?>
+                                <?php if (pathinfo($answer['photo'], PATHINFO_EXTENSION) === 'pdf'): ?>
+                                    <img src="https://via.placeholder.com/40x40/4a4a4a/ffffff?text=PDF" alt="PDF" class="thumbnail">
+                                <?php else: ?>
+                                    <img src="/pub/media/amasty/amcustomform/<?php echo htmlspecialchars($answer['photo']); ?>" 
+                                         alt="<?php echo htmlspecialchars($answer['title']); ?>" 
+                                         class="thumbnail"
+                                         onerror="this.src='https://via.placeholder.com/40x40/4a4a4a/ffffff?text=IMG'"
+                                         onclick="openLightbox('<?php echo htmlspecialchars($answer['photo']); ?>')"
+                                         loading="lazy">
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <img src="https://via.placeholder.com/40x40/4a4a4a/ffffff?text=-" alt="No image" class="thumbnail">
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo htmlspecialchars($answer['title'] ?: 'Sans titre'); ?></td>
+                        <td><?php echo htmlspecialchars($answer['firstname'] . ' ' . $answer['lastname']); ?></td>
+                        <td><?php echo htmlspecialchars($answer['wilaya']); ?></td>
+                        <td><?php echo htmlspecialchars($answer['dimension']); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($answer['created_at'])); ?></td>
+                        <td>
+                            <div class="card-rating-value"><?php echo $answer['rating'] > 0 ? number_format($answer['rating'], 1) : '-'; ?></div>
+                            <div class="rating-stars" data-answer-id="<?php echo $answer['id']; ?>">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <i class="fas fa-star <?php echo $i <= $answer['rating'] ? 'filled' : ''; ?>" data-rating="<?php echo $i; ?>"></i>
+                                <?php endfor; ?>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-rate" onclick="openRatingModal(<?php echo $answer['id']; ?>, <?php echo $answer['rating']; ?>)">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                                <button class="btn btn-delete" onclick="deleteEntry(<?php echo $answer['id']; ?>)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
         
         <!-- Statistics Section -->
@@ -901,6 +1134,16 @@ arsort($sourceStats);
         </div>
     </div>
 
+    <!-- Lightbox for full-size images -->
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Full size image">
+        </div>
+        <a class="lightbox-nav lightbox-prev" onclick="changeImage(-1)">&#10094;</a>
+        <a class="lightbox-nav lightbox-next" onclick="changeImage(1)">&#10095;</a>
+    </div>
+
     <!-- Rating Modal -->
     <div id="ratingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; justify-content: center; align-items: center;">
         <div style="background: white; padding: 30px; border-radius: 15px; max-width: 400px; width: 90%;">
@@ -944,6 +1187,66 @@ arsort($sourceStats);
             }, 100);
         }
         
+        // Lightbox functionality
+        let currentImageIndex = 0;
+        let imageList = [];
+        
+        function openLightbox(imageName) {
+            // Collect all image names for navigation
+            imageList = [];
+            document.querySelectorAll('.card-image img, .thumbnail').forEach(img => {
+                const src = img.src;
+                // Only include images that are from the amasty form
+                if (src.includes('amasty/amcustomform')) {
+                    const fileName = src.substring(src.lastIndexOf('/') + 1);
+                    if (!imageList.includes(fileName)) {
+                        imageList.push(fileName);
+                    }
+                }
+            });
+            
+            currentImageIndex = imageList.indexOf(imageName);
+            
+            if (currentImageIndex === -1) {
+                currentImageIndex = 0;
+            }
+            
+            document.getElementById('lightbox-img').src = '/pub/media/amasty/amcustomform/' + imageName;
+            document.getElementById('lightbox').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when lightbox is open
+        }
+        
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+        }
+        
+        function changeImage(direction) {
+            currentImageIndex += direction;
+            
+            if (currentImageIndex >= imageList.length) {
+                currentImageIndex = 0;
+            } else if (currentImageIndex < 0) {
+                currentImageIndex = imageList.length - 1;
+            }
+            
+            document.getElementById('lightbox-img').src = '/pub/media/amasty/amcustomform/' + imageList[currentImageIndex];
+        }
+        
+        // Close lightbox when clicking outside the image
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLightbox();
+            }
+        });
+        
+        // Close lightbox with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('lightbox').style.display === 'flex') {
+                closeLightbox();
+            }
+        });
+        
         // Ensure deleteEntry function is globally available
         function deleteEntry(answerId) {
             if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
@@ -960,6 +1263,12 @@ arsort($sourceStats);
                                 const card = document.querySelector(`.card[data-id="${answerId}"]`);
                                 if (card) {
                                     card.remove();
+                                }
+                                
+                                // Remove the table row from the UI
+                                const row = document.querySelector(`tr[data-id="${answerId}"]`);
+                                if (row) {
+                                    row.remove();
                                 }
                                 
                                 showNotification('Entrée supprimée avec succès!', 'success');
@@ -1000,23 +1309,16 @@ arsort($sourceStats);
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const cards = document.querySelectorAll('.card');
-            
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name');
-                const title = card.getAttribute('data-title');
-                
-                if (searchTerm === '' || name.includes(searchTerm) || title.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            applyAllFilters();
         });
         
         // Filter by wilaya
         document.getElementById('wilayaFilter').addEventListener('change', function() {
+            applyAllFilters();
+        });
+        
+        // Filter by dimension
+        document.getElementById('dimensionFilter').addEventListener('change', function() {
             applyAllFilters();
         });
         
@@ -1028,10 +1330,29 @@ arsort($sourceStats);
         // Sort functionality
         document.getElementById('sortBy').addEventListener('change', function() {
             const sortBy = this.value;
-            const gallery = document.getElementById('gallery');
-            const cards = Array.from(document.querySelectorAll('.card'));
+            const cardsView = document.getElementById('cardsView');
+            const tableView = document.getElementById('tableView');
             
-            cards.sort((a, b) => {
+            // For cards view
+            if (cardsView.style.display !== 'none') {
+                const cards = Array.from(cardsView.querySelectorAll('.card'));
+                sortElements(cards, sortBy);
+                // Re-append sorted cards
+                cards.forEach(card => cardsView.appendChild(card));
+            }
+            
+            // For table view
+            if (tableView.style.display !== 'none') {
+                const rows = Array.from(tableView.querySelectorAll('tbody tr'));
+                sortElements(rows, sortBy);
+                // Re-append sorted rows
+                const tbody = tableView.querySelector('tbody');
+                rows.forEach(row => tbody.appendChild(row));
+            }
+        });
+        
+        function sortElements(elements, sortBy) {
+            elements.sort((a, b) => {
                 switch(sortBy) {
                     case 'newest':
                         return 0; // Default order from PHP
@@ -1049,41 +1370,53 @@ arsort($sourceStats);
                         return 0;
                 }
             });
-            
-            // Re-append sorted cards to gallery
-            cards.forEach(card => gallery.appendChild(card));
-        });
+        }
         
         // View options
-        document.querySelectorAll('.view-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                // Update active button
-                document.querySelectorAll('.view-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Update gallery layout
-                const cols = this.getAttribute('data-cols');
-                const gallery = document.getElementById('gallery');
-                gallery.className = 'gallery cols-' + cols;
-            });
+        document.getElementById('viewCards').addEventListener('click', function() {
+            document.getElementById('cardsView').style.display = 'grid';
+            document.getElementById('tableView').style.display = 'none';
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+        
+        document.getElementById('viewTable').addEventListener('click', function() {
+            document.getElementById('cardsView').style.display = 'none';
+            document.getElementById('tableView').style.display = 'block';
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
         });
         
         // Apply all filters function
         function applyAllFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const selectedWilaya = document.getElementById('wilayaFilter').value;
+            const selectedDimension = document.getElementById('dimensionFilter').value;
             const minRating = document.getElementById('ratingFilter').value;
-            const cards = document.querySelectorAll('.card');
             
+            // Apply filters to cards view
+            const cards = document.querySelectorAll('.card');
             cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                const title = card.getAttribute('data-title');
                 const wilaya = card.getAttribute('data-wilaya');
+                const dimension = card.getAttribute('data-dimension');
                 const rating = parseInt(card.getAttribute('data-rating')) || 0;
                 
                 let show = true;
                 
+                // Apply search filter
+                if (searchTerm !== '' && !name.includes(searchTerm) && !title.includes(searchTerm)) {
+                    show = false;
+                }
+                
                 // Apply wilaya filter
                 if (selectedWilaya !== '' && wilaya !== selectedWilaya) {
+                    show = false;
+                }
+                
+                // Apply dimension filter
+                if (selectedDimension !== '' && dimension !== selectedDimension) {
                     show = false;
                 }
                 
@@ -1093,6 +1426,40 @@ arsort($sourceStats);
                 }
                 
                 card.style.display = show ? 'block' : 'none';
+            });
+            
+            // Apply filters to table view
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name');
+                const title = row.getAttribute('data-title');
+                const wilaya = row.getAttribute('data-wilaya');
+                const dimension = row.getAttribute('data-dimension');
+                const rating = parseInt(row.getAttribute('data-rating')) || 0;
+                
+                let show = true;
+                
+                // Apply search filter
+                if (searchTerm !== '' && !name.includes(searchTerm) && !title.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                // Apply wilaya filter
+                if (selectedWilaya !== '' && wilaya !== selectedWilaya) {
+                    show = false;
+                }
+                
+                // Apply dimension filter
+                if (selectedDimension !== '' && dimension !== selectedDimension) {
+                    show = false;
+                }
+                
+                // Apply rating filter
+                if (minRating !== '' && rating < parseInt(minRating)) {
+                    show = false;
+                }
+                
+                row.style.display = show ? 'table-row' : 'none';
             });
         }
         
@@ -1146,6 +1513,7 @@ arsort($sourceStats);
                             const response = JSON.parse(xhr.responseText);
                             if (response.success) {
                                 // Update UI to reflect the new rating
+                                // Update cards view
                                 const card = document.querySelector(`.card[data-id="${currentRatingAnswerId}"]`);
                                 if (card) {
                                     // Update rating value
@@ -1163,6 +1531,26 @@ arsort($sourceStats);
                                     });
                                     
                                     card.setAttribute('data-rating', currentRatingValue);
+                                }
+                                
+                                // Update table view
+                                const row = document.querySelector(`tr[data-id="${currentRatingAnswerId}"]`);
+                                if (row) {
+                                    // Update rating value
+                                    const ratingValue = row.querySelector('.card-rating-value');
+                                    ratingValue.textContent = currentRatingValue.toFixed(1);
+                                    
+                                    // Update stars
+                                    const stars = row.querySelectorAll('.rating-stars i');
+                                    stars.forEach((star, index) => {
+                                        if (index < currentRatingValue) {
+                                            star.classList.add('filled');
+                                        } else {
+                                            star.classList.remove('filled');
+                                        }
+                                    });
+                                    
+                                    row.setAttribute('data-rating', currentRatingValue);
                                 }
                                 
                                 showNotification('Note enregistrée avec succès!', 'success');
@@ -1194,57 +1582,76 @@ arsort($sourceStats);
             }
         });
         
-        // Handle star clicks directly on card
-        document.querySelectorAll('.rating-stars').forEach(starContainer => {
-            const stars = starContainer.querySelectorAll('.fa-star');
-            stars.forEach(star => {
-                star.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const rating = parseInt(this.getAttribute('data-rating'));
-                    const answerId = parseInt(starContainer.getAttribute('data-answer-id'));
-                    
-                    // Send AJAX request to save rating
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', '', true);
-                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            try {
-                                const response = JSON.parse(xhr.responseText);
-                                if (response.success) {
-                                    // Update UI to reflect the new rating
-                                    const card = document.querySelector(`.card[data-id="${answerId}"]`);
-                                    if (card) {
-                                        // Update rating value
-                                        const ratingValue = card.querySelector('.card-rating-value');
-                                        ratingValue.textContent = rating.toFixed(1);
-                                        
-                                        // Update stars
-                                        const stars = card.querySelectorAll('.rating-stars i');
-                                        stars.forEach((s, index) => {
-                                            if (index < rating) {
-                                                s.classList.add('filled');
-                                            } else {
-                                                s.classList.remove('filled');
-                                            }
-                                        });
-                                        
-                                        card.setAttribute('data-rating', rating);
-                                    }
+        // Handle star clicks directly on card/table
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('fa-star') && e.target.closest('.rating-stars')) {
+                const star = e.target;
+                const rating = parseInt(star.getAttribute('data-rating'));
+                const starContainer = star.closest('.rating-stars');
+                const answerId = parseInt(starContainer.getAttribute('data-answer-id'));
+                
+                // Send AJAX request to save rating
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                // Update UI to reflect the new rating
+                                // Update cards view
+                                const card = document.querySelector(`.card[data-id="${answerId}"]`);
+                                if (card) {
+                                    // Update rating value
+                                    const ratingValue = card.querySelector('.card-rating-value');
+                                    ratingValue.textContent = rating.toFixed(1);
                                     
-                                    showNotification('Note enregistrée avec succès!', 'success');
-                                } else {
-                                    showNotification('Erreur: ' + response.message, 'error');
+                                    // Update stars
+                                    const stars = card.querySelectorAll('.rating-stars i');
+                                    stars.forEach((s, index) => {
+                                        if (index < rating) {
+                                            s.classList.add('filled');
+                                        } else {
+                                            s.classList.remove('filled');
+                                        }
+                                    });
+                                    
+                                    card.setAttribute('data-rating', rating);
                                 }
-                            } catch (e) {
-                                showNotification('Erreur lors de l\'enregistrement de la note', 'error');
+                                
+                                // Update table view
+                                const row = document.querySelector(`tr[data-id="${answerId}"]`);
+                                if (row) {
+                                    // Update rating value
+                                    const ratingValue = row.querySelector('.card-rating-value');
+                                    ratingValue.textContent = rating.toFixed(1);
+                                    
+                                    // Update stars
+                                    const stars = row.querySelectorAll('.rating-stars i');
+                                    stars.forEach((s, index) => {
+                                        if (index < rating) {
+                                            s.classList.add('filled');
+                                        } else {
+                                            s.classList.remove('filled');
+                                        }
+                                    });
+                                    
+                                    row.setAttribute('data-rating', rating);
+                                }
+                                
+                                showNotification('Note enregistrée avec succès!', 'success');
+                            } else {
+                                showNotification('Erreur: ' + response.message, 'error');
                             }
+                        } catch (e) {
+                            showNotification('Erreur lors de l\'enregistrement de la note', 'error');
                         }
-                    };
-                    
-                    xhr.send('action=rate&answer_id=' + answerId + '&rating=' + rating);
-                });
-            });
+                    }
+                };
+                
+                xhr.send('action=rate&answer_id=' + answerId + '&rating=' + rating);
+            }
         });
         
         // Show notification

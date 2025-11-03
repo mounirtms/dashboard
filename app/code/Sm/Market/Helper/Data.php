@@ -1,61 +1,97 @@
 <?php
-/**
- * Custom helper for website data
- */
+/*------------------------------------------------------------------------
+# SM Market - Version 1.0.0
+# Copyright (c) 2016 YouTech Company. All Rights Reserved.
+# @license - Copyrighted Commercial Software
+# Author: YouTech Company
+# Websites: http://www.magentech.com
+-------------------------------------------------------------------------*/
+
 namespace Sm\Market\Helper;
+
+use Magento\Store\Model\StoreManagerInterface;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
-     * @var \Magento\Store\Model\ResourceModel\Website\CollectionFactory
+     * @var \Magento\Theme\Block\Html\Header\Logo
      */
-    protected $_websiteCollectionFactory;
-
-    /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Store\Model\ResourceModel\Website\CollectionFactory $websiteCollectionFactory
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     */
+    protected $_logo;
+	protected $_storeManager;
+	
     public function __construct(
+        StoreManagerInterface $storeManagerInterface,
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\ResourceModel\Website\CollectionFactory $websiteCollectionFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
-    ) {
-        $this->_websiteCollectionFactory = $websiteCollectionFactory;
-        $this->_storeManager = $storeManager;
+        \Magento\Theme\Block\Html\Header\Logo $logo
+    )
+    {
+        $this->_storeManager = $storeManagerInterface;
+        $this->_logo         = $logo;
         parent::__construct($context);
     }
 
-    /**
-     * Get websites excluding admin
-     *
-     * @return array
-     */
-    public function getWebsites()
+    public function getStoreId()
     {
-        $collection = $this->_websiteCollectionFactory->create();
-        $collection->addFieldToFilter('website_id', ['gt' => 0]);
-        
-        $websites = [];
-        foreach ($collection as $website) {
-            $websites[] = $website;
-        }
-        
-        return $websites;
+        return $this->_storeManager->getStore()->getId();
+    }
+
+    public function getStoreCode()
+    {
+        return $this->_storeManager->getStore()->getCode();
+    }
+
+    public function getUrl()
+    {
+        return $this->_storeManager->getStore()->getBaseUrl();
+    }
+
+    public function getUrlStatic()
+    {
+        return $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_STATIC);
+    }
+
+    public function getLocale()
+    {
+        return $this->scopeConfig->getValue(
+            'general/locale/code',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getMediaUrl()
+    {
+        return $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+    }
+
+    public function getThemeLayout($name)
+    {
+        return $this->scopeConfig->getValue(
+            'market/theme_layout/' . $name,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getMobileThemeLayout($name)
+    {
+        return $this->scopeConfig->getValue(
+            'market/mobile_theme_layout/' . $name,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getSmThemeInfo($name)
+    {
+        return $this->scopeConfig->getValue(
+            'market/product_information/' . $name,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
     }
 
     /**
-     * Get current website ID
-     *
-     * @return int
+     * @return bool
      */
-    public function getCurrentWebsiteId()
+    public function isHomePage()
     {
-        return $this->_storeManager->getWebsite()->getId();
+        return $this->_logo->isHomePage();
     }
 }

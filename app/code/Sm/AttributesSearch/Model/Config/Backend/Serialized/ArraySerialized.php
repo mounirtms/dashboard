@@ -24,7 +24,7 @@ class ArraySerialized extends \Magento\Config\Model\Config\Backend\Serialized
     public function beforeSave()
     {
         $value = $this->getValue();
-        if (!empty($value) && is_array($value)) {
+        if (!empty($value)) {
             $temps = [];
             foreach ($value as $key => $temp) {
                 if (isset($temp['attributes']) && !in_array($temp['attributes'], $temps)) {

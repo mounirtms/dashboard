@@ -41,10 +41,9 @@ class TemplateMobile extends \Magento\Framework\View\Element\Template
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $page          = $objectManager->get('Magento\Framework\View\Page\Config');
-        
-        // Get theme configuration from scope config instead of non-existent helper method
-        $productStyle  = $this->_scopeConfig->getValue('layout_product/product_style', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        $rtlLayout     = $this->_scopeConfig->getValue('direction_rtl/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $helper_config = $objectManager->get('Sm\Market\Helper\Data');
+        $productStyle  = $helper_config->getThemeLayout('layout_product/product_style');
+        $rtlLayout     = $helper_config->getThemeLayout('direction_rtl');
 
         $this->pageConfig->addBodyClass($productStyle . '-style');
 
