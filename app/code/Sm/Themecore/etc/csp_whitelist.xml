@@ -1,45 +1,108 @@
 <?xml version="1.0"?>
-<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp/etc/csp_whitelist.xsd">
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp/etc/csp_whitelist.xsd">
     <policies>
         <policy id="script-src">
             <values>
-                <!-- Google -->
-                <value id="google" type="host">*.google.com</value>
-                <!-- G Static -->
-                <value id="g-static" type="host">*.gstatic.com</value>
-            </values>
-        </policy>
-        <policy id="style-src">
-            <values>
-                <!-- Google APIs -->
-                <value id="google-apis" type="host">*.googleapis.com</value>
-            </values>
-        </policy>
-        <policy id="img-src">
-            <values>
-                <!-- Data Scheme - Base64 Encoded Images -->
-                <value id="data-image" type="host">'self' data:</value>
+                <value id="onesignal" type="host">*.onesignal.com</value>
+                <value id="onesignal-cdn" type="host">cdn.onesignal.com</value>
+                <value id="facebook" type="host">connect.facebook.net</value>
+                <value id="clarity" type="host">www.clarity.ms</value>
+                <value id="cloudflare" type="host">static.cloudflareinsights.com</value>
+                <value id="assets-adobedtm" type="host">assets.adobedtm.com</value>
+                <value id="adobe" type="host">*.adobe.com</value>
+                <value id="google-analytics" type="host">www.google-analytics.com</value>
+                <value id="google-ads" type="host">www.googleadservices.com</value>
+                <value id="doubleclick" type="host">googleads.g.doubleclick.net</value>
+                <value id="analytics-google" type="host">analytics.google.com</value>
+                <value id="googletagmanager" type="host">www.googletagmanager.com</value>
+                <value id="paypal" type="host">www.paypal.com</value>
+                <value id="sandbox-paypal" type="host">www.sandbox.paypal.com</value>
+                <value id="paypalobjects" type="host">www.paypalobjects.com</value>
+                <value id="t-paypal" type="host">t.paypal.com</value>
+                <value id="ytimg" type="host">s.ytimg.com</value>
+                <value id="googleapis" type="host">www.googleapis.com</value>
+                <value id="vimeo" type="host">vimeo.com</value>
+                <value id="www-vimeo" type="host">www.vimeo.com</value>
+                <value id="vimeocdn" type="host">*.vimeocdn.com</value>
+                <value id="youtube" type="host">*.youtube.com</value>
+                <value id="gstatic-recaptcha" type="host">www.gstatic.com/recaptcha/</value>
+                <value id="google-recaptcha" type="host">www.google.com/recaptcha/</value>
+                <value id="ampproject" type="host">cdn.ampproject.org</value>
+                <value id="rawgithub" type="host">raw.githubusercontent.com</value>
+                <value id="braintreegateway-js" type="host">js.braintreegateway.com</value>
+                <value id="braintreegateway-assets" type="host">assets.braintreegateway.com</value>
+                <value id="c-paypal" type="host">c.paypal.com</value>
+                <value id="pay-google" type="host">pay.google.com</value>
+                <value id="braintreegateway-api" type="host">api.braintreegateway.com</value>
+                <value id="braintreegateway-api-sandbox" type="host">api.sandbox.braintreegateway.com</value>
+                <value id="client-analytics-braintree" type="host">client-analytics.braintreegateway.com</value>
+                <value id="client-analytics-braintree-sandbox" type="host">client-analytics.sandbox.braintreegateway.com</value>
+                <value id="paypal-domains" type="host">*.paypal.com</value>
+                <value id="cardinalcommerce" type="host">songbirdstag.cardinalcommerce.com</value>
+                <value id="cardinalcommerce2" type="host">songbird.cardinalcommerce.com</value>
+                <value id="googleapis2" type="host">*.googleapis.com</value>
+                <value id="gstatic2" type="host">*.gstatic.com</value>
+                <value id="tawk" type="host">*.tawk.to</value>
+                <value id="jsdelivr" type="host">cdn.jsdelivr.net</value>
+                <value id="xtento" type="host">www.xtento.com</value>
+                <value id="xtento-cdn" type="host">cdn.xtento.com</value>
+                <value id="googletagmanager2" type="host">*.googletagmanager.com</value>
+                <value id="tagmanager-google" type="host">tagmanager.google.com</value>
+                <value id="kaspersky" type="host">https://gc.kes.v2.scr.kaspersky-labs.com</value>
+                <!-- Added missing domains -->
+                <value id="doubleclick-net" type="host">static.doubleclick.net</value>
+                <value id="facebook-net" type="host">www.facebook.com</value>
+                <value id="clarity-scripts" type="host">scripts.clarity.ms</value>
+                <value id="clarity-c" type="host">c.clarity.ms</value>
+                <value id="google-dz" type="host">www.google.dz</value>
             </values>
         </policy>
         <policy id="connect-src">
             <values>
-                <!-- Google Analytics -->
-                <value id="google-analytics" type="host">*.google-analytics.com</value>
-            </values>
-        </policy>
-        <policy id="font-src">
-            <values>
-                <!-- G Static -->
-                <value id="g-static" type="host">*.gstatic.com</value>
-                <!-- Data Scheme - Base64 Encoded Fonts -->
-                <value id="data-font" type="host">'self' data:</value>
+                <value id="onesignal" type="host">*.onesignal.com</value>
+                <value id="onesignal-wss" type="host">wss://*.onesignal.com</value>
+                <value id="onesignal-https" type="host">https://*.onesignal.com</value>
+                <value id="kaspersky-wss" type="host">wss://gc.kes.v2.scr.kaspersky-labs.com</value>
+                <!-- Added missing domains -->
+                <value id="google-analytics-connect" type="host">www.google-analytics.com</value>
+                <value id="googletagmanager-connect" type="host">www.googletagmanager.com</value>
+                <value id="facebook-connect" type="host">www.facebook.com</value>
+                <value id="clarity-connect" type="host">www.clarity.ms</value>
             </values>
         </policy>
         <policy id="frame-src">
             <values>
-                <!-- Google -->
-                <value id="google" type="host">*.google.com</value>
+                <value id="onesignal" type="host">*.onesignal.com</value>
+                <value id="facebook" type="host">connect.facebook.net</value>
+                <!-- Added missing domains -->
+                <value id="facebook-frame" type="host">www.facebook.com</value>
+                <value id="google-frame" type="host">www.google.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="onesignal" type="host">*.onesignal.com</value>
+                <value id="onesignalusercontent" type="host">*.onesignalusercontent.com</value>
+                <!-- Added missing domains -->
+                <value id="google-analytics-img" type="host">www.google-analytics.com</value>
+                <value id="googletagmanager-img" type="host">www.googletagmanager.com</value>
+                <value id="doubleclick-img" type="host">googleads.g.doubleclick.net</value>
+                <value id="facebook-img" type="host">www.facebook.com</value>
+                <value id="clarity-img" type="host">c.clarity.ms</value>
+                <value id="google-dz-img" type="host">www.google.dz</value>
+            </values>
+        </policy>
+        <policy id="font-src">
+            <values>
+                <value id="onesignal" type="host">*.onesignal.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="onesignal" type="host">*.onesignal.com</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
             </values>
         </policy>
     </policies>

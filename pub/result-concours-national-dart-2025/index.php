@@ -1,4 +1,20 @@
 <?php
+// Simple file-based caching mechanism
+function getCache($key, $ttl = 300) { // 5 minutes default TTL
+    $cacheFile = sys_get_temp_dir() . '/concours_cache_' . md5($key) . '.tmp';
+    
+    if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $ttl) {
+        return unserialize(file_get_contents($cacheFile));
+    }
+    
+    return false;
+}
+
+function setCache($key, $data) {
+    $cacheFile = sys_get_temp_dir() . '/concours_cache_' . md5($key) . '.tmp';
+    file_put_contents($cacheFile, serialize($data));
+}
+
 // Database connection
 $host = '127.0.0.1';
 $port = '3307';
@@ -37,6 +53,9 @@ if (isset($_POST['action'])) {
                     $stmt->execute([$answerId, $rating]);
                 }
                 
+                // Clear cache when rating is updated
+                clearCache();
+                
                 $response['success'] = true;
                 $response['message'] = 'Rating saved successfully';
                 $response['rating'] = $rating;
@@ -55,6 +74,9 @@ if (isset($_POST['action'])) {
             $stmt = $pdo->prepare("DELETE FROM amasty_customform_answer WHERE answer_id = ?");
             $stmt->execute([$answerId]);
             
+            // Clear cache when entry is deleted
+            clearCache();
+            
             $response['success'] = true;
             $response['message'] = 'Entry deleted successfully';
         } catch (Exception $e) {
@@ -67,116 +89,151 @@ if (isset($_POST['action'])) {
     exit;
 }
 
+// Function to clear cache
+function clearCache() {
+    $cachePattern = sys_get_temp_dir() . '/concours_cache_*.tmp';
+    $cacheFiles = glob($cachePattern);
+    foreach ($cacheFiles as $file) {
+        unlink($file);
+    }
+}
+
 // Get sorting parameter
 $sortOrder = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
+$searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
 
-// Build query based on sort order
-$orderBy = "ORDER BY answer_id DESC"; // Default newest first
-switch ($sortOrder) {
-    case 'oldest':
-        $orderBy = "ORDER BY answer_id ASC";
-        break;
-    case 'rating_high':
-        $orderBy = "ORDER BY rating DESC, answer_id DESC";
-        break;
-    case 'rating_low':
-        $orderBy = "ORDER BY rating ASC, answer_id DESC";
-        break;
-}
+// Create cache key based on parameters
+$cacheKey = 'answers_' . $sortOrder . '_' . md5($searchTerm);
+$cachedData = getCache($cacheKey);
 
-// Fetch form data with proper sorting
-$formId = 9;
-$stmt = $pdo->prepare("
-    SELECT a.*, 
-           COALESCE(r.rating, 0) as rating 
-    FROM amasty_customform_answer a 
-    LEFT JOIN amasty_customform_ratings r ON a.answer_id = r.answer_id 
-    WHERE a.form_id = :form_id AND a.status = 0 
-    {$orderBy}
-");
-$stmt->bindParam(':form_id', $formId);
-$stmt->execute();
-$answers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if ($cachedData !== false) {
+    // Use cached data
+    $processedAnswers = $cachedData['processedAnswers'];
+    $wilayaStats = $cachedData['wilayaStats'];
+    $sourceStats = $cachedData['sourceStats'];
+    $dimensionStats = $cachedData['dimensionStats'];
+    $ratingStats = $cachedData['ratingStats'];
+    $totalEntries = $cachedData['totalEntries'];
+} else {
+    // Build query based on sort order
+    $orderBy = "ORDER BY answer_id DESC"; // Default newest first
+    switch ($sortOrder) {
+        case 'oldest':
+            $orderBy = "ORDER BY answer_id ASC";
+            break;
+        case 'rating_high':
+            $orderBy = "ORDER BY rating DESC, answer_id DESC";
+            break;
+        case 'rating_low':
+            $orderBy = "ORDER BY rating ASC, answer_id DESC";
+            break;
+    }
 
-// Process data for display
-$processedAnswers = [];
-$dimensionStats = []; // For dimension filtering
+    // Fetch form data with proper sorting
+    $formId = 9;
+    $stmt = $pdo->prepare("
+        SELECT a.*, 
+               COALESCE(r.rating, 0) as rating 
+        FROM amasty_customform_answer a 
+        LEFT JOIN amasty_customform_ratings r ON a.answer_id = r.answer_id 
+        WHERE a.form_id = :form_id AND a.status = 0 
+        {$orderBy}
+    ");
+    $stmt->bindParam(':form_id', $formId);
+    $stmt->execute();
+    $answers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($answers as $answer) {
-    $data = json_decode($answer['response_json'], true);
-    if ($data) {
-        $dimension = isset($data['textinput-dimension']['value']) ? $data['textinput-dimension']['value'] : '';
-        
-        // Collect dimension data for filtering
-        if (!empty($dimension)) {
-            if (!isset($dimensionStats[$dimension])) {
-                $dimensionStats[$dimension] = 0;
+    // Process data for display
+    $processedAnswers = [];
+    $dimensionStats = []; // For dimension filtering
+
+    foreach ($answers as $answer) {
+        $data = json_decode($answer['response_json'], true);
+        if ($data) {
+            $dimension = isset($data['textinput-dimension']['value']) ? $data['textinput-dimension']['value'] : '';
+            
+            // Collect dimension data for filtering
+            if (!empty($dimension)) {
+                if (!isset($dimensionStats[$dimension])) {
+                    $dimensionStats[$dimension] = 0;
+                }
+                $dimensionStats[$dimension]++;
             }
-            $dimensionStats[$dimension]++;
+            
+            $processedAnswer = [
+                'id' => $answer['answer_id'],
+                'created_at' => $answer['created_at'],
+                'lastname' => isset($data['lastname']['value']) ? $data['lastname']['value'] : '',
+                'firstname' => isset($data['firstname']['value']) ? $data['firstname']['value'] : '',
+                'age' => isset($data['textinput-age']['value']) ? $data['textinput-age']['value'] : '',
+                'wilaya' => isset($data['dropdown-1693638713000']['value']) ? $data['dropdown-1693638713000']['value'] : '',
+                'email' => isset($data['textinput-e-mail']['value']) ? $data['textinput-e-mail']['value'] : '',
+                'phone1' => isset($data['textinput-mobile']['value']) ? $data['textinput-mobile']['value'] : '',
+                'phone2' => isset($data['textinput-1758452360450']['value']) ? $data['textinput-1758452360450']['value'] : '',
+                'photo' => isset($data['file-photo-oeuvre']['value']) ? 
+                          (is_array($data['file-photo-oeuvre']['value']) ? 
+                           $data['file-photo-oeuvre']['value']['filename'] : 
+                           $data['file-photo-oeuvre']['value']) : '',
+                'title' => isset($data['textinput-titre-oeuvre']['value']) ? $data['textinput-titre-oeuvre']['value'] : '',
+                'dimension' => $dimension,
+                'techniques' => isset($data['textarea-techniques-utiliser']['value']) ? $data['textarea-techniques-utiliser']['value'] : '',
+                'source' => isset($data['textarea-source']['value']) ? $data['textarea-source']['value'] : '',
+                'source_concours' => isset($data['dropdown-1654516257917']['value']) ? $data['dropdown-1654516257917']['value'] : '',
+                'rules' => isset($data['checkbox-rules']['value']) ? 
+                          (is_array($data['checkbox-rules']['value']) ? 
+                           implode(', ', $data['checkbox-rules']['value']) : 
+                           $data['checkbox-rules']['value']) : '',
+                // Add rating field
+                'rating' => $answer['rating']
+            ];
+            $processedAnswers[] = $processedAnswer;
         }
+    }
+
+    // Calculate statistics
+    $totalEntries = count($processedAnswers);
+    $wilayaStats = [];
+    $sourceStats = [];
+    $ratingStats = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+
+    foreach ($processedAnswers as $answer) {
+        // Count by wilaya
+        $wilaya = $answer['wilaya'];
+        if (!isset($wilayaStats[$wilaya])) {
+            $wilayaStats[$wilaya] = 0;
+        }
+        $wilayaStats[$wilaya]++;
         
-        $processedAnswer = [
-            'id' => $answer['answer_id'],
-            'created_at' => $answer['created_at'],
-            'lastname' => isset($data['lastname']['value']) ? $data['lastname']['value'] : '',
-            'firstname' => isset($data['firstname']['value']) ? $data['firstname']['value'] : '',
-            'age' => isset($data['textinput-age']['value']) ? $data['textinput-age']['value'] : '',
-            'wilaya' => isset($data['dropdown-1693638713000']['value']) ? $data['dropdown-1693638713000']['value'] : '',
-            'email' => isset($data['textinput-e-mail']['value']) ? $data['textinput-e-mail']['value'] : '',
-            'phone1' => isset($data['textinput-mobile']['value']) ? $data['textinput-mobile']['value'] : '',
-            'phone2' => isset($data['textinput-1758452360450']['value']) ? $data['textinput-1758452360450']['value'] : '',
-            'photo' => isset($data['file-photo-oeuvre']['value']) ? 
-                      (is_array($data['file-photo-oeuvre']['value']) ? 
-                       $data['file-photo-oeuvre']['value']['filename'] : 
-                       $data['file-photo-oeuvre']['value']) : '',
-            'title' => isset($data['textinput-titre-oeuvre']['value']) ? $data['textinput-titre-oeuvre']['value'] : '',
-            'dimension' => $dimension,
-            'techniques' => isset($data['textarea-techniques-utiliser']['value']) ? $data['textarea-techniques-utiliser']['value'] : '',
-            'source' => isset($data['textarea-source']['value']) ? $data['textarea-source']['value'] : '',
-            'source_concours' => isset($data['dropdown-1654516257917']['value']) ? $data['dropdown-1654516257917']['value'] : '',
-            'rules' => isset($data['checkbox-rules']['value']) ? 
-                      (is_array($data['checkbox-rules']['value']) ? 
-                       implode(', ', $data['checkbox-rules']['value']) : 
-                       $data['checkbox-rules']['value']) : '',
-            // Add rating field
-            'rating' => $answer['rating']
-        ];
-        $processedAnswers[] = $processedAnswer;
+        // Count by source
+        $source = $answer['source_concours'];
+        if (!isset($sourceStats[$source])) {
+            $sourceStats[$source] = 0;
+        }
+        $sourceStats[$source]++;
+        
+        // Count ratings
+        $rating = $answer['rating'] > 0 ? $answer['rating'] : 0;
+        if ($rating > 0) {
+            $ratingStats[$rating]++;
+        }
     }
-}
 
-// Calculate statistics
-$totalEntries = count($processedAnswers);
-$wilayaStats = [];
-$sourceStats = [];
-$ratingStats = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
-
-foreach ($processedAnswers as $answer) {
-    // Count by wilaya
-    $wilaya = $answer['wilaya'];
-    if (!isset($wilayaStats[$wilaya])) {
-        $wilayaStats[$wilaya] = 0;
-    }
-    $wilayaStats[$wilaya]++;
+    // Sort statistics
+    arsort($wilayaStats);
+    arsort($sourceStats);
+    arsort($dimensionStats); // Sort dimension stats
     
-    // Count by source
-    $source = $answer['source_concours'];
-    if (!isset($sourceStats[$source])) {
-        $sourceStats[$source] = 0;
-    }
-    $sourceStats[$source]++;
-    
-    // Count ratings
-    $rating = $answer['rating'] > 0 ? $answer['rating'] : 0;
-    if ($rating > 0) {
-        $ratingStats[$rating]++;
-    }
+    // Cache the processed data
+    $cacheData = [
+        'processedAnswers' => $processedAnswers,
+        'wilayaStats' => $wilayaStats,
+        'sourceStats' => $sourceStats,
+        'dimensionStats' => $dimensionStats,
+        'ratingStats' => $ratingStats,
+        'totalEntries' => $totalEntries
+    ];
+    setCache($cacheKey, $cacheData);
 }
-
-// Sort statistics
-arsort($wilayaStats);
-arsort($sourceStats);
-arsort($dimensionStats); // Sort dimension stats
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -1106,6 +1163,16 @@ arsort($dimensionStats); // Sort dimension stats
                         <p><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($answer['wilaya']); ?></p>
                         <p><i class="fas fa-ruler-combined"></i> <?php echo htmlspecialchars($answer['dimension']); ?></p>
                         <p><i class="fas fa-paint-brush"></i> <?php echo htmlspecialchars(substr($answer['techniques'], 0, 100)) . (strlen($answer['techniques']) > 100 ? '...' : ''); ?></p>
+                        <?php if (!empty($answer['phone1']) || !empty($answer['phone2'])): ?>
+                            <p><i class="fas fa-phone"></i> 
+                                <?php 
+                                $phones = array();
+                                if (!empty($answer['phone1'])) $phones[] = htmlspecialchars($answer['phone1']);
+                                if (!empty($answer['phone2'])) $phones[] = htmlspecialchars($answer['phone2']);
+                                echo implode(', ', $phones);
+                                ?>
+                            </p>
+                        <?php endif; ?>
                     </div>
                     <div class="card-meta">
                         <span><i class="far fa-calendar"></i> <?php echo date('d/m/Y', strtotime($answer['created_at'])); ?></span>
@@ -1135,6 +1202,7 @@ arsort($dimensionStats); // Sort dimension stats
                         <th data-sort="artist">Artiste</th>
                         <th data-sort="wilaya">Wilaya</th>
                         <th data-sort="dimension">Dimensions</th>
+                        <th data-sort="phone">Téléphone</th>
                         <th data-sort="date">Date</th>
                         <th data-sort="rating">Note</th>
                         <th>Actions</th>
@@ -1170,6 +1238,14 @@ arsort($dimensionStats); // Sort dimension stats
                         <td><?php echo htmlspecialchars($answer['firstname'] . ' ' . $answer['lastname']); ?></td>
                         <td><?php echo htmlspecialchars($answer['wilaya']); ?></td>
                         <td><?php echo htmlspecialchars($answer['dimension']); ?></td>
+                        <td>
+                            <?php 
+                            $phones = array();
+                            if (!empty($answer['phone1'])) $phones[] = htmlspecialchars($answer['phone1']);
+                            if (!empty($answer['phone2'])) $phones[] = htmlspecialchars($answer['phone2']);
+                            echo implode(', ', $phones);
+                            ?>
+                        </td>
                         <td><?php echo date('d/m/Y H:i', strtotime($answer['created_at'])); ?></td>
                         <td>
                             <div class="card-rating-value"><?php echo $answer['rating'] > 0 ? number_format($answer['rating'], 1) : '-'; ?></div>

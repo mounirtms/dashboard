@@ -17,6 +17,50 @@ $baseURL                 = $_config->getCoreConfig('web/unsecure/base_url');
 
 <link rel="stylesheet" type="text/css" media="all" href="<?php echo $_css_load_file->getSettingsFile() ?>"/>
 
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "ea60f1be-864c-4710-9437-3288e8e06cc4",
+      serviceWorkerPath: "/OneSignalSDKWorker.js",
+      serviceWorkerScope: "/",
+      notifyButton: {
+        enable: true
+      },
+      promptOptions: {
+        slidedown: {
+          enabled: true,
+          actionMessage: "هل ترغب في الحصول على أحدث العروض والتنبيهات من موقعنا؟",
+          acceptButtonText: "نعم، بالتأكيد",
+          cancelButtonText: "لاحقًا"
+        }
+      }
+    });
+
+    // Tracking events after initialization
+    OneSignal.on('subscriptionChange', function (isSubscribed) {
+      dataLayer.push({
+        event: 'onesignal_subscription',
+        status: isSubscribed
+      });
+    });
+
+    OneSignal.on('notificationDisplay', function (event) {
+      dataLayer.push({
+        event: 'onesignal_notification_displayed',
+        messageId: event.id
+      });
+    });
+
+    OneSignal.on('notificationClick', function (event) {
+      dataLayer.push({
+        event: 'onesignal_notification_clicked',
+        messageId: event.id
+      });
+    });
+  });
+</script>
+
 <?php if ($enableStoreCode) { ?>
     <script type="text/javascript">
         require([
