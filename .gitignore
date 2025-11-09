@@ -3,13 +3,11 @@
 # Magento generated files
 /app/etc/env.php
 /var/
-
 /pub/static/
 /generated/
 /pub/pma/
 /pub/media/amasty/
 /pub/media/sm/
-
 
 # Composer dependencies
 /vendor/
@@ -32,63 +30,26 @@ Thumbs.db
 # Backup files
 *.bak
 *.swp
+*.backup
+*.old
 
-# Other files
-/.buildpath
-/.cache
-/.metadata
-/.project
-/.settings
-/.vscode
-atlassian*
-/sitemap
-
-key*
-auth*
+# Large files that shouldn't be tracked
+rsync_log.txt
+*.har
 composer.lock
 
-/.buildpath
-/.cache
-/.metadata
-/.project
-/.settings
-/.vscode
-atlassian*
-/nbproject
-/robots.txt
-/pub/robots.txt
-/sitemap
-/sitemap.xml
-/pub/sitemap
-/pub/sitemap.xml
-/.idea
-/.gitattributes
-/app/config_sandbox
-/app/etc/config.php
-/app/etc/env.php
-/app/code/Magento/TestModule*
-/lib/internal/flex/uploader/.actionScriptProperties
-/lib/internal/flex/uploader/.flexProperties
-/lib/internal/flex/uploader/.project
-/lib/internal/flex/uploader/.settings
-/lib/internal/flex/varien/.actionScriptProperties
-/lib/internal/flex/varien/.flexLibProperties
-/lib/internal/flex/varien/.project
-/lib/internal/flex/varien/.settings
-/node_modules
-/.grunt
-/Gruntfile.js
-/package.json
-/.php_cs
-/.php_cs.cache
-/.php-cs-fixer.php
-/.php-cs-fixer.cache
-/grunt-config.json
+# Session files
+pub/media/customer_address/*/*/sess_*
+pub/media/customer/*/*/sess_*
 
+# Media files (except .htaccess)
 /pub/media/*.jpg
 /pub/media/*.jpeg
 /pub/media/*.png
-/pub/media/*.*
+/pub/media/*.gif
+/pub/media/*.bmp
+/pub/media/*.svg
+/pub/media/*.webp
 !/pub/media/.htaccess
 /pub/media/attribute/*
 !/pub/media/attribute/.htaccess
@@ -98,7 +59,6 @@ atlassian*
 /pub/media/files/*
 !/pub/media/catalog/.htaccess
 /pub/media/customer/*
-/pub/media/amasty/*
 !/pub/media/customer/.htaccess
 /pub/media/downloadable/*
 !/pub/media/downloadable/.htaccess
@@ -118,21 +78,27 @@ atlassian*
 /pub/media/captcha/*
 /pub/media/sitemap/*
 !/pub/media/sitemap/.htaccess
+
+# Static files
 /pub/static/*
 !/pub/static/.htaccess
 
+# Var directory
 /var/*
 !/var/.htaccess
+
+# Vendor directory
 /vendor/*
 !/vendor/.htaccess
+
+# Generated directory
 /generated/*
 !/generated/.htaccess
-.DS_Store
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.bmp
-*.svg
-*.webp
+
+# Other common files to ignore
 error_log
+*.tmp
+*.temp
+*.cache
+.svn
+.git
