@@ -43,41 +43,8 @@ pub/media/customer_address/*/*/sess_*
 pub/media/customer/*/*/sess_*
 
 # Media files (except .htaccess)
-/pub/media/*.jpg
-/pub/media/*.jpeg
-/pub/media/*.png
-/pub/media/*.gif
-/pub/media/*.bmp
-/pub/media/*.svg
-/pub/media/*.webp
+/pub/media/*
 !/pub/media/.htaccess
-/pub/media/attribute/*
-!/pub/media/attribute/.htaccess
-/pub/media/analytics/*
-/pub/media/catalog/*
-/pub/media/slidershow/*
-/pub/media/files/*
-!/pub/media/catalog/.htaccess
-/pub/media/customer/*
-!/pub/media/customer/.htaccess
-/pub/media/downloadable/*
-!/pub/media/downloadable/.htaccess
-/pub/media/favicon/*
-/pub/media/import/*
-!/pub/media/import/.htaccess
-/pub/media/logo/*
-/pub/media/custom_options/*
-!/pub/media/custom_options/.htaccess
-/pub/media/theme/*
-/pub/media/theme_customization/*
-!/pub/media/theme_customization/.htaccess
-/pub/media/wysiwyg/*
-!/pub/media/wysiwyg/.htaccess
-/pub/media/tmp/*
-!/pub/media/tmp/.htaccess
-/pub/media/captcha/*
-/pub/media/sitemap/*
-!/pub/media/sitemap/.htaccess
 
 # Static files
 /pub/static/*
