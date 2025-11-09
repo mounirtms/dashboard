@@ -1,0 +1,204 @@
+User-agent: *
+Allow: /
+Sitemap: https://technostationery.com/pub/sitemap.xml
+
+# Global rules for all crawlers
+Disallow: /*?
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /*.pdf$
+Disallow: /*.doc$
+Disallow: /*.docx$
+Disallow: /*.xls$
+Disallow: /*.xlsx$
+Disallow: /*.ppt$
+Disallow: /*.pptx$
+Disallow: /*.zip$
+Disallow: /*.gz$
+Disallow: /*.tar$
+Disallow: /*.rar$
+
+# Crawl delay for all bots
+Crawl-delay: 10
+
+# Specific directories to exclude
+Disallow: /app/
+Disallow: /bin/
+Disallow: /dev/
+Disallow: /lib/
+Disallow: /phpserver/
+Disallow: /scripts/
+Disallow: /setup/
+Disallow: /vendor/
+Disallow: /pub/errors/
+Disallow: /pub/media/downloadable/
+Disallow: /pub/static/
+Disallow: /var/
+
+# Admin and backend paths
+Disallow: /admin/
+Disallow: /adminhtml/
+Disallow: /sysadminy/
+Disallow: /backend/
+
+# Customer account pages
+Disallow: /customer/
+Disallow: /customer/account/
+Disallow: /wishlist/
+Disallow: /checkout/
+Disallow: /cart/
+
+# Search results and filters
+Disallow: /catalogsearch/
+Disallow: /catalogsearch/result/
+Disallow: /*?dir=
+Disallow: /*?dir=*
+Disallow: /*?limit=
+Disallow: /*?limit=*
+Disallow: /*?mode=
+Disallow: /*?mode=*
+Disallow: /*?order=
+Disallow: /*?order=*
+Disallow: /*?p=
+Disallow: /*?p=*
+Disallow: /*?price=
+Disallow: /*?price=*
+Disallow: /*?product_list_dir=
+Disallow: /*?product_list_dir=*
+Disallow: /*?product_list_limit=
+Disallow: /*?product_list_limit=*
+Disallow: /*?product_list_mode=
+Disallow: /*?product_list_mode=*
+Disallow: /*?product_list_order=
+Disallow: /*?product_list_order=*
+
+# AJAX and API endpoints
+Disallow: /rest/
+Disallow: /soap/
+Disallow: /api/
+Disallow: /amasty/
+
+# Common files to exclude
+Disallow: /composer.json
+Disallow: /composer.lock
+Disallow: /config.php
+Disallow: /env.php
+Disallow: /registration.php
+Disallow: /COPYING.txt
+Disallow: /LICENSE.txt
+Disallow: /LICENSE_AFL.txt
+Disallow: /CHANGELOG.md
+
+# Specific bots with custom rules
+User-agent: AhrefsBot
+Crawl-delay: 30
+
+User-agent: MJ12bot
+Crawl-delay: 30
+
+User-agent: SemrushBot
+Crawl-delay: 30
+
+User-agent: DotBot
+Crawl-delay: 60
+
+User-agent: Uptimebot
+Disallow: /
+
+User-agent: Barkrowler
+Disallow: /
+
+# Bingbot
+User-agent: bingbot
+Crawl-delay: 10
+
+# Googlebot
+User-agent: Googlebot
+Allow: *.js
+Allow: *.css
+Crawl-delay: 10
+
+# Googlebot Image
+User-agent: Googlebot-Image
+Allow: /
+Crawl-delay: 10
+
+# Google AdsBot
+User-agent: AdsBot-Google
+Allow: /
+Crawl-delay: 10
+
+# Yandex
+User-agent: Yandex
+Crawl-delay: 10
+
+# Baiduspider
+User-agent: Baiduspider
+Disallow: /
+
+# E-mail harvesters and other malicious bots
+User-agent: EmailCollector
+Disallow: /
+
+User-agent: EmailSiphon
+Disallow: /
+
+User-agent: EmailWolf
+Disallow: /
+
+User-agent: ExtractorPro
+Disallow: /
+
+User-agent: SiteSnagger
+Disallow: /
+
+User-agent: Stripper
+Disallow: /
+
+User-agent: WebStripper
+Disallow: /
+
+User-agent: WebZIP
+Disallow: /
+
+User-agent: Wget
+Disallow: /
+
+User-agent: larbin
+Disallow: /
+
+User-agent: psbot
+Disallow: /
+
+User-agent: Python-urllib
+Disallow: /
+
+User-agent: URL_Spider_Pro
+Disallow: /
+
+User-agent: Zao
+Disallow: /
+
+User-agent: Zealbot
+Disallow: /
+
+User-agent: MSIECrawler
+Disallow: /
+
+User-agent: SiteSnagger
+Disallow: /
+
+User-agent: WebStripper
+Disallow: /
+
+User-agent: WebZIP
+Disallow: /
+
+User-agent: wget
+Disallow: /
+
+User-agent: Fasterfox
+Disallow: /
+
+# Host directive
+Host: technostationery.com
