@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "minify-static": "node scripts/minify-static.js",
+    "resize-images": "node scripts/resize-images.js",
+    "optimize-all": "node scripts/optimize-all.js",
+    "optimize-remaining": "node scripts/optimize-remaining.js",
+    "cleanup": "node scripts/cleanup-project.js",
+    "check-modules": "node scripts/module-performance-check.js"
+  },
+  "dependencies": {
+    "clean-css": "^5.3.2",
+    "fs-extra": "^11.3.0",
+    "glob": "^10.4.5",
+    "sharp": "^0.33.5",
+    "terser": "^5.39.0"
+  }
+}
