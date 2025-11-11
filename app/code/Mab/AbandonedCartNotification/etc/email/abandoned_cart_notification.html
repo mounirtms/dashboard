@@ -1,0 +1,40 @@
+<!--@subject {{trans "You have items in your cart"}} @-->
+<!--@vars {
+"var customer.name":"Customer Name",
+"var cart.items":"Cart Items",
+"var cart.total":"Cart Total",
+"var checkout_url":"Checkout URL"
+} @-->
+
+<table>
+    <tr>
+        <td>
+            <p>{{trans "Hello %name," name=$customer.name}}</p>
+            <p>{{trans "We noticed you left some items in your cart. Don't worry, they're still waiting for you!"}}</p>
+            
+            <h3>{{trans "Items in your cart:"}}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>{{trans "Product Name"}}</th>
+                        <th>{{trans "Quantity"}}</th>
+                        <th>{{trans "Price"}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{var cart.items}}
+                </tbody>
+            </table>
+            
+            <p><strong>{{trans "Total: %total" total=$cart.total}}</strong></p>
+            
+            <p>
+                <a href="{{var checkout_url}}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                    {{trans "Complete Your Purchase"}}
+                </a>
+            </p>
+            
+            <p>{{trans "Thank you for shopping with us!"}}</p>
+        </td>
+    </tr>
+</table>

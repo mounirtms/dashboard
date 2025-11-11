@@ -38,8 +38,19 @@ define([
 
             this.validationErrors = [];
 
+            // Check if address is empty or invalid
+            if (!address || typeof address !== 'object') {
+                return true; // Don't validate empty addresses
+            }
+
             $.each(validationRules.getRules(), function (field, rule) {
-                if (rule.required && utils.isEmpty(address[field])) {
+                // Skip validation for empty addresses
+                if (!address || typeof address !== 'object') {
+                    return false;
+                }
+                
+                // Only validate required fields if they exist in the rules
+                if (rule.required && address[field] !== undefined && utils.isEmpty(address[field])) {
                     self.validationErrors.push($t('Field ') + field + $t(' is required.'));
                 }
             });

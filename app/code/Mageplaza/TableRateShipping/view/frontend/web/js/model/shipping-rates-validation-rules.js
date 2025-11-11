@@ -38,6 +38,12 @@ define([], function () {
                 },
                 'region_id_input': {
                     'required': false
+                },
+                'city': {
+                    'required': false
+                },
+                'street': {
+                    'required': false
                 }
             };
         }
