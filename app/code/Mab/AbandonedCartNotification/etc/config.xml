@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <abandoned_cart>
+            <general>
+                <enabled>1</enabled>
+                <time_threshold>2</time_threshold>
+                <sender_email_identity>general</sender_email_identity>
+                <email_template>abandoned_cart_notification_email_template</email_template>
+            </general>
+        </abandoned_cart>
+    </default>
+</config>
