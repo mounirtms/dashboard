@@ -2,7 +2,7 @@
 /**
  * Plugin to ensure quote customer data is properly updated when customer logs in
  */
-namespace Mab\GuestCheckout\Plugin;
+namespace Mab\CheckoutCustomization\Plugin\Customer;
 
 use Magento\Customer\Model\Session;
 use Magento\Quote\Model\Quote;

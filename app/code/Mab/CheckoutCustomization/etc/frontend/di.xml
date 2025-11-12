@@ -15,4 +15,10 @@
     <!-- Preference for custom coupon block -->
     <preference for="Magento\Checkout\Block\Cart\Coupon" 
                 type="Mab\CheckoutCustomization\Block\Cart\Coupon" />
+    <!-- Plugin to ensure quote customer data is properly updated when customer logs in -->
+    <type name="Magento\Customer\Model\Session">
+        <plugin name="mab_checkoutcustomization_customer_login_quote_update" 
+                type="Mab\CheckoutCustomization\Plugin\Customer\CustomerLoginQuoteUpdate" 
+                sortOrder="100"/>
+    </type>
 </config>
