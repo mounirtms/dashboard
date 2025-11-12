@@ -10,7 +10,7 @@
     <body>
         <referenceContainer name="footer-container" remove="false"/>
 
-        <!-- Properly disable discount code field while maintaining component structure -->
+        <!-- Disable discount code field in checkout -->
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
@@ -21,11 +21,10 @@
                                     <item name="children" xsi:type="array">
                                         <item name="summary" xsi:type="array">
                                             <item name="children" xsi:type="array">
-                                                <!-- Disable discount component properly -->
+                                                <!-- Disable discount component -->
                                                 <item name="discount" xsi:type="array">
-                                                    <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/summary/discount-disabled</item>
                                                     <item name="config" xsi:type="array">
-                                                        <item name="template" xsi:type="string">Mab_CheckoutCustomization/summary/discount-disabled</item>
+                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
                                                     </item>
                                                 </item>
                                                 <!-- Ensure gift card component remains functional -->

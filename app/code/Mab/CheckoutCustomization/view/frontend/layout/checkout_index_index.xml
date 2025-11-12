@@ -39,10 +39,8 @@
                                         <item name="summary" xsi:type="array">
                                             <item name="children" xsi:type="array">
                                                 <item name="discount" xsi:type="array">
-                                                    <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/summary/discount-disabled</item>
-                                                    <item name="displayArea" xsi:type="string">discount</item>
                                                     <item name="config" xsi:type="array">
-                                                        <item name="template" xsi:type="string">Mab_CheckoutCustomization/summary/discount-disabled</item>
+                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
                                                     </item>
                                                 </item>
                                             </item>
