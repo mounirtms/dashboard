@@ -1,5 +1,5 @@
 <?php
-namespace Mab\GuestCheckout\Observer;
+namespace Mab\CheckoutCustomization\Observer;
 
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
@@ -38,7 +38,7 @@ class UpdateQuoteCustomerId implements ObserverInterface
     {
         try {
             if (!$this->licenseHelper->isLicenseActive()) {
-                $this->logger->info('Mab_GuestCheckout license is not active, skipping quote customer ID update');
+                $this->logger->info('Mab_CheckoutCustomization license is not active, skipping quote customer ID update');
                 return;
             }
 
@@ -91,8 +91,7 @@ class UpdateQuoteCustomerId implements ObserverInterface
                     elseif ($customerId !== null && $quote->getData('customer_is_guest') == 1) {
                         $needsUpdate = true;
                     }
-                    
-                    // NEW: Additional check for cases where customer_id exists on both but customer_is_guest flag is wrong
+                    // Additional check for cases where customer_id exists on both but customer_is_guest flag is wrong
                     elseif ($customerId !== null && $quoteCustomerId !== null && $customerId === $quoteCustomerId && $quote->getData('customer_is_guest') == 1) {
                         $needsUpdate = true;
                     }
