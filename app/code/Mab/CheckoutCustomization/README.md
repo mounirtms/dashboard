@@ -66,7 +66,7 @@ php bin/magento setup:di:compile
 php bin/magento setup:static-content:deploy
 
 # Clear cache
-php bin/magento cache:flush
+hp bin/magento cache:flushp
 ```
 
 ---

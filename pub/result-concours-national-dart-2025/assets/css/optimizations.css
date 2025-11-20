@@ -1,0 +1,292 @@
+/* Performance & UX Optimizations */
+
+/* Smooth transitions for better UX */
+.card, .btn-small, .view-btn, select, input, .notification {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* GPU acceleration for animations */
+.card, .modal-content {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+}
+
+/* Loading states */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ff8a00;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Improved pagination */
+.pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pagination-link {
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #64748b;
+    background: white;
+    border: 1px solid #e2e8f0;
+    font-weight: 500;
+    min-width: 36px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.pagination-link:hover {
+    background: #f8fafc;
+    border-color: #ff8a00;
+    color: #ff8a00;
+    transform: translateY(-1px);
+}
+
+.pagination-link.active {
+    background: linear-gradient(135deg, #ff8a00 0%, #e52e71 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(255, 138, 0, 0.3);
+}
+
+.page-info {
+    color: #64748b;
+    font-size: 0.9rem;
+    padding: 0 8px;
+}
+
+/* Improved table responsiveness */
+@media (max-width: 768px) {
+    .data-table {
+        font-size: 0.85rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 8px;
+    }
+}
+
+/* Better focus states for accessibility */
+button:focus,
+select:focus,
+input:focus,
+a:focus {
+    outline: 2px solid #ff8a00;
+    outline-offset: 2px;
+}
+
+/* Skeleton loading for cards */
+.card.loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Improved notification positioning */
+#notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    display: none;
+    max-width: 400px;
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+#notification.success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+#notification.error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+#notification.info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+/* Improved modal animations */
+.modal {
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Better button states */
+.btn-small:disabled,
+.btn-small.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-small:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* Improved select dropdowns */
+select {
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 36px;
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Better table row hover */
+.data-table tr:hover {
+    background-color: #f8fafc;
+    transform: scale(1.001);
+}
+
+/* Improved admin toolbar */
+.admin-toolbar {
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.admin-toolbar .btn-small {
+    white-space: nowrap;
+}
+
+/* Better stats grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 0;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Responsive improvements */
+@media (max-width: 1024px) {
+    .controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .auth-section {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* Print styles */
+@media print {
+    .controls,
+    .auth-section,
+    .admin-toolbar,
+    .pagination,
+    .btn-small {
+        display: none !important;
+    }
+    
+    .card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+    /* Can be expanded for dark mode support */
+}
