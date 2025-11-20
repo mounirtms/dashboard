@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "title": "Harmonie des Couleurs",
+    "categories": ["abstract"],
+    "image": "uploads/sample1.jpg",
+    "techniques": "Acrylique sur toile / Acrylic on canvas",
+    "inspiration": "La nature et ses formes géométriques / Nature and geometric forms",
+    "rating": 5,
+    "created_at": "2025-01-15 10:30:00"
+  },
+  {
+    "id": 2,
+    "title": "Portrait Contemporain",
+    "categories": ["portrait"],
+    "image": "uploads/sample2.jpg",
+    "techniques": "Huile et pastel / Oil and pastel",
+    "inspiration": "L'expression humaine / Human expression",
+    "rating": 4,
+    "created_at": "2025-01-16 14:20:00"
+  },
+  {
+    "id": 3,
+    "title": "Paysage Minimaliste",
+    "categories": ["landscape"],
+    "image": "uploads/sample3.jpg",
+    "techniques": "Aquarelle / Watercolor",
+    "inspiration": "Les montagnes du Maroc / Moroccan mountains",
+    "rating": 5,
+    "created_at": "2025-01-17 09:15:00"
+  },
+  {
+    "id": 4,
+    "title": "Abstraction Urbaine",
+    "categories": ["abstract"],
+    "image": "uploads/sample4.jpg",
+    "techniques": "Technique mixte / Mixed media",
+    "inspiration": "L'architecture moderne / Modern architecture",
+    "rating": 3,
+    "created_at": "2025-01-18 16:45:00"
+  },
+  {
+    "id": 5,
+    "title": "Nature Morte Classique",
+    "categories": ["still-life"],
+    "image": "uploads/sample5.jpg",
+    "techniques": "Huile sur toile / Oil on canvas",
+    "inspiration": "Les maîtres anciens / Old masters",
+    "rating": 4,
+    "created_at": "2025-01-19 11:00:00"
+  }
+]

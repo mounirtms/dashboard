@@ -1,0 +1,18 @@
+[
+    {
+        "id": "portrait",
+        "label": "Portrait"
+    },
+    {
+        "id": "landscape",
+        "label": "Landscape"
+    },
+    {
+        "id": "abstract",
+        "label": "Abstract"
+    },
+    {
+        "id": "still-life",
+        "label": "Still Life"
+    }
+]
