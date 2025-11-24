@@ -1,0 +1,415 @@
+<?php
+/**
+ * @var $block \Mab\AlgeriaProducts\Block\Product\Tabs
+ */
+?>
+<script type="application/ld+json">
+<?= /* @noEscape */ $block->getJsonLdStructuredData() ?>
+</script>
+<div class="made-in-algeria-page" lang="fr">
+    <div class="page-header">
+        <h1><?= $block->escapeHtml(__('Fabriqué en Algérie - Produits de Qualité Algérienne')) ?></h1>
+        <p class="page-intro"><?= $block->escapeHtml(__('Découvrez notre large gamme de produits fabriqués en Algérie, mettant en valeur la qualité et le savoir-faire de l\'industrie algérienne.')) ?></p>
+    </div>
+    
+    <?php $groups = $block->getProductGroups(); ?>
+    <?php if (!empty($groups)): ?>
+        <div class="product-tabs">
+            <ul class="tabs" role="tablist">
+                <?php $first = true; ?>
+                <?php foreach ($groups as $key => $group): ?>
+                    <li class="tab <?= $first ? 'active' : '' ?>" data-tab="<?= $block->escapeHtmlAttr($key) ?>" role="tab" aria-selected="<?= $first ? 'true' : 'false' ?>">
+                        <span class="tab-icon <?= $block->escapeHtmlAttr($key) ?>-icon"></span>
+                        <span class="tab-text"><?= $block->escapeHtml($group['title']) ?></span>
+                    </li>
+                    <?php $first = false; ?>
+                <?php endforeach; ?>
+            </ul>
+
+            <div class="tab-content">
+                <?php $first = true; ?>
+                <?php foreach ($groups as $key => $group): ?>
+                    <div class="tab-pane <?= $first ? 'active' : '' ?>" id="<?= $block->escapeHtmlAttr($key) ?>" role="tabpanel">
+                        <div class="tab-header">
+                            <h2><?= $block->escapeHtml($group['title']) ?></h2>
+                            <p class="tab-description"><?= $block->escapeHtml(__("Découvrez notre collection de %1 fabriqués en Algérie.", $group['title'])) ?></p>
+                        </div>
+                        
+                        <?php if (!empty($group['products'])): ?>
+                            <div class="products-grid">
+                                <?php foreach ($group['products'] as $product): ?>
+                                    <div class="product-item">
+                                        <a href="<?= $block->escapeUrl($product->getProductUrl()) ?>" class="product-link">
+                                            <?php if ($product->getImage()): ?>
+                                                <img src="<?= $block->escapeUrl($product->getImage()) ?>" 
+                                                     alt="<?= $block->escapeHtmlAttr($product->getName()) ?>" 
+                                                     loading="lazy">
+                                            <?php endif; ?>
+                                            <h3><?= $block->escapeHtml($product->getName()) ?></h3>
+                                            <?php if ($product->getPrice()): ?>
+                                                <span class="price"><?= $block->escapeHtml(__('DZD %1', number_format($product->getPrice(), 2))) ?></span>
+                                            <?php endif; ?>
+                                        </a>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p><?= $block->escapeHtml(__('Aucun produit disponible dans cette catégorie pour le moment.')) ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <?php $first = false; ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="no-products-message">
+            <h2><?= $block->escapeHtml(__('Aucun produit fabriqué en Algérie trouvé pour le moment.')) ?></h2>
+            <p><?= $block->escapeHtml(__('Nous travaillons activement à l\'ajout de nouveaux produits.')) ?></p>
+        </div>
+    <?php endif; ?>
+    
+    <div class="multilingual-info" lang="ar">
+        <h2><?= $block->escapeHtml(__('مصنوع في الجزائر - منتجات جزائرية عالية الجودة')) ?></h2>
+        <p><?= $block->escapeHtml(__('اكتشف مجموعة واسعة من المنتجات المصنعة في الجزائر، مما يعرض جودة ومهارة الصناعة الجزائرية.')) ?></p>
+    </div>
+    
+    <div class="multilingual-info" lang="en">
+        <h2><?= $block->escapeHtml(__('Made in Algeria - Quality Algerian Products')) ?></h2>
+        <p><?= $block->escapeHtml(__('Discover our wide range of products manufactured in Algeria, showcasing the quality and craftsmanship of Algerian industry.')) ?></p>
+    </div>
+
+    <script>
+    require(['jquery'], function($) {
+        $(document).ready(function() {
+            $('.tab').on('click', function(e) {
+                e.preventDefault();
+                var tabId = $(this).data('tab');
+                
+                // Update active tab
+                $('.tab').removeClass('active').attr('aria-selected', 'false');
+                $(this).addClass('active').attr('aria-selected', 'true');
+                
+                // Show active content
+                $('.tab-pane').removeClass('active');
+                $('#' + tabId).addClass('active');
+            });
+            
+            // Add keyboard navigation
+            $('.tab').on('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    $(this).click();
+                }
+            });
+        });
+    });
+    </script>
+
+    <style>
+    @font-face {
+        font-family: 'Blank-Theme-Icons';
+        src: url('../../../../../lib/web/fonts/Blank-Theme-Icons/Blank-Theme-Icons.woff2') format('woff2'),
+             url('../../../../../lib/web/fonts/Blank-Theme-Icons/Blank-Theme-Icons.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    .made-in-algeria-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .product-tabs {
+        margin: 30px 0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        background: #fff;
+    }
+
+    .tabs {
+        display: flex;
+        list-style: none;
+        border-bottom: 1px solid #ddd;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+    }
+
+    .tab {
+        padding: 15px 25px;
+        cursor: pointer;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-bottom: none;
+        margin-right: 5px;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .tab:hover {
+        background-color: #e9ecef;
+    }
+
+    .tab.active {
+        background-color: #fff;
+        border-bottom: 1px solid #fff;
+        margin-bottom: -1px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .tab-icon {
+        margin-right: 8px;
+        font-family: 'Blank-Theme-Icons';
+        font-size: 16px;
+    }
+
+    .tab-content {
+        padding: 25px;
+        border-top: 1px solid #ddd;
+    }
+
+    .tab-header h2 {
+        margin-top: 0;
+        color: #2c3e50;
+    }
+
+    .tab-header .tab-description {
+        color: #6c757d;
+        font-size: 16px;
+        margin-bottom: 25px;
+    }
+
+    .tab-pane {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .tab-pane.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 25px;
+        margin-top: 20px;
+    }
+
+    .product-item {
+        border: 1px solid #eee;
+        padding: 20px 15px;
+        border-radius: 8px;
+        text-align: center;
+        transition: all 0.3s ease;
+        background-color: #fff;
+    }
+
+    .product-item:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
+    }
+
+    .product-item img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+
+    .product-item h3 {
+        font-size: 16px;
+        margin: 15px 0 10px;
+        min-height: 40px;
+        color: #333;
+    }
+
+    .price {
+        font-weight: 700;
+        color: #e74c3c;
+        font-size: 18px;
+        display: block;
+        margin-top: 10px;
+    }
+    
+    .multilingual-info {
+        margin-top: 40px;
+        padding: 25px;
+        border-top: 1px solid #eee;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .multilingual-info h2 {
+        margin-top: 0;
+    }
+    
+    .no-products-message {
+        text-align: center;
+        padding: 40px 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin: 30px 0;
+    }
+    
+    .no-products-message h2 {
+        color: #6c757d;
+        margin-bottom: 15px;
+    }
+    
+    .no-products-message p {
+        color: #6c757d;
+        font-size: 16px;
+    }
+    
+    @media (max-width: 768px) {
+        .tabs {
+            flex-direction: column;
+        }
+        
+        .tab {
+            margin-right: 0;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            border-bottom: 1px solid #ddd;
+            justify-content: flex-start;
+        }
+        
+        .tab.active {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .tab-content {
+            padding: 15px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .page-intro {
+            font-size: 1rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .made-in-algeria-page {
+            padding: 15px;
+        }
+        
+        .product-tabs {
+            margin: 20px 0;
+        }
+        
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        }
+        
+        .tab {
+            padding: 15px 20px;
+        }
+        
+        .tab-text {
+            font-size: 15px;
+        }
+    }
+    
+    /* SEO optimization - structured data */
+    .product-item a {
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    /* Additional styling for better visual appeal */
+    .made-in-algeria-page h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+    
+    .made-in-algeria-page > p {
+        text-align: center;
+        font-size: 18px;
+        color: #555;
+        max-width: 800px;
+        margin: 0 auto 30px;
+        line-height: 1.6;
+    }
+    </style>
+</div>
+
+
+
+<div class="made-in-algeria-page" lang="fr">
+    <h1>Fabriqué en Algérie - Produits de Qualité Algérienne</h1>
+    <p>Découvrez notre large gamme de produits fabriqués en Algérie, mettant en valeur la qualité et le savoir-faire de l'industrie algérienne.</p>
+    
+    <div class="product-tabs">
+        <ul class="tabs">
+            <li class="tab active" data-tab="notebooks">Cahiers &amp; Carnets</li>
+            <li class="tab" data-tab="art-supplies">Fournitures Artistiques</li>
+            <li class="tab" data-tab="stationery">Articles de Papeterie</li>
+            <li class="tab" data-tab="office-supplies">Fournitures de Bureau</li>
+            <li class="tab" data-tab="school-supplies">Matériel Scolaire</li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active" id="notebooks">
+                <h2>Cahiers &amp; Carnets</h2>
+                <p>Découvrez notre collection de cahiers de haute qualité fabriqués en Algérie.</p>
+                <div class="products-grid">
+                    <!-- Product placeholders - will be populated by Magento -->
+                </div>
+            </div>
+
+            <div class="tab-pane" id="art-supplies">
+                <h2>Fournitures Artistiques</h2>
+                <p>Explorez notre gamme de fournitures artistiques fabriquées en Algérie.</p>
+                <div class="products-grid">
+                    <!-- Product placeholders - will be populated by Magento -->
+                </div>
+            </div>
+
+            <div class="tab-pane" id="stationery">
+                <h2>Articles de Papeterie</h2>
+                <p>Articles de papeterie premium fabriqués en Algérie.</p>
+                <div class="products-grid">
+                    <!-- Product placeholders - will be populated by Magento -->
+                </div>
+            </div>
+
+            <div class="tab-pane" id="office-supplies">
+                <h2>Fournitures de Bureau</h2>
+                <p>Fournitures de bureau essentielles fabriquées en Algérie.</p>
+                <div class="products-grid">
+                    <!-- Product placeholders - will be populated by Magento -->
+                </div>
+            </div>
+
+            <div class="tab-pane" id="school-supplies">
+                <h2>Matériel Scolaire</h2>
+                <p>Gamme complète de matériel scolaire fabriqué en Algérie.</p>
+                <div class="products-grid">
+                    <!-- Product placeholders - will be populated by Magento -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

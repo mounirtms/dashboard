@@ -448,6 +448,7 @@ return [
         'Compat_UrlBuilderFix' => 1,
         'Mab_AbandonedCartNotification' => 1,
         'Mageplaza_Core' => 1,
+        'Mab_AlgeriaProducts' => 1,
         'Mageplaza_TableRateShipping' => 1,
         'Mab_Core' => 1,
         'Mab_DeliveryOptions' => 1,
