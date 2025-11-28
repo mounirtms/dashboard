@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprehensive Magento Audit Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { background: #333; color: white; padding: 20px; text-align: center; border-radius: 5px; }
+        h1 { margin: 0; }
+        .section { background: white; margin: 20px 0; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .status-ok { color: green; font-weight: bold; }
+        .status-warning { color: orange; font-weight: bold; }
+        .status-error { color: red; font-weight: bold; }
+        ul { line-height: 1.6; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .recommendation { background-color: #e8f4f8; padding: 15px; border-left: 4px solid #2196F3; margin: 15px 0; }
+        footer { text-align: center; margin-top: 30px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Comprehensive Magento Audit Report</h1>
+            <p>Generated on: $(date)</p>
+        </header>
+        
+        <div class="section">
+            <h2>System Overview</h2>
+            <ul>
+                <li><b>Hostname:</b> $(hostname)</li>
+                <li><b>Date:</b> $(date)</li>
+                <li><b>User:</b> $(whoami)</li>
+            </ul>
+        </div>
+        <div class="section">
+            <h2>File and Directory Permissions</h2>
+<p class='status-ok'>OK: Pub directory permissions correct</p>
+<p class='status-ok'>OK: Static directory permissions correct</p>
+<p class='status-ok'>OK: Media directory permissions correct</p>
+<p class='status-ok'>OK: Var directory writable</p>
+<p class='status-ok'>OK: Generated directory writable</p>
+        </div>
+        <div class="section">
+            <h2>Redis Connectivity</h2>
+<p class='status-ok'>OK: Default cache Redis connection successful</p>
+<p class='status-ok'>OK: Page cache Redis connection successful</p>
+<p class='status-ok'>OK: Session Redis connection successful</p>
+        </div>
+        <div class="section">
+            <h2>Static Content Status</h2>
+<p class='status-error'>ERROR: Frontend static content directory missing</p>
+<p>CSS merged files: 0</p>
+<p>JS merged files: 0</p>
+<div class='recommendation'>
+<p><b>Recommendation:</b> Regenerate static content:</p>
+<pre>php bin/magento setup:static-content:deploy -f</pre>
+</div>
+        </div>
+        <div class="section">
+            <h2>Cache Status</h2>
+<p>Enabled caches: 0/22</p>
+<p class='status-warning'>WARNING: Some caches are disabled</p>
+<div class='recommendation'>
+<p><b>Recommendation:</b> Enable all caches:</p>
+<pre>php bin/magento cache:enable</pre>
+</div>
+        </div>
+        <div class="section">
+            <h2>Recent Errors</h2>
+<p>Recent critical errors: 2</p>
+<p class='status-error'>ERROR: Found recent critical errors in exception.log</p>
+<div class='recommendation'>
+<p><b>Recommendation:</b> Check exception.log for details and clear cache:</p>
+<pre>tail -20 /home/technadminy7/public_html/var/log/exception.log</pre>
+<pre>php bin/magento cache:flush</pre>
+</div>
+        </div>
+        <div class="section">
+            <h2>Overall Recommendations</h2>
+            <div class="recommendation">
+                <p><b>Immediate Actions:</b></p>
+                <ol>
+                    <li>Run the optimized permissions fix script if permission issues were found</li>
+                    <li>Run the Redis check and fix script if Redis connectivity issues were found</li>
+                    <li>Regenerate static content if static content issues were found</li>
+                    <li>Check recent error logs for any critical issues</li>
+                </ol>
+                <p><b>Additional Steps:</b></p>
+                <ol>
+                    <li>Reindex all indexes: <code>php bin/magento indexer:reindex</code></li>
+                    <li>Flush cache after all fixes: <code>php bin/magento cache:flush</code></li>
+                    <li>Verify push notifications are working properly</li>
+                </ol>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Comprehensive Audit Report - Generated on $(date)</p>
+        </footer>
+    </div>
+</body>
+</html>
