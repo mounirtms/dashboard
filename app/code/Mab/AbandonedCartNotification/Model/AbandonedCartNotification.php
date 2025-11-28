@@ -8,6 +8,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 
 class AbandonedCartNotification
 {
@@ -22,6 +23,8 @@ class AbandonedCartNotification
     protected $cartRepository;
     protected $customerRepository;
     protected $logger;
+    protected $priceCurrency;
+    protected $storeManager;
 
     public function __construct(
         TransportBuilder $transportBuilder,
@@ -29,7 +32,8 @@ class AbandonedCartNotification
         UrlInterface $urlBuilder,
         CartRepositoryInterface $cartRepository,
         CustomerRepositoryInterface $customerRepository,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        PriceCurrencyInterface $priceCurrency
     ) {
         $this->transportBuilder = $transportBuilder;
         $this->scopeConfig = $scopeConfig;
@@ -37,6 +41,7 @@ class AbandonedCartNotification
         $this->cartRepository = $cartRepository;
         $this->customerRepository = $customerRepository;
         $this->logger = $logger;
+        $this->priceCurrency = $priceCurrency;
     }
 
     public function isEnabled($storeId = null)
@@ -135,7 +140,7 @@ class AbandonedCartNotification
             $itemsHtml .= '<tr>';
             $itemsHtml .= '<td>' . $item->getName() . '</td>';
             $itemsHtml .= '<td>' . $item->getQty() . '</td>';
-            $itemsHtml .= '<td>' . $quote->getStore()->convertPrice($item->getPrice(), true) . '</td>';
+            $itemsHtml .= '<td>' . $this->formatPrice($item->getPrice(), $quote->getStoreId()) . '</td>';
             $itemsHtml .= '</tr>';
         }
         return $itemsHtml;
@@ -143,6 +148,33 @@ class AbandonedCartNotification
 
     protected function getCartTotal($quote)
     {
-        return $quote->getStore()->convertPrice($quote->getGrandTotal(), true);
+        return $this->formatPrice($quote->getGrandTotal(), $quote->getStoreId());
+    }
+    
+    /**
+     * Format price using PriceCurrencyInterface
+     *
+     * @param float $amount
+     * @param int $storeId
+     * @return string
+     */
+    protected function formatPrice($amount, $storeId)
+    {
+        $store = $this->getStoreManager()->getStore($storeId);
+        return $this->priceCurrency->format($amount, false, 2, $store);
+    }
+    
+    /**
+     * Get store manager
+     *
+     * @return \Magento\Store\Model\StoreManagerInterface
+     */
+    protected function getStoreManager()
+    {
+        if (!$this->storeManager) {
+            $this->storeManager = \Magento\Framework\App\ObjectManager::getInstance()
+                ->get(\Magento\Store\Model\StoreManagerInterface::class);
+        }
+        return $this->storeManager;
     }
 }

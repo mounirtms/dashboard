@@ -12,6 +12,9 @@ DATETIME=$(date +%F-%H-%M-%S)
 BACKUP_DIR="/backup/$DATE"
 LOG_FILE="${PROJECT_ROOT}/var/log/streamlined-backup.log"
 
+# Create log directory if it doesn't exist
+mkdir -p "${PROJECT_ROOT}/var/log"
+
 # === iDrive S3 Configuration ===
 AWS_CMD="/usr/local/bin/aws"
 export AWS_ACCESS_KEY_ID="prQjrOCZTP1yTOPfYvRl"
@@ -69,7 +72,7 @@ create_backup_dirs() {
     sudo chmod 755 "$BACKUP_DIR"
     
     # Create subdirectories
-    mkdir -p "$BACKUP_DIR"/{system,accounts,products,pim,beta,logs}
+    mkdir -p "$BACKUP_DIR"/{system,accounts,products,pim,beta,logs,source}
     
     success "Backup directories created"
 }
@@ -96,8 +99,10 @@ create_database_backup() {
 create_file_backups() {
     log "Creating file backups..."
     
-    # System files backup - only essential configuration files
+    # System files backup - essential configuration and source code files
     cd "$PROJECT_ROOT"
+    
+    # Backup essential configuration files
     tar -czf "$BACKUP_DIR/system/system-config-$DATETIME.tar.gz" \
         --exclude="var/cache/*" \
         --exclude="var/page_cache/*" \
@@ -113,61 +118,50 @@ create_file_backups() {
         
     success "System config backup created: system-config-$DATETIME.tar.gz"
     
+    # Source code backup - Magento core and custom modules
+    log "Creating source code backup..."
+    tar -czf "$BACKUP_DIR/source/magento-source-$DATETIME.tar.gz" \
+        --exclude="var/cache/*" \
+        --exclude="var/page_cache/*" \
+        --exclude="var/session/*" \
+        --exclude="pub/media/*" \
+        --exclude="var/log/*" \
+        --exclude="var/report/*" \
+        --exclude="var/tmp/*" \
+        --exclude="var/backups/*" \
+        --exclude="node_modules/*" \
+        --exclude=".git/*" \
+        --exclude="pub/static/*" \
+        app/ \
+        lib/ \
+        pub/index.php \
+        pub/errors/ \
+        vendor/ 2>/dev/null || warning "Failed to create full source code backup"
+        
+    success "Source code backup created: magento-source-$DATETIME.tar.gz"
+    
     # Accounts backup - only specific accounts and folders
-    # PIM account backup - only important directories
+    # PIM account backup - complete public_html directory
     if [ -d "/home/pim" ]; then
         log "Creating pim account backup..."
-        # Create a temporary directory for pim backup
-        mkdir -p "/tmp/pim-backup-$DATETIME"
-        
-        # Copy only essential directories from pim account
-        if [ -d "/home/pim/public_html" ]; then
-            cp -r "/home/pim/public_html/app" "/tmp/pim-backup-$DATETIME/" 2>/dev/null || true
-            cp -r "/home/pim/public_html/etc" "/tmp/pim-backup-$DATETIME/" 2>/dev/null || true
-        fi
-        
-        # Create archive of pim backup
-        tar -czf "$BACKUP_DIR/pim/pim-$DATETIME.tar.gz" -C "/tmp" "pim-backup-$DATETIME" 2>/dev/null || warning "Failed to create pim backup"
-        
-        # Clean up temporary directory
-        rm -rf "/tmp/pim-backup-$DATETIME"
-        
-        success "Pim account backup created: pim-$DATETIME.tar.gz"
+        tar -czf "$BACKUP_DIR/pim/pim-full-$DATETIME.tar.gz" \
+            -C "/home/pim" public_html 2>/dev/null || warning "Failed to create full pim backup"
+        success "Pim account backup created: pim-full-$DATETIME.tar.gz"
     else
         warning "Pim account not found, skipping pim backup"
     fi
     
-    # Beta account backup - only specific directories
+    # Beta account backup - complete public_html directory
     if [ -d "/home/beta" ]; then
         log "Creating beta account backup..."
-        # Create a temporary directory for beta backup
-        mkdir -p "/tmp/beta-backup-$DATETIME"
-        
-        # Copy only essential directories from beta account
-        if [ -d "/home/beta/public_html" ]; then
-            mkdir -p "/tmp/beta-backup-$DATETIME/public_html"
-            cp -r "/home/beta/public_html/etc" "/tmp/beta-backup-$DATETIME/public_html/" 2>/dev/null || true
-        fi
-        
-        # Copy important config directories
-        for dir in .ssh .cpanel .htpasswds; do
-            if [ -d "/home/beta/$dir" ]; then
-                cp -r "/home/beta/$dir" "/tmp/beta-backup-$DATETIME/" 2>/dev/null || true
-            fi
-        done
-        
-        # Create archive of beta backup
-        tar -czf "$BACKUP_DIR/beta/beta-$DATETIME.tar.gz" -C "/tmp" "beta-backup-$DATETIME" 2>/dev/null || warning "Failed to create beta backup"
-        
-        # Clean up temporary directory
-        rm -rf "/tmp/beta-backup-$DATETIME"
-        
-        success "Beta account backup created: beta-$DATETIME.tar.gz"
+        tar -czf "$BACKUP_DIR/beta/beta-full-$DATETIME.tar.gz" \
+            -C "/home/beta" public_html 2>/dev/null || warning "Failed to create full beta backup"
+        success "Beta account backup created: beta-full-$DATETIME.tar.gz"
     else
         warning "Beta account not found, skipping beta backup"
     fi
     
-    # Technadminy7 account - only media files
+    # Technadminy7 account - media files and source code
     if [ -d "$PROJECT_ROOT/pub/media" ]; then
         log "Creating technadminy7 media backup..."
         
@@ -199,7 +193,7 @@ create_file_backups() {
         mkdir -p "/tmp/logs-backup-$DATETIME"
         
         # Copy important logs
-        for log_file in system.log exception.log cron.log; do
+        for log_file in system.log exception.log cron.log debug.log; do
             if [ -f "$PROJECT_ROOT/var/log/$log_file" ]; then
                 cp "$PROJECT_ROOT/var/log/$log_file" "/tmp/logs-backup-$DATETIME/" 2>/dev/null || true
             fi
@@ -228,6 +222,15 @@ upload_to_idrive() {
             --endpoint-url "$S3_ENDPOINT" \
             --delete || die "Failed to upload system directory to iDrive"
         success "System directory uploaded to iDrive"
+    fi
+    
+    # Upload source directory
+    if [ -d "$BACKUP_DIR/source" ] && [ "$(ls -A "$BACKUP_DIR/source")" ]; then
+        log "Uploading source directory..."
+        sudo "$AWS_CMD" s3 sync "$BACKUP_DIR/source" "$S3_BUCKET/$DATE/source/" \
+            --endpoint-url "$S3_ENDPOINT" \
+            --delete || die "Failed to upload source directory to iDrive"
+        success "Source directory uploaded to iDrive"
     fi
     
     # Upload accounts directory
@@ -282,7 +285,11 @@ upload_to_idrive() {
 cleanup_local_backups() {
     log "Cleaning up local backups older than $DAILY_RETENTION days..."
     
-    find /backup -maxdepth 1 -type d -name "20*" -mtime +$DAILY_RETENTION -exec sudo rm -rf {} + 2>/dev/null || true
+    # Clean up backups with standard date format (YYYY-MM-DD)
+    find /backup -maxdepth 1 -type d -name "????-??-??" -mtime +$DAILY_RETENTION -exec sudo rm -rf {} + 2>/dev/null || true
+    
+    # Clean up backups with extended format (YYYY-MM-DD-*)
+    find /backup -maxdepth 1 -type d -name "????-??-??-*" -mtime +$DAILY_RETENTION -exec sudo rm -rf {} + 2>/dev/null || true
     
     success "Local backups cleanup completed"
 }
