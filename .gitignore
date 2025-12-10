@@ -1,7 +1,7 @@
 # Magento 2 specific files and directories to ignore
 
 # Magento generated files
-/app/etc/env.php
+ 
 /var/
 /pub/static/
 /generated/
