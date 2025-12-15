@@ -90,7 +90,7 @@ return [
         'provider' => 'db'
     ],
     'directories' => [
-        'document_root_is_pub' => false
+        'document_root_is_pub' => true
     ],
     'downloadable_domains' => [
         'technostationery.com'
@@ -142,9 +142,238 @@ return [
     ],
     'system' => [
         'default' => [
+            'admin' => [
+                'url' => [
+                    'custom' => null,
+                    'custom_path' => null
+                ]
+            ],
+            'web' => [
+                'unsecure' => [
+                    'base_url' => 'https://technostationery.com/',
+                    'base_link_url' => 'http://technostationery.com/',
+                    'base_static_url' => null,
+                    'base_media_url' => null
+                ],
+                'secure' => [
+                    'base_url' => 'https://technostationery.com/',
+                    'base_link_url' => 'https://technostationery.com/',
+                    'base_static_url' => null,
+                    'base_media_url' => null
+                ],
+                'default' => [
+                    'front' => 'cms'
+                ],
+                'cookie' => [
+                    'cookie_path' => '/',
+                    'cookie_domain' => 'technostationery.com'
+                ]
+            ],
+            'catalog' => [
+                'productalert_cron' => [
+                    'error_email' => null
+                ],
+                'product_video' => [
+                    'youtube_api_key' => null
+                ],
+                'search' => [
+                    'elasticsearch5_server_hostname' => 'localhost',
+                    'elasticsearch7_server_hostname' => '127.0.0.1',
+                    'opensearch_server_hostname' => 'localhost',
+                    'elasticsearch5_server_port' => '9200',
+                    'elasticsearch7_server_port' => '9200',
+                    'opensearch_server_port' => '9200',
+                    'elasticsearch5_index_prefix' => 'magento2',
+                    'elasticsearch7_index_prefix' => 'techno_stationery',
+                    'opensearch_index_prefix' => 'magento2',
+                    'elasticsearch5_enable_auth' => '0',
+                    'elasticsearch7_enable_auth' => '0',
+                    'opensearch_enable_auth' => '0',
+                    'elasticsearch5_username' => null,
+                    'elasticsearch7_username' => null,
+                    'opensearch_username' => null,
+                    'elasticsearch5_password' => null,
+                    'elasticsearch7_password' => null,
+                    'opensearch_password' => null,
+                    'elasticsearch5_server_timeout' => '15',
+                    'elasticsearch7_server_timeout' => '15',
+                    'opensearch_server_timeout' => '15'
+                ]
+            ],
+            'cataloginventory' => [
+                'source_selection_distance_based_google' => [
+                    'api_key' => null
+                ]
+            ],
+            'currency' => [
+                'import' => [
+                    'error_email' => null
+                ]
+            ],
+            'sitemap' => [
+                'generate' => [
+                    'error_email' => null
+                ]
+            ],
+            'trans_email' => [
+                'ident_general' => [
+                    'name' => 'contact',
+                    'email' => 'contact@technostationery.com'
+                ],
+                'ident_sales' => [
+                    'name' => 'Sales',
+                    'email' => 'sales@technostationery.com'
+                ],
+                'ident_support' => [
+                    'name' => 'Customer Support',
+                    'email' => 'sales@technostationery.com'
+                ],
+                'ident_custom1' => [
+                    'name' => 'Custom 1',
+                    'email' => 'contact@technostationery.com'
+                ],
+                'ident_custom2' => [
+                    'name' => 'Custom 2',
+                    'email' => 'contact@technostationery.com'
+                ]
+            ],
+            'contact' => [
+                'email' => [
+                    'recipient_email' => 'contact@technostationery.com.dz'
+                ]
+            ],
+            'sales_email' => [
+                'order' => [
+                    'copy_to' => 'sales.ecommerce@techno-dz.com,socialbx@gmail.com,amine.tms2021@gmail.com,yacine.ho.tms@gmail.com'
+                ],
+                'order_comment' => [
+                    'copy_to' => null
+                ],
+                'invoice' => [
+                    'copy_to' => null
+                ],
+                'invoice_comment' => [
+                    'copy_to' => null
+                ],
+                'shipment' => [
+                    'copy_to' => null
+                ],
+                'shipment_comment' => [
+                    'copy_to' => null
+                ],
+                'creditmemo' => [
+                    'copy_to' => null
+                ],
+                'creditmemo_comment' => [
+                    'copy_to' => null
+                ]
+            ],
+            'checkout' => [
+                'payment_failed' => [
+                    'copy_to' => 'webmaster@technostationery.com'
+                ]
+            ],
+            'google' => [
+                'analytics' => [
+                    'account' => 'UA-196342035-1'
+                ],
+                'gtag' => [
+                    'analytics4' => [
+                        'measurement_id' => 'G-72HCNG92F2'
+                    ],
+                    'adwords' => [
+                        'conversion_id' => 'G-72HCNG92F2'
+                    ]
+                ]
+            ],
+            'payment' => [
+                'checkmo' => [
+                    'mailing_address' => null
+                ]
+            ],
+            'recaptcha_backend' => [
+                'type_recaptcha' => [
+                    'public_key' => null,
+                    'private_key' => null
+                ],
+                'type_invisible' => [
+                    'public_key' => null,
+                    'private_key' => null
+                ],
+                'type_recaptcha_v3' => [
+                    'public_key' => '0:3:AYAvuPo2BWc6oSJetk6+JarEwQgt9BefnqcsT+pqcY0cWrP2t5enOkH46ooeNbmxKzbYynDqOqulwDUo1rBHb05ArwY=',
+                    'private_key' => '0:3:EDEaqXsosmBzy0kezhxfA1mj6nSBr/XO3LGKA91ptlVncWgMEJAFq72OESQmfjW6ctoTXyGKGBF56h44i+qrNz7WqFs='
+                ]
+            ],
+            'recaptcha_frontend' => [
+                'type_recaptcha' => [
+                    'public_key' => '0:3:aGQ1O73jIUssUSLCaUlbulGpYK2LX2G81+TLmT8O3A07tQi0pw3tpxZe9lpf5dyc8wrBrn0Smg48lmsXpD2piiGq5Es=',
+                    'private_key' => '0:3:Lw019BjY/8SWvIyp3u/nNAk/rtivfAAyFEum1rQZEOqNqYBR1KjcF/E5RJTdYREqtg/DQLpTazgiu8SER9yS9ZZtJxQ='
+                ],
+                'type_invisible' => [
+                    'public_key' => null,
+                    'private_key' => null
+                ],
+                'type_recaptcha_v3' => [
+                    'public_key' => '0:3:mV6Qd7BJUr2aRc687hCAYN69tSfkrVC1BWAMaepdU0x0HjJ3QVRs4BZEu+ReK1rOYB8WXi+vcryuRMnYeelAVrHF3nY=',
+                    'private_key' => '0:3:zsBxYfBQV3KeFYrdEM+h03mUkU2/x0mFEeJpnZo46zwiVef8+iEk2/bWOCAqDuXhII5hjKFltzcQt8n9qUIR34qr0+M='
+                ]
+            ],
             'system' => [
+                'smtp' => [
+                    'host' => 'localhost',
+                    'port' => '25'
+                ],
                 'full_page_cache' => [
-                    'caching_application' => '2'
+                    'varnish' => [
+                        'access_list' => 'localhost',
+                        'backend_host' => 'localhost',
+                        'backend_port' => '8080'
+                    ]
+                ],
+                'release_notification' => [
+                    'content_url' => 'magento.com/release_notifications',
+                    'use_https' => '1'
+                ]
+            ],
+            'dev' => [
+                'restrict' => [
+                    'allow_ips' => null
+                ],
+                'js' => [
+                    'session_storage_key' => 'collected_errors'
+                ]
+            ],
+            'analytics' => [
+                'general' => [
+                    'token' => null
+                ],
+                'url' => [
+                    'signup' => 'https://advancedreporting.rjmetrics.com/signup',
+                    'update' => 'https://advancedreporting.rjmetrics.com/update',
+                    'bi_essentials' => 'https://dashboard.rjmetrics.com/v2/magento/signup',
+                    'otp' => 'https://advancedreporting.rjmetrics.com/otp',
+                    'report' => 'https://advancedreporting.rjmetrics.com/report',
+                    'notify_data_changed' => 'https://advancedreporting.rjmetrics.com/report'
+                ]
+            ],
+            'crontab' => [
+                'default' => [
+                    'jobs' => [
+                        'analytics_collect_data' => [
+                            'schedule' => [
+                                'cron_expr' => '00 02 * * *'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'mab_checkout' => [
+                'amasty_integration' => [
+                    'hide_gift_card' => '0'
+                ],
+                'general' => [
+                    'enabled' => '1'
                 ]
             ]
         ]
