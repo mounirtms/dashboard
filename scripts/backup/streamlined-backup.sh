@@ -172,6 +172,14 @@ create_file_backups() {
                 -C "$PROJECT_ROOT/pub/media" catalog 2>/dev/null || warning "Failed to create catalog backup"
         fi
         
+        # Product images organized by SKU (if exists)
+        if [ -d "$PROJECT_ROOT/product_images_by_sku" ]; then
+            log "Creating product images by SKU backup..."
+            tar -czf "$BACKUP_DIR/products/product-images-by-sku-$DATETIME.tar.gz" \
+                -C "$PROJECT_ROOT" product_images_by_sku 2>/dev/null || warning "Failed to create product images by SKU backup"
+            success "Product images by SKU backup created"
+        fi
+        
         # Other important media directories
         for dir in wysiwyg promobanners lookbook; do
             if [ -d "$PROJECT_ROOT/pub/media/$dir" ]; then
