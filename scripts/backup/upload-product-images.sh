@@ -57,17 +57,17 @@ upload_product_images() {
         die "Product images directory not found: $PROJECT_ROOT/product_images_by_sku"
     fi
     
-    # Check if the zip file exists
-    if [ ! -f "$PROJECT_ROOT/product_images_by_sku.zip" ]; then
-        die "Product images zip file not found: $PROJECT_ROOT/product_images_by_sku.zip"
-    fi
+    # Create a compressed archive of the product images directory
+    log "Creating compressed archive of product images..."
+    tar -czf "/tmp/product_images_by_sku_$DATETIME.tar.gz" -C "$PROJECT_ROOT" "product_images_by_sku" || die "Failed to create compressed archive"
+    success "Compressed archive created: /tmp/product_images_by_sku_$DATETIME.tar.gz"
     
-    # Upload the zip file to iDrive under a products directory
-    log "Uploading product_images_by_sku.zip to iDrive..."
-    "$AWS_CMD" s3 cp "$PROJECT_ROOT/product_images_by_sku.zip" "$S3_BUCKET/products/product_images_by_sku_$DATETIME.zip" \
-        --endpoint-url "$S3_ENDPOINT" || die "Failed to upload product images to iDrive"
+    # Upload the compressed archive to iDrive under a products directory
+    log "Uploading compressed product images to iDrive..."
+    "$AWS_CMD" s3 cp "/tmp/product_images_by_sku_$DATETIME.tar.gz" "$S3_BUCKET/products/product_images_by_sku_$DATETIME.tar.gz" \
+        --endpoint-url "$S3_ENDPOINT" || die "Failed to upload compressed product images to iDrive"
     
-    success "Product images uploaded to iDrive: products/product_images_by_sku_$DATETIME.zip"
+    success "Compressed product images uploaded to iDrive: products/product_images_by_sku_$DATETIME.tar.gz"
     
     # Also upload the uncompressed folder
     log "Uploading product_images_by_sku folder to iDrive..."
@@ -76,6 +76,10 @@ upload_product_images() {
         --delete || die "Failed to upload product images folder to iDrive"
     
     success "Product images folder uploaded to iDrive: products/product_images_by_sku/"
+    
+    # Clean up temporary archive
+    rm -f "/tmp/product_images_by_sku_$DATETIME.tar.gz"
+    success "Temporary archive cleaned up"
 }
 
 # Main function
