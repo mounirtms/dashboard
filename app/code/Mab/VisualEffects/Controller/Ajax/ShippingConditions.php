@@ -10,7 +10,7 @@ use Mab\DeliveryOptions\Helper\ShippingConditions;
 use Mab\Core\Helper\ErrorHandler;
 use Psr\Log\LoggerInterface;
 
-class ShippingProgress implements HttpGetActionInterface
+class ShippingConditions implements HttpGetActionInterface
 {
     /**
      * @var JsonFactory
