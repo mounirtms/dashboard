@@ -6,7 +6,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Checkout\Model\Session as CheckoutSession;
-use Mab\DeliveryOptions\Helper\ShippingConditions;
+use Mab\DeliveryOptions\Helper\ShippingConditions as ShippingConditionsHelper;
 use Mab\Core\Helper\ErrorHandler;
 use Psr\Log\LoggerInterface;
 
@@ -28,7 +28,7 @@ class ShippingConditions implements HttpGetActionInterface
     private $checkoutSession;
 
     /**
-     * @var ShippingConditions
+     * @var ShippingConditionsHelper
      */
     private $shippingConditionsHelper;
 
@@ -46,7 +46,7 @@ class ShippingConditions implements HttpGetActionInterface
      * @param JsonFactory $resultJsonFactory
      * @param RequestInterface $request
      * @param CheckoutSession $checkoutSession
-     * @param ShippingConditions $shippingConditionsHelper
+     * @param ShippingConditionsHelper $shippingConditionsHelper
      * @param ErrorHandler $errorHandler
      * @param LoggerInterface $logger
      */
@@ -54,7 +54,7 @@ class ShippingConditions implements HttpGetActionInterface
         JsonFactory $resultJsonFactory,
         RequestInterface $request,
         CheckoutSession $checkoutSession,
-        ShippingConditions $shippingConditionsHelper,
+        ShippingConditionsHelper $shippingConditionsHelper,
         ErrorHandler $errorHandler,
         LoggerInterface $logger
     ) {
