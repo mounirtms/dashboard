@@ -48,9 +48,9 @@ class FilterRenderer extends \Magento\LayeredNavigation\Block\Navigation\FilterR
 				$requestPrice = $this->getRequest()->getParam('price');
 				if (!empty($requestPrice)){
 					$tmp = explode('-', $requestPrice);
-					$return['min_value'] = (isset($tmp[0]) && !empty($tmp[0])) ? $tmp[0] :  $return['min_standard'];
+					$return['min_value'] = (isset($tmp[0]) && !empty($tmp[0]) && is_numeric($tmp[0])) ? (float)$tmp[0] :  $return['min_standard'];
 					$return['min_value'] = round($return['min_value']*$return['rate'], 2) <  $return['min_standard'] ?   $return['min_standard'] : round($return['min_value']*$return['rate'], 2); 
-					$return['max_value'] = (isset($tmp[1]) && !empty($tmp[1])) ? $tmp[1] - 0.01 :  $return['max_standard'];
+					$return['max_value'] = (isset($tmp[1]) && !empty($tmp[1]) && is_numeric($tmp[1])) ? (float)$tmp[1] - 0.01 :  $return['max_standard'];
 					$return['max_value'] = round($return['max_value']*$return['rate'], 2) > $return['max_standard'] ?   $return['max_standard'] : round($return['max_value']*$return['rate'], 2); 
 				}
 				$return['currency_symbol'] = $currencySymbol;
