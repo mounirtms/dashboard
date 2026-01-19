@@ -36,7 +36,7 @@ return [
         ]
     ],
     'x-frame-options' => 'SAMEORIGIN',
-    'MAGE_MODE' => 'production',
+    'MAGE_MODE' => 'developer',
     'cache' => [
         'frontend' => [
             'default' => [
@@ -366,6 +366,14 @@ return [
                             ]
                         ]
                     ]
+                ]
+            ],
+            'mab_checkout' => [
+                'amasty_integration' => [
+                    'hide_gift_card' => '0'
+                ],
+                'general' => [
+                    'enabled' => '1'
                 ]
             ]
         ]

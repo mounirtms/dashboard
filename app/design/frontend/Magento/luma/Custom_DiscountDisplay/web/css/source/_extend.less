@@ -1,0 +1,62 @@
+/* Discount badge styles */
+.custom-discount-percentage {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+.discount-badge {
+    background-color: #e53935;
+    color: white;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 14px;
+    display: inline-block;
+    min-width: 40px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+
+/* Positioning on product grid items */
+.products-grid .product-item {
+    position: relative;
+    
+    .custom-discount-percentage {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* Positioning on product list items */
+.products-list .product-item {
+    position: relative;
+    
+    .custom-discount-percentage {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* Positioning on product detail page */
+.product.media {
+    position: relative;
+    
+    .custom-discount-percentage {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .discount-badge {
+        font-size: 12px;
+        padding: 3px 8px;
+        min-width: 35px;
+    }
+}
