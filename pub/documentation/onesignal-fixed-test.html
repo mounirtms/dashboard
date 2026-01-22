@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OneSignal Fixed Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <h1>OneSignal Fixed Push Notification Test</h1>
+    
+    <div>
+        <button id="testBtn">Run Complete Test</button>
+        <button id="requestPermissionBtn">Request Notification Permission</button>
+        <button id="clearBtn">Clear Log</button>
+    </div>
+    
+    <div id="results" style="margin-top: 20px; padding: 10px; background: #f5f5f5;">
+        <h3>Test Results:</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        function log(message, isError = false) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            console.log(logEntry);
+            
+            const logDiv = document.getElementById('log');
+            const entryElement = document.createElement('p');
+            entryElement.textContent = logEntry;
+            if (isError) {
+                entryElement.style.color = 'red';
+                entryElement.style.fontWeight = 'bold';
+            }
+            logDiv.appendChild(entryElement);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        document.getElementById('clearBtn').onclick = clearLog;
+        
+        document.getElementById('requestPermissionBtn').onclick = async function() {
+            clearLog();
+            log('🔔 Requesting notification permission...');
+            
+            try {
+                if (typeof OneSignal === 'undefined') {
+                    log('❌ OneSignal SDK not loaded');
+                    return;
+                }
+                
+                if (OneSignal.Notifications && typeof OneSignal.Notifications.requestPermission === 'function') {
+                    const permissionResult = await OneSignal.Notifications.requestPermission();
+                    log('✅ Permission request result: ' + permissionResult);
+                    
+                    // Check updated permission status
+                    setTimeout(async () => {
+                        const newPermission = OneSignal.Notifications.permission;
+                        log('🔄 Updated permission status: ' + newPermission);
+                    }, 1000);
+                } else {
+                    log('⚠️ requestPermission method not available');
+                }
+            } catch (error) {
+                log('⚠️ Permission request error: ' + error.message);
+            }
+        };
+        
+        document.getElementById('testBtn').onclick = async function() {
+            clearLog();
+            log('🚀 Starting OneSignal diagnostics...');
+            
+            try {
+                // Check if OneSignal is already loaded
+                if (typeof OneSignal === 'undefined') {
+                    log('❌ OneSignal SDK not loaded');
+                    return;
+                }
+                
+                log('✅ OneSignal SDK loaded');
+                
+                // Check if we're in a supported environment
+                if (!('serviceWorker' in navigator)) {
+                    log('❌ Service Workers not supported in this browser', true);
+                    return;
+                }
+                
+                log('✅ Service Workers supported');
+                
+                // Check HTTPS
+                if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                    log('❌ HTTPS required for push notifications (current: ' + location.protocol + ')', true);
+                    return;
+                }
+                
+                log('✅ Secure context confirmed');
+                
+                // Initialize OneSignal
+                log('🔄 Initializing OneSignal...');
+                
+                await OneSignal.init({
+                    appId: "ea60f1be-864c-4710-9437-3288e8e06cc4",
+                    serviceWorkerPath: "/OneSignalSDKWorker.js",
+                    serviceWorkerScope: "/",
+                    autoResubscribe: true,
+                    autoRegister: true,
+                    allowLocalhostAsSecureOrigin: true,
+                    notifyButton: {
+                        enable: true,
+                        position: 'bottom-right',
+                        size: 'medium',
+                        showCredit: false
+                    }
+                });
+                
+                log('✅ OneSignal initialized');
+                
+                // Manually register service worker if not found
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    const oneSignalSW = registrations.find(reg => 
+                        reg.active && reg.active.scriptURL.includes('OneSignal')
+                    );
+                    
+                    if (!oneSignalSW) {
+                        log('🔄 Manually registering OneSignal Service Worker...');
+                        const registration = await navigator.serviceWorker.register('/OneSignalSDKWorker.js', {
+                            scope: '/'
+                        });
+                        log('✅ Service Worker registered manually: ' + registration.scope);
+                    } else {
+                        log('✅ OneSignal Service Worker already registered: ' + oneSignalSW.scope);
+                    }
+                } catch (error) {
+                    log('⚠️ Manual service worker registration failed: ' + error.message);
+                }
+                
+                // Test various OneSignal methods
+                log('🧪 Testing OneSignal methods...');
+                
+                // Test permission status
+                try {
+                    if (OneSignal.Notifications && typeof OneSignal.Notifications.permission !== 'undefined') {
+                        const permission = OneSignal.Notifications.permission;
+                        log('✅ Permission status: ' + permission);
+                    } else {
+                        log('⚠️ Notifications.permission property not found');
+                        // Try alternative approach
+                        if ('permissions' in navigator) {
+                            const status = await navigator.permissions.query({name: 'notifications'});
+                            log('ℹ️ Browser permission: ' + status.state);
+                        }
+                    }
+                } catch (error) {
+                    log('⚠️ Permission check error: ' + error.message);
+                }
+                
+                // Test subscription status
+                try {
+                    if (OneSignal.Notifications && typeof OneSignal.Notifications.isPushSupported === 'function') {
+                        const isSupported = OneSignal.Notifications.isPushSupported();
+                        log('✅ Push notifications supported: ' + isSupported);
+                        
+                        // Check if subscribed
+                        if (typeof OneSignal.User.PushSubscription.id !== 'undefined') {
+                            const subscriptionId = OneSignal.User.PushSubscription.id;
+                            log('✅ Push subscription ID: ' + (subscriptionId || 'Not subscribed'));
+                        }
+                    } else {
+                        log('⚠️ isPushSupported method not found');
+                    }
+                } catch (error) {
+                    log('⚠️ Subscription check error: ' + error.message);
+                }
+                
+                // Test service worker registration
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    const oneSignalSW = registrations.find(reg => 
+                        reg.active && reg.active.scriptURL.includes('OneSignal')
+                    );
+                    
+                    if (oneSignalSW) {
+                        log('✅ OneSignal Service Worker registered: ' + oneSignalSW.scope);
+                    } else {
+                        log('⚠️ OneSignal Service Worker not found in registrations');
+                        log('   Total SW registrations: ' + registrations.length);
+                    }
+                } catch (error) {
+                    log('⚠️ Service Worker check error: ' + error.message);
+                }
+                
+                // Try to show notification prompt
+                log('🔔 Testing notification prompt...');
+                try {
+                    if (OneSignal.Notifications && typeof OneSignal.Notifications.requestPermission === 'function') {
+                        log('✅ requestPermission method available');
+                        // Uncomment to actually show prompt:
+                        // await OneSignal.Notifications.requestPermission();
+                    } else {
+                        log('⚠️ requestPermission method not available');
+                    }
+                } catch (error) {
+                    log('⚠️ Prompt test error: ' + error.message);
+                }
+                
+                log('🏁 Diagnostics complete!');
+                
+            } catch (error) {
+                log('💥 Critical error: ' + error.message, true);
+                console.error('Full error:', error);
+            }
+        };
+        
+        // Load OneSignal SDK
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+            script.async = true;
+            script.onload = function() {
+                log('✅ OneSignal SDK loaded successfully');
+            };
+            script.onerror = function() {
+                log('❌ Failed to load OneSignal SDK', true);
+            };
+            document.head.appendChild(script);
+        })();
+        
+        window.addEventListener('load', function() {
+            log('📄 Page loaded and ready');
+        });
+    </script>
+</body>
+</html>

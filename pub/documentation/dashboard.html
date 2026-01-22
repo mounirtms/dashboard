@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Techno Stationery - System Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #FF6B35;
+            --secondary: #004E89;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --info: #3B82F6;
+            --bg-dark: #1F2937;
+            --bg-light: #F9FAFB;
+            --text-dark: #111827;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .status-bar {
+            background: var(--bg-light);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .last-update {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-size: 1rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .icon-primary { background: rgba(255, 107, 53, 0.1); color: var(--primary); }
+        .icon-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .icon-info { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+        .icon-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+        
+        .card-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg-light);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        tr:hover {
+            background: var(--bg-light);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-error { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+        .badge-info { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+        
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            padding: 20px 30px;
+            background: var(--bg-light);
+            flex-wrap: wrap;
+        }
+        
+        .nav-link {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        footer {
+            background: var(--bg-dark);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--error);
+            color: var(--error);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Techno Stationery Dashboard</h1>
+            <p>Real-Time Magento System & Analytics</p>
+        </header>
+        
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <strong id="system-status">System Online</strong>
+            </div>
+            <div class="last-update">
+                Last Updated: <span id="last-update-time">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+            <a href="audit.html" class="nav-link">🔍 System Audit</a>
+            <a href="main.html" class="nav-link">📋 Statistics</a>
+            <a href="api.php?action=health" class="nav-link">💚 API Health</a>
+            <a href="index.html" class="nav-link">📚 Documentation</a>
+        </div>
+        
+        <div class="main-content">
+            <!-- Loading State -->
+            <div id="loading-state" class="loading">
+                <div class="spinner"></div>
+                <p>Loading dashboard data...</p>
+            </div>
+            
+            <!-- Error State -->
+            <div id="error-state" style="display: none;" class="error-message">
+                <strong>⚠️ Error Loading Data</strong>
+                <p id="error-message"></p>
+            </div>
+            
+            <!-- Key Metrics Section -->
+            <div id="metrics-section" style="display: none;" class="section">
+                <h2 class="section-title">📊 Key Performance Indicators</h2>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Total Orders</span>
+                            <div class="card-icon icon-primary">📦</div>
+                        </div>
+                        <div class="card-value" id="total-orders">-</div>
+                        <div class="card-label">All time orders</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Total Revenue</span>
+                            <div class="card-icon icon-success">💰</div>
+                        </div>
+                        <div class="card-value" id="total-revenue">-</div>
+                        <div class="card-label">DZD</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Products</span>
+                            <div class="card-icon icon-info">🛍️</div>
+                        </div>
+                        <div class="card-value" id="total-products">-</div>
+                        <div class="card-label">Total catalog items</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Customers</span>
+                            <div class="card-icon icon-warning">👥</div>
+                        </div>
+                        <div class="card-value" id="total-customers">-</div>
+                        <div class="card-label">Registered users</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Yalidine Integration Section -->
+            <div id="yalidine-section" style="display: none;" class="section">
+                <h2 class="section-title">🚚 Yalidine Shipping Integration</h2>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Active Wilayas</span>
+                            <div class="card-icon icon-success">🗺️</div>
+                        </div>
+                        <div class="card-value" id="yalidine-wilayas">-</div>
+                        <div class="card-label">Coverage areas</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Active Communes</span>
+                            <div class="card-icon icon-info">📍</div>
+                        </div>
+                        <div class="card-value" id="yalidine-communes">-</div>
+                        <div class="card-label">Delivery points</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Synced Addresses</span>
+                            <div class="card-icon icon-primary">📮</div>
+                        </div>
+                        <div class="card-value" id="synced-addresses">-</div>
+                        <div class="card-label">Integrated addresses</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Shipping Orders</span>
+                            <div class="card-icon icon-warning">🚛</div>
+                        </div>
+                        <div class="card-value" id="shipping-orders">-</div>
+                        <div class="card-label">Via Yalidine</div>
+                    </div>
+                </div>
+                
+                <!-- Top Wilayas Table -->
+                <h3 style="margin: 30px 0 15px;">📊 Top 5 Wilayas by Orders</h3>
+                <div class="table-container">
+                    <table id="top-wilayas-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Wilaya Name</th>
+                                <th>Code</th>
+                                <th>Total Orders</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-wilayas-body">
+                            <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Database Stats Section -->
+            <div id="database-section" style="display: none;" class="section">
+                <h2 class="section-title">🗄️ Database Statistics</h2>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Database Size</span>
+                            <div class="card-icon icon-info">💾</div>
+                        </div>
+                        <div class="card-value" id="db-size">-</div>
+                        <div class="card-label">Total MB</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Total Tables</span>
+                            <div class="card-icon icon-primary">📊</div>
+                        </div>
+                        <div class="card-value" id="db-tables">-</div>
+                        <div class="card-label">Database tables</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2026 Techno Stationery. All rights reserved.</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Dashboard v2.0 | Last Update: <span id="footer-time">-</span></p>
+        </footer>
+    </div>
+    
+    <script>
+        // Auto-refresh every 5 minutes
+        const REFRESH_INTERVAL = 5 * 60 * 1000;
+        
+        async function loadDashboard() {
+            try {
+                // Load all data in parallel
+                const [health, general, yalidine, database] = await Promise.all([
+                    fetch('api.php?action=health').then(r => r.json()),
+                    fetch('api.php?action=general').then(r => r.json()),
+                    fetch('api.php?action=yalidine').then(r => r.json()),
+                    fetch('api.php?action=database').then(r => r.json())
+                ]);
+                
+                // Hide loading
+                document.getElementById('loading-state').style.display = 'none';
+                
+                // Show sections
+                document.getElementById('metrics-section').style.display = 'block';
+                document.getElementById('yalidine-section').style.display = 'block';
+                document.getElementById('database-section').style.display = 'block';
+                
+                // Update system status
+                const statusDot = document.querySelector('.status-dot');
+                const statusText = document.getElementById('system-status');
+                if (health.data && health.data.status === 'online') {
+                    statusDot.style.background = 'var(--success)';
+                    statusText.textContent = 'System Online';
+                } else {
+                    statusDot.style.background = 'var(--warning)';
+                    statusText.textContent = 'System Degraded';
+                }
+                
+                // Update timestamps
+                const now = new Date().toLocaleString('en-US', { 
+                    dateStyle: 'medium', 
+                    timeStyle: 'short' 
+                });
+                document.getElementById('last-update-time').textContent = now;
+                document.getElementById('footer-time').textContent = now;
+                
+                // Update key metrics
+                if (general.success && general.data) {
+                    document.getElementById('total-orders').textContent = 
+                        (general.data.total_orders || 0).toLocaleString();
+                    document.getElementById('total-products').textContent = 
+                        (general.data.total_products || 0).toLocaleString();
+                    document.getElementById('total-customers').textContent = 
+                        (general.data.total_customers || 0).toLocaleString();
+                }
+                
+                // Update revenue
+                const revenue = await fetch('api.php?action=revenue').then(r => r.json());
+                if (revenue.success && revenue.data) {
+                    const totalRev = revenue.data.all_time || 0;
+                    document.getElementById('total-revenue').textContent = 
+                        (totalRev / 1000000).toFixed(2) + 'M';
+                }
+                
+                // Update Yalidine stats
+                if (yalidine.success && yalidine.data) {
+                    const data = yalidine.data;
+                    document.getElementById('yalidine-wilayas').textContent = 
+                        data.wilayas?.active || 0;
+                    document.getElementById('yalidine-communes').textContent = 
+                        data.communes?.active || 0;
+                    
+                    const syncedTotal = 
+                        (data.synced_addresses?.quotes || 0) + 
+                        (data.synced_addresses?.orders || 0);
+                    document.getElementById('synced-addresses').textContent = 
+                        syncedTotal.toLocaleString();
+                    
+                    document.getElementById('shipping-orders').textContent = 
+                        (data.shipping_orders?.total || 0).toLocaleString();
+                    
+                    // Update top wilayas table
+                    if (data.top_wilayas && Array.isArray(data.top_wilayas)) {
+                        const tbody = document.getElementById('top-wilayas-body');
+                        tbody.innerHTML = '';
+                        
+                        data.top_wilayas.forEach((wilaya, index) => {
+                            const row = tbody.insertRow();
+                            row.innerHTML = `
+                                <td><strong>#${index + 1}</strong></td>
+                                <td>${wilaya.name || 'N/A'}</td>
+                                <td><span class="badge badge-info">${wilaya.code || 'N/A'}</span></td>
+                                <td><strong>${(wilaya.order_count || 0).toLocaleString()}</strong></td>
+                                <td><span class="badge badge-success">Active</span></td>
+                            `;
+                        });
+                    }
+                }
+                
+                // Update database stats
+                if (database.success && database.data) {
+                    document.getElementById('db-size').textContent = 
+                        (database.data.size_mb || 0).toFixed(2);
+                    document.getElementById('db-tables').textContent = 
+                        (database.data.table_count || 0).toLocaleString();
+                }
+                
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('error-state').style.display = 'block';
+                document.getElementById('error-message').textContent = 
+                    'Failed to load dashboard: ' + error.message;
+            }
+        }
+        
+        // Load on page load
+        loadDashboard();
+        
+        // Auto-refresh
+        setInterval(loadDashboard, REFRESH_INTERVAL);
+    </script>
+</body>
+</html>

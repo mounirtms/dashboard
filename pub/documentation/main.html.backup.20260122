@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techno Stationery - System Documentation Portal</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--gray);
+            font-weight: 400;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+        }
+        
+        .card-header.audit { background: linear-gradient(135deg, var(--danger), #dc2626); }
+        .card-header.monitoring { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .card-header.cleanup { background: linear-gradient(135deg, var(--success), #059669); }
+        .card-header.server { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .card-header.database { background: linear-gradient(135deg, var(--warning), #d97706); }
+        .card-header.docs { background: linear-gradient(135deg, #ec4899, #db2777); }
+        
+        .card-header h2 {
+            position: relative;
+            z-index: 1;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .icon {
+            font-size: 1.75rem;
+        }
+        
+        .card-content {
+            padding: 1.5rem;
+        }
+        
+        .card-content h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .links-list {
+            list-style: none;
+        }
+        
+        .links-list li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .links-list a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            background: var(--light);
+        }
+        
+        .links-list a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .link-icon {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .stats-banner {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--light);
+            border-radius: 12px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Techno Stationery</div>
+            <div class="subtitle">Magento 2.4.6 Production System Documentation</div>
+        </header>
+        
+        <div class="stats-banner">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="healthScore">87%</div>
+                    <div class="stat-label">System Health</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="uptime">99.8%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="responseTime">145ms</div>
+                    <div class="stat-label">Response Time</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="activeModules">15+</div>
+                    <div class="stat-label">Active Modules</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header audit">
+                    <h2><span class="icon">🔍</span> System Audit</h2>
+                </div>
+                <div class="card-content">
+                    <h3>Comprehensive System Analysis</h3>
+                    <ul class="links-list">
+                        <li><a href="audit/"><span class="link-icon">📊</span> Audit Dashboard</a></li>
+                        <li><a href="audit/#assets"><span class="link-icon">📁</span> Asset Analysis</a></li>
+                        <li><a href="audit/#performance"><span class="link-icon">⚡</span> Performance Review</a></li>
+                        <li><a href="audit/#security"><span class="link-icon">🔒</span> Security Assessment</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header monitoring">
+                    <h2><span class="icon">📈</span> Monitoring</h2>
+                </div>
+                <div class="card-content">
+                    <h3>Real-time System Monitoring</h3>
+                    <ul class="links-list">
+                        <li><a href="monitoring.html"><span class="link-icon">🌐</span> Netdata Integration</a></li>
+                        <li><a href="monitoring.html#logs"><span class="link-icon">📝</span> Log Analysis</a></li>
+                        <li><a href="monitoring.html#alerts"><span class="link-icon">🔔</span> Alert Configuration</a></li>
+                        <li><a href="monitoring.html#metrics"><span class="link-icon">📊</span> Performance Metrics</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header cleanup">
+                    <h2><span class="icon">🧹</span> Optimization</h2>
+                </div>
+                <div class="card-content">
+                    <h3>Cleanup & Performance Tools</h3>
+                    <ul class="links-list">
+                        <li><a href="cleanup.html"><span class="link-icon">🗑️</span> Asset Cleanup</a></li>
+                        <li><a href="cleanup.html#storage"><span class="link-icon">💾</span> Storage Analysis</a></li>
+                        <li><a href="cleanup.html#scripts"><span class="link-icon">⚙️</span> Optimization Scripts</a></li>
+                        <li><a href="cleanup.html#impact"><span class="link-icon">🎯</span> Performance Impact</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header server">
+                    <h2><span class="icon">🖥️</span> Server</h2>
+                </div>
+                <div class="card-content">
+                    <h3>Infrastructure Configuration</h3>
+                    <ul class="links-list">
+                        <li><a href="server.html"><span class="link-icon">💻</span> Hardware Specs</a></li>
+                        <li><a href="server.html#software"><span class="link-icon">🔧</span> Software Stack</a></li>
+                        <li><a href="server.html#performance"><span class="link-icon">📊</span> Performance Metrics</a></li>
+                        <li><a href="server.html#optimization"><span class="link-icon">⚡</span> Optimization Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header database">
+                    <h2><span class="icon">🗄️</span> Database</h2>
+                </div>
+                <div class="card-content">
+                    <h3>Data Management & Analysis</h3>
+                    <ul class="links-list">
+                        <li><a href="database.html"><span class="link-icon">📋</span> Structure Analysis</a></li>
+                        <li><a href="database/"><span class="link-icon">📊</span> Data Statistics</a></li>
+                        <li><a href="database/#backup"><span class="link-icon">💾</span> Backup Strategy</a></li>
+                        <li><a href="database/#performance"><span class="link-icon">⚡</span> Performance Tuning</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header docs">
+                    <h2><span class="icon">📚</span> Documentation</h2>
+                </div>
+                <div class="card-content">
+                    <h3>Technical Resources</h3>
+                    <ul class="links-list">
+                        <li><a href="guides/"><span class="link-icon">📖</span> Deployment Guides</a></li>
+                        <li><a href="configuration/"><span class="link-icon">⚙️</span> Configuration Files</a></li>
+                        <li><a href="analysis/"><span class="link-icon">🔬</span> Analysis Reports</a></li>
+                        <li><a href="migration.html"><span class="link-icon">🔄</span> Migration Options</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2026 Techno Stationery • Magento 2.4.6 Production Environment</p>
+            <p>Last Updated: January 22, 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        // Animate stats on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const stats = [
+                { id: 'healthScore', final: 87, suffix: '%' },
+                { id: 'uptime', final: 99.8, suffix: '%' },
+                { id: 'responseTime', final: 145, suffix: 'ms' },
+                { id: 'activeModules', final: 15, suffix: '+' }
+            ];
+            
+            stats.forEach(stat => {
+                const element = document.getElementById(stat.id);
+                let current = 0;
+                const increment = stat.final / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= stat.final) {
+                        current = stat.final;
+                        clearInterval(timer);
+                    }
+                    element.textContent = Math.round(current) + stat.suffix;
+                }, 30);
+            });
+        });
+    </script>
+</body>
+</html>

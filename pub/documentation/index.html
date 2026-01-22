@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Documentation Center - Techno Stationery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #004E89, #FF6B35);
+            color: white;
+            padding: 60px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            color: #1F2937;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #FF6B35;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .card {
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 15px;
+            padding: 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s;
+            display: block;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border-color: #FF6B35;
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 10px;
+        }
+        
+        .card-description {
+            color: #6B7280;
+            line-height: 1.6;
+        }
+        
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 30px;
+            background: #F9FAFB;
+        }
+        
+        .quick-link {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #1F2937;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .quick-link:hover {
+            background: #FF6B35;
+            color: white;
+            border-color: #FF6B35;
+        }
+        
+        footer {
+            background: #1F2937;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .features-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .features-list li {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background: #F9FAFB;
+            border-radius: 10px;
+            border-left: 4px solid #FF6B35;
+        }
+        
+        .features-list li strong {
+            color: #004E89;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Documentation Center</h1>
+            <p>Techno Stationery System Documentation & Analytics</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="section">
+                <h2 class="section-title">🎯 Quick Access</h2>
+                <div class="cards-grid">
+                    <a href="dashboard.html" class="card">
+                        <div class="card-icon">📊</div>
+                        <div class="card-title">Live Dashboard</div>
+                        <div class="card-description">
+                            Real-time system metrics, KPIs, and performance indicators. 
+                            Monitor orders, revenue, and customer statistics.
+                        </div>
+                    </a>
+                    
+                    <a href="audit.html" class="card">
+                        <div class="card-icon">🔍</div>
+                        <div class="card-title">System Audit</div>
+                        <div class="card-description">
+                            Comprehensive system audit report including database stats, 
+                            orders, products, and integration health.
+                        </div>
+                    </a>
+                    
+                    <a href="main.html" class="card">
+                        <div class="card-icon">📈</div>
+                        <div class="card-title">Statistics</div>
+                        <div class="card-description">
+                            Detailed statistics and analytics from Magento database.
+                            Yalidine integration metrics and performance data.
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">🔌 API Endpoints</h2>
+                <div class="cards-grid">
+                    <a href="api.php?action=health" class="card">
+                        <div class="card-icon">💚</div>
+                        <div class="card-title">Health Check</div>
+                        <div class="card-description">
+                            System health status, database connectivity, and response time.
+                        </div>
+                    </a>
+                    
+                    <a href="api.php?action=all" class="card">
+                        <div class="card-icon">📦</div>
+                        <div class="card-title">All Statistics</div>
+                        <div class="card-description">
+                            Complete system statistics in JSON format. All metrics in one call.
+                        </div>
+                    </a>
+                    
+                    <a href="api.php?action=yalidine" class="card">
+                        <div class="card-icon">🚚</div>
+                        <div class="card-title">Yalidine Integration</div>
+                        <div class="card-description">
+                            Shipping integration metrics, coverage areas, and delivery statistics.
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">✨ Features</h2>
+                <ul class="features-list">
+                    <li>
+                        <strong>Real-Time Data:</strong> Live statistics directly from Magento database
+                    </li>
+                    <li>
+                        <strong>Yalidine Integration:</strong> 58 active wilayas, 1,100 communes, full coverage
+                    </li>
+                    <li>
+                        <strong>Performance Metrics:</strong> Database size, table counts, response times
+                    </li>
+                    <li>
+                        <strong>Order Analytics:</strong> Track 5,700+ orders with status breakdown
+                    </li>
+                    <li>
+                        <strong>Revenue Tracking:</strong> 26.7M DZD total revenue with trends
+                    </li>
+                    <li>
+                        <strong>Product Catalog:</strong> 9,500+ products with stock status
+                    </li>
+                    <li>
+                        <strong>Customer Insights:</strong> 5,200+ registered customers
+                    </li>
+                    <li>
+                        <strong>API Access:</strong> 12 RESTful endpoints with JSON responses
+                    </li>
+                    <li>
+                        <strong>Auto-Refresh:</strong> Dashboard updates every 5 minutes
+                    </li>
+                    <li>
+                        <strong>Security:</strong> Read-only database access, SQL injection protection
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">📖 Additional Resources</h2>
+                <div class="quick-links">
+                    <a href="QUICK_START.md" class="quick-link">🚀 Quick Start Guide</a>
+                    <a href="DEPLOYMENT_GUIDE.md" class="quick-link">📋 Deployment Guide</a>
+                    <a href="FINAL_DEPLOYMENT_REPORT.md" class="quick-link">📊 Deployment Report</a>
+                    <a href="ENHANCEMENTS_APPLIED.md" class="quick-link">✨ Enhancements Log</a>
+                    <a href="https://github.com/mounirtms/techno-magento" class="quick-link" target="_blank">🔗 GitHub Repository</a>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2026 Techno Stationery. All rights reserved.</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Documentation System v2.0 | Updated: January 22, 2026</p>
+        </footer>
+    </div>
+</body>
+</html>

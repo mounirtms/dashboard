@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Audit Report - Techno Stationery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #FF6B35;
+            --secondary: #004E89;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --bg: #F9FAFB;
+            --text: #111827;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 2rem 0;
+        }
+        
+        .audit-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .stat-card {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .data-table th {
+            background: var(--bg);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .data-table tr:hover {
+            background: var(--bg);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .badge-warning {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .badge-error {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links a {
+            background: white;
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid var(--primary);
+            transition: all 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .footer {
+            background: white;
+            border-top: 1px solid var(--border);
+            padding: 2rem 0;
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--text-light);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🔍 Complete System Audit Report</h1>
+            <p class="subtitle">Comprehensive analysis of Techno Stationery Magento Platform</p>
+            <div class="nav-links">
+                <a href="main.html">📊 Dashboard</a>
+                <a href="index.html">📖 Documentation</a>
+                <a href="api.php?action=health">🏥 API Health</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container content">
+        <!-- Executive Summary -->
+        <div class="audit-section">
+            <h2 class="section-title">📋 Executive Summary</h2>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                Generated on <strong>January 22, 2026</strong> | Status: <span class="badge badge-success">✅ Operational</span>
+            </p>
+            
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">5,724</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">9,523</div>
+                    <div class="stat-label">Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">5,249</div>
+                    <div class="stat-label">Customers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">26.7M</div>
+                    <div class="stat-label">Revenue (DZD)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Audit -->
+        <div class="audit-section">
+            <h2 class="section-title">💾 Database Audit</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">1,434.55 MB</div>
+                    <div class="stat-label">Total Database Size</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                    <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">
+                        Data: 932.91 MB | Indexes: 501.64 MB
+                    </small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">961</div>
+                    <div class="stat-label">Total Tables</div>
+                </div>
+            </div>
+            
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--secondary);">Key Tables</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Table Name</th>
+                        <th>Row Count</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>sales_order</td>
+                        <td>5,724</td>
+                        <td><span class="badge badge-success">✅ Healthy</span></td>
+                    </tr>
+                    <tr>
+                        <td>catalog_product_entity</td>
+                        <td>9,523</td>
+                        <td><span class="badge badge-success">✅ Healthy</span></td>
+                    </tr>
+                    <tr>
+                        <td>customer_entity</td>
+                        <td>5,249</td>
+                        <td><span class="badge badge-success">✅ Healthy</span></td>
+                    </tr>
+                    <tr>
+                        <td>quote</td>
+                        <td>12,615</td>
+                        <td><span class="badge badge-success">✅ Healthy</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Orders Audit -->
+        <div class="audit-section">
+            <h2 class="section-title">🛒 Orders Audit</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">5,724</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1,141</div>
+                    <div class="stat-label">Completed Orders</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 20%"></div>
+                    </div>
+                    <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">
+                        20% completion rate
+                    </small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3,175</div>
+                    <div class="stat-label">Pending Orders</div>
+                    <span class="badge badge-warning">⚠️ Needs Attention</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1,387</div>
+                    <div class="stat-label">Canceled Orders</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 24%; background: var(--error);"></div>
+                    </div>
+                    <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">
+                        24% cancellation rate
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Audit -->
+        <div class="audit-section">
+            <h2 class="section-title">💰 Revenue Audit</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">26,697,759.13</div>
+                    <div class="stat-label">All-Time Revenue (DZD)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4,666.36</div>
+                    <div class="stat-label">Average Order Value (DZD)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Audit -->
+        <div class="audit-section">
+            <h2 class="section-title">📦 Products Audit</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">9,523</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">7,387</div>
+                    <div class="stat-label">Enabled Products</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78%"></div>
+                    </div>
+                    <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">
+                        78% enabled
+                    </small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">7,342</div>
+                    <div class="stat-label">In Stock</div>
+                    <span class="badge badge-success">✅ Good Stock</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">33</div>
+                    <div class="stat-label">Out of Stock</div>
+                    <span class="badge badge-warning">⚠️ Low Stock Items</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customers Audit -->
+        <div class="audit-section">
+            <h2 class="section-title">👥 Customers Audit</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">5,249</div>
+                    <div class="stat-label">Total Customers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1,590</div>
+                    <div class="stat-label">Customers with Orders</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 30%"></div>
+                    </div>
+                    <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">
+                        30% conversion rate
+                    </small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Active Last 30 Days</div>
+                    <span class="badge badge-error">⚠️ Low Activity</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">16,788.43</div>
+                    <div class="stat-label">Avg Lifetime Value (DZD)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yalidine Integration Audit -->
+        <div class="audit-section">
+            <h2 class="section-title">🚚 Yalidine Integration Audit</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">58</div>
+                    <div class="stat-label">Active Wilayas</div>
+                    <span class="badge badge-success">✅ Complete Coverage</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1,100</div>
+                    <div class="stat-label">Active Communes</div>
+                    <span class="badge badge-success">✅ Full Network</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">11,431</div>
+                    <div class="stat-label">Synced Addresses</div>
+                </div>
+            </div>
+            
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--secondary);">Top 5 Wilayas by Orders</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Wilaya</th>
+                        <th>Order Count</th>
+                        <th>Market Share</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🥇 1</td>
+                        <td>Alger</td>
+                        <td>1,999</td>
+                        <td>34.9%</td>
+                    </tr>
+                    <tr>
+                        <td>🥈 2</td>
+                        <td>Blida</td>
+                        <td>401</td>
+                        <td>7.0%</td>
+                    </tr>
+                    <tr>
+                        <td>🥉 3</td>
+                        <td>Oran</td>
+                        <td>342</td>
+                        <td>6.0%</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Constantine</td>
+                        <td>248</td>
+                        <td>4.3%</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Sétif</td>
+                        <td>150</td>
+                        <td>2.6%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Performance Audit -->
+        <div class="audit-section">
+            <h2 class="section-title">⚡ Performance Audit</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">38/42</div>
+                    <div class="stat-label">Valid Indexers</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 90%"></div>
+                    </div>
+                    <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">
+                        90% indexer health
+                    </small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">&lt;100ms</div>
+                    <div class="stat-label">API Response Time</div>
+                    <span class="badge badge-success">✅ Excellent</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="audit-section">
+            <h2 class="section-title">💡 Recommendations</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Priority</th>
+                        <th>Issue</th>
+                        <th>Recommendation</th>
+                        <th>Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-error">🔴 High</span></td>
+                        <td>High pending orders (3,175)</td>
+                        <td>Review and process pending orders</td>
+                        <td>Revenue</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-error">🔴 High</span></td>
+                        <td>High cancellation rate (24%)</td>
+                        <td>Investigate cancellation reasons</td>
+                        <td>Customer Satisfaction</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-warning">🟡 Medium</span></td>
+                        <td>Low customer activity (30d)</td>
+                        <td>Launch re-engagement campaign</td>
+                        <td>Customer Retention</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-warning">🟡 Medium</span></td>
+                        <td>4 invalid indexers</td>
+                        <td>Reindex invalid indexers</td>
+                        <td>Performance</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">🟢 Low</span></td>
+                        <td>33 out of stock items</td>
+                        <td>Restock or disable products</td>
+                        <td>Inventory Management</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- System Health -->
+        <div class="audit-section">
+            <h2 class="section-title">🏥 System Health Summary</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Database</td>
+                        <td><span class="badge badge-success">✅ Healthy</span></td>
+                        <td>1.4GB, 961 tables, optimized</td>
+                    </tr>
+                    <tr>
+                        <td>Products</td>
+                        <td><span class="badge badge-success">✅ Healthy</span></td>
+                        <td>9,523 products, 78% enabled</td>
+                    </tr>
+                    <tr>
+                        <td>Orders</td>
+                        <td><span class="badge badge-warning">⚠️ Attention Needed</span></td>
+                        <td>3,175 pending orders</td>
+                    </tr>
+                    <tr>
+                        <td>Yalidine</td>
+                        <td><span class="badge badge-success">✅ Operational</span></td>
+                        <td>Full coverage, 11,431 synced addresses</td>
+                    </tr>
+                    <tr>
+                        <td>Performance</td>
+                        <td><span class="badge badge-success">✅ Excellent</span></td>
+                        <td>&lt;100ms response, 90% indexer health</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>&copy; 2026 Techno Stationery. All Rights Reserved.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.875rem;">
+                Audit generated on January 22, 2026 | <a href="main.html" style="color: var(--primary);">Back to Dashboard</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
