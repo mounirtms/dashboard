@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health Dashboard - Techno Stationery</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+        .health-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-top: 5px solid #28a745;
+        }
+        .health-card.warning {
+            border-top-color: #ffc107;
+        }
+        .health-card.critical {
+            border-top-color: #dc3545;
+        }
+        .progress-bar {
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .progress-fill.good { background: #28a745; }
+        .progress-fill.warning { background: #ffc107; }
+        .progress-fill.critical { background: #dc3545; }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        .refresh-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        .refresh-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .timestamp {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 System Health Dashboard</h1>
+            <p>Real-time monitoring of server performance and resource utilization</p>
+            <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+            <nav>
+                <a href="../index.html">← Back to Documentation</a>
+            </nav>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="health-card" id="cpuCard">
+                <h3>CPU Usage</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill good" id="cpuBar" style="width: 0%"></div>
+                </div>
+                <div class="metric-row">
+                    <span>Current Load:</span>
+                    <span id="cpuLoad">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Cores:</span>
+                    <span id="cpuCores">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Uptime:</span>
+                    <span id="systemUptime">Loading...</span>
+                </div>
+            </div>
+
+            <div class="health-card" id="memoryCard">
+                <h3>Memory Usage</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill good" id="memoryBar" style="width: 0%"></div>
+                </div>
+                <div class="metric-row">
+                    <span>Used:</span>
+                    <span id="memoryUsed">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Total:</span>
+                    <span id="memoryTotal">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Swap:</span>
+                    <span id="swapUsage">Loading...</span>
+                </div>
+            </div>
+
+            <div class="health-card" id="storageCard">
+                <h3>Storage Usage</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill good" id="storageBar" style="width: 0%"></div>
+                </div>
+                <div class="metric-row">
+                    <span>Root Partition:</span>
+                    <span id="rootUsage">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Home Partition:</span>
+                    <span id="homeUsage">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>I/O Wait:</span>
+                    <span id="ioWait">Loading...</span>
+                </div>
+            </div>
+
+            <div class="health-card" id="networkCard">
+                <h3>Network Status</h3>
+                <div class="metric-row">
+                    <span>Incoming Traffic:</span>
+                    <span id="netIn">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Outgoing Traffic:</span>
+                    <span id="netOut">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Active Connections:</span>
+                    <span id="connections">Loading...</span>
+                </div>
+            </div>
+
+            <div class="health-card" id="servicesCard">
+                <h3>Service Status</h3>
+                <div class="metric-row">
+                    <span>Apache HTTPD:</span>
+                    <span id="apacheStatus">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>MySQL:</span>
+                    <span id="mysqlStatus">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Varnish:</span>
+                    <span id="varnishStatus">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Redis:</span>
+                    <span id="redisStatus">Loading...</span>
+                </div>
+            </div>
+
+            <div class="health-card" id="magentoCard">
+                <h3>Magento Performance</h3>
+                <div class="metric-row">
+                    <span>Cache Status:</span>
+                    <span id="cacheStatus">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Index Status:</span>
+                    <span id="indexStatus">Loading...</span>
+                </div>
+                <div class="metric-row">
+                    <span>Session Count:</span>
+                    <span id="sessionCount">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="timestamp">
+            <p>Last Updated: <span id="lastUpdate">Never</span></p>
+        </div>
+
+        <footer>
+            <p><small>Automated monitoring system for Techno Stationery production environment</small></p>
+        </footer>
+    </div>
+
+    <script>
+        function refreshData() {
+            // CPU Information
+            fetch('/pub/docs/includes/stats.php?action=cpu')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('cpuLoad').textContent = data.load_average;
+                    document.getElementById('cpuCores').textContent = data.cores;
+                    document.getElementById('systemUptime').textContent = data.uptime;
+                    
+                    const cpuPercent = parseFloat(data.cpu_percent);
+                    document.getElementById('cpuBar').style.width = cpuPercent + '%';
+                    document.getElementById('cpuCard').className = cpuPercent > 80 ? 'health-card critical' : 
+                                                                 cpuPercent > 60 ? 'health-card warning' : 'health-card';
+                });
+
+            // Memory Information
+            fetch('/pub/docs/includes/stats.php?action=memory')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('memoryUsed').textContent = data.used;
+                    document.getElementById('memoryTotal').textContent = data.total;
+                    document.getElementById('swapUsage').textContent = data.swap;
+                    
+                    const memPercent = parseFloat(data.percent);
+                    document.getElementById('memoryBar').style.width = memPercent + '%';
+                    document.getElementById('memoryCard').className = memPercent > 85 ? 'health-card critical' : 
+                                                                    memPercent > 70 ? 'health-card warning' : 'health-card';
+                });
+
+            // Storage Information
+            fetch('/pub/docs/includes/stats.php?action=disk')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('rootUsage').textContent = data.root;
+                    document.getElementById('homeUsage').textContent = data.home;
+                    document.getElementById('ioWait').textContent = data.io_wait;
+                    
+                    const diskPercent = parseFloat(data.percent);
+                    document.getElementById('storageBar').style.width = diskPercent + '%';
+                    document.getElementById('storageCard').className = diskPercent > 90 ? 'health-card critical' : 
+                                                                     diskPercent > 80 ? 'health-card warning' : 'health-card';
+                });
+
+            // Service Status
+            fetch('/pub/docs/includes/stats.php?action=services')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('apacheStatus').innerHTML = data.apache === 'running' ? 
+                        '<span style="color:green">✓ Running</span>' : '<span style="color:red">✗ Stopped</span>';
+                    document.getElementById('mysqlStatus').innerHTML = data.mysql === 'running' ? 
+                        '<span style="color:green">✓ Running</span>' : '<span style="color:red">✗ Stopped</span>';
+                    document.getElementById('varnishStatus').innerHTML = data.varnish === 'running' ? 
+                        '<span style="color:green">✓ Running</span>' : '<span style="color:red">✗ Stopped</span>';
+                    document.getElementById('redisStatus').innerHTML = data.redis === 'running' ? 
+                        '<span style="color:green">✓ Running</span>' : '<span style="color:red">✗ Stopped</span>';
+                });
+
+            // Update timestamp
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+        }
+
+        // Initial load
+        window.onload = function() {
+            refreshData();
+            // Auto-refresh every 30 seconds
+            setInterval(refreshData, 30000);
+        };
+    </script>
+</body>
+</html>

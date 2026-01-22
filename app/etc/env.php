@@ -326,9 +326,10 @@ return [
                 ],
                 'full_page_cache' => [
                     'varnish' => [
-                        'access_list' => 'localhost',
-                        'backend_host' => 'localhost',
-                        'backend_port' => '8080'
+                        'access_list' => 'localhost,127.0.0.1',
+                        'backend_host' => '127.0.0.1',
+                        'backend_port' => '8080',
+                        'grace_period' => '300'
                     ]
                 ],
                 'release_notification' => [
