@@ -1,0 +1,38 @@
+# Magento Production Cron Jobs
+# Add these to crontab using: crontab -e
+
+# Magento maintenance jobs (every minute)
+* * * * * /usr/bin/php /home/technadminy7/public_html/bin/magento cron:run | grep -v "Ran jobs by schedule" >> /home/technadminy7/public_html/var/log/cron.log
+
+# Magento indexer updates (every 5 minutes)
+*/5 * * * * /usr/bin/php /home/technadminy7/public_html/bin/magento indexer:reindex >> /home/technadminy7/public_html/var/log/indexer.log
+
+# System monitoring (every 2 minutes)
+*/2 * * * * /bin/bash /home/technadminy7/public_html/magento-monitor.sh
+
+# Log rotation (daily at 2 AM)
+0 2 * * * /usr/sbin/logrotate /etc/logrotate.d/magento
+
+# Magento cache cleanup (daily at 3 AM)
+0 3 * * * /usr/bin/php /home/technadminy7/public_html/bin/magento cache:flush >> /home/technadminy7/public_html/var/log/cache-cleanup.log
+
+# Database optimization (weekly on Sunday at 4 AM)
+0 4 * * 0 /usr/bin/mysqlcheck -u root -p --auto-repair --optimize --all-databases >> /home/technadminy7/public_html/var/log/db-optimize.log
+
+# Backup scripts (daily at 1 AM)
+0 1 * * * /bin/bash /home/technadminy7/public_html/backup-scripts/magento-backup.sh
+
+# SSL certificate renewal check (daily at 6 AM)
+0 6 * * * /usr/bin/certbot renew --quiet
+
+# Magento security scan (weekly on Monday at 5 AM)
+0 5 * * 1 /usr/bin/php /home/technadminy7/public_html/bin/magento security:scan >> /home/technadminy7/public_html/var/log/security-scan.log
+
+# Performance report generation (monthly on 1st at 7 AM)
+0 7 1 * * /usr/bin/php /home/technadminy7/public_html/bin/magento dev:tests:run performance >> /home/technadminy7/public_html/var/log/performance-report.log
+
+# Clean up old logs (monthly on 1st at 8 AM)
+0 8 1 * * find /home/technadminy7/public_html/var/log -name "*.log" -mtime +30 -delete
+
+# Magento upgrade checker (weekly on Wednesday at 9 AM)
+0 9 * * 3 /usr/bin/wget -qO- https://repo.magento.com/releases/ | grep -o 'magento/project-community-edition.*' | head -1 >> /home/technadminy7/public_html/var/log/version-check.log

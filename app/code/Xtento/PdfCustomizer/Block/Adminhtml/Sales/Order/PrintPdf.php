@@ -17,6 +17,7 @@ use Magento\Framework\Registry;
 use Xtento\PdfCustomizer\Model\ResourceModel\PdfTemplate\CollectionFactory;
 use Xtento\PdfCustomizer\Model\Source\TemplateType;
 use Xtento\PdfCustomizer\Model\Source\TemplateActive;
+use Psr\Log\LoggerInterface;
 
 class PrintPdf extends Container
 {
@@ -38,12 +39,18 @@ class PrintPdf extends Container
     private $collectionFactory;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * PrintPdf constructor.
      *
      * @param Context $context
      * @param Registry $registry
      * @param Data $dataHelper
      * @param CollectionFactory $collectionFactory
+     * @param LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
@@ -51,11 +58,13 @@ class PrintPdf extends Container
         Registry $registry,
         Data $dataHelper,
         CollectionFactory $collectionFactory,
+        LoggerInterface $logger,
         array $data = []
     ) {
         $this->coreRegistry = $registry;
         $this->dataHelper = $dataHelper;
         $this->collectionFactory = $collectionFactory;
+        $this->logger = $logger;
         parent::__construct($context, $data);
     }
 
@@ -64,6 +73,9 @@ class PrintPdf extends Container
         if (!$this->dataHelper->isEnabled(Data::ENABLE_ORDER)) {
             return $this;
         }
+
+        // Debug logging
+        $this->logger->debug('PrintPdf block constructing for order ID: ' . $this->getOrderId());
 
         $addButtonProps = [
             'id' => 'print_pdf',

@@ -17,46 +17,217 @@ $baseURL                 = $_config->getCoreConfig('web/unsecure/base_url');
 
 <link rel="stylesheet" type="text/css" media="all" href="<?php echo $_css_load_file->getSettingsFile() ?>"/>
 
+<script src="<?php echo $this->getViewFileUrl('js/onesignal-diagnostic.js'); ?>"></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "ea60f1be-864c-4710-9437-3288e8e06cc4",
-      serviceWorkerPath: "/OneSignalSDKWorker.js",
-      serviceWorkerScope: "/",
-      notifyButton: {
-        enable: true
-      },
-      promptOptions: {
-        slidedown: {
-          enabled: true,
-          actionMessage: "هل ترغب في الحصول على أحدث العروض والتنبيهات من موقعنا؟",
-          acceptButtonText: "نعم، بالتأكيد",
-          cancelButtonText: "لاحقًا"
+    try {
+      // Enhanced configuration with better error handling
+      await OneSignal.init({
+        appId: "ea60f1be-864c-4710-9437-3288e8e06cc4",
+        serviceWorkerPath: "/OneSignalSDKWorker.js",
+        serviceWorkerScope: "/",
+        autoResubscribe: true,
+        autoRegister: true,
+        notifyButton: {
+          enable: true,
+          position: 'bottom-right',
+          size: 'medium',
+          showCredit: false,
+          colors: {
+            'circle.background': '#FF5500',
+            'circle.foreground': 'white',
+            'badge.background': '#FF5500',
+            'badge.foreground': 'white',
+            'badge.bordercolor': '#FF5500',
+            'pulse.color': '#FF5500',
+            'dialog.button.background.hovering': '#FF5500',
+            'dialog.button.background.active': '#CC4400',
+            'dialog.button.background': '#FF5500',
+            'dialog.button.foreground': 'white'
+          }
+        },
+        promptOptions: {
+          slidedown: {
+            enabled: true,
+            actionMessage: "هل ترغب في الحصول على أحدث العروض والتنبيهات من موقعنا؟",
+            acceptButtonText: "نعم، بالتأكيد",
+            cancelButtonText: "لاحقًا",
+            categories: {
+              tags: [
+                {
+                  tag: "offers",
+                  label: "العروض الخاصة"
+                },
+                {
+                  tag: "news",
+                  label: "الأخبار والتحديثات"
+                },
+                {
+                  tag: "products",
+                  label: "منتجات جديدة"
+                }
+              ]
+            }
+          },
+          native: {
+            enabled: true,
+            autoPrompt: true
+          }
+        },
+        welcomeNotification: {
+          title: "مرحباً بك في Techno Stationery",
+          message: "شكرًا للاشتراك في تنبيهاتنا!",
+          url: "/"
+        },
+        notificationClickHandlerMatch: 'exact',
+        notificationClickHandlerAction: 'focus',
+        persistNotification: false,
+        // Add additional configuration options for better reliability
+        allowLocalhostAsSecureOrigin: true,
+        requiresUserPrivacyConsent: false,
+        webhooks: {
+          'enable': false
         }
+      });
+
+      // Enhanced error handling and debugging
+      OneSignal.on('initialize', function() {
+        console.log('OneSignal initialized successfully');
+        // Log subscription status for debugging
+        if (OneSignal.User && OneSignal.User.PushSubscription) {
+          const subscriptionId = OneSignal.User.PushSubscription.id;
+          console.log('Push subscription ID:', subscriptionId || 'Not subscribed');
+        }
+        
+        if (OneSignal.Notifications) {
+          console.log('Notification permission:', OneSignal.Notifications.permission);
+        }
+      });
+
+      OneSignal.on('initializationError', function(error) {
+        console.error('OneSignal initialization error:', error);
+        // Send error to analytics for monitoring
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({
+            event: 'onesignal_initialization_error',
+            error: error,
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
+
+      // Tracking events after initialization
+      OneSignal.on('subscriptionChange', function (isSubscribed) {
+        console.log('Subscription status changed:', isSubscribed);
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({
+            event: 'onesignal_subscription',
+            status: isSubscribed,
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        // Send subscription data to server
+        if (isSubscribed && OneSignal.User && OneSignal.User.PushSubscription) {
+          const subscriptionId = OneSignal.User.PushSubscription.id;
+          if (subscriptionId) {
+            fetch('/rest/V1/onesignal/subscribe', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                player_id: subscriptionId,
+                subscribed_at: new Date().toISOString()
+              })
+            }).catch(function(error) {
+              console.error('Failed to sync subscription with server:', error);
+            });
+          }
+        }
+      });
+
+      OneSignal.on('notificationPermissionChange', function(permissionChange) {
+        console.log('Notification permission changed:', permissionChange);
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({
+            event: 'onesignal_permission_change',
+            to: permissionChange.to,
+            from: permissionChange.from,
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
+
+      OneSignal.on('notificationDisplay', function (event) {
+        console.log('Notification displayed:', event);
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({
+            event: 'onesignal_notification_displayed',
+            messageId: event.id,
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
+
+      OneSignal.on('notificationClick', function (event) {
+        console.log('Notification clicked:', event);
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({
+            event: 'onesignal_notification_clicked',
+            messageId: event.id,
+            timestamp: new Date().toISOString(),
+            url: event.url
+          });
+        }
+      });
+
+      // Handle notification dismissal
+      OneSignal.on('notificationDismiss', function (event) {
+        console.log('Notification dismissed:', event);
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({
+            event: 'onesignal_notification_dismissed',
+            messageId: event.id,
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
+
+      // Additional debugging for service worker registration
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          const oneSignalSW = registrations.find(reg => reg.active && reg.active.scriptURL.includes('OneSignal'));
+          if (oneSignalSW) {
+            console.log('OneSignal Service Worker registered:', oneSignalSW.scope);
+          } else {
+            console.warn('OneSignal Service Worker not found');
+          }
+        });
       }
-    });
 
-    // Tracking events after initialization
-    OneSignal.on('subscriptionChange', function (isSubscribed) {
-      dataLayer.push({
-        event: 'onesignal_subscription',
-        status: isSubscribed
-      });
-    });
+    } catch (error) {
+      console.error('Critical error initializing OneSignal:', error);
+      if (typeof dataLayer !== 'undefined') {
+        dataLayer.push({
+          event: 'onesignal_critical_error',
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+  });
 
-    OneSignal.on('notificationDisplay', function (event) {
-      dataLayer.push({
-        event: 'onesignal_notification_displayed',
-        messageId: event.id
-      });
-    });
-
-    OneSignal.on('notificationClick', function (event) {
-      dataLayer.push({
-        event: 'onesignal_notification_clicked',
-        messageId: event.id
-      });
+  // Additional error handling for deferred initialization
+  window.OneSignalDeferred.push(function(OneSignal) {
+    // Ensure proper initialization even if previous attempts failed
+    OneSignal.on('subscriptionChange', function(isSubscribed) {
+      if (isSubscribed) {
+        console.log('Successfully subscribed to OneSignal notifications');
+      } else {
+        console.log('Unsubscribed from OneSignal notifications');
+      }
     });
   });
 </script>

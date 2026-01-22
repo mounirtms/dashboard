@@ -62,6 +62,8 @@
                 <value id="onesignal" type="host">*.onesignal.com</value>
                 <value id="onesignal-wss" type="host">wss://*.onesignal.com</value>
                 <value id="onesignal-https" type="host">https://*.onesignal.com</value>
+                <value id="onesignal-http" type="host">http://*.onesignal.com</value>
+                <value id="onesignal-api" type="host">api.onesignal.com</value>
                 <value id="kaspersky-wss" type="host">wss://gc.kes.v2.scr.kaspersky-labs.com</value>
                 <!-- Added missing domains -->
                 <value id="google-analytics-connect" type="host">www.google-analytics.com</value>
@@ -83,6 +85,7 @@
             <values>
                 <value id="onesignal" type="host">*.onesignal.com</value>
                 <value id="onesignalusercontent" type="host">*.onesignalusercontent.com</value>
+                <value id="onesignal-images" type="host">images.onesignal.com</value>
                 <!-- Added missing domains -->
                 <value id="google-analytics-img" type="host">www.google-analytics.com</value>
                 <value id="googletagmanager-img" type="host">www.googletagmanager.com</value>
