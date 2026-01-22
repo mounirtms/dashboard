@@ -18,7 +18,7 @@ https://technostationery.com/documentation/main.html
 ## 📁 Directory Structure
 
 ```
-/home/technadminy7/public_html/pub/documentation/
+/home/system_user/public_html/pub/documentation/
 ├── main.html              # Main dashboard (primary interface)
 ├── index.html             # Legacy documentation index
 ├── api.php                # REST API endpoint
@@ -75,8 +75,8 @@ The system connects to the Magento database with **read-only** credentials:
 
 ```php
 // From config.php
-DB_HOST: 127.0.0.1:3307
-DB_NAME: beta_dBT8x12y22
+DB_HOST: database_host:port
+DB_NAME: magento_user
 DB_USER: beta_ntdbusr24  (read-only)
 DB_CHARSET: utf8mb4
 ```
@@ -191,7 +191,7 @@ Clears statistics cache files.
 
 ### 1. Test Database Connection
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 php -r "
 define('DOC_ACCESS', true);
 \$config = require './config.php';
@@ -205,7 +205,7 @@ Expected output: `5724 orders` (or current count)
 
 ### 2. Test Yalidine Stats
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 php -r "
 define('DOC_ACCESS', true);
 \$config = require './config.php';
@@ -255,20 +255,20 @@ Open in browser:
 
 ### Clear Cache Manually
 ```bash
-cd /home/technadminy7/public_html/pub/documentation/logs
+cd /home/system_user/public_html/pub/documentation/logs
 rm -f cache_*.json
 ```
 
 ### View Error Logs
 ```bash
-cd /home/technadminy7/public_html/pub/documentation/logs
+cd /home/system_user/public_html/pub/documentation/logs
 tail -f error_$(date +%Y-%m-%d).log
 tail -f api_error_$(date +%Y-%m-% d).log
 ```
 
 ### Check Permissions
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 ls -la
 # logs/ and data/ should be 777 (writable)
 ```
@@ -276,7 +276,7 @@ ls -la
 ### Update Configuration
 Edit `config.php` if needed (requires server access):
 ```bash
-nano /home/technadminy7/public_html/pub/documentation/config.php
+nano /home/system_user/public_html/pub/documentation/config.php
 ```
 
 ## 🚨 Troubleshooting
@@ -291,7 +291,7 @@ nano /home/technadminy7/public_html/pub/documentation/config.php
 ### Issue: "Permission denied" errors
 **Solution:**
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 chmod 777 logs data
 chmod 755 includes pages api assets
 chmod 644 config.php api.php main.html
@@ -304,7 +304,7 @@ chmod 644 config.php api.php main.html
 curl https://technostationery.com/documentation/api.php?action=clear_cache
 
 # Or manually
-rm -f /home/technadminy7/public_html/pub/documentation/logs/cache_*.json
+rm -f /home/system_user/public_html/pub/documentation/logs/cache_*.json
 ```
 
 ### Issue: Slow response times

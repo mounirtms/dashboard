@@ -53,7 +53,7 @@
 
 📁 DIRECTORY STRUCTURE:
 ─────────────────────────────────────
-/home/technadminy7/public_html/pub/documentation/
+/home/system_user/public_html/pub/documentation/
 ├── main.html (PRIMARY DASHBOARD)
 ├── api.php (REST API)
 ├── config.php (PROTECTED)
@@ -109,7 +109,7 @@ https://technostationery.com/documentation/index.html
 
 📊 REAL-TIME DATA SOURCES:
 ─────────────────────────────────────
-Connected to: beta_dBT8x12y22@127.0.0.1:3307
+Connected to: magento_user@database_host:port
 Access Type: Read-only (SELECT queries only)
 
 Monitored Tables:

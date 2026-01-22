@@ -149,7 +149,7 @@
 
 ## 🔐 Security Measures
 
-1. **Read-Only Database Access:** User `beta_dBT8x12y22` has SELECT-only privileges
+1. **Read-Only Database Access:** User `magento_user` has SELECT-only privileges
 2. **SQL Injection Prevention:** PDO prepared statements, parameter binding
 3. **Protected Files:** config.php, includes/, logs/, data/ blocked via .htaccess
 4. **Security Headers:** X-Frame-Options, X-XSS-Protection, CSP, etc.
@@ -163,7 +163,7 @@
 ## 🎨 File Structure
 
 ```
-/home/technadminy7/public_html/pub/documentation/
+/home/system_user/public_html/pub/documentation/
 ├── index.html              # Documentation portal (NEW)
 ├── dashboard.html          # Real-time dashboard (NEW)
 ├── main.html               # Statistics page
@@ -229,7 +229,7 @@
 
 ### Resources
 - **GitHub:** https://github.com/mounirtms/techno-magento
-- **Documentation:** /home/technadminy7/public_html/pub/documentation/
+- **Documentation:** /home/system_user/public_html/pub/documentation/
 
 ---
 
@@ -273,7 +273,7 @@
 
 ## 📞 Support & Maintenance
 
-**Documentation Location:** `/home/technadminy7/public_html/pub/documentation/`
+**Documentation Location:** `/home/system_user/public_html/pub/documentation/`
 **Error Logs:** `logs/error_YYYY-MM-DD.log`
 **Cache Location:** `data/cache_*.json`
 **API Base URL:** https://technostationery.com/documentation/api.php

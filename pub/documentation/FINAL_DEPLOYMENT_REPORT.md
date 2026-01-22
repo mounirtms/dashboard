@@ -34,7 +34,7 @@
    - Clean, isolated from Magento site
 
 ### 4. **Removed Old webapp Folder**
-   - ✅ `/home/technadminy7/public_html/pub/documentation/webapp` removed
+   - ✅ `/home/system_user/public_html/pub/documentation/webapp` removed
    - ✅ All files now directly in `/pub/documentation`
    - ✅ Clean directory structure
 
@@ -43,7 +43,7 @@
 ## 📁 FINAL DIRECTORY STRUCTURE
 
 ```
-/home/technadminy7/public_html/pub/documentation/
+/home/system_user/public_html/pub/documentation/
 ├── main.html                    ← MAIN DASHBOARD (Your request!)
 ├── api.php                      ← REST API endpoint
 ├── config.php                   ← Database config (protected)
@@ -157,7 +157,7 @@ https://technostationery.com/documentation/index.html
 
 ```bash
 # Run verification script
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 bash verify-deployment.sh
 ```
 
@@ -180,7 +180,7 @@ bash verify-deployment.sh
 
 ### Test 1: Database Connection
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 php -r "
 define('DOC_ACCESS', true);
 \$config = require './config.php';
@@ -193,7 +193,7 @@ echo \$db->queryValue('SELECT COUNT(*) FROM sales_order') . \" orders\n\";
 
 ### Test 2: Yalidine Stats
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 php api.php 2>&1 | grep -A5 '"data"'
 ```
 **Expected:** JSON with status "online" ✅
@@ -209,8 +209,8 @@ php api.php 2>&1 | grep -A5 '"data"'
 
 ### Database Connection
 ```php
-Host: 127.0.0.1:3307
-Database: beta_dBT8x12y22
+Host: database_host:port
+Database: magento_user
 User: beta_ntdbusr24 (read-only)
 Charset: utf8mb4
 ```
@@ -284,7 +284,7 @@ Query Mode: Prepared statements only
 
 ### Clear Cache
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 rm -f logs/cache_*.json
 # Or via API:
 curl https://technostationery.com/documentation/api.php?action=clear_cache
@@ -292,14 +292,14 @@ curl https://technostationery.com/documentation/api.php?action=clear_cache
 
 ### View Logs
 ```bash
-cd /home/technadminy7/public_html/pub/documentation/logs
+cd /home/system_user/public_html/pub/documentation/logs
 tail -f error_$(date +%Y-%m-%d).log
 tail -f api_error_$(date +%Y-%m-%d).log
 ```
 
 ### Update Configuration
 ```bash
-nano /home/technadminy7/public_html/pub/documentation/config.php
+nano /home/system_user/public_html/pub/documentation/config.php
 ```
 
 ---
@@ -334,10 +334,10 @@ nano /home/technadminy7/public_html/pub/documentation/config.php
    https://technostationery.com/documentation/api.php?action=health
 
 4. ✅ **Review the documentation:**  
-   `/home/technadminy7/public_html/pub/documentation/DEPLOYMENT_GUIDE.md`
+   `/home/system_user/public_html/pub/documentation/DEPLOYMENT_GUIDE.md`
 
 5. ✅ **Monitor logs** (optional):  
-   `/home/technadminy7/public_html/pub/documentation/logs/`
+   `/home/system_user/public_html/pub/documentation/logs/`
 
 ---
 

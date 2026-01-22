@@ -91,7 +91,7 @@ Expected response:
 
 ### Method 3: Run Verification Script
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 bash verify-deployment.sh
 ```
 
@@ -116,19 +116,19 @@ bash verify-deployment.sh
 curl https://technostationery.com/documentation/api.php?action=clear_cache
 
 # Or manually
-rm -f /home/technadminy7/public_html/pub/documentation/logs/cache_*.json
+rm -f /home/system_user/public_html/pub/documentation/logs/cache_*.json
 ```
 
 ### View Logs
 ```bash
-cd /home/technadminy7/public_html/pub/documentation/logs
+cd /home/system_user/public_html/pub/documentation/logs
 ls -la
 tail -f error_$(date +%Y-%m-%d).log
 ```
 
 ### Check Current Stats
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 php -r "
 define('DOC_ACCESS', true);
 \$config = require './config.php';
@@ -143,15 +143,15 @@ echo 'Orders: ' . \$db->queryValue('SELECT COUNT(*) FROM sales_order') . \"\n\";
 ## 🎯 What Changed
 
 ### ✅ Added:
-- `/home/technadminy7/public_html/pub/documentation/main.html` (dashboard)
-- `/home/technadminy7/public_html/pub/documentation/api.php` (API)
-- `/home/technadminy7/public_html/pub/documentation/config.php` (configuration)
-- `/home/technadminy7/public_html/pub/documentation/.htaccess` (security)
-- `/home/technadminy7/public_html/pub/documentation/includes/` (libraries)
+- `/home/system_user/public_html/pub/documentation/main.html` (dashboard)
+- `/home/system_user/public_html/pub/documentation/api.php` (API)
+- `/home/system_user/public_html/pub/documentation/config.php` (configuration)
+- `/home/system_user/public_html/pub/documentation/.htaccess` (security)
+- `/home/system_user/public_html/pub/documentation/includes/` (libraries)
 - Complete documentation files
 
 ### ✅ Removed:
-- `/home/technadminy7/public_html/pub/documentation/webapp/` (old nested folder)
+- `/home/system_user/public_html/pub/documentation/webapp/` (old nested folder)
 
 ### ✅ Protected:
 - `config.php` (database credentials)
@@ -171,7 +171,7 @@ echo 'Orders: ' . \$db->queryValue('SELECT COUNT(*) FROM sales_order') . \"\n\";
 ### API returning errors?
 ```bash
 # Test database connection
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 php -r "
 define('DOC_ACCESS', true);
 \$config = require './config.php';
@@ -183,7 +183,7 @@ echo 'Connected!' . PHP_EOL;
 
 ### Permissions issues?
 ```bash
-cd /home/technadminy7/public_html/pub/documentation
+cd /home/system_user/public_html/pub/documentation
 chmod 777 logs data
 chmod 755 includes pages api assets
 chmod 644 config.php api.php main.html .htaccess
@@ -194,7 +194,7 @@ chmod 644 config.php api.php main.html .htaccess
 ## 📞 Support
 
 - **GitHub:** https://github.com/mounirtms/techno-magento
-- **Docs:** `/home/technadminy7/public_html/pub/documentation/DEPLOYMENT_GUIDE.md`
+- **Docs:** `/home/system_user/public_html/pub/documentation/DEPLOYMENT_GUIDE.md`
 - **Status:** https://technostationery.com/documentation/api.php?action=health
 
 ---

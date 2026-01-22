@@ -1,0 +1,323 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Techno Stationery Documentation API",
+    "version": "2.0.0",
+    "description": "RESTful API for accessing real-time Magento system statistics, analytics, and performance metrics.",
+    "contact": {
+      "name": "API Support",
+      "url": "https://github.com/mounirtms/techno-magento"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://technostationery.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://technostationery.com/documentation",
+      "description": "Production Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "System health and status endpoints"
+    },
+    {
+      "name": "Statistics",
+      "description": "Business and operational statistics"
+    },
+    {
+      "name": "Yalidine",
+      "description": "Yalidine shipping integration metrics"
+    },
+    {
+      "name": "Analytics",
+      "description": "Advanced analytics and insights"
+    }
+  ],
+  "paths": {
+    "/api.php": {
+      "get": {
+        "summary": "Get system statistics",
+        "description": "Retrieve various system statistics based on the action parameter",
+        "tags": ["Statistics"],
+        "parameters": [
+          {
+            "name": "action",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "health",
+                "general",
+                "yalidine",
+                "revenue",
+                "orders",
+                "customers",
+                "products",
+                "geographic",
+                "database",
+                "performance",
+                "all",
+                "clear_cache"
+              ]
+            },
+            "description": "The type of data to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid action parameter"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates if the request was successful"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server timestamp of the response"
+          },
+          "response_time_ms": {
+            "type": "number",
+            "description": "Response time in milliseconds"
+          },
+          "data": {
+            "type": "object",
+            "description": "Response data (varies by action)"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message (only present if success is false)"
+          }
+        }
+      },
+      "HealthData": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["online", "degraded", "offline"],
+            "description": "System status"
+          },
+          "database": {
+            "type": "string",
+            "enum": ["connected", "disconnected"],
+            "description": "Database connection status"
+          },
+          "version": {
+            "type": "string",
+            "description": "System version"
+          },
+          "response_time_ms": {
+            "type": "number",
+            "description": "Response time in milliseconds"
+          }
+        }
+      },
+      "GeneralStats": {
+        "type": "object",
+        "properties": {
+          "total_orders": {
+            "type": "integer",
+            "description": "Total number of orders"
+          },
+          "total_customers": {
+            "type": "integer",
+            "description": "Total number of customers"
+          },
+          "total_products": {
+            "type": "integer",
+            "description": "Total number of products"
+          },
+          "orders_today": {
+            "type": "integer",
+            "description": "Number of orders today"
+          },
+          "revenue_30d": {
+            "type": "number",
+            "description": "Revenue in last 30 days (DZD)"
+          },
+          "pending_orders": {
+            "type": "integer",
+            "description": "Number of pending orders"
+          }
+        }
+      },
+      "YalidineStats": {
+        "type": "object",
+        "properties": {
+          "wilayas": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "active": {
+                "type": "integer"
+              }
+            }
+          },
+          "communes": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "active": {
+                "type": "integer"
+              }
+            }
+          },
+          "top_wilayas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "order_count": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "synced_addresses": {
+            "type": "object",
+            "properties": {
+              "quotes": {
+                "type": "integer"
+              },
+              "orders": {
+                "type": "integer"
+              }
+            }
+          },
+          "shipping_orders": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "last_30_days": {
+                "type": "integer"
+              },
+              "last_7_days": {
+                "type": "integer"
+              }
+            }
+          },
+          "source_mappings": {
+            "type": "integer"
+          }
+        }
+      },
+      "RevenueStats": {
+        "type": "object",
+        "properties": {
+          "all_time": {
+            "type": "number",
+            "description": "All-time revenue (DZD)"
+          },
+          "today": {
+            "type": "number"
+          },
+          "yesterday": {
+            "type": "number"
+          },
+          "last_7_days": {
+            "type": "number"
+          },
+          "last_30_days": {
+            "type": "number"
+          },
+          "this_month": {
+            "type": "number"
+          },
+          "last_month": {
+            "type": "number"
+          },
+          "this_year": {
+            "type": "number"
+          },
+          "monthly_trend": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "month": {
+                  "type": "string"
+                },
+                "revenue": {
+                  "type": "number"
+                },
+                "orders": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "DatabaseStats": {
+        "type": "object",
+        "properties": {
+          "size_mb": {
+            "type": "number",
+            "description": "Total database size in MB"
+          },
+          "table_count": {
+            "type": "integer",
+            "description": "Total number of tables"
+          },
+          "key_tables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "rows": {
+                  "type": "integer"
+                },
+                "size_mb": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,7 +6,7 @@
 **Date:** January 22, 2026  
 **Status:** ✅ **PRODUCTION READY & FULLY OPERATIONAL**  
 **Base URL:** https://technostationery.com/documentation/  
-**Location:** `/home/technadminy7/public_html/pub/documentation/`
+**Location:** `/home/system_user/public_html/pub/documentation/`
 
 ---
 
@@ -194,7 +194,7 @@
 
 ### System Health
 - **Status:** ✅ Online
-- **Database:** ✅ Connected (beta_dBT8x12y22@127.0.0.1:3307)
+- **Database:** ✅ Connected (magento_user@database_host:port)
 - **API Response Time:** 0.34-0.55 ms
 - **Magento Version:** 4.9.4
 - **Error Rate:** 0%
@@ -243,7 +243,7 @@
 ## 🔐 Security Implementation
 
 ### Access Control
-- ✅ **Read-Only Database Access** - User: `beta_dBT8x12y22` (SELECT only)
+- ✅ **Read-Only Database Access** - User: `magento_user` (SELECT only)
 - ✅ **SQL Injection Prevention** - PDO prepared statements
 - ✅ **Protected Config Files** - config.php blocked via .htaccess
 - ✅ **Directory Protection** - includes/, logs/, data/ blocked
@@ -334,7 +334,7 @@
 ## 📁 File Structure
 
 ```
-/home/technadminy7/public_html/pub/documentation/
+/home/system_user/public_html/pub/documentation/
 ├── index.html              # Documentation portal (9.6K)
 ├── dashboard.html          # Real-time dashboard (21K)
 ├── main.html               # Statistics page (21K)
