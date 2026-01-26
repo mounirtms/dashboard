@@ -245,8 +245,8 @@
 
 # For 404s and 403s that aren't handled by the application, show maintenance page when in maintenance mode
 ErrorDocument 404 /errors/404.php
-ErrorDocument 403 /maintenance.html
-ErrorDocument 503 /maintenance.html
+# ErrorDocument 403 /maintenance.html
+# ErrorDocument 503 /maintenance.html
 
 ################################
 ## If running in cluster environment, uncomment this

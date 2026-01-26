@@ -1,0 +1,23 @@
+OneSignal Diagnostic Report
+Generated: Mon Jan 26 11:51:31 CET 2026
+==================================
+
+System Information:
+- Domain: technostationery.com
+- APP ID: ea60f1be-864c-4710-9437-3288e8e06cc4
+- Service Worker Path: /OneSignalSDKWorker.js
+
+File Status:
+- OneSignalSDKWorker.js: Exists
+- OneSignalSDKUpdaterWorker.js: Exists
+- manifest.json: Accessible
+
+Configuration Status:
+- Head template configured: Yes
+- Service worker path correct: Yes
+
+Recommendations:
+1. Visit https://technostationery.com/pub/test-onesignal-debug.html to run full diagnostic
+2. Check browser console for OneSignal initialization errors
+3. Ensure users grant notification permissions
+4. Verify OneSignal dashboard has active subscribers

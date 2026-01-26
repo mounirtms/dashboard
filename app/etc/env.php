@@ -328,8 +328,7 @@ return [
                     'varnish' => [
                         'access_list' => 'localhost,127.0.0.1',
                         'backend_host' => '127.0.0.1',
-                        'backend_port' => '8080',
-                        'grace_period' => '300'
+                        'backend_port' => '8080'
                     ]
                 ],
                 'release_notification' => [
