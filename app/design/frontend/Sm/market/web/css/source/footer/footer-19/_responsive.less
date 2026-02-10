@@ -19,3 +19,185 @@
         margin-bottom: 20px;
     }
 }
+
+/* ===========================================
+   MOBILE FOOTER ENHANCEMENTS
+   Fix for dark & ugly appearance on mobile
+   Added: 2026-02-10
+   =========================================== */
+
+@media (max-width: 767px) {
+    /* Mobile Footer Container */
+    .mobile-footer {
+        background-color: #1a1b1f;
+        padding: 20px 0;
+    }
+
+    /* Footer Blocks on Mobile */
+    .footer-block-mobile {
+        margin-bottom: 20px;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .footer-block-mobile:last-child {
+        border-bottom: none;
+    }
+
+    /* Footer Block Titles - Better Contrast */
+    .footer-block-mobile .footer-block-title {
+        color: #ffffff !important;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Footer Links - Improved Readability */
+    .footer-block-mobile .links-footer,
+    .footer-block-mobile .contact-info {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .footer-block-mobile .links-footer li,
+    .footer-block-mobile .contact-info li {
+        margin-bottom: 8px;
+        line-height: 1.6;
+    }
+
+    .footer-block-mobile .links-footer a,
+    .footer-block-mobile .contact-info a {
+        color: #b3b3b3 !important;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .footer-block-mobile .links-footer a:hover,
+    .footer-block-mobile .contact-info a:hover {
+        color: #ffffff !important;
+    }
+
+    /* Social Footer on Mobile - CRITICAL FIX */
+    .mobile-footer .social-footer {
+        padding: 25px 0 15px;
+        text-align: center;
+        background-color: transparent;
+    }
+
+    .mobile-footer .social-footer ul {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .mobile-footer .social-footer ul li {
+        margin: 0;
+        float: none;
+    }
+
+    .mobile-footer .social-footer ul li a {
+        display: block;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        background: transparent !important;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-footer .social-footer ul li a:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .mobile-footer .social-footer ul li a img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+
+    .mobile-footer .social-footer ul li a:hover img {
+        opacity: 1;
+    }
+
+    /* Footer Bottom on Mobile */
+    .footer-bottom {
+        padding: 20px 0;
+        background-color: #16171a;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .footer-bottom .social-footer ul li a {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+    }
+
+    .footer-bottom .social-footer ul li a:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Copyright Text */
+    .footer-bottom address {
+        color: #8a8a8a;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    /* Additional Mobile Improvements */
+    .page-footer {
+        background-color: #1a1b1f;
+    }
+
+    .footer-middle {
+        background-color: #1a1b1f;
+    }
+
+    .footer-block .footer-block-content {
+        color: #b3b3b3;
+    }
+}
+
+/* Extra Small Devices (phones in portrait) */
+@media (max-width: 480px) {
+    .mobile-footer .social-footer ul {
+        gap: 10px;
+    }
+
+    .mobile-footer .social-footer ul li a {
+        width: 40px;
+        height: 40px;
+    }
+
+    .mobile-footer .social-footer ul li a img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .footer-block-mobile .footer-block-title {
+        font-size: 15px;
+    }
+
+    .footer-block-mobile .links-footer a,
+    .footer-block-mobile .contact-info,
+    .footer-block-mobile .contact-info a {
+        font-size: 14px;
+    }
+}
