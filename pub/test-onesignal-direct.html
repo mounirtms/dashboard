@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OneSignal Test Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>OneSignal Configuration Test</h1>
+    <p>This page tests if OneSignal is properly configured.</p>
+    
+    <div id="status">
+        <p>Checking OneSignal configuration...</p>
+    </div>
+    
+    <button onclick="testOneSignal()">Test OneSignal</button>
+    <button onclick="checkSubscription()">Check Subscription</button>
+    
+    <script>
+        function updateStatus(message, color = 'black') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML += `<p style="color: ${color};">${message}</p>`;
+        }
+        
+        function testOneSignal() {
+            if (typeof OneSignal !== 'undefined') {
+                updateStatus('✅ OneSignal library loaded', 'green');
+                OneSignal.initialized.then(() => {
+                    updateStatus('✅ OneSignal initialized successfully', 'green');
+                }).catch((error) => {
+                    updateStatus(`❌ OneSignal initialization error: ${error}`, 'red');
+                });
+            } else {
+                updateStatus('❌ OneSignal library not found', 'red');
+            }
+        }
+        
+        function checkSubscription() {
+            if (typeof OneSignal !== 'undefined') {
+                OneSignal.User.PushSubscription.optIn().then(() => {
+                    updateStatus('✅ User is subscribed to push notifications', 'green');
+                }).catch(() => {
+                    updateStatus('⚠️ User is not subscribed to push notifications', 'orange');
+                });
+            } else {
+                updateStatus('❌ OneSignal not available', 'red');
+            }
+        }
+        
+        // Auto-test on page load
+        window.addEventListener('load', function() {
+            setTimeout(testOneSignal, 1000);
+        });
+    </script>
+</body>
+</html>
