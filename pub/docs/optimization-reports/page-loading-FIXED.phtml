@@ -1,0 +1,135 @@
+<?php
+$_config         = $this->helper('Sm\Themecore\Helper\Data');
+$mediaSrc        = $_config->getMediaUrl();
+$pageLoadingIcon = $_config->getAdvanced('lazyload_group/page_loading_icon');
+?>
+
+<div class="body-loading">
+    <?php if ($pageLoadingIcon) { ?>
+        <div class="page-image-loading">
+            <img src="<?php echo $mediaSrc . "page_loading/" . $pageLoadingIcon ?>"
+                 alt="<?php echo __('Loading...') ?>"/>
+        </div>
+    <?php } else { ?>
+        <div class="lds-ripple">
+            <div></div>
+            <div></div>
+        </div>
+    <?php } ?>
+
+</div>
+
+<style>
+    body {
+        overflow-y: hidden;
+    }
+
+    .body-loading {
+        opacity: 1;
+        visibility: visible;
+        transition: .2s;
+        -webkit-transition: .2s;
+    }
+
+    body.image-loaded {
+        overflow-y: auto;
+    }
+
+    body.image-loaded .body-loading {
+        opacity: 0;
+        visibility: hidden;
+    }
+</style>
+
+<script type="text/javascript">
+    require([
+        'jquery',
+        'domReady!'
+    ], function ($) {
+        // IMPROVED: Robust image loading with timeout and error handling
+        // Fix for page 2 loading mask stuck issue
+        
+        var maxLoadTime = 10000; // 10 seconds maximum wait
+        var loadingComplete = false;
+        
+        // Function to hide loading mask
+        function hideLoading() {
+            if (!loadingComplete) {
+                loadingComplete = true;
+                $("body").addClass("image-loaded");
+                console.log("[Page Loading] Complete - mask hidden");
+            }
+        }
+        
+        // Count images and track loaded
+        var totalImages = $("body img").length;
+        var loadedImages = 0;
+        
+        console.log("[Page Loading] Total images to load:", totalImages);
+        
+        if (totalImages === 0) {
+            // No images, hide immediately
+            console.log("[Page Loading] No images found, hiding immediately");
+            hideLoading();
+        } else {
+            // Track each image load/error
+            $("body img").each(function(index) {
+                var img = $(this);
+                var imgSrc = img.attr('src') || img.attr('data-src') || 'unknown';
+                
+                // Check if already loaded (cached images)
+                if (img[0].complete && img[0].naturalHeight !== 0) {
+                    loadedImages++;
+                    console.log("[Page Loading] Image already loaded:", imgSrc);
+                    if (loadedImages >= totalImages) {
+                        hideLoading();
+                    }
+                } else {
+                    // Handle load event
+                    img.on('load', function() {
+                        loadedImages++;
+                        console.log("[Page Loading] Image loaded (" + loadedImages + "/" + totalImages + "):", imgSrc);
+                        if (loadedImages >= totalImages) {
+                            hideLoading();
+                        }
+                    });
+                    
+                    // Handle error event (broken images)
+                    img.on('error', function() {
+                        loadedImages++;
+                        console.warn("[Page Loading] Image failed to load (" + loadedImages + "/" + totalImages + "):", imgSrc);
+                        if (loadedImages >= totalImages) {
+                            hideLoading();
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Fallback timeout - CRITICAL FIX for stuck loading mask
+        setTimeout(function() {
+            if (!loadingComplete) {
+                console.warn("[Page Loading] Timeout reached (" + maxLoadTime + "ms), forcing hide. Loaded:", loadedImages + "/" + totalImages);
+                hideLoading();
+            }
+        }, maxLoadTime);
+        
+        // Additional safety: hide on window load event
+        $(window).on('load', function() {
+            setTimeout(function() {
+                if (!loadingComplete) {
+                    console.log("[Page Loading] Window load event triggered, hiding mask");
+                    hideLoading();
+                }
+            }, 500);
+        });
+        
+        // Additional safety: hide on page show (back/forward cache)
+        $(window).on('pageshow', function(event) {
+            if (event.originalEvent.persisted) {
+                console.log("[Page Loading] Page shown from cache, hiding mask");
+                hideLoading();
+            }
+        });
+    });
+</script>
