@@ -295,7 +295,7 @@ return [
         'Magento_AwsS3PageBuilder' => 1,
         'Magento_InventoryGraphQl' => 0,
         'Magento_CatalogCmsGraphQl' => 0,
-        'Magento_Swagger' => 1,
+        'Magento_Swagger' => 0,
         'Magento_SwaggerWebapi' => 0,
         'Magento_SwaggerWebapiAsync' => 0,
         'Magento_Swatches' => 1,
