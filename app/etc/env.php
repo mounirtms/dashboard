@@ -341,7 +341,18 @@ return [
                     'allow_ips' => null
                 ],
                 'js' => [
-                    'session_storage_key' => 'collected_errors'
+                    'session_storage_key' => 'collected_errors',
+                    'merge_files' => '1',
+                    'minify_files' => '1',
+                    'enable_js_bundling' => '1',
+                    'move_script_to_bottom' => '1'
+                ],
+                'css' => [
+                    'merge_css_files' => '1',
+                    'minify_files' => '1'
+                ],
+                'template' => [
+                    'minify_html' => '1'
                 ]
             ],
             'analytics' => [
