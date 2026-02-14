@@ -69,3 +69,4 @@ error_log
 *.cache
 .svn
 .git
+.aider*
