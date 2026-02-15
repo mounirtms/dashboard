@@ -8,11 +8,11 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <!-- Add Custom CSS for Professional Styling ONLY -->
+        <!-- Add Enhanced Professional CSS for Amasty Checkout -->
         <referenceContainer name="head.additional">
             <block class="Magento\Framework\View\Element\Template" 
-                   name="checkout.custom.styles" 
-                   template="Mab_CheckoutCustomization::checkout-styles.phtml"/>
+                   name="checkout.custom.styles.enhanced" 
+                   template="Mab_CheckoutCustomization::checkout-styles-enhanced.phtml"/>
         </referenceContainer>
     </body>
 </page>
