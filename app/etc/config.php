@@ -327,7 +327,7 @@ return [
         'Magento_Wishlist' => 1,
         'Magento_WishlistAnalytics' => 1,
         'Magento_WishlistGraphQl' => 0,
-        'Amasty_Acart' => 1,
+        'Amasty_Acart' => 0,
         'Amasty_AdminActionsLog' => 1,
         'Amasty_AdvancedMSI' => 1,
         'Amasty_Amp' => 1,
