@@ -1,368 +1,236 @@
 <style>
-/* ============================================
-   PROFESSIONAL AMASTY CHECKOUT STYLING
-   Enhanced for Perfect Appearance
-   ============================================ */
+/* =============================================
+   PROFESSIONAL MAGENTO CHECKOUT STYLING
+   Minimal & Clean - Matches Sm/market Theme
+   ============================================= */
 
 /* Main Checkout Container */
-.checkout-container,
-.amasty-checkout-root {
-    max-width: 1200px;
+.checkout-container {
+    max-width: 1140px;
     margin: 0 auto;
     padding: 20px;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Amasty 3-Column Layout Optimization */
-.amasty-checkout-index-index .columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-}
-
-/* Column Styling */
-.amasty-checkout-column {
-    background: #fafafa;
-    padding: 20px;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
-}
-
-/* Checkout Steps Header */
-.opc-wrapper .step-title,
-.amasty-checkout-title {
-    font-size: 18px;
+/* Step Title */
+.opc-wrapper .step-title {
+    font-size: 20px;
     font-weight: 600;
-    color: #2c3e50;
-    padding: 15px 0;
-    border-bottom: 2px solid #3498db;
+    color: #333;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+/* Form Fields - Clean Professional Input Styling */
+.form-shipping-address .field,
+.form-payment .field,
+.fieldset > .field {
     margin-bottom: 20px;
 }
 
-/* Form Fields - Professional Input Styling */
-.checkout-shipping-address .field,
-.checkout-payment-method .field,
-.amasty-checkout-field {
-    margin-bottom: 18px;
-    position: relative;
-}
-
-.checkout-shipping-address .field .label,
-.checkout-payment-method .field .label,
-.amasty-checkout-field .label {
+.field .label {
     font-weight: 500;
-    color: #555;
+    color: #666;
     margin-bottom: 8px;
     display: block;
     font-size: 14px;
 }
 
-.checkout-shipping-address .field input,
-.checkout-shipping-address .field select,
-.checkout-payment-method .field input,
-.checkout-payment-method .field select,
-.amasty-checkout-field input,
-.amasty-checkout-field select {
+.field .control input[type="text"],
+.field .control input[type="email"],
+.field .control input[type="tel"],
+.field .control input[type="number"],
+.field .control select,
+.field .control textarea {
     width: 100%;
-    padding: 12px 14px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 12px 15px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease;
     background: #fff;
 }
 
-.checkout-shipping-address .field input:focus,
-.checkout-shipping-address .field select:focus,
-.checkout-payment-method .field input:focus,
-.checkout-payment-method .field select:focus,
-.amasty-checkout-field input:focus,
-.amasty-checkout-field select:focus {
-    border-color: #3498db;
+.field .control input:focus,
+.field .control select:focus,
+.field .control textarea:focus {
+    border-color: #007bff;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
-/* Wilaya and Commune Selectors - Professional Dropdown */
-.field[name="shippingAddress.region_id"],
-.field[name="shippingAddress.city"],
-select#region_id,
-select[name="city"] {
-    position: relative;
-}
-
-.field[name="shippingAddress.region_id"] select,
-.field[name="shippingAddress.city"] select,
-select#region_id,
-select[name="city"] {
-    background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14"><path fill="%23333" d="M7 10L2 5h10z"/></svg>') no-repeat right 12px center;
+/* Select Dropdowns - Clean Arrow */
+select {
+    background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23666" d="M6 9L1 4h10z"/></svg>') no-repeat right 15px center;
     padding-right: 40px;
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     cursor: pointer;
-    font-weight: 500;
 }
 
-.field[name="shippingAddress.region_id"] select:hover,
-.field[name="shippingAddress.city"] select:hover {
-    border-color: #3498db;
-}
-
-/* Checkboxes - Mageplaza Professional Style */
-.checkout-agreements .choice,
-.field-newsletter .choice,
-.field-create-account .choice,
-.amasty-checkout-checkbox {
+/* Checkboxes - Clean Modern Style */
+.field .choice {
     display: flex;
     align-items: center;
-    padding: 14px;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    margin: 12px 0;
-    transition: all 0.3s;
-}
-
-.checkout-agreements .choice:hover,
-.field-newsletter .choice:hover,
-.field-create-account .choice:hover {
-    background: #e9ecef;
-    border-color: #3498db;
-}
-
-.checkout-agreements .choice input[type="checkbox"],
-.field-newsletter .choice input[type="checkbox"],
-.field-create-account .choice input[type="checkbox"],
-.amasty-checkout-checkbox input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
-    margin-right: 12px;
-    cursor: pointer;
-    accent-color: #3498db;
+    padding: 12px 15px;
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
     border-radius: 4px;
-}
-
-.checkout-agreements .choice label,
-.field-newsletter .choice label,
-.field-create-account .choice label,
-.amasty-checkout-checkbox label {
+    transition: all 0.2s;
     cursor: pointer;
-    font-size: 14px;
-    color: #555;
-    user-select: none;
 }
 
-/* Gift Card Section - Enhanced Gradient */
-.payment-option-giftcard,
-.amasty-giftcard-block,
-.checkout-payment-method .payment-option-title[data-bind*="giftcard"],
-.checkout-payment-method .payment-option-content[data-bind*="giftcard"] {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-.payment-option-giftcard .title,
-.amasty-giftcard-block .title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    color: #fff;
-}
-
-.payment-option-giftcard input,
-.amasty-giftcard-block input {
-    background: rgba(255,255,255,0.95);
-    border: none;
-    padding: 12px 14px;
-    border-radius: 6px;
-    width: 100%;
-    font-size: 14px;
-}
-
-.payment-option-giftcard button,
-.amasty-giftcard-block button {
-    background: #fff;
-    color: #667eea;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;
-}
-
-.payment-option-giftcard button:hover,
-.amasty-giftcard-block button:hover {
+.field .choice:hover {
     background: #f0f0f0;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    border-color: #007bff;
 }
 
-/* Gift Wrap Section */
-.amasty-gift-wrap-container,
-.checkout-gift-wrap {
-    background: #fff8f0;
-    border: 2px dashed #ffa726;
-    border-radius: 8px;
-    padding: 18px;
-    margin: 15px 0;
+.field .choice input[type="checkbox"],
+.field .choice input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    accent-color: #007bff;
 }
 
-.amasty-gift-wrap-container .title,
-.checkout-gift-wrap .title {
+.field .choice label {
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    flex: 1;
+}
+
+/* Payment Methods - Clean Cards */
+.payment-method {
+    background: #fff;
+    border: 2px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 10px 0;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.payment-method:hover {
+    border-color: #007bff;
+}
+
+.payment-method._active {
+    border-color: #007bff;
+    background: #f0f7ff;
+}
+
+.payment-method .payment-method-title {
     font-weight: 600;
-    color: #ff8a00;
-    margin-bottom: 10px;
+    color: #333;
     font-size: 15px;
 }
 
-/* Discount Code Section */
-.payment-option-discount,
-.amasty-discount-code {
-    background: #fffbf0;
-    border: 1px solid #ffc107;
-    border-radius: 6px;
-    padding: 16px;
-    margin: 15px 0;
+/* Shipping Methods */
+.table-checkout-shipping-method {
+    width: 100%;
 }
 
-.payment-option-discount input {
-    padding: 10px 12px;
-    border: 1px solid #ffc107;
+.table-checkout-shipping-method .row {
+    padding: 12px;
+    border: 1px solid #e5e5e5;
     border-radius: 4px;
-    width: 100%;
+    margin: 8px 0;
+    transition: all 0.2s;
 }
 
-.payment-option-discount .actions-toolbar {
-    margin-top: 10px;
+.table-checkout-shipping-method .row:hover {
+    background: #f9f9f9;
+    border-color: #007bff;
 }
 
-/* Order Summary - Sticky Professional */
-.opc-block-summary,
-.amasty-checkout-summary {
-    background: #f8f9fa;
-    padding: 24px;
-    border-radius: 8px;
-    position: sticky;
-    top: 20px;
-    border: 1px solid #e9ecef;
+/* Order Summary - Clean Sidebar */
+.opc-block-summary {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 4px;
+    border: 1px solid #e5e5e5;
 }
 
-.opc-block-summary .title,
-.amasty-checkout-summary .title {
-    font-size: 20px;
+.opc-block-summary .title {
+    font-size: 18px;
     font-weight: 600;
-    margin-bottom: 18px;
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
+    margin-bottom: 15px;
+    color: #333;
     padding-bottom: 10px;
+    border-bottom: 2px solid #e5e5e5;
 }
 
-.opc-block-summary .table-totals,
-.amasty-checkout-summary .table-totals {
+.opc-block-summary .items-in-cart .product-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.opc-block-summary .table-totals {
     width: 100%;
     margin: 15px 0;
 }
 
-.opc-block-summary .table-totals tr,
-.amasty-checkout-summary .table-totals tr {
-    border-bottom: 1px solid #e9ecef;
+.opc-block-summary .table-totals tr td {
     padding: 8px 0;
+    font-size: 14px;
 }
 
-.opc-block-summary .table-totals tr td,
-.amasty-checkout-summary .table-totals tr td {
-    padding: 10px 0;
-}
-
-.opc-block-summary .table-totals .mark,
-.amasty-checkout-summary .table-totals .mark {
+.opc-block-summary .table-totals .mark {
     font-weight: 500;
-    color: #555;
+    color: #666;
 }
 
-.opc-block-summary .table-totals .amount,
-.amasty-checkout-summary .table-totals .amount {
+.opc-block-summary .table-totals .amount {
     font-weight: 600;
-    color: #2ecc71;
+    color: #333;
     text-align: right;
 }
 
 .opc-block-summary .grand.totals .mark,
 .opc-block-summary .grand.totals .amount {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    color: #2c3e50;
+    color: #333;
+    padding-top: 10px;
+    border-top: 2px solid #e5e5e5;
 }
 
 /* Place Order Button - Professional */
-.checkout-payment-method .actions-toolbar .primary button,
-.amasty-checkout-place-order button,
-button[type="submit"].checkout {
-    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+.actions-toolbar .primary .action.primary.checkout {
+    background: #28a745;
     color: #fff;
     border: none;
-    padding: 16px 32px;
+    padding: 15px 30px;
     font-size: 16px;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: 4px;
     cursor: pointer;
     width: 100%;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    transition: all 0.2s ease;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-.checkout-payment-method .actions-toolbar .primary button:hover,
-.amasty-checkout-place-order button:hover,
-button[type="submit"].checkout:hover {
-    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+.actions-toolbar .primary .action.primary.checkout:hover {
+    background: #218838;
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
-.checkout-payment-method .actions-toolbar .primary button:active,
-.amasty-checkout-place-order button:active {
+.actions-toolbar .primary .action.primary.checkout:active {
     transform: translateY(0);
 }
 
-/* Loading/Processing States */
-.loading-mask {
-    background: rgba(255,255,255,0.95) !important;
-    backdrop-filter: blur(2px);
-}
-
-.loading-mask .loader img {
-    width: 50px;
-    height: 50px;
-}
-
-/* Error States - Professional */
-.field._error .control,
-.field-error {
-    border-color: #e74c3c !important;
-}
-
-.field-error,
-.mage-error {
-    color: #e74c3c;
-    font-size: 12px;
-    margin-top: 6px;
-    display: block;
-}
-
-/* Success States */
-.field._success .control {
-    border-color: #2ecc71 !important;
+/* Error & Success Messages */
+.message-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 10px 0;
 }
 
 .message-success {
@@ -370,171 +238,68 @@ button[type="submit"].checkout:hover {
     border: 1px solid #c3e6cb;
     color: #155724;
     padding: 12px;
-    border-radius: 6px;
+    border-radius: 4px;
     margin: 10px 0;
 }
 
-/* Algeria-specific Required Fields */
-.field[name="shippingAddress.region_id"] label::after,
-.field[name="shippingAddress.city"] label::after {
-    content: " *";
-    color: #e74c3c;
-    font-weight: bold;
+/* Field Validation */
+.field._error .control input,
+.field._error .control select {
+    border-color: #dc3545;
 }
 
-/* Payment Methods - Professional Cards */
-.checkout-payment-method .payment-method {
-    background: #fff;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 16px;
-    margin: 12px 0;
-    transition: all 0.3s;
-    cursor: pointer;
+.field-error,
+.mage-error {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
 }
 
-.checkout-payment-method .payment-method:hover {
-    border-color: #3498db;
-    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
-}
-
-.checkout-payment-method .payment-method._active {
-    border-color: #3498db;
-    background: #f0f8ff;
-}
-
-.checkout-payment-method .payment-method .payment-method-title {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 15px;
-}
-
-/* Shipping Methods */
-.checkout-shipping-method .table-checkout-shipping-method {
-    width: 100%;
-}
-
-.checkout-shipping-method .row {
-    padding: 12px;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    margin: 8px 0;
-    transition: all 0.3s;
-}
-
-.checkout-shipping-method .row:hover {
-    background: #f8f9fa;
-    border-color: #3498db;
-}
-
-/* Responsive Design - Mobile Optimization */
-@media (max-width: 1024px) {
-    .amasty-checkout-index-index .columns {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
-    .checkout-container,
-    .amasty-checkout-root {
+    .checkout-container {
         padding: 15px;
     }
     
-    .amasty-checkout-index-index .columns {
-        grid-template-columns: 1fr;
-    }
-    
     .opc-wrapper .step-title {
-        font-size: 16px;
+        font-size: 18px;
     }
     
-    .checkout-shipping-address .field input,
-    .checkout-shipping-address .field select {
+    .field .control input,
+    .field .control select {
         padding: 10px 12px;
-        font-size: 14px;
     }
     
-    .opc-block-summary,
-    .amasty-checkout-summary {
-        position: static;
-        margin-top: 20px;
-    }
-    
-    .checkout-payment-method .actions-toolbar .primary button {
-        padding: 14px 24px;
+    .actions-toolbar .primary .action.primary.checkout {
+        padding: 12px 24px;
         font-size: 15px;
     }
 }
 
-@media (max-width: 480px) {
-    .checkout-container {
-        padding: 10px;
-    }
-    
-    .amasty-checkout-column {
-        padding: 15px;
-    }
-    
-    .payment-option-giftcard,
-    .amasty-giftcard-block {
-        padding: 15px;
-    }
-}
-
-/* Animation - Smooth Transitions */
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
+/* Animations - Subtle */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.checkout-shipping-address,
-.checkout-payment-method,
-.opc-block-summary,
-.amasty-checkout-column {
-    animation: slideIn 0.4s ease-out;
+.opc-wrapper .step-content,
+.opc-block-summary {
+    animation: fadeIn 0.3s ease-out;
 }
 
-.message-success,
-.message-error {
-    animation: fadeIn 0.3s ease-in;
-}
-
-/* Accessibility Improvements */
-*:focus {
-    outline: 2px solid #3498db;
-    outline-offset: 2px;
-}
-
+/* Focus Styles - Accessibility */
 button:focus,
 input:focus,
-select:focus {
-    outline: 2px solid #3498db;
+select:focus,
+textarea:focus {
+    outline: 2px solid #007bff;
     outline-offset: 2px;
 }
 
-/* Print Styles */
-@media print {
-    .opc-block-summary {
-        position: static !important;
-    }
-    
-    .checkout-payment-method .actions-toolbar {
-        display: none;
-    }
+/* Loading State */
+.loading-mask {
+    background: rgba(255,255,255,0.95) !important;
 }
+
 </style>
