@@ -1,832 +1,1561 @@
-"Mab Extensions","Extensions Mab"
-"Extensions","Extensions"
-"Configuration","Configuration"
-"Settings","Paramètres"
-"Enable","Activer"
-"Disable","Désactiver"
-"Enabled","Activé"
-"Disabled","Désactivé"
-"Status","Statut"
-"Active","Actif"
-"Inactive","Inactif"
-"Default","Par défaut"
-"Custom","Personnalisé"
-"Advanced","Avancé"
-"Basic","Basique"
-"General","Général"
-"Specific","Spécifique"
-"Global","Global"
-"Local","Local"
-"System","Système"
-"User","Utilisateur"
-"Admin","Admin"
-"Frontend","Frontend"
-"Backend","Backend"
-"Public","Public"
-"Private","Privé"
-"Secure","Sécurisé"
-"Insecure","Non sécurisé"
-"Valid","Valide"
-"Invalid","Invalide"
-"Required","Requis"
-"Optional","Optionnel"
-"Recommended","Recommandé"
-"Not recommended","Non recommandé"
-"Available","Disponible"
-"Unavailable","Indisponible"
-"Online","En ligne"
-"Offline","Hors ligne"
-"Connected","Connecté"
-"Disconnected","Déconnecté"
-"Synchronized","Synchronisé"
-"Not synchronized","Non synchronisé"
-"Updated","Mis à jour"
-"Not updated","Non mis à jour"
-"Current","Actuel"
-"Previous","Précédent"
-"Latest","Dernier"
-"Oldest","Plus ancien"
-"New","Nouveau"
-"Old","Ancien"
-"Recent","Récent"
-"Past","Passé"
-"Future","Futur"
-"Present","Présent"
-"Today","Aujourd'hui"
-"Yesterday","Hier"
-"Tomorrow","Demain"
-"This week","Cette semaine"
-"Last week","La semaine dernière"
-"Next week","La semaine prochaine"
-"This month","Ce mois-ci"
-"Last month","Le mois dernier"
-"Next month","Le mois prochain"
-"This year","Cette année"
-"Last year","L'année dernière"
-"Next year","L'année prochaine"
-"Always","Toujours"
-"Never","Jamais"
-"Sometimes","Parfois"
-"Often","Souvent"
-"Rarely","Rarement"
-"Frequently","Fréquemment"
-"Occasionally","Occasionnellement"
-"Regularly","Régulièrement"
-"Irregularly","Irrégulièrement"
-"Automatically","Automatiquement"
-"Manually","Manuellement"
-"Instantly","Instantanément"
-"Immediately","Immédiatement"
-"Quickly","Rapidement"
-"Slowly","Lentement"
-"Fast","Rapide"
-"Slow","Lent"
-"High","Élevé"
-"Low","Bas"
-"Medium","Moyen"
-"Maximum","Maximum"
-"Minimum","Minimum"
-"Average","Moyenne"
-"Total","Total"
-"Partial","Partiel"
-"Complete","Complet"
-"Incomplete","Incomplet"
-"Full","Complet"
-"Empty","Vide"
-"Half","Moitié"
-"Quarter","Quart"
-"Third","Tiers"
-"All","Tout"
-"None","Aucun"
-"Some","Quelques"
-"Many","Beaucoup"
-"Few","Peu"
-"Several","Plusieurs"
-"Multiple","Multiple"
-"Single","Unique"
-"Double","Double"
-"Triple","Triple"
-"First","Premier"
-"Second","Deuxième"
-"Third","Troisième"
-"Last","Dernier"
-"Final","Final"
-"Initial","Initial"
-"Original","Original"
-"Copy","Copie"
-"Duplicate","Dupliquer"
-"Clone","Cloner"
-"Backup","Sauvegarde"
-"Restore","Restaurer"
-"Import","Importer"
-"Export","Exporter"
-"Upload","Télécharger"
-"Download","Télécharger"
-"Install","Installer"
-"Uninstall","Désinstaller"
-"Upgrade","Mettre à niveau"
-"Downgrade","Rétrograder"
-"Migrate","Migrer"
-"Transfer","Transférer"
-"Move","Déplacer"
-"Copy","Copier"
-"Paste","Coller"
-"Cut","Couper"
-"Undo","Annuler"
-"Redo","Refaire"
-"Reset","Réinitialiser"
-"Clear","Effacer"
-"Clean","Nettoyer"
-"Purge","Purger"
-"Flush","Vider"
-"Refresh","Actualiser"
-"Reload","Recharger"
-"Restart","Redémarrer"
-"Start","Démarrer"
-"Stop","Arrêter"
-"Pause","Pause"
-"Resume","Reprendre"
-"Play","Jouer"
-"Record","Enregistrer"
-"Capture","Capturer"
-"Screenshot","Capture d'écran"
-"Print","Imprimer"
-"Preview","Aperçu"
-"View","Voir"
-"Show","Afficher"
-"Hide","Masquer"
-"Display","Affichage"
-"Render","Rendre"
-"Generate","Générer"
-"Create","Créer"
-"Build","Construire"
-"Make","Faire"
-"Produce","Produire"
-"Develop","Développer"
-"Design","Concevoir"
-"Plan","Planifier"
-"Organize","Organiser"
-"Arrange","Organiser"
-"Sort","Trier"
-"Order","Commander"
-"Rank","Classer"
-"Rate","Évaluer"
-"Score","Score"
-"Grade","Note"
-"Mark","Marquer"
-"Tag","Étiqueter"
-"Label","Étiquette"
-"Name","Nom"
-"Title","Titre"
-"Heading","En-tête"
-"Header","En-tête"
-"Footer","Pied de page"
-"Sidebar","Barre latérale"
-"Menu","Menu"
-"Navigation","Navigation"
-"Link","Lien"
-"Button","Bouton"
-"Icon","Icône"
-"Image","Image"
-"Picture","Image"
-"Photo","Photo"
-"Video","Vidéo"
-"Audio","Audio"
-"File","Fichier"
-"Document","Document"
-"Text","Texte"
-"Content","Contenu"
-"Data","Données"
-"Information","Information"
-"Details","Détails"
-"Specification","Spécification"
-"Description","Description"
-"Summary","Résumé"
-"Overview","Aperçu"
-"Introduction","Introduction"
-"Conclusion","Conclusion"
-"Result","Résultat"
-"Output","Sortie"
-"Input","Entrée"
-"Parameter","Paramètre"
-"Argument","Argument"
-"Variable","Variable"
-"Constant","Constante"
-"Value","Valeur"
-"Number","Nombre"
-"Amount","Montant"
-"Quantity","Quantité"
-"Count","Compter"
-"Size","Taille"
-"Length","Longueur"
-"Width","Largeur"
-"Height","Hauteur"
-"Depth","Profondeur"
-"Weight","Poids"
-"Volume","Volume"
-"Area","Zone"
-"Distance","Distance"
-"Speed","Vitesse"
-"Time","Temps"
-"Duration","Durée"
-"Period","Période"
-"Interval","Intervalle"
-"Frequency","Fréquence"
-"Rate","Taux"
-"Percentage","Pourcentage"
-"Ratio","Ratio"
-"Proportion","Proportion"
-"Scale","Échelle"
-"Level","Niveau"
-"Degree","Degré"
-"Grade","Grade"
-"Class","Classe"
-"Category","Catégorie"
-"Group","Groupe"
-"Set","Ensemble"
-"Collection","Collection"
-"List","Liste"
-"Array","Tableau"
-"Table","Tableau"
-"Grid","Grille"
-"Matrix","Matrice"
-"Chart","Graphique"
-"Graph","Graphique"
-"Diagram","Diagramme"
-"Map","Carte"
-"Layout","Mise en page"
-"Template","Modèle"
-"Theme","Thème"
-"Style","Style"
-"Format","Format"
-"Structure","Structure"
-"Pattern","Motif"
-"Design","Design"
-"Appearance","Apparence"
-"Look","Apparence"
-"Feel","Sensation"
-"Experience","Expérience"
-"Interface","Interface"
-"Screen","Écran"
-"Page","Page"
-"Window","Fenêtre"
-"Dialog","Dialogue"
-"Modal","Modal"
-"Popup","Popup"
-"Tooltip","Info-bulle"
-"Alert","Alerte"
-"Notification","Notification"
-"Message","Message"
-"Note","Note"
-"Comment","Commentaire"
-"Feedback","Commentaire"
-"Review","Avis"
-"Rating","Évaluation"
-"Opinion","Opinion"
-"Suggestion","Suggestion"
-"Recommendation","Recommandation"
-"Advice","Conseil"
-"Tip","Conseil"
-"Hint","Indice"
-"Help","Aide"
-"Support","Support"
-"Assistance","Assistance"
-"Service","Service"
-"Feature","Fonctionnalité"
-"Function","Fonction"
-"Capability","Capacité"
-"Ability","Capacité"
-"Skill","Compétence"
-"Knowledge","Connaissance"
-"Understanding","Compréhension"
-"Learning","Apprentissage"
-"Training","Formation"
-"Education","Éducation"
-"Course","Cours"
-"Lesson","Leçon"
-"Tutorial","Tutoriel"
-"Guide","Guide"
-"Manual","Manuel"
-"Documentation","Documentation"
-"Instruction","Instruction"
-"Direction","Direction"
-"Step","Étape"
-"Process","Processus"
-"Procedure","Procédure"
-"Method","Méthode"
-"Technique","Technique"
-"Approach","Approche"
-"Strategy","Stratégie"
-"Plan","Plan"
-"Goal","Objectif"
-"Target","Cible"
-"Objective","Objectif"
-"Purpose","But"
-"Reason","Raison"
-"Cause","Cause"
-"Effect","Effet"
-"Impact","Impact"
-"Influence","Influence"
-"Change","Changement"
-"Modification","Modification"
-"Update","Mise à jour"
-"Revision","Révision"
-"Version","Version"
-"Release","Version"
-"Edition","Édition"
-"Model","Modèle"
-"Type","Type"
-"Kind","Genre"
-"Sort","Sorte"
-"Variety","Variété"
-"Option","Option"
-"Choice","Choix"
-"Selection","Sélection"
-"Pick","Choisir"
-"Preference","Préférence"
-"Setting","Paramètre"
-"Configuration","Configuration"
-"Setup","Configuration"
-"Installation","Installation"
-"Deployment","Déploiement"
-"Implementation","Implémentation"
-"Development","Développement"
-"Production","Production"
-"Testing","Test"
-"Debug","Débogage"
-"Error","Erreur"
-"Bug","Bug"
-"Issue","Problème"
-"Problem","Problème"
-"Trouble","Problème"
-"Difficulty","Difficulté"
-"Challenge","Défi"
-"Solution","Solution"
-"Answer","Réponse"
-"Response","Réponse"
-"Reply","Réponse"
-"Feedback","Retour"
-"Return","Retour"
-"Back","Retour"
-"Forward","Avant"
-"Next","Suivant"
-"Previous","Précédent"
-"Continue","Continuer"
-"Proceed","Procéder"
-"Advance","Avancer"
-"Progress","Progrès"
-"Improvement","Amélioration"
-"Enhancement","Amélioration"
-"Optimization","Optimisation"
-"Performance","Performance"
-"Efficiency","Efficacité"
-"Effectiveness","Efficacité"
-"Quality","Qualité"
-"Standard","Standard"
-"Benchmark","Référence"
-"Metric","Métrique"
-"Measure","Mesure"
-"Indicator","Indicateur"
-"Signal","Signal"
-"Sign","Signe"
-"Symbol","Symbole"
-"Code","Code"
-"Key","Clé"
-"Password","Mot de passe"
-"Token","Jeton"
-"ID","ID"
-"Identifier","Identifiant"
-"Reference","Référence"
-"Link","Lien"
-"Connection","Connexion"
-"Relationship","Relation"
-"Association","Association"
-"Binding","Liaison"
-"Attachment","Pièce jointe"
-"Extension","Extension"
-"Plugin","Plugin"
-"Module","Module"
-"Component","Composant"
-"Element","Élément"
-"Item","Article"
-"Object","Objet"
-"Entity","Entité"
-"Record","Enregistrement"
-"Entry","Entrée"
-"Field","Champ"
-"Column","Colonne"
-"Row","Ligne"
-"Cell","Cellule"
-"Block","Bloc"
-"Section","Section"
-"Part","Partie"
-"Piece","Pièce"
-"Fragment","Fragment"
-"Segment","Segment"
-"Portion","Portion"
-"Share","Partager"
-"Division","Division"
-"Unit","Unité"
-"Measure","Mesure"
-"Dimension","Dimension"
-"Attribute","Attribut"
-"Property","Propriété"
-"Characteristic","Caractéristique"
-"Quality","Qualité"
-"Feature","Fonctionnalité"
-"Aspect","Aspect"
-"Factor","Facteur"
-"Element","Élément"
-"Component","Composant"
-"Ingredient","Ingrédient"
-"Material","Matériau"
-"Substance","Substance"
-"Content","Contenu"
-"Matter","Matière"
-"Subject","Sujet"
-"Topic","Sujet"
-"Theme","Thème"
-"Issue","Question"
-"Question","Question"
-"Query","Requête"
-"Request","Demande"
-"Order","Commande"
-"Command","Commande"
-"Instruction","Instruction"
-"Direction","Direction"
-"Guidance","Orientation"
-"Leadership","Leadership"
-"Management","Gestion"
-"Administration","Administration"
-"Control","Contrôle"
-"Supervision","Supervision"
-"Oversight","Surveillance"
-"Monitoring","Surveillance"
-"Tracking","Suivi"
-"Following","Suivi"
-"Watching","Regarder"
-"Observing","Observer"
-"Viewing","Visualisation"
-"Seeing","Voir"
-"Looking","Regarder"
-"Checking","Vérifier"
-"Examining","Examiner"
-"Inspecting","Inspecter"
-"Reviewing","Réviser"
-"Analyzing","Analyser"
-"Studying","Étudier"
-"Researching","Rechercher"
-"Investigating","Enquêter"
-"Exploring","Explorer"
-"Discovering","Découvrir"
-"Finding","Trouver"
-"Locating","Localiser"
-"Searching","Rechercher"
-"Seeking","Chercher"
-"Hunting","Chasser"
-"Looking for","Chercher"
-"Trying to find","Essayer de trouver"
-"Attempting","Tenter"
-"Trying","Essayer"
-"Effort","Effort"
-"Attempt","Tentative"
-"Trial","Essai"
-"Test","Test"
-"Experiment","Expérience"
-"Practice","Pratique"
-"Exercise","Exercice"
-"Activity","Activité"
-"Action","Action"
-"Operation","Opération"
-"Function","Fonction"
-"Work","Travail"
-"Job","Travail"
-"Task","Tâche"
-"Assignment","Affectation"
-"Project","Projet"
-"Mission","Mission"
-"Goal","Objectif"
-"Aim","Objectif"
-"Target","Cible"
-"Destination","Destination"
-"End","Fin"
-"Finish","Finir"
-"Complete","Complet"
-"Done","Fait"
-"Ready","Prêt"
-"Prepared","Préparé"
-"Set","Ensemble"
-"Configured","Configuré"
-"Established","Établi"
-"Created","Créé"
-"Made","Fait"
-"Built","Construit"
-"Developed","Développé"
-"Designed","Conçu"
-"Planned","Planifié"
-"Organized","Organisé"
-"Arranged","Organisé"
-"Structured","Structuré"
-"Formatted","Formaté"
-"Styled","Stylé"
-"Themed","Thématique"
-"Customized","Personnalisé"
-"Personalized","Personnalisé"
-"Tailored","Sur mesure"
-"Adapted","Adapté"
-"Modified","Modifié"
-"Changed","Changé"
-"Altered","Modifié"
-"Adjusted","Ajusté"
-"Tuned","Réglé"
-"Optimized","Optimisé"
-"Improved","Amélioré"
-"Enhanced","Amélioré"
-"Upgraded","Mis à niveau"
-"Updated","Mis à jour"
-"Refreshed","Actualisé"
-"Renewed","Renouvelé"
-"Restored","Restauré"
-"Recovered","Récupéré"
-"Retrieved","Récupéré"
-"Obtained","Obtenu"
-"Acquired","Acquis"
-"Gained","Gagné"
-"Earned","Gagné"
-"Achieved","Atteint"
-"Accomplished","Accompli"
-"Completed","Terminé"
-"Finished","Fini"
-"Ended","Terminé"
-"Closed","Fermé"
-"Stopped","Arrêté"
-"Paused","En pause"
-"Suspended","Suspendu"
-"Interrupted","Interrompu"
-"Delayed","Retardé"
-"Postponed","Reporté"
-"Scheduled","Programmé"
-"Planned","Planifié"
-"Arranged","Organisé"
-"Organized","Organisé"
-"Managed","Géré"
-"Handled","Géré"
-"Processed","Traité"
-"Executed","Exécuté"
-"Performed","Effectué"
-"Carried out","Effectué"
-"Implemented","Implémenté"
-"Applied","Appliqué"
-"Used","Utilisé"
-"Employed","Employé"
-"Utilized","Utilisé"
-"Operated","Opéré"
-"Functioned","Fonctionné"
-"Worked","Travaillé"
-"Ran","Couru"
-"Executed","Exécuté"
-"Launched","Lancé"
-"Started","Commencé"
-"Initiated","Initié"
-"Begun","Commencé"
-"Commenced","Commencé"
-"Opened","Ouvert"
-"Activated","Activé"
-"Enabled","Activé"
-"Turned on","Allumé"
-"Switched on","Allumé"
-"Powered on","Allumé"
-"Booted","Démarré"
-"Loaded","Chargé"
-"Installed","Installé"
-"Deployed","Déployé"
-"Released","Publié"
-"Published","Publié"
-"Issued","Émis"
-"Distributed","Distribué"
-"Delivered","Livré"
-"Sent","Envoyé"
-"Transmitted","Transmis"
-"Transferred","Transféré"
-"Moved","Déplacé"
-"Shifted","Déplacé"
-"Relocated","Relocalisé"
-"Migrated","Migré"
-"Converted","Converti"
-"Transformed","Transformé"
-"Changed","Changé"
-"Modified","Modifié"
-"Edited","Édité"
-"Revised","Révisé"
-"Updated","Mis à jour"
-"Corrected","Corrigé"
-"Fixed","Réparé"
-"Repaired","Réparé"
-"Restored","Restauré"
-"Recovered","Récupéré"
-"Saved","Sauvegardé"
-"Preserved","Préservé"
-"Protected","Protégé"
-"Secured","Sécurisé"
-"Safeguarded","Protégé"
-"Defended","Défendu"
-"Guarded","Gardé"
-"Monitored","Surveillé"
-"Watched","Regardé"
-"Observed","Observé"
-"Tracked","Suivi"
-"Followed","Suivi"
-"Traced","Tracé"
-"Recorded","Enregistré"
-"Logged","Enregistré"
-"Documented","Documenté"
-"Noted","Noté"
-"Marked","Marqué"
-"Tagged","Étiqueté"
-"Labeled","Étiqueté"
-"Named","Nommé"
-"Titled","Intitulé"
-"Called","Appelé"
-"Referred","Référé"
-"Mentioned","Mentionné"
-"Cited","Cité"
-"Quoted","Cité"
-"Referenced","Référencé"
-"Linked","Lié"
-"Connected","Connecté"
-"Associated","Associé"
-"Related","Lié"
-"Attached","Attaché"
-"Bound","Lié"
-"Tied","Attaché"
-"Joined","Rejoint"
-"United","Uni"
-"Combined","Combiné"
-"Merged","Fusionné"
-"Integrated","Intégré"
-"Incorporated","Incorporé"
-"Included","Inclus"
-"Added","Ajouté"
-"Inserted","Inséré"
-"Placed","Placé"
-"Put","Mis"
-"Set","Ensemble"
-"Positioned","Positionné"
-"Located","Situé"
-"Situated","Situé"
-"Found","Trouvé"
-"Discovered","Découvert"
-"Identified","Identifié"
-"Recognized","Reconnu"
-"Detected","Détecté"
-"Spotted","Repéré"
-"Noticed","Remarqué"
-"Seen","Vu"
-"Viewed","Vu"
-"Observed","Observé"
-"Watched","Regardé"
-"Looked at","Regardé"
-"Examined","Examiné"
-"Inspected","Inspecté"
-"Checked","Vérifié"
-"Reviewed","Révisé"
-"Analyzed","Analysé"
-"Studied","Étudié"
-"Researched","Recherché"
-"Investigated","Enquêté"
-"Explored","Exploré"
-"Gift Card","Carte Cadeau"
-"Gift Card Account","Compte Carte Cadeau"
-"Gift Card Code","Code de Carte Cadeau"
-"Enter Gift Card Code","Entrez le code de votre carte cadeau"
-"Apply Gift Card","Appliquer la Carte Cadeau"
-"Remove Gift Card","Retirer la Carte Cadeau"
-"Check Gift Card Balance","Vérifier le Solde"
-"Gift Card Balance","Solde de la Carte Cadeau"
-"Gift Card Amount","Montant de la Carte Cadeau"
-"Applied Gift Cards","Cartes Cadeaux Appliquées"
-"Gift Card Applied Successfully","Carte cadeau appliquée avec succès"
-"Gift Card Removed Successfully","Carte cadeau retirée avec succès"
-"Invalid Gift Card Code","Code de carte cadeau invalide"
-"Gift Card Expired","Carte cadeau expirée"
-"Gift Card Already Applied","Carte cadeau déjà appliquée"
-"Insufficient Gift Card Balance","Solde de carte cadeau insuffisant"
-"Enter a valid gift card code","Veuillez entrer un code de carte cadeau valide"
-"Gift Card Code is required","Le code de carte cadeau est obligatoire"
-"Use Gift Card","Utiliser une Carte Cadeau"
-"Do you have a gift card?","Avez-vous une carte cadeau ?"
-"Add Gift Card","Ajouter une Carte Cadeau"
-"Gift Card Details","Détails de la Carte Cadeau"
-"Current Balance","Solde Actuel"
-"Original Amount","Montant Initial"
-"Remaining Balance","Solde Restant"
-"Applied Amount","Montant Appliqué"
-"Gift Card will be applied to your order","La carte cadeau sera appliquée à votre commande"
-"You saved %1 with gift cards","Vous avez économisé %1 avec vos cartes cadeaux"
-"Gift Card Discount","Réduction Carte Cadeau"
-"Pay with Gift Card","Payer avec une Carte Cadeau"
-"Multiple gift cards can be applied","Plusieurs cartes cadeaux peuvent être appliquées"
-"Gift Card Number","Numéro de Carte Cadeau"
-"PIN Code","Code PIN"
-"Verify Gift Card","Vérifier la Carte Cadeau"
-"Gift Card Information","Informations sur la Carte Cadeau"
-"How to use gift cards?","Comment utiliser les cartes cadeaux ?"
-"Gift cards are applied at checkout","Les cartes cadeaux sont appliquées lors du paiement"
-"Buy Gift Cards","Acheter des Cartes Cadeaux"
-"Send Gift Card","Envoyer une Carte Cadeau"
-"Redeem Gift Card","Utiliser une Carte Cadeau"
-"Check Balance","Vérifier le Solde"
-"Cancel Gift Card","Annuler la Carte Cadeau"
-"One Step Checkout","Commande en Une Étape"
-"Place Order","Passer la Commande"
-"Proceed to Checkout","Finaliser la Commande"
-"Shipping Address","Adresse de Livraison"
-"Billing Address","Adresse de Facturation"
-"Shipping Method","Mode de Livraison"
-"Payment Method","Mode de Paiement"
-"Order Summary","Récapitulatif de Commande"
-"Subtotal","Sous-total"
-"Shipping","Livraison"
-"Tax","Taxe"
-"Grand Total","Total Général"
-"Discount","Réduction"
-"Apply Discount Code","Appliquer un Code Promo"
-"Enter discount code","Entrez votre code promo"
-"Cancel","Annuler"
-"Continue","Continuer"
-"Email Address","Adresse Email"
-"Password","Mot de Passe"
-"First Name","Prénom"
-"Last Name","Nom"
-"Company","Société"
-"Street Address","Adresse"
-"City","Ville"
-"State/Province","État/Province"
-"Zip/Postal Code","Code Postal"
-"Country","Pays"
-"Phone Number","Numéro de Téléphone"
-"Create an Account","Créer un Compte"
-"Sign In","Se Connecter"
-"Forgot Your Password?","Mot de passe oublié?"
-"New Customer","Nouveau Client"
-"Registered Customers","Clients Enregistrés"
-"If you have an account, sign in with your email address.","Si vous avez un compte, connectez-vous avec votre adresse email."
-"Create New Customer Account","Créer un Nouveau Compte Client"
-"Personal Information","Informations Personnelles"
-"Sign-in Information","Informations de Connexion"
-"Confirm Password","Confirmer le Mot de Passe"
-"Show Password","Afficher le Mot de Passe"
-"Password Strength","Force du Mot de Passe"
-"Weak","Faible"
-"Medium","Moyen"
-"Strong","Fort"
-"Very Strong","Très Fort"
-"Subscribe to Newsletter","S'abonner à la Newsletter"
-"Delivery Date","Date de Livraison"
-"Select Date","Sélectionner une Date"
-"Select Time","Sélectionner une Heure"
-"Delivery Instructions","Instructions de Livraison"
-"Order Comments","Commentaires de Commande"
-"Add a comment about your order","Ajouter un commentaire sur votre commande"
-"Cash on Delivery","Paiement à la Livraison"
-"Free Shipping","Livraison Gratuite"
-"Estimated Shipping","Livraison Estimée"
-"You have no items in your shopping cart.","Votre panier est vide."
-"Shopping Cart","Panier d'Achat"
-"View Cart","Voir le Panier"
-"Edit","Modifier"
-"Update","Mettre à Jour"
-"Delete","Supprimer"
-"Qty","Qté"
-"Item","Article"
-"Price","Prix"
-"Total","Total"
-"Update Shopping Cart","Mettre à Jour le Panier"
-"Continue Shopping","Continuer mes Achats"
-"Clear Shopping Cart","Vider le Panier"
-"What's this?","Qu'est-ce que c'est?"
-"Same as billing address","Identique à l'adresse de facturation"
-"Ship Here","Livrer ici"
-"New Address","Nouvelle Adresse"
-"Please select a shipping address","Veuillez sélectionner une adresse de livraison"
-"Save in address book","Enregistrer dans le carnet d'adresses"
-"Loading...","Chargement..."
-"Please wait...","Veuillez patienter..."
-"Processing...","Traitement en cours..."
-"Required Fields","Champs Obligatoires"
-"This is a required field.","Ceci est un champ obligatoire."
-"Please enter a valid email address.","Veuillez entrer une adresse email valide."
-"Please enter a valid phone number.","Veuillez entrer un numéro de téléphone valide."
-"Checkout","Commande"
-"Payment Information","Informations de Paiement"
-"Review & Payments","Vérification et Paiement"
-"My Account","Mon Compte"
-"My Orders","Mes Commandes"
-"My Addresses","Mes Adresses"
+$100.00,$100.00
+"%1 (in store's base currency) has been refunded to Gift Card Account(s) %2.","%1 (in store's base currency) has been refunded to Gift Card Account(s) %2."
+"%1 (in store's base currency) has been returned to Gift Card Account(s) %2 due to order cancellation","%1 (in store's base currency) has been returned to Gift Card Account(s) %2 due to order cancellation"
+"%1 Account(s) has been failed to delete","%1 Account(s) has been failed to delete"
+"%1 Account(s) has been successfully deleted","%1 Account(s) has been successfully deleted"
+"%1 Code Pool(s) has been failed to delete","%1 Code Pool(s) has been failed to delete"
+"%1 Code Pool(s) has been successfully deleted","%1 Code Pool(s) has been successfully deleted"
+"%1 Image(s) has been failed to delete","%1 Image(s) has been failed to delete"
+"%1 Image(s) has been successfully deleted","%1 Image(s) has been successfully deleted"
+"%1 [%2]","%1 [%2]"
+"%1 days","%1 days"
+%balance,%balance
+"%sender_name purchased a","%sender_name purchased a"
+"'Create an Account' Checkbox is Checked by Default","'Create an Account' Checkbox is Checked by Default"
+"* all orders as well as active and abandoned carts are considered as a quote","* all orders as well as active and abandoned carts are considered as a quote"
+"* form is completed if all mandatory fields are filled or, if the form is made up of only optional fields, when at least one field is filled","* form is completed if all mandatory fields are filled or, if the form is made up of only optional fields, when at least one field is filled"
+"-- Please Select --","-- Please Select --"
+"--Please Select--","--Please Select--"
+"1 Column","1 Column"
+"2 Columns","2 Columns"
+"2 Columns (1 Column with a Fixed Order Summary Sidebar)","2 Columns (1 Column with a Fixed Order Summary Sidebar)"
+"3 Columns","3 Columns"
+"A total of %1 Gift Card Account(s) were successfully generated.","A total of %1 Gift Card Account(s) were successfully generated."
+Ability,Capacité
+Accomplished,Accompli
 "Account Information","Informations du Compte"
+"Account for specified code ""%1"" not found","Account for specified code ""%1"" not found"
+"Account with specified ID ""%1"" not found.","Account with specified ID ""%1"" not found."
+"Account with the specified ID ""%1"" does not exist","Account with the specified ID ""%1"" does not exist"
+"Accounts Qty to Generate","Accounts Qty to Generate"
+Achieved,Atteint
+Acquired,Acquis
+Action,Action
+Activated,Activé
+Active,Actif
+Activity,Activité
+Adapted,Adapté
+Add,Add
+"Add Code","Add Code"
+"Add Custom Fields","Add Custom Fields"
+"Add Customer Attribute","Add Customer Attribute"
+"Add Gift Card","Ajouter une Carte Cadeau"
+"Add New","Add New"
+"Add Order Attribute","Add Order Attribute"
+"Add a comment about your order","Ajouter un commentaire sur votre commande"
+"Add a gift message","Add a gift message"
+Added,Ajouté
+Additional,Additional
+"Additional Fields and Other Extras","Additional Fields and Other Extras"
+"Additional Options","Additional Options"
+"Additional message for Gift Card","Additional message for Gift Card"
 "Address Book","Carnet d'Adresses"
+"Address Formatting","Address Formatting"
+Adjusted,Ajusté
+Admin,Admin
+Administration,Administration
+Advance,Avancer
+Advanced,Avancé
+Advice,Conseil
+"After Placing an Order","After Placing an Order"
+Aim,Objectif
+Alert,Alerte
+All,Tout
+"All Customer Groups","All Customer Groups"
+"All Store Views","All Store Views"
+"All Stores","All Stores"
+"All Websites [%1]","All Websites [%1]"
+"All custom fields have already been added. You can drag and drop them to the 'Disabled Checkout Fields' section, if you don't need these fields anymore.","All custom fields have already been added. You can drag and drop them to the 'Disabled Checkout Fields' section, if you don't need these fields anymore."
+"All design configurations will be erased.","All design configurations will be erased."
+"Allow Customers to Use Gift Cards They Bought for Themselves","Allow Customers to Use Gift Cards They Bought for Themselves"
+"Allow Gift Messages for Order Items","Allow Gift Messages for Order Items"
+"Allow Gift Messages on Order Level","Allow Gift Messages on Order Level"
+"Allow Guest Checkout","Allow Guest Checkout"
+"Allow Refund for Orders Paid with Gift Card","Allow Refund for Orders Paid with Gift Card"
+"Allow Users to Upload Own Images for Gift Card","Allow Users to Upload Own Images for Gift Card"
+"Allow to Edit Products in the Order Summary","Allow to Edit Products in the Order Summary"
+"Allowed image types: jpg, jpeg, png and gif. Recommended image size is 580x390px.","Allowed image types: jpg, jpeg, png and gif. Recommended image size is 580x390px."
+"Allowed image types: jpg, jpeg, png and gif. Recommended image size is 580x390px.<br/> If you're using the barcode element, keep in mind that longer gift codes require wider barcodes for readability. Test the barcode before emailing customers by creating a gift code account in Marketing > Gift Cards > Accounts with your email address. Click 'Save & Send Email' to send the email.","Allowed image types: jpg, jpeg, png and gif. Recommended image size is 580x390px.<br/> If you're using the barcode element, keep in mind that longer gift codes require wider barcodes for readability. Test the barcode before emailing customers by creating a gift code account in Marketing > Gift Cards > Accounts with your email address. Click 'Save & Send Email' to send the email."
+Altered,Modifié
+Always,Toujours
+"Amasty Checkout Payment Methods Block","Amasty Checkout Payment Methods Block"
+"Amasty Gift Cards","Amasty Gift Cards"
+"Amasty One Step Checkout","Amasty One Step Checkout"
+Amount,Montant
+"Amount should be specified or Open Amount should be allowed","Amount should be specified or Open Amount should be allowed"
+"Amount with specified ID ""%1"" not found.","Amount with specified ID ""%1"" not found."
+Amounts,Amounts
+"An error has occurred while preparing Gift Card.","An error has occurred while preparing Gift Card."
+Analyzed,Analysé
+Analyzing,Analyser
+Answer,Réponse
+Appearance,Apparence
+Applied,Appliqué
+"Applied Amount","Montant Appliqué"
+"Applied Gift Cards","Cartes Cadeaux Appliquées"
+Apply,Apply
+"Apply Cart Price Rules to Gift Card","Apply Cart Price Rules to Gift Card"
+"Apply Discount Code","Appliquer un Code Promo"
+"Apply Gift Card","Appliquer la Carte Cadeau"
+"Apply Gift Card Code","Apply Gift Card Code"
+Approach,Approche
+Apr,Apr
+April,April
+"Are you sure you want to delete selected Account(s)?","Are you sure you want to delete selected Account(s)?"
+"Are you sure you want to delete selected Code Pool(s)?","Are you sure you want to delete selected Code Pool(s)?"
+"Are you sure you want to delete selected Image(s)?","Are you sure you want to delete selected Image(s)?"
+"Are you sure you want to do this?","Are you sure you want to do this?"
+"Are you sure you want to remove?","Are you sure you want to remove?"
+"Are you sure you would like to remove this item from the shopping cart?","Are you sure you would like to remove this item from the shopping cart?"
+Area,Zone
+Argument,Argument
+Arrange,Organiser
+Arranged,Organisé
+Array,Tableau
+Aspect,Aspect
+"Assign Gift Card to Customer Account","Assign Gift Card to Customer Account"
+Assignment,Affectation
+Assistance,Assistance
+Associated,Associé
+Association,Association
+"Attach PDF Gift Card to Email","Attach PDF Gift Card to Email"
+Attached,Attaché
+Attachment,"Pièce jointe"
+Attempt,Tentative
+Attempting,Tenter
+Attention,Attention
+Attribute,Attribut
+Audio,Audio
+Aug,Aug
+August,August
+"Auto-Change Order Status if Fully Covered with Gift Card","Auto-Change Order Status if Fully Covered with Gift Card"
+Automatically,Automatiquement
+"Automatically Log in Customers After Creating an Account at Checkout","Automatically Log in Customers After Creating an Account at Checkout"
+Availability:,Availability:
+Available,Disponible
+"Available Days","Available Days"
+"Available Hours","Available Hours"
+Average,Moyenne
+Back,Retour
+Backend,Backend
+Backup,Sauvegarde
+Balance,Balance
+"Balance Notification Email Template","Balance Notification Email Template"
+Basic,Basique
+Begun,Commencé
+"Below Delivery Date/Time/Comment","Below Delivery Date/Time/Comment"
+"Below Shipping Address","Below Shipping Address"
+"Below Shipping Address (Amasty One Step Checkout)","Below Shipping Address (Amasty One Step Checkout)"
+"Below the Order Total","Below the Order Total"
+"Below the Payment Method","Below the Payment Method"
+"Below the Selected Payment Method","Below the Selected Payment Method"
+"Below the Shipping Address","Below the Shipping Address"
+"Below the Shipping Method","Below the Shipping Method"
+Benchmark,Référence
+"Bill to Name","Bill to Name"
+"Billing Address","Adresse de Facturation"
+Binding,Liaison
+Block,Bloc
+"Block Requests from One IP Address","Block Requests from One IP Address"
+"Block user’s IP in case the number of requests to validate a gift card exceeds the set number within the particular period of time. The IP address will be blocked according to the conditions set below: exceeding the number of requests for the specified period of time.","Block user’s IP in case the number of requests to validate a gift card exceeds the set number within the particular period of time. The IP address will be blocked according to the conditions set below: exceeding the number of requests for the specified period of time."
+Booted,Démarré
+"Bottom Block","Bottom Block"
+"Bought From","Bought From"
+Bound,Lié
+Browse,Browse
+"Browse Image","Browse Image"
+Bug,Bug
+Build,Construire
+Built,Construit
+Button,Bouton
+"Buy Gift Cards","Acheter des Cartes Cadeaux"
+"CHECKOUT FIELDS CONFIGURATION","CHECKOUT FIELDS CONFIGURATION"
+Called,Appelé
+"Can't delete Code Pool right now. Please review the log and try again.","Can't delete Code Pool right now. Please review the log and try again."
+"Can't delete Image right now. Please review the log and try again.","Can't delete Image right now. Please review the log and try again."
+"Can't delete account right now. Please review the log and try again.","Can't delete account right now. Please review the log and try again."
+"Can't download image right now. Please review the log and try again.","Can't download image right now. Please review the log and try again."
+"Can't download images right now. Please review the log and try again.","Can't download images right now. Please review the log and try again."
+"Can't find a Code Pool to delete.","Can't find a Code Pool to delete."
+"Can't find a account to delete.","Can't find a account to delete."
+"Can't find image to download for account ID %1.","Can't find image to download for account ID %1."
+"Can't find the Image to delete.","Can't find the Image to delete."
+"Can't send email. Please make sure that field ""Recipient Email"" is filled.","Can't send email. Please make sure that field ""Recipient Email"" is filled."
+"Can't send sms. Please make sure that field ""Recipient Phone"" is filled.","Can't send sms. Please make sure that field ""Recipient Phone"" is filled."
+Cancel,Annuler
+"Cancel Gift Card","Annuler la Carte Cadeau"
+"Cannot remove gift card.","Cannot remove gift card."
+Capability,Capacité
+Capture,Capturer
+"Card Type","Card Type"
+"Card Value","Card Value"
+"Card Value in","Card Value in"
+"Carried out",Effectué
+"Carrier Title","Carrier Title"
+"Cash on Delivery","Paiement à la Livraison"
+Category,Catégorie
+Cause,Cause
+Cell,Cellule
+Challenge,Défi
+Change,Changement
+Changed,Changé
+Characteristic,Caractéristique
+Chart,Graphique
+"Check Balance","Vérifier le Solde"
+"Check Gift Card Balance","Vérifier le Solde"
+"Check Gift Card Code Status","Check Gift Card Code Status"
+"Check Status","Check Status"
+Checked,Vérifié
+Checking,Vérifier
+Checkout,Commande
+"Checkout Analytics","Checkout Analytics"
+"Checkout Background Color","Checkout Background Color"
+"Checkout Design","Checkout Design"
+"Checkout Discounts","Checkout Discounts"
+"Checkout Page Description","Checkout Page Description"
+"Checkout Page Layout","Checkout Page Layout"
+"Checkout Page Title","Checkout Page Title"
+"Checkout Sections","Checkout Sections"
+"Checkout Text Font","Checkout Text Font"
+"Checkout page cache (including but not limited to UI components configuration, position of page elements, inactive heavyweight components of the page and so on)","Checkout page cache (including but not limited to UI components configuration, position of page elements, inactive heavyweight components of the page and so on)"
+Choice,Choix
+"Choose Gift Card Image","Choose Gift Card Image"
+"Choose an Option...","Choose an Option..."
+"Choose card design","Choose card design"
+"Choose card type","Choose card type"
+Cited,Cité
+City,Ville
+Class,Classe
+Classic,Classic
+Clean,Nettoyer
+Clear,Effacer
+"Clear Shopping Cart","Vider le Panier"
+"Client Image","Client Image"
+Clone,Cloner
+Close,Close
+Closed,Fermé
+Code,Code
+"Code ""%1"" not found.","Code ""%1"" not found."
+"Code Pool","Code Pool"
+"Code Pool Name","Code Pool Name"
+"Code Pool Template","Code Pool Template"
+"Code Pool with specified ID ""%1"" not found.","Code Pool with specified ID ""%1"" not found."
+"Code with specified ID ""%1"" not found.","Code with specified ID ""%1"" not found."
+"Codes List","Codes List"
+"Codes Qty to Generate","Codes Qty to Generate"
+"Codes Settings","Codes Settings"
+"Codes Template","Codes Template"
+"Codes generation successfully completed.","Codes generation successfully completed."
+Collection,Collection
+"Color Scheme","Color Scheme"
+Column,Colonne
+Combined,Combiné
+Command,Commande
+Commenced,Commencé
+Comment,Commentaire
+Comments,Comments
+Company,Société
+Complete,Complet
+Completed,Terminé
+"Completion Rate, %","Completion Rate, %"
+Component,Composant
+Conclusion,Conclusion
+Conditions,Conditions
+"Conditions (don't specify conditions if you'd the like rule to be applied to all products)","Conditions (don't specify conditions if you'd the like rule to be applied to all products)"
+"Conditions combination","Conditions combination"
+Configuration,Configuration
+Configured,Configuré
+"Confirm Password","Confirmer le Mot de Passe"
+Connected,Connecté
+Connection,Connexion
+Constant,Constante
+Content,Contenu
+Continue,Continuer
+"Continue Shopping","Continuer mes Achats"
+Control,Contrôle
+Converted,Converti
+Copy,Copier
+Corrected,Corrigé
+"Could not delete the fee: %1","Could not delete the fee: %1"
+"Could not find selected image.","Could not find selected image."
+"Could not save the fee: %1","Could not save the fee: %1"
+Count,Compter
+Country,Pays
+"Coupon code ""%1"" cannot be applied to the cart because it does not meet certain conditions.
+                        Please check the details and try again or contact us for assistance.","Coupon code ""%1"" cannot be applied to the cart because it does not meet certain conditions.
+                        Please check the details and try again or contact us for assistance."
+Course,Cours
+Create,Créer
+"Create New Customer Account","Créer un Nouveau Compte Client"
+"Create an Account","Créer un Compte"
+Created,Créé
+"Csv File","Csv File"
+Current,Actuel
+"Current Balance","Solde Actuel"
+"Current Value","Current Value"
+Custom,Personnalisé
+"Custom Amount in %1","Custom Amount in %1"
+"Custom CSS","Custom CSS"
+"Custom Field","Custom Field"
+"Custom Fields","Custom Fields"
+"Custom Order Success Page","Custom Order Success Page"
+"Customer Attribute","Customer Attribute"
+"Customer Attributes","Customer Attributes"
+"Customer Card not found.","Customer Card not found."
+"Customer Card with specified ID ""%1"" not found.","Customer Card with specified ID ""%1"" not found."
+"Customer Email","Customer Email"
+"Customer Group:","Customer Group:"
+"Customer Information","Customer Information"
+"Customer Information & Shipping Address","Customer Information & Shipping Address"
+"Customer is already registered","Customer is already registered"
+Customized,Personnalisé
+Cut,Couper
+Data,Données
+"Date of Birth","Date of Birth"
+"Date of Certificate Delivery","Date of Certificate Delivery"
+"Dear %recipient_name","Dear %recipient_name"
+"Dear %recipient_name,","Dear %recipient_name,"
+"Dear %sender_name,","Dear %sender_name,"
+Debug,Débogage
+Dec,Dec
+December,December
+Default,"Par défaut"
+"Default City","Default City"
+"Default Country","Default Country"
+"Default Payment Method","Default Payment Method"
+"Default Region/State","Default Region/State"
+"Default Shipping Method","Default Shipping Method"
+"Default Value","Default Value"
+"Default Values","Default Values"
+"Default Zip/Postal Code","Default Zip/Postal Code"
+Defended,Défendu
+Degree,Degré
+Delayed,Retardé
+Delete,Supprimer
+"Delete Account(s)","Delete Account(s)"
+"Delete Card","Delete Card"
+"Delete Code Pool(s)","Delete Code Pool(s)"
+"Delete Image(s)","Delete Image(s)"
+Deleted,Deleted
+Delivered,Livré
+Delivery,Delivery
+"Delivery Comment","Commentaire livraison"
+"Delivery Comment Default Text","Delivery Comment Default Text"
+"Delivery Date","Date de Livraison"
+"Delivery Date Field is Mandatory","Delivery Date Field is Mandatory"
+"Delivery Date Info","Delivery Date Info"
+"Delivery Information","Delivery Information"
+"Delivery Instructions","Instructions de Livraison"
+"Delivery Time","Delivery Time"
+"Delivery Time Interval","Delivery Time Interval"
+"Delivery Timezone","Delivery Timezone"
+Deployed,Déployé
+Deployment,Déploiement
+Depth,Profondeur
+Description,Description
+Design,Design
+"Design Card","Design Card"
+Designed,Conçu
+Destination,Destination
+Details,Détails
+"Detect User Country Based on the IP Address and Automatically Fills it in at Checkout","Detect User Country Based on the IP Address and Automatically Fills it in at Checkout"
+Detected,Détecté
+Develop,Développer
+Developed,Développé
+Development,Développement
+Diagram,Diagramme
+Dialog,Dialogue
+Difficulty,Difficulté
+Dimension,Dimension
+Direction,Direction
+Disable,Désactiver
+"Disable it to show the default order success page instead.<br>
+                        Note: if frozen, the control over the order success page is moved to the Thank You Page module.","Disable it to show the default order success page instead.<br>
+                        Note: if frozen, the control over the order success page is moved to the Thank You Page module."
+Disabled,Désactivé
+"Disabled Checkout Fields","Disabled Checkout Fields"
+Disconnected,Déconnecté
+Discount,Réduction
+"Discount Field","Discount Field"
+Discovered,Découvert
+Discovering,Découvrir
+Display,Affichage
+"Display Billing Address On","Display Billing Address On"
+"Display Header and Footer","Display Header and Footer"
+"Display Multiple Shipping Address In","Display Multiple Shipping Address In"
+"Display Options","Display Options"
+Distance,Distance
+Distributed,Distribué
+Division,Division
+"Do you have a gift card?","Avez-vous une carte cadeau ?"
+"Do you really want to delete the image?","Do you really want to delete the image?"
+Document,Document
+Documentation,Documentation
+Documented,Documenté
+Done,Fait
+Double,Double
+Downgrade,Rétrograder
+Download,Télécharger
+"Download Image","Download Image"
+"Download Image(s)","Download Image(s)"
+"Drag & Drop to Upload Image","Drag & Drop to Upload Image"
+"Drag Icon","Drag Icon"
+"Drop fields here","Drop fields here"
+Dropdown,Dropdown
+"Dropdown Menu","Dropdown Menu"
+Duplicate,Dupliquer
+"Duplicate amount found.","Duplicate amount found."
+Duration,Durée
+"Each code on a new line","Each code on a new line"
+"Each email on a new line","Each email on a new line"
+Earned,Gagné
+Edit,Modifier
+"Edit Code Pool %1","Edit Code Pool %1"
+"Edit Element","Edit Element"
+"Edit Gift Code Account","Edit Gift Code Account"
+"Edit Gift Image %1","Edit Gift Image %1"
+Edited,Édité
+Edition,Édition
+Education,Éducation
+Effect,Effet
+Effectiveness,Efficacité
+Efficiency,Efficacité
+Effort,Effort
+Element,Élément
+"Element Position","Element Position"
+"Element Size","Element Size"
+"Email Address","Adresse Email"
+"Email Options","Email Options"
+"Email Sender","Email Sender"
+"Email Template","Email Template"
+"Email Tooltip","Email Tooltip"
+Employed,Employé
+Empty,Vide
+Enable,Activer
+"Enable Delivery Comment","Enable Delivery Comment"
+"Enable Guest Checkout Login","Enable Guest Checkout Login"
+"Enable JS and HTML bundling and minifying for checkout page","Enable JS and HTML bundling and minifying for checkout page"
+"Enable One Step Checkout","Enable One Step Checkout"
+"Enable Terms and Conditions","Enable Terms and Conditions"
+"Enable the setting if you want to show the price per item for each product in the Order Summary block","Enable the setting if you want to show the price per item for each product in the Order Summary block"
+"Enable the setting to refund Gift Card balance. Please note, only the initial balance value may be returned to Gift Card Account upon refund process","Enable the setting to refund Gift Card balance. Please note, only the initial balance value may be returned to Gift Card Account upon refund process"
+"Enable this setting to automatically change an order status to ‘Processing’ if it is fully paid with a gift card.","Enable this setting to automatically change an order status to ‘Processing’ if it is fully paid with a gift card."
+Enabled,Activé
+"Enabled Checkout Fields","Enabled Checkout Fields"
+End,Fin
+Ended,Terminé
+Enhanced,Amélioré
+Enhancement,Amélioration
+"Enter Gift Card Code","Entrez le code de votre carte cadeau"
+"Enter Gift Card Code.","Enter Gift Card Code."
+"Enter Recipient Email","Enter Recipient Email"
+"Enter Recipient Name","Enter Recipient Name"
+"Enter Sender Name","Enter Sender Name"
+"Enter a valid gift card code","Veuillez entrer un code de carte cadeau valide"
+"Enter discount code","Entrez votre code promo"
+"Enter your Code","Enter your Code"
+"Enter your message","Enter your message"
+Entity,Entité
+Entry,Entrée
+Error,Erreur
+"Error occurred while deleting Account with ID %1. Error: %2","Error occurred while deleting Account with ID %1. Error: %2"
+"Error occurred while deleting Code Pool with ID %1. Error: %2","Error occurred while deleting Code Pool with ID %1. Error: %2"
+"Error occurred while deleting Image with ID %1. Error: %2","Error occurred while deleting Image with ID %1. Error: %2"
+Established,Établi
+"Estimated Shipping","Livraison Estimée"
+Examined,Examiné
+Examining,Examiner
+Executed,Exécuté
+Exercise,Exercice
+Experience,Expérience
+Experiment,Expérience
+Expired,Expired
+"Expiry Date","Expiry Date"
+"Expiry Date: %1","Expiry Date: %1"
+"Expiry Date: 01 January 2021","Expiry Date: 01 January 2021"
+"Expiry Notification Email Template","Expiry Notification Email Template"
+Explored,Exploré
+Exploring,Explorer
+Export,Exporter
+Extension,Extension
+Extensions,Extensions
+Factor,Facteur
+"Failed to apply this gift card.","Failed to apply this gift card."
+"Failed to create account from invoice.","Failed to create account from invoice."
+"Failed to remove this gift card.","Failed to remove this gift card."
+Fast,Rapide
+Feature,Fonctionnalité
+Feb,Feb
+February,February
+"Fee with id ""%1"" does not exist.","Fee with id ""%1"" does not exist."
+Feedback,Retour
+Feel,Sensation
+Few,Peu
+Field,Champ
+"Field Name","Field Name"
+"Field in, # of Quotes","Field in, # of Quotes"
+"Fields information has been successfully updated","Fields information has been successfully updated"
+File,Fichier
+"File can not be saved because it is too big.","File can not be saved because it is too big."
+"File can not be saved to the destination folder.","File can not be saved to the destination folder."
+Final,Final
+Finding,Trouver
+Finish,Finir
+"Finish Product Editing","Finish Product Editing"
+Finished,Fini
+First,Premier
+"First Name",Prénom
+Fixed,Réparé
+Flush,Vider
+Followed,Suivi
+Following,Suivi
+Footer,"Pied de page"
+"Forgot Your Password?","Mot de passe oublié?"
+"Form Completion Rate of [[category]]: [[value]]%","Form Completion Rate of [[category]]: [[value]]%"
+"Form Completion Rate, %","Form Completion Rate, %"
+Format,Format
+Formatted,Formaté
+Forward,Avant
+Found,Trouvé
+Fr,Fr
+Fragment,Fragment
+"Free Shipping","Livraison Gratuite"
+Frequency,Fréquence
+Frequently,Fréquemment
+Fri,Fri
+Friday,Friday
+From,From
+From:,From:
+"From: %1","From: %1"
+"From: Jane","From: Jane"
+Frontend,Frontend
+Full,Complet
+Function,Fonction
+Functioned,Fonctionné
+Future,Futur
+GIFTCARDCODE,GIFTCARDCODE
+GIFT_XXX_XXX,GIFT_XXX_XXX
+Gained,Gagné
+General,Général
+"General Information","General Information"
+"General Settings","General Settings"
+Generate,Générer
+"Generate Gift Card Accounts in Bulk","Generate Gift Card Accounts in Bulk"
+"Generate in Bulk","Generate in Bulk"
+"Geo IP Location","Geo IP Location"
+Geolocation,Geolocation
+"Gift Card","Carte Cadeau"
+"Gift Card ""%1"" cannot be redeemed for store credit.","Gift Card ""%1"" cannot be redeemed for store credit."
+"Gift Card ""%1"" has already been redeemed for store credit.","Gift Card ""%1"" has already been redeemed for store credit."
+"Gift Card ""%1"" was added.","Gift Card ""%1"" was added."
+"Gift Card ""%1"" was removed.","Gift Card ""%1"" was removed."
+"Gift Card %1","Gift Card %1"
+"Gift Card %1 was removed.","Gift Card %1 was removed."
+"Gift Card Account","Compte Carte Cadeau"
+"Gift Card Account ID must be specified to download image.","Gift Card Account ID must be specified to download image."
+"Gift Card Account with %1 ""%2"" is already exists.","Gift Card Account with %1 ""%2"" is already exists."
+"Gift Card Accounts","Gift Card Accounts"
+"Gift Card Already Applied","Carte cadeau déjà appliquée"
+"Gift Card Amount","Montant de la Carte Cadeau"
+"Gift Card Applied Successfully","Carte cadeau appliquée avec succès"
+"Gift Card Balance","Solde de la Carte Cadeau"
+"Gift Card Code","Code de Carte Cadeau"
+"Gift Card Code Pools","Gift Card Code Pools"
+"Gift Card Code Qty Applied On Checkout","Gift Card Code Qty Applied On Checkout"
+"Gift Card Code Request Limitation","Gift Card Code Request Limitation"
+"Gift Card Code is available","Gift Card Code is available"
+"Gift Card Code is required","Le code de carte cadeau est obligatoire"
+"Gift Card Credit Memo not found.","Gift Card Credit Memo not found."
+"Gift Card Credit Memo with specified ID ""%1"" not found.","Gift Card Credit Memo with specified ID ""%1"" not found."
+"Gift Card Details","Détails de la Carte Cadeau"
+"Gift Card Discount","Réduction Carte Cadeau"
+"Gift Card Expired","Carte cadeau expirée"
+"Gift Card Fields","Gift Card Fields"
+"Gift Card Image","Gift Card Image"
+"Gift Card Images","Gift Card Images"
+"Gift Card Information","Informations sur la Carte Cadeau"
+"Gift Card Invoice not found.","Gift Card Invoice not found."
+"Gift Card Invoice with specified ID ""%1"" not found.","Gift Card Invoice with specified ID ""%1"" not found."
+"Gift Card Lifetime","Gift Card Lifetime"
+"Gift Card Message","Gift Card Message"
+"Gift Card Number","Numéro de Carte Cadeau"
+"Gift Card Options","Gift Card Options"
+"Gift Card Order not found.","Gift Card Order not found."
+"Gift Card Order with specified ID ""%1"" not found.","Gift Card Order with specified ID ""%1"" not found."
+"Gift Card Quote not found.","Gift Card Quote not found."
+"Gift Card Quote with specified ID ""%1"" not found.","Gift Card Quote with specified ID ""%1"" not found."
+"Gift Card Recipient","Gift Card Recipient"
+"Gift Card Recipient Name","Gift Card Recipient Name"
+"Gift Card Recipient Phone","Gift Card Recipient Phone"
+"Gift Card Removed Successfully","Carte cadeau retirée avec succès"
+"Gift Card Sender","Gift Card Sender"
+"Gift Card Title","Gift Card Title"
+"Gift Card account wasn't found in the quote","Gift Card account wasn't found in the quote"
+"Gift Card max amount is %1","Gift Card max amount is %1"
+"Gift Card min amount is %1","Gift Card min amount is %1"
+"Gift Card processing error: %1","Gift Card processing error: %1"
+"Gift Card was successfully removed.","Gift Card was successfully removed."
+"Gift Card will be applied to your order","La carte cadeau sera appliquée à votre commande"
+"Gift Cards","Gift Cards"
+"Gift Code","Gift Code"
+"Gift Code Accounts","Gift Code Accounts"
+"Gift Code Pool Title","Gift Code Pool Title"
+"Gift Code Qty","Gift Code Qty"
+"Gift Codes","Gift Codes"
+"Gift Message for %1 (optional)","Gift Message for %1 (optional)"
+"Gift Message for This Order","Gift Message for This Order"
+"Gift Messages","Gift Messages"
+"Gift Wrap","Emballage cadeau"
+"Gift Wrap Fee","Gift Wrap Fee"
+"Gift card %1 balance does not have funds.","Gift card %1 balance does not have funds."
+"Gift card %1 is expired.","Gift card %1 is expired."
+"Gift card %1 is not enabled.","Gift card %1 is not enabled."
+"Gift card %1 is used.","Gift card %1 is used."
+"Gift card can't be applied. Maximum discount reached.","Gift card can't be applied. Maximum discount reached."
+"Gift cards are applied at checkout","Les cartes cadeaux sont appliquées lors du paiement"
+"Gift messages has been successfully updated","Gift messages has been successfully updated"
+"Gift wrap %1","Gift wrap %1"
+Global,Global
+"Go Today","Go Today"
+Goal,Objectif
+Grade,Grade
+"Grand Total","Total Général"
+Graph,Graphique
+Grid,Grille
+Group,Groupe
+Guarded,Gardé
+"Guest checkout is disabled.","Guest checkout is disabled."
+Guidance,Orientation
+Guide,Guide
+Half,Moitié
+Handled,Géré
+Header,En-tête
+Heading,En-tête
+"Heading Text Color","Heading Text Color"
+Height,Hauteur
+"Height (px)","Height (px)"
+Help,Aide
+Hide,Masquer
+High,Élevé
+Hint,Indice
+"Hope this brightens your day!","Hope this brightens your day!"
+"How it works: the concept is similar to caching. Initially, checkout page starts loading with bundling disabled, but as soon as all files are loaded, all js and html files get minified and merged into one, so that the next time the page loads faster.","How it works: the concept is similar to caching. Initially, checkout page starts loading with bundling disabled, but as soon as all files are loaded, all js and html files get minified and merged into one, so that the next time the page loads faster."
+"How to use gift cards?","Comment utiliser les cartes cadeaux ?"
+Hunting,Chasser
+ID,ID
+Icon,Icône
+Identified,Identifié
+Identifier,Identifiant
+"If enabled, customers need to add Gift Card Codes to their accounts to use them on checkout or in the cart.","If enabled, customers need to add Gift Card Codes to their accounts to use them on checkout or in the cart."
+"If you have an account, sign in with your email address.","Si vous avez un compte, connectez-vous avec votre adresse email."
+"If you need a wider range of configurable attributes available for you to customize and fine-tune your checkout page, please get our extension 'Order Attributes'. Learn more <a target='_blank' href='%1'>here</a>.","If you need a wider range of configurable attributes available for you to customize and fine-tune your checkout page, please get our extension 'Order Attributes'. Learn more <a target='_blank' href='%1'>here</a>."
+"If you need the full control over customer attributes,
+                            you can obtain Customer Attributes extension","If you need the full control over customer attributes,
+                            you can obtain Customer Attributes extension"
+"If you need the full control over order attributes,
+                        you can obtain Order Attributes extension","If you need the full control over order attributes,
+                        you can obtain Order Attributes extension"
+"If you want to perfrom a more complex configuration and need to have an advanced control over your order attributes, go to the settings page of Amasty Order Attributes module by clicking <a target='_blank' href='%1'>here</a>.","If you want to perfrom a more complex configuration and need to have an advanced control over your order attributes, go to the settings page of Amasty Order Attributes module by clicking <a target='_blank' href='%1'>here</a>."
+Image,Image
+"Image Id %1","Image Id %1"
+"Image Size","Image Size"
+"Image Thumbnail","Image Thumbnail"
+"Image Title","Image Title"
+"Image Upload","Image Upload"
+"Image with specified ID ""%1"" not found.","Image with specified ID ""%1"" not found."
+Immediately,Immédiatement
+Impact,Impact
+Implementation,Implémentation
+Implemented,Implémenté
+Import,Importer
+Improved,Amélioré
+Improvement,Amélioration
+Inactive,Inactif
+Included,Inclus
+Incomplete,Incomplet
+Incorporated,Incorporé
+Indicator,Indicateur
+Influence,Influence
+Information,Information
+Ingredient,Ingrédient
+Initial,Initial
+"Initial Code Value","Initial Code Value"
+"Initial Value","Initial Value"
+Initiated,Initié
+Input,Entrée
+"Input field","Input field"
+Insecure,"Non sécurisé"
+Inserted,Inséré
+Inspected,Inspecté
+Inspecting,Inspecter
+Install,Installer
+"Install Customer Attributes for Magento 2 by Amasty to unlock","Install Customer Attributes for Magento 2 by Amasty to unlock"
+"Install Order Attributes for Magento 2 by Amasty to unlock","Install Order Attributes for Magento 2 by Amasty to unlock"
+Installation,Installation
+Installed,Installé
+Instantly,Instantanément
+Instruction,Instruction
+"Insufficient Gift Card Balance","Solde de carte cadeau insuffisant"
+Integrated,Intégré
+Interface,Interface
+Interrupted,Interrompu
+Interval,Intervalle
+Introduction,Introduction
+Invalid,Invalide
+"Invalid Gift Card Code","Code de carte cadeau invalide"
+"Invalid Request","Invalid Request"
+Investigated,Enquêté
+Investigating,Enquêter
+Invoiced,Invoiced
+Irregularly,Irrégulièrement
+Issue,Question
+Issued,Émis
+Item,Article
+"Item in Cart","Item in Cart"
+"Items Ordered","Items Ordered"
+"Items in Cart","Items in Cart"
+Jan,Jan
+January,January
+Job,Travail
+Joined,Rejoint
+Jul,Jul
+July,July
+Jun,Jun
+June,June
+Key,Clé
+Kind,Genre
+Knowledge,Connaissance
+Label,Étiquette
+Labeled,Étiqueté
+Last,Dernier
+"Last 30 days","Last 30 days"
+"Last 7 days","Last 7 days"
+"Last Name",Nom
+"Last month","Le mois dernier"
+"Last week","La semaine dernière"
+"Last year","L'année dernière"
+Latest,Dernier
+Launched,Lancé
+Layout,"Mise en page"
+Leadership,Leadership
+Learning,Apprentissage
+"Left (px)","Left (px)"
+Length,Longueur
+Lesson,Leçon
+"Let Customers Create an Account at Checkout","Let Customers Create an Account at Checkout"
+"Let your customers sign in with different social networks on the checkout. This setting is enabled once Social Login is installed. Learn more about it <a target='_blank' href='%1'>here</a>.","Let your customers sign in with different social networks on the checkout. This setting is enabled once Social Login is installed. Learn more about it <a target='_blank' href='%1'>here</a>."
+Level,Niveau
+"Lifetime (days)","Lifetime (days)"
+Link,Lien
+Linked,Lié
+List,Liste
+Loaded,Chargé
+Loading...,Chargement...
+Local,Local
+Located,Situé
+Locating,Localiser
+Logged,Enregistré
+Login,Connexion
+Logout,Déconnexion
+Look,Apparence
+"Look forward to seeing you at our store.","Look forward to seeing you at our store."
+"Looked at",Regardé
+Looking,Regarder
+"Looking for",Chercher
+Low,Bas
+"Mab Extensions","Extensions Mab"
+Made,Fait
+Make,Faire
+"Manage Checkout Fields","Manage Checkout Fields"
+Managed,Géré
+Management,Gestion
+Manual,Manuel
+Manually,Manuellement
+Many,Beaucoup
+Map,Carte
+Mar,Mar
+March,March
+Mark,Marquer
+Marked,Marqué
+Material,Matériau
+Matrix,Matrice
+Matter,Matière
+Max:,Max:
+Maximum,Maximum
+"Maximum image height: 390px","Maximum image height: 390px"
+"Maximum image width: 580px","Maximum image width: 580px"
+"Maximum length of the message is %1 characters.","Maximum length of the message is %1 characters."
+"Maximum number of code combinations for the current template is %1,
+            please update Quantity field accordingly.","Maximum number of code combinations for the current template is %1,
+            please update Quantity field accordingly."
+May,May
+Measure,Mesure
+Medium,Moyen
+Mentioned,Mentionné
+Menu,Menu
+Merged,Fusionné
+Message,Message
+Message:,Message:
+Method,Méthode
+"Method Title","Method Title"
+Metric,Métrique
+Migrate,Migrer
+Migrated,Migré
+"Min and Max values of open amount can't be equal.","Min and Max values of open amount can't be equal."
+"Min value of open amount must be lower then Max value.","Min value of open amount must be lower then Max value."
+Min:,Min:
+Minimum,Minimum
+Mission,Mission
+Mo,Mo
+Modal,Modal
+Model,Modèle
+Modern,Modern
+Modification,Modification
+Modified,Modifié
+Module,Module
+Mon,Mon
+Monday,Monday
+Monitored,Surveillé
+Monitoring,Surveillance
+Move,Déplacer
+Moved,Déplacé
+Multiple,Multiple
+"Multiple gift cards can be applied","Plusieurs cartes cadeaux peuvent être appliquées"
+"My Account","Mon Compte"
+"My Addresses","Mes Adresses"
+"My Orders","Mes Commandes"
 "My Wishlist","Ma Liste de Souhaits"
+N/A,N/A
+Name,Nom
+Named,Nommé
+Navigation,Navigation
+"Need more Custom fields?","Need more Custom fields?"
+"Need more custom fields? Please consider","Need more custom fields? Please consider"
+Never,Jamais
+New,Nouveau
+"New Address","Nouvelle Adresse"
+"New Code Pool","New Code Pool"
+"New Customer","Nouveau Client"
+"New Gift Code Account","New Gift Code Account"
+"New Gift Image","New Gift Image"
+"Newsletter Checkbox","Newsletter Checkbox"
 "Newsletter Subscriptions","Abonnements Newsletter"
-"Logout","Déconnexion"
-"Login","Connexion"
-"Register","S'inscrire"
+"Newsletter is Checked by Default","Newsletter is Checked by Default"
+Next,Suivant
+"Next month","Le mois prochain"
+"Next week","La semaine prochaine"
+"Next year","L'année prochaine"
+No,Non
+"No Historycal Data","No Historycal Data"
+"No Payment Methods","No Payment Methods"
+"No available codes found for Code Pool with id ""%1""","No available codes found for Code Pool with id ""%1"""
+"No code pools found.","No code pools found."
+"No options of this product are available.","No options of this product are available."
+"No payment method selected","No payment method selected"
+"No shipping method selected","No shipping method selected"
+None,Aucun
+"Not Installed","Not Installed"
+"Not enough free gift card codes in the code pool(s) with id %1. Please generate more codes before invoicing the order.","Not enough free gift card codes in the code pool(s) with id %1. Please generate more codes before invoicing the order."
+"Not recommended","Non recommandé"
+"Not synchronized","Non synchronisé"
+"Not updated","Non mis à jour"
+"Not yet calculated","Not yet calculated"
+Note,Note
+Noted,Noté
+"Notice of the expiry of the Gift Card","Notice of the expiry of the Gift Card"
+Noticed,Remarqué
+Notification,Notification
+"Notifications are available only for purchased gift cards.","Notifications are available only for purchased gift cards."
+"Notify Customers Before Certificate Expires","Notify Customers Before Certificate Expires"
+"Notify Customers of Balance Update","Notify Customers of Balance Update"
+Nov,Nov
+November,November
+Number,Nombre
+"Number of Days Before Expiry","Number of Days Before Expiry"
+"Number of Lines in a Street Address","Number of Lines in a Street Address"
+"Number of Quotes*","Number of Quotes*"
+OK,OK
+Object,Objet
+Objective,Objectif
+Observed,Observé
+Observing,Observer
+Obtained,Obtenu
+Occasionally,Occasionnellement
+Oct,Oct
+October,October
+Offline,"Hors ligne"
+Often,Souvent
+Old,Ancien
+Oldest,"Plus ancien"
+"One Step Checkout","Commande en Une Étape"
+"One-page checkout is turned off.","One-page checkout is turned off."
+Online,"En ligne"
+Opened,Ouvert
+Operated,Opéré
+Operation,Opération
+Opinion,Opinion
+Optimization,Optimisation
+Optimized,Optimisé
+Option,Option
+Optional,Optionnel
+"Optional UI Elements","Optional UI Elements"
+"Options Details","Options Details"
+Order,Commande
+"Order #","Order #"
+"Order Attribute","Order Attribute"
+"Order Attributes","Order Attributes"
+"Order Comment","Commentaire de commande"
+"Order Comments","Commentaires de Commande"
+"Order Date:","Order Date:"
+"Order History","Order History"
+"Order ID","Order ID"
+"Order Success Page","Order Success Page"
+"Order Summary","Récapitulatif de Commande"
+"Order Summary Background","Order Summary Background"
+"Order Total","Order Total"
+"Order details:","Order details:"
+Organize,Organiser
+Organized,Organisé
+Original,Original
+"Original Amount","Montant Initial"
+"Other Amount...","Other Amount..."
+"Other amount:","Other amount:"
+"Out of stock","Out of stock"
+Output,Sortie
+Overall,Overall
+Oversight,Surveillance
+Overview,Aperçu
+"PDF File Name","PDF File Name"
+"PIN Code","Code PIN"
+Page,Page
+Parameter,Paramètre
+Part,Partie
+Partial,Partiel
+Password,"Mot de Passe"
+"Password Strength","Force du Mot de Passe"
+Past,Passé
+Paste,Coller
+Pattern,Motif
+Pause,Pause
+Paused,"En pause"
+"Pay with Gift Card","Payer avec une Carte Cadeau"
+"Payment Information","Informations de Paiement"
+"Payment Method","Mode de Paiement"
+"Payment Methods Restricted for Gift Card Purchase","Payment Methods Restricted for Gift Card Purchase"
+"Payment Page","Payment Page"
+Percent,Percent
+Percentage,Pourcentage
+Performance,Performance
+Performed,Effectué
+Period,Période
+"Period in Minutes","Period in Minutes"
+Period:,Period:
+"Personal Information","Informations Personnelles"
+Personalized,Personnalisé
+"Phone Number","Numéro de Téléphone"
+Photo,Photo
+"Physical Gift Card","Physical Gift Card"
+Pick,Choisir
+Picture,Image
+Piece,Pièce
+"Place Order","Passer la Commande"
+"Place Order Button Color","Place Order Button Color"
+"Place Order Button Position","Place Order Button Position"
+Placed,Placé
+Plan,Plan
+Planned,Planifié
+Play,Jouer
+"Please add this Gift Card Code to your customer account to proceed.","Please add this Gift Card Code to your customer account to proceed."
+"Please add {L} or {D} placeholders into the template ""%1""","Please add {L} or {D} placeholders into the template ""%1"""
+"Please be aware that it is not possible to use the gift card you purchased for your own orders.","Please be aware that it is not possible to use the gift card you purchased for your own orders."
+"Please be aware that you will not be able to use the certificate at %store_name after it expires.","Please be aware that you will not be able to use the certificate at %store_name after it expires."
+"Please be aware the process of gift card images generating may take some time. Are you sure you want to proceed with generating?","Please be aware the process of gift card images generating may take some time. Are you sure you want to proceed with generating?"
+"Please check the inserted values.","Please check the inserted values."
+"Please choose a condition to add","Please choose a condition to add"
+"Please choose gift card image.","Please choose gift card image."
+"Please confirm your password.","Please confirm your password."
+"Please consider","Please consider"
+"Please drag and drop to upload the image or browse it to proceed with the design configuration. While designing a Gift Card there is a list of draggable elements that can be used to specify the required information on a Gift Card. You can move the draggable elements to a Gift Card by dragging them or with a double-click. Due to image display limitations, the element frame is 580x390px, assuming no top or left padding. The recommended maximum width is 540px. To delete an element from a Gift Card use a double-click or click delete icon on the element.","Please drag and drop to upload the image or browse it to proceed with the design configuration. While designing a Gift Card there is a list of draggable elements that can be used to specify the required information on a Gift Card. You can move the draggable elements to a Gift Card by dragging them or with a double-click. Due to image display limitations, the element frame is 580x390px, assuming no top or left padding. The recommended maximum width is 540px. To delete an element from a Gift Card use a double-click or click delete icon on the element."
+"Please enter a valid email address (Ex: johndoe@domain.com).","Please enter a valid email address (Ex: johndoe@domain.com)."
+"Please enter a valid email address.","Veuillez entrer une adresse email valide."
+"Please enter a valid image size.","Please enter a valid image size."
+"Please enter a valid phone number.","Veuillez entrer un numéro de téléphone valide."
+"Please find below message from %sender_name","Please find below message from %sender_name"
+"Please keep in mind that some payment methods may override this option, thus for such methods the button may remain in Payment Methods block regardless of this option's value.","Please keep in mind that some payment methods may override this option, thus for such methods the button may remain in Payment Methods block regardless of this option's value."
+"Please keep in mind that, for 3 Columns layout, third column will be displayed only if Customer's Order may require shipping (contains non-Virtual products, in most cases).","Please keep in mind that, for 3 Columns layout, third column will be displayed only if Customer's Order may require shipping (contains non-Virtual products, in most cases)."
+"Please login or register as a customer to add Gift Card Codes to your customer account and display here.","Please login or register as a customer to add Gift Card Codes to your customer account and display here."
+"Please login or register on %store_name and add the following gift card code to Gift Cards section to use it on checkout or in the cart:","Please login or register on %store_name and add the following gift card code to Gift Cards section to use it on checkout or in the cart:"
+"Please make sure that the Catalog Price Range is Global. Otherwise the setting will be disabled.","Please make sure that the Catalog Price Range is Global. Otherwise the setting will be disabled."
+"Please mind that you can apply this code only once.","Please mind that you can apply this code only once."
+"Please note that Recipient Email will be displayed in Gift Code Accounts grid in case the Gift Card is saved and sent to the recipient.","Please note that Recipient Email will be displayed in Gift Code Accounts grid in case the Gift Card is saved and sent to the recipient."
+"Please note that the 'dompdf/dompdf' library must be installed for the setting work correctly, it's available for installing in composer require.","Please note that the 'dompdf/dompdf' library must be installed for the setting work correctly, it's available for installing in composer require."
+"Please select a shipping address","Veuillez sélectionner une adresse de livraison"
+"Please specify Code Pool ID before codes generation.","Please specify Code Pool ID before codes generation."
+"Please specify a delivery date.","Please specify a delivery date."
+"Please specify a delivery timezone.","Please specify a delivery timezone."
+"Please specify a gift card amount.","Please specify a gift card amount."
+"Please specify a recipient email.","Please specify a recipient email."
+"Please specify a recipient name.","Please specify a recipient name."
+"Please specify a regionId in shipping address.","Please specify a regionId in shipping address."
+"Please specify a sender name.","Please specify a sender name."
+"Please specify a valid delivery date.","Please specify a valid delivery date."
+"Please specify a valid recipient email.","Please specify a valid recipient email."
+"Please specify all the required information.","Please specify all the required information."
+"Please specify the timeframe available for delivery. Example: 8-12, 14-18, 20-24<br/>
+                    Use <a target=""_blank"" href=""https://amasty.com/delivery-date-for-magento-2.html?utm_source=extension&utm_medium=link&utm_campaign=osc-delivery-date-m2"">Amasty Delivery Date</a> to limit or restrict delivery for the same or next day the order was placed.","Please specify the timeframe available for delivery. Example: 8-12, 14-18, 20-24<br/>
+                    Use <a target=""_blank"" href=""https://amasty.com/delivery-date-for-magento-2.html?utm_source=extension&utm_medium=link&utm_campaign=osc-delivery-date-m2"">Amasty Delivery Date</a> to limit or restrict delivery for the same or next day the order was placed."
+"Please take note that custom fields will also be displayed in the Address Book, and their management is limited to the default value level.","Please take note that custom fields will also be displayed in the Address Book, and their management is limited to the default value level."
+"Please update Amasty Base module. Re-upload it and replace all the files.","Please update Amasty Base module. Re-upload it and replace all the files."
+"Please update or cancel Billing Address Form.","Please update or cancel Billing Address Form."
+"Please update or cancel Shipping Address Form.","Please update or cancel Shipping Address Form."
+"Please update your Magento to version 2.2 or newer to make this setting available.","Please update your Magento to version 2.2 or newer to make this setting available."
+"Please use","Please use"
+"Please use the following gift card code at %store_name:","Please use the following gift card code at %store_name:"
+"Please wait...","Veuillez patienter..."
+"Please, choose image..","Please, choose image.."
+"Please, enter valid value","Please, enter valid value"
+"Please, save Code Pool before generating codes.","Please, save Code Pool before generating codes."
+"Please, select a static block","Please, select a static block"
+Plugin,Plugin
+Popup,Popup
+Portion,Portion
+"Position On Checkout","Position On Checkout"
+Positioned,Positionné
+Postponed,Reporté
+"Powered on",Allumé
+Practice,Pratique
+Preference,Préférence
+Prepared,Préparé
+Present,Présent
+Preserved,Préservé
+Prev,Prev
+Preview,Aperçu
+"Preview Gift Card","Preview Gift Card"
+Previous,Précédent
+Price,Prix
+Print,Imprimer
+Printed,Printed
+Private,Privé
+Problem,Problème
+Procedure,Procédure
+Proceed,Procéder
+"Proceed to Checkout","Finaliser la Commande"
+Process,Processus
+Processed,Traité
+Processing...,"Traitement en cours..."
+Produce,Produire
+"Product Types, Which Can Be Bought with Gift Card","Product Types, Which Can Be Bought with Gift Card"
+"Product attribute combination","Product attribute combination"
+Production,Production
+"Products subselection","Products subselection"
+Progress,Progrès
+Project,Projet
+Property,Propriété
+Proportion,Proportion
+Protected,Protégé
+"Provide customers with important info about taxes (e.g. VAT) or any other payment specifics.<br/>Supported HTML tags: &ltb&gt, &ltu&gt, &lti&gt, &lts&gt, &ltstrong&gt.","Provide customers with important info about taxes (e.g. VAT) or any other payment specifics.<br/>Supported HTML tags: &ltb&gt, &ltu&gt, &lti&gt, &lts&gt, &ltstrong&gt."
+"Provided service call does not exist.","Provided service call does not exist."
+Public,Public
+Published,Publié
+"Purchased On","Purchased On"
+Purge,Purger
+Purpose,But
+Put,Mis
+Qty,Qté
+Quality,Qualité
+Quantity,Quantité
+Quarter,Quart
+Query,Requête
+Question,Question
+Quickly,Rapidement
+"QuotePasswords with specified ID ""%1"" not found.","QuotePasswords with specified ID ""%1"" not found."
+"QuotePasswords with specified Quote ID ""%1"" not found.","QuotePasswords with specified Quote ID ""%1"" not found."
+Quoted,Cité
+Ran,Couru
+Rank,Classer
+Rarely,Rarement
+Rate,Taux
+Rating,Évaluation
+Ratio,Ratio
+"Re-order blocks via drag and drop","Re-order blocks via drag and drop"
+Ready,Prêt
+Reason,Raison
+Recent,Récent
+"Recipient Address","Recipient Address"
+"Recipient Email","Email du destinataire"
+"Recipient Name","Nom du destinataire"
+"Recipient Phone","Recipient Phone"
+"Recipient email is not valid.","Recipient email is not valid."
+Recognized,Reconnu
+Recommendation,Recommandation
+Recommended,Recommandé
+Record,Enregistrement
+Recorded,Enregistré
+Recovered,Récupéré
+"Redeem Gift Card","Utiliser une Carte Cadeau"
+Redo,Refaire
+Reference,Référence
+Referenced,Référencé
+Referred,Référé
+Refresh,Actualiser
+Refreshed,Actualisé
+Register,S'inscrire
+"Registered Customers","Clients Enregistrés"
+"Registration: A letter with further instructions will be sent to your email.","Registration: A letter with further instructions will be sent to your email."
+Regularly,Régulièrement
+Related,Lié
+Relationship,Relation
+Release,Version
+Released,Publié
+Reload,Recharger
+Relocated,Relocalisé
+"Remaining Balance","Solde Restant"
+Remove,Supprimer
+"Remove Gift Card","Retirer la Carte Cadeau"
+"Remove Gift Cards Code","Remove Gift Cards Code"
+Render,Rendre
+Renewed,Renouvelé
+Repaired,Réparé
+Reply,Réponse
+Request,Demande
+"Requests Number","Requests Number"
+Required,Requis
+"Required Fields","Champs Obligatoires"
+Researched,Recherché
+Researching,Rechercher
+Reset,Réinitialiser
+Response,Réponse
+Restart,Redémarrer
+Restore,Restaurer
+Restored,Restauré
+Result,Résultat
+Resume,Reprendre
+Retrieved,Récupéré
+Return,Retour
+Review,Avis
+"Review & Payments","Vérification et Paiement"
+Reviewed,Révisé
+Reviewing,Réviser
+Revised,Révisé
+Revision,Révision
+Row,Ligne
+SKU,SKU
+Sa,Sa
+Safeguarded,Protégé
+"Same as billing address","Identique à l'adresse de facturation"
+Sat,Sat
+Saturday,Saturday
+Save,Enregistrer
+"Save & Send Email","Save & Send Email"
+"Save and Continue Edit","Save and Continue Edit"
+"Save in address book","Enregistrer dans le carnet d'adresses"
+Saved,Sauvegardé
+Scale,Échelle
+"Schedule delivery","Schedule delivery"
+Scheduled,Programmé
+Score,Score
+Screen,Écran
+Screenshot,"Capture d'écran"
+Searching,Rechercher
+Second,Deuxième
+Section,Section
+Secure,Sécurisé
+Secured,Sécurisé
+Seeing,Voir
+Seeking,Chercher
+Seen,Vu
+Segment,Segment
+"Select Date","Sélectionner une Date"
+"Select Method","Select Method"
+"Select Shipping Address","Select Shipping Address"
+"Select Time","Sélectionner une Heure"
+"Select Timezone","Select Timezone"
+"Select custom CMS block name to be displayed above the checkout","Select custom CMS block name to be displayed above the checkout"
+"Select custom CMS block name to be displayed below the checkout","Select custom CMS block name to be displayed below the checkout"
+"Select timezone","Select timezone"
+"Select ‘Automatically’ to trigger an update of Order Summary automatically after the quantity or product options are changed.","Select ‘Automatically’ to trigger an update of Order Summary automatically after the quantity or product options are changed."
+"Select ‘Multiple’ value for a Gift Card that can be used an indefinite number of times till the balance is over. ‘Single’ value should be used for a Gift Card that needs to be applied only once. In this case, the remaining balance will be reset.","Select ‘Multiple’ value for a Gift Card that can be used an indefinite number of times till the balance is over. ‘Single’ value should be used for a Gift Card that needs to be applied only once. In this case, the remaining balance will be reset."
+Selection,Sélection
+"Send Confirmation to Sender","Send Confirmation to Sender"
+"Send Copy to","Send Copy to"
+"Send Gift Card","Envoyer une Carte Cadeau"
+"Send Gift Card Code Email When Order Item is","Send Gift Card Code Email When Order Item is"
+"Send Gift Card Later","Send Gift Card Later"
+"Send from the Following Store View","Send from the Following Store View"
+"Send later","Send later"
+"Send now","Send now"
+"Sender Confirmation Email Template","Sender Confirmation Email Template"
+"Sender Email","Sender Email"
+"Sender Name","Nom de l'expéditeur"
+Sent,Envoyé
+Sep,Sep
+September,September
+Service,Service
+Set,Ensemble
+Setting,Paramètre
+Settings,Paramètres
+Setup,Configuration
+Several,Plusieurs
+Share,Partager
+Shifted,Déplacé
+"Ship Here","Livrer ici"
+"Shipped to Name","Shipped to Name"
+Shipping,Livraison
+"Shipping Address","Adresse de Livraison"
+"Shipping Method","Mode de Livraison"
+"Shopping Cart","Panier d'Achat"
+Show,Afficher
+"Show Gift Card Options in Mini Cart And Checkout","Show Gift Card Options in Mini Cart And Checkout"
+"Show Password","Afficher le Mot de Passe"
+"Show Unit Price","Show Unit Price"
+Sidebar,"Barre latérale"
+Sign,Signe
+"Sign In","Se Connecter"
+"Sign Up for Our Newsletter","Sign Up for Our Newsletter"
+"Sign-in Information","Informations de Connexion"
+Signal,Signal
+Single,Unique
+Situated,Situé
+Size,Taille
+Skill,Compétence
+Slow,Lent
+Slowly,Lentement
+"Social Login on Checkout","Social Login on Checkout"
+Solution,Solution
+Some,Quelques
+"Some gift card accounts were not created properly.
+                    Please create them manually.","Some gift card accounts were not created properly.
+                    Please create them manually."
+"Something went wrong while creating an account. Please contact us so we can assist you.","Something went wrong while creating an account. Please contact us so we can assist you."
+"Something went wrong while generating accounts. Please review the error log.","Something went wrong while generating accounts. Please review the error log."
+"Something went wrong while saving account data. Please review the error log.","Something went wrong while saving account data. Please review the error log."
+"Something went wrong while saving the code pool data. Please review the error log.","Something went wrong while saving the code pool data. Please review the error log."
+"Something went wrong while saving the file(s).","Something went wrong while saving the file(s)."
+"Something went wrong while saving the image data. Please review the error log.","Something went wrong while saving the image data. Please review the error log."
+"Something went wrong while sending email.","Something went wrong while sending email."
+"Something went wrong with image uploading.","Something went wrong with image uploading."
+"Something went wrong with sending emails. Please review logs.","Something went wrong with sending emails. Please review logs."
+"Something went wrong with the registration.","Something went wrong with the registration."
+"Something went wrong with the subscription.","Something went wrong with the subscription."
+"Something went wrong.. Please review log for more information.","Something went wrong.. Please review log for more information."
+Sometimes,Parfois
+"Sorry, no quotes are available for this order at this time","Sorry, no quotes are available for this order at this time"
+Sort,Sorte
+Specific,Spécifique
+Specification,Spécification
+"Specified Gift Card for current user is not found.","Specified Gift Card for current user is not found."
+"Specify default text example for delivery comment.","Specify default text example for delivery comment."
+"Specify the <a href=""https://fonts.google.com/"" target=""_blank"">Google font</a> name. For example <strong>Roboto</strong>, <strong>Open Sans</strong> or <strong>Indie Flower</strong>
+                    <br/>Some fonts use extra parameters e.g. <strong>Molle:400i</strong> where 400 = regular, i = Italic (100 = thin, 700 = bold)","Specify the <a href=""https://fonts.google.com/"" target=""_blank"">Google font</a> name. For example <strong>Roboto</strong>, <strong>Open Sans</strong> or <strong>Indie Flower</strong>
+                    <br/>Some fonts use extra parameters e.g. <strong>Molle:400i</strong> where 400 = regular, i = Italic (100 = thin, 700 = bold)"
+"Specify the ID of custom CMS block to be displayed on the checkout success page","Specify the ID of custom CMS block to be displayed on the checkout success page"
+"Specify the file name not including the extension.","Specify the file name not including the extension."
+Speed,Vitesse
+Spotted,Repéré
+Standard,Standard
+Start,Démarrer
+Started,Commencé
+State/Province,État/Province
+"Static Block","Static Block"
+Status,Statut
+Step,Étape
+Stop,Arrêter
+Stopped,Arrêté
+"Store View:","Store View:"
+"Store with the specified ID ""%1"" does not exist.","Store with the specified ID ""%1"" does not exist."
+Strategy,Stratégie
+"Street Address",Adresse
+Strong,Fort
+Structure,Structure
+Structured,Structuré
+Studied,Étudié
+Studying,Étudier
+Style,Style
+Styled,Stylé
+Su,Su
+Subject,Sujet
+Submit,Submit
+"Subscribe to Newsletter","S'abonner à la Newsletter"
+Substance,Substance
+Subtotal,Sous-total
+"Success Page Custom Block","Success Page Custom Block"
+Suggestion,Suggestion
+Summary,Résumé
+Sun,Sun
+Sunday,Sunday
+Supervision,Supervision
+Support,Support
+Suspended,Suspendu
+"Switched on",Allumé
+Symbol,Symbole
+Synchronized,Synchronisé
+System,Système
+Table,Tableau
+Tag,Étiqueter
+Tagged,Étiqueté
+Tailored,"Sur mesure"
+Target,Cible
+Task,Tâche
+Tax,Taxe
+Technique,Technique
+Template,Modèle
+"Terms and Conditions Checkbox Positioning","Terms and Conditions Checkbox Positioning"
+Test,Test
+Testing,Test
+Text,Texte
+"Texts and Default Values","Texts and Default Values"
+Th,Th
+"Thank you for your subscription.","Thank you for your subscription."
+"The ""%1"" Cart doesn't contain products.","The ""%1"" Cart doesn't contain products."
+"The ""%1"" builder type isn't defined. Verify the builder and try again.","The ""%1"" builder type isn't defined. Verify the builder and try again."
+"The ""%1"" command executor isn't defined. Verify the executor and try again.","The ""%1"" command executor isn't defined. Verify the executor and try again."
+"The ""%1"" downloader type isn't defined. Verify the downloader and try again.","The ""%1"" downloader type isn't defined. Verify the downloader and try again."
+"The ""%1"" processor executor isn't defined. Verify the executor and try again.","The ""%1"" processor executor isn't defined. Verify the executor and try again."
+"The Code Pool has been deleted.","The Code Pool has been deleted."
+"The Code Pool has been saved.","The Code Pool has been saved."
+"The Image has been deleted.","The Image has been deleted."
+"The Imagick extension is required to ensure proper image display across different email clients. If you are unsure how to correctly install the necessary extension on the server, please refer 
+            to the details in the <a href=""' . . '"" target=""_blank"">article</a>.","The Imagick extension is required to ensure proper image display across different email clients. If you are unsure how to correctly install the necessary extension on the server, please refer 
+            to the details in the <a href=""' . . '"" target=""_blank"">article</a>."
+"The account has been deleted.","The account has been deleted."
+"The code account has been saved.","The code account has been saved."
+"The code cannot be applied on this website.","The code cannot be applied on this website."
+"The confirmation request has been sent.","The confirmation request has been sent."
+"The email has been added to the queue.","The email has been added to the queue."
+"The file size is too big.","The file size is too big."
+"The gift card couldn't be deleted from the quote.","The gift card couldn't be deleted from the quote."
+"The session has expired. Please refresh the page.","The session has expired. Please refresh the page."
+"The shipping method is missing. Select the shipping method and try again.","The shipping method is missing. Select the shipping method and try again."
+"The sms has been sent successfully.","The sms has been sent successfully."
+Theme,Thème
+Themed,Thématique
+"There was a problem with the subscription: %1","There was a problem with the subscription: %1"
+Third,Troisième
+"This Code Pool no longer exists.","This Code Pool no longer exists."
+"This Gift Code already exists.","This Gift Code already exists."
+"This Image no longer exists.","This Image no longer exists."
+"This gift card account is already in the quote.","This gift card account is already in the quote."
+"This is a required field.","Ceci est un champ obligatoire."
+"This month","Ce mois-ci"
+"This process cannot be undone.","This process cannot be undone."
+"This week","Cette semaine"
+"This year","Cette année"
+Thu,Thu
+Thursday,Thursday
+Tied,Attaché
+Time,Temps
+Timezone,Timezone
+"Timezones for User Choosing","Timezones for User Choosing"
+Tip,Conseil
+Title,Titre
+Titled,Intitulé
+To,To
+"To configure Postcode requirement for certain countries please check settings at Stores > Configuration > General > General > Country Options","To configure Postcode requirement for certain countries please check settings at Stores > Configuration > General > General > Country Options"
+"To configure State requirement for certain countries please check settings at Stores > Configuration > General > General > State Options","To configure State requirement for certain countries please check settings at Stores > Configuration > General > General > State Options"
+"To configure which customer attributes will be required to checkout please check settings at Stores > Configuration > Customers > Customer Configuration > Name and Address Options","To configure which customer attributes will be required to checkout please check settings at Stores > Configuration > Customers > Customer Configuration > Name and Address Options"
+"To register an account simply add a password.","To register an account simply add a password."
+To:,To:
+"To: %1","To: %1"
+"To: David","To: David"
+Today,Aujourd'hui
+Token,Jeton
+Tomorrow,Demain
+Tooltip,Info-bulle
+"Tooltip Message for Users","Tooltip Message for Users"
+"Top (px)","Top (px)"
+"Top Block","Top Block"
+Topic,Sujet
+Total,Total
+Traced,Tracé
+Tracked,Suivi
+Tracking,Suivi
+Training,Formation
+Transfer,Transférer
+Transferred,Transféré
+Transformed,Transformé
+Transmitted,Transmis
+Trial,Essai
+Triple,Triple
+Trouble,Problème
+Trying,Essayer
+"Trying to find","Essayer de trouver"
+Tu,Tu
+Tue,Tue
+Tuesday,Tuesday
+Tuned,Réglé
+"Turned on",Allumé
+Tutorial,Tutoriel
+Type,Type
+"Unable to copy file %1 for optimization processing.","Unable to copy file %1 for optimization processing."
+"Unable to generate new accounts. Error: No available codes found for Code Pool with ID ""%1"".","Unable to generate new accounts. Error: No available codes found for Code Pool with ID ""%1""."
+"Unable to remove Code %1. Error: %2","Unable to remove Code %1. Error: %2"
+"Unable to remove Code Pool with ID %1 because it is the last Code Pool.","Unable to remove Code Pool with ID %1 because it is the last Code Pool."
+"Unable to remove Code. Error: %1","Unable to remove Code. Error: %1"
+"Unable to remove Gift Card Credit Memo with ID %1. Error: %2","Unable to remove Gift Card Credit Memo with ID %1. Error: %2"
+"Unable to remove Gift Card Credit Memo. Error: %1","Unable to remove Gift Card Credit Memo. Error: %1"
+"Unable to remove Gift Card Invoice with ID %1. Error: %2","Unable to remove Gift Card Invoice with ID %1. Error: %2"
+"Unable to remove Gift Card Invoice. Error: %1","Unable to remove Gift Card Invoice. Error: %1"
+"Unable to remove Gift Card Order with ID %1. Error: %2","Unable to remove Gift Card Order with ID %1. Error: %2"
+"Unable to remove Gift Card Order. Error: %1","Unable to remove Gift Card Order. Error: %1"
+"Unable to remove Gift Card Quote with ID %1. Error: %2","Unable to remove Gift Card Quote with ID %1. Error: %2"
+"Unable to remove Gift Card Quote. Error: %1","Unable to remove Gift Card Quote. Error: %1"
+"Unable to remove Image because it is last Image.","Unable to remove Image because it is last Image."
+"Unable to remove Image with ID %1.Error: %2","Unable to remove Image with ID %1.Error: %2"
+"Unable to remove account with ID %1. Error: %2","Unable to remove account with ID %1. Error: %2"
+"Unable to remove account. Error: %1","Unable to remove account. Error: %1"
+"Unable to remove amount with ID %1. Error: %2","Unable to remove amount with ID %1. Error: %2"
+"Unable to remove amount. Error: %1","Unable to remove amount. Error: %1"
+"Unable to remove customerCard with ID %1. Error: %2","Unable to remove customerCard with ID %1. Error: %2"
+"Unable to remove customerCard. Error: %1","Unable to remove customerCard. Error: %1"
+"Unable to remove quotePasswords with ID %1. Error: %2","Unable to remove quotePasswords with ID %1. Error: %2"
+"Unable to remove quotePasswords. Error: %1","Unable to remove quotePasswords. Error: %1"
+"Unable to save Code  %1. Error: %2","Unable to save Code  %1. Error: %2"
+"Unable to save Code Pool with ID %1. Error: %2","Unable to save Code Pool with ID %1. Error: %2"
+"Unable to save Gift Card Credit Memo with ID %1. Error: %2","Unable to save Gift Card Credit Memo with ID %1. Error: %2"
+"Unable to save Gift Card Invoice with ID %1. Error: %2","Unable to save Gift Card Invoice with ID %1. Error: %2"
+"Unable to save Gift Card Order with ID %1. Error: %2","Unable to save Gift Card Order with ID %1. Error: %2"
+"Unable to save Gift Card Quote with ID %1. Error: %2","Unable to save Gift Card Quote with ID %1. Error: %2"
+"Unable to save Image  %1. Error: %2","Unable to save Image  %1. Error: %2"
+"Unable to save account with ID %1. Error: %2","Unable to save account with ID %1. Error: %2"
+"Unable to save amount with ID %1. Error: %2","Unable to save amount with ID %1. Error: %2"
+"Unable to save customerCard with ID %1. Error: %2","Unable to save customerCard with ID %1. Error: %2"
+"Unable to save new Code Pool. Error: %1","Unable to save new Code Pool. Error: %1"
+"Unable to save new Code. Error: %1","Unable to save new Code. Error: %1"
+"Unable to save new Customer Card. Error: %1","Unable to save new Customer Card. Error: %1"
+"Unable to save new Gift Card Credit Memo. Error: %1","Unable to save new Gift Card Credit Memo. Error: %1"
+"Unable to save new Gift Card Invoice. Error: %1","Unable to save new Gift Card Invoice. Error: %1"
+"Unable to save new Gift Card Order. Error: %1","Unable to save new Gift Card Order. Error: %1"
+"Unable to save new Gift Card Quote. Error: %1","Unable to save new Gift Card Quote. Error: %1"
+"Unable to save new Image. Error: %1","Unable to save new Image. Error: %1"
+"Unable to save new account. Error: %1","Unable to save new account. Error: %1"
+"Unable to save new amount. Error: %1","Unable to save new amount. Error: %1"
+"Unable to save new quotePasswords. Error: %1","Unable to save new quotePasswords. Error: %1"
+"Unable to save quotePasswords with ID %1. Error: %2","Unable to save quotePasswords with ID %1. Error: %2"
+"Unagle to delete image. Error: %1","Unagle to delete image. Error: %1"
+Unavailable,Indisponible
+Undefined,Undefined
+Understanding,Compréhension
+Undo,Annuler
+Uninstall,Désinstaller
+Unit,Unité
+United,Uni
+"Unsaved changes will be discarded.","Unsaved changes will be discarded."
+"Unused Gift Codes","Unused Gift Codes"
+"Up to 30% faster checkout page load time and up to twice smaller bandwidth consumption due to reduced resources size.","Up to 30% faster checkout page load time and up to twice smaller bandwidth consumption due to reduced resources size."
+Update,"Mettre à Jour"
+"Update Shopping Cart","Mettre à Jour le Panier"
+Updated,"Mis à jour"
+Upgrade,"Mettre à niveau"
+Upgraded,"Mis à niveau"
+Upload,Télécharger
+"Upload your own design","Upload your own design"
+Usage,Usage
+"Use Config Settings","Use Config Settings"
+"Use Gift Card","Utiliser une Carte Cadeau"
+"Use a Gift Card on Multiple Websites","Use a Gift Card on Multiple Websites"
+"Use a Gift Card to Pay for Shipping","Use a Gift Card to Pay for Shipping"
+"Use a Gift Card to Pay for Tax","Use a Gift Card to Pay for Tax"
+Used,Utilisé
+User,Utilisateur
+Utilized,Utilisé
+Valid,Valide
+"Valid Till","Valid Till"
+"Valid range: 1-4","Valid range: 1-4"
+Value,Valeur
+Variable,Variable
+Variety,Variété
+"Verify Gift Card","Vérifier la Carte Cadeau"
+Version,Version
+"Very Strong","Très Fort"
+Video,Vidéo
+View,Voir
+"View Cart","Voir le Panier"
+"View Details","View Details"
+"View On Checkout","View On Checkout"
+Viewed,Vu
+Viewing,Visualisation
+Virtual,Virtual
+Volume,Volume
+"Want to send a physical gift card or prefer to keep things digital?","Want to send a physical gift card or prefer to keep things digital?"
+Watched,Regardé
+Watching,Regarder
+We,We
+"We can't find the quote item.","We can't find the quote item."
+"We kindly pay your attention that the configuration on the Store View scope has its nuances. Changes of the fields' status made for a specific Store View will be reflected on the storefront for this Store View only. However, it won’t change the status of the updated fields in the Magento configuration (Stores > Configuration > Customers > Customer Configuration) for Website and Global scopes.","We kindly pay your attention that the configuration on the Store View scope has its nuances. Changes of the fields' status made for a specific Store View will be reflected on the storefront for this Store View only. However, it won’t change the status of the updated fields in the Magento configuration (Stores > Configuration > Customers > Customer Configuration) for Website and Global scopes."
+"We recommend generating less than 10.000 codes per time to avoid extra load to the server.","We recommend generating less than 10.000 codes per time to avoid extra load to the server."
+"We'll email you an order confirmation with details and tracking info.","We'll email you an order confirmation with details and tracking info."
+Weak,Faible
+Website,Website
+Wed,Wed
+Wednesday,Wednesday
+Weight,Poids
+"What's this?","Qu'est-ce que c'est?"
+"When disabling City, Country, State/Province, Zip/Postal Code, please keep in mind that shopping cart will also be affected since those attributes are used in estimations and calculations.","When disabling City, Country, State/Province, Zip/Postal Code, please keep in mind that shopping cart will also be affected since those attributes are used in estimations and calculations."
+"When disabling certain fields by adjusting corresponding settings in the Gift Card Extension Configuration, do not forget to update your templates for gift card related emails. Otherwise, those unnecessary variables will be included in the body of the sent message and it may cause inconvenience.","When disabling certain fields by adjusting corresponding settings in the Gift Card Extension Configuration, do not forget to update your templates for gift card related emails. Otherwise, those unnecessary variables will be included in the body of the sent message and it may cause inconvenience."
+"When set to 0 (zero), certificate will have unlimited lifetime.","When set to 0 (zero), certificate will have unlimited lifetime."
+"When set to 0 (zero), the notification is sent once the certificate expires.","When set to 0 (zero), the notification is sent once the certificate expires."
+"While Placing an Order, Optional","While Placing an Order, Optional"
+"While Placing an Order, Required","While Placing an Order, Required"
+"Whole Order","Whole Order"
+Width,Largeur
+"Width (px)","Width (px)"
+Window,Fenêtre
+Wk,Wk
+Work,Travail
+Worked,Travaillé
+"Wrong Gift Card Code.","Wrong Gift Card Code."
+"Wrong Gift Card code.","Wrong Gift Card code."
+"Wrong file extension. Please use only .csv files.","Wrong file extension. Please use only .csv files."
+"Wrong gift card code","Wrong gift card code"
+XXX,XXX
+Yes,Oui
+Yesterday,Hier
+"You already have an account with us. Sign in or continue as guest.","You already have an account with us. Sign in or continue as guest."
+"You can create an account after checkout.","You can create an account after checkout."
+"You can set Terms and Conditions <a target='_blank' href='%1'>here</a>.","You can set Terms and Conditions <a target='_blank' href='%1'>here</a>."
+"You can't apply more than %1 gift card code.","You can't apply more than %1 gift card code."
+"You can't send email for inactive account.","You can't send email for inactive account."
+"You can't send sms for inactive account.","You can't send sms for inactive account."
+"You have been bought a %balance","You have been bought a %balance"
+"You have no active Gift Card Codes added to your customer account.","You have no active Gift Card Codes added to your customer account."
+"You have no items in your shopping cart.","Votre panier est vide."
+"You must create an account during checkout.","You must create an account during checkout."
+"You purchased a %balance","You purchased a %balance"
+"You saved %1 with gift cards","Vous avez économisé %1 avec vos cartes cadeaux"
+"Your Email","Your Email"
+"Your Gift Card %gift_code balance has been updated.","Your Gift Card %gift_code balance has been updated."
+"Your Image","Your Image"
+"Your Name","Your Name"
+"Your current balance is: <b>%balance</b>.","Your current balance is: <b>%balance</b>."
+"Your gift card %gift_code","Your gift card %gift_code"
+"Your message:","Your message:"
+"Your order # is:","Your order # is:"
+"Your order number is:","Your order number is:"
+"Your session has expired","Your session has expired"
+"Zip/Postal Code","Code Postal"
+[edit],[edit]
+"at %store_name","at %store_name"
+"back to the quote","back to the quote"
+"characters remaining","characters remaining"
+"e-Gift Card","e-Gift Card"
+"expires in %expiry_days day(s).","expires in %expiry_days day(s)."
+extension.,extension.
+"gift card for %customer_name","gift card for %customer_name"
+"gift card for %recipient_name","gift card for %recipient_name"
+"gift card for you at %store_name","gift card for you at %store_name"
+here,here
+label,label
+optional,optional
+or,or
+"per 1 Item","per 1 Item"
+unlimited,unlimited
+"{L} - letter, {D} - digit<br/>
+                        e.g. PROMO_{L}{L}{D}{D}{D} results in PROMO_DF627<br/>
+                        If you're using barcode generation for gift card images, recommended maximum code length is 15 symbols. Otherwise, the optimal length is 20 symbols.","{L} - letter, {D} - digit<br/>
+                        e.g. PROMO_{L}{L}{D}{D}{D} results in PROMO_DF627<br/>
+                        If you're using barcode generation for gift card images, recommended maximum code length is 15 symbols. Otherwise, the optimal length is 20 symbols."
+"{L} - letter, {D} - digit<br/>
+                        e.g. PROMO_{L}{L}{D}{D}{D} results in PROMO_DF627<br/>
+                        Recommended code length is 20 symbols","{L} - letter, {D} - digit<br/>
+                        e.g. PROMO_{L}{L}{D}{D}{D} results in PROMO_DF627<br/>
+                        Recommended code length is 20 symbols"
