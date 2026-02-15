@@ -1,6 +1,6 @@
 <?php
 return [
-     'modules' => [
+    'modules' => [
         'Magento_Store' => 1,
         'Magento_Config' => 1,
         'Magento_AdminAnalytics' => 1,
@@ -234,7 +234,7 @@ return [
         'Magento_CardinalCommerce' => 0,
         'Magento_PaymentGraphQl' => 1,
         'Magento_Vault' => 1,
-       
+        
         'Magento_Persistent' => 1,
         'Magento_ProductAlert' => 1,
         'Magento_ProductVideo' => 1,
@@ -252,6 +252,7 @@ return [
         'Magento_ReCaptchaFrontendUi' => 1,
         'Magento_ReCaptchaMigration' => 1,
         'Magento_ReCaptchaNewsletter' => 1,
+     
         'Magento_ReCaptchaReview' => 1,
         'Magento_ReCaptchaSendFriend' => 1,
         'Magento_ReCaptchaStorePickup' => 1,
@@ -313,6 +314,7 @@ return [
         'Magento_AsynchronousOperations' => 1,
         'Magento_Usps' => 0,
         'Magento_InventoryConfigurableProductFrontendUi' => 1,
+   
         'Magento_VaultGraphQl' => 0,
         'Magento_Version' => 1,
         'Magento_InventoryInStorePickupWebapiExtension' => 1,
@@ -335,6 +337,7 @@ return [
         'Amasty_ReportBuilder' => 1,
         'Amasty_CancelOrder' => 1,
         'Amasty_Geoip' => 1,
+     
         'Amasty_CheckoutCore' => 1,
         'Amasty_CheckoutGiftWrap' => 1,
         'Amasty_CheckoutLayoutBuilder' => 1,
@@ -450,7 +453,11 @@ return [
         'Mab_Core' => 1,
         'Mab_DeliveryOptions' => 1,
         'Mab_GuestFix' => 1,
-        'Mab_License' => 1, 
+        'Mab_License' => 1,
+        'Mab_SocialLogin' => 1,
+        'Mab_SourceSelector' => 1,
+        'Mab_Theme' => 1,
+        'Mab_VisualEffects' => 1,
         'MageWorx_Info' => 1,
         'MageWorx_OrdersBase' => 1,
         'MageWorx_OrderEditor' => 1,
@@ -469,7 +476,7 @@ return [
         'Mirasvit_Report' => 1,
         'Mirasvit_Rma' => 1,
         'Amasty_CheckoutDeliveryDate' => 1,
-        'Sm_AttributesSearch' => 1,
+         'Sm_AttributesSearch' => 1,
         'Sm_AutoCompleteSearch' => 1,
         'Sm_BackEnd' => 1,
         'Sm_BundleImage' => 1,
@@ -489,6 +496,6 @@ return [
         'Xtento_PdfCustomizer' => 1,
         'Xtento_XtCore' => 1,
         'Yireo_CspUtilities' => 0,
-        'Yireo_GoogleTagManager2' => 1,
+        'Yireo_GoogleTagManager2' => 1
     ]
-     ];
+];
