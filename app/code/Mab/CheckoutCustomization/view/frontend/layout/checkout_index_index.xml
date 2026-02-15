@@ -1,74 +1,18 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Optimized Checkout Layout for Amasty One Step Checkout
- * Removes conflicts, adds professional styling
+ * Minimal Checkout Customization - NO CONFLICTS with Amasty
+ * Only adds custom CSS styling, does NOT modify jsLayout
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <!-- Preserve Amasty's checkout root -->
-        <referenceBlock name="checkout.root">
-            <arguments>
-                <argument name="jsLayout" xsi:type="array">
-                    <item name="components" xsi:type="array">
-                        <item name="checkout" xsi:type="array">
-                            <item name="children" xsi:type="array">
-                                
-                                <!-- Shipping Step Customizations -->
-                                <item name="steps" xsi:type="array">
-                                    <item name="children" xsi:type="array">
-                                        <item name="shipping-step" xsi:type="array">
-                                            <item name="children" xsi:type="array">
-                                                
-                                                <!-- Algeria-specific address fields -->
-                                                <item name="shippingAddress" xsi:type="array">
-                                                    <item name="children" xsi:type="array">
-                                                        
-                                                        <!-- Wilaya (State) Selector -->
-                                                        <item name="region_id" xsi:type="array">
-                                                            <item name="config" xsi:type="array">
-                                                                <item name="customScope" xsi:type="string">shippingAddress</item>
-                                                                <item name="template" xsi:type="string">ui/form/field</item>
-                                                                <item name="elementTmpl" xsi:type="string">ui/form/element/select</item>
-                                                                <item name="label" xsi:type="string" translate="true">Wilaya</item>
-                                                                <item name="sortOrder" xsi:type="string">90</item>
-                                                            </item>
-                                                        </item>
-                                                        
-                                                        <!-- Commune Selector -->
-                                                        <item name="city" xsi:type="array">
-                                                            <item name="config" xsi:type="array">
-                                                                <item name="customScope" xsi:type="string">shippingAddress</item>
-                                                                <item name="template" xsi:type="string">ui/form/field</item>
-                                                                <item name="elementTmpl" xsi:type="string">ui/form/element/select</item>
-                                                                <item name="label" xsi:type="string" translate="true">Commune</item>
-                                                                <item name="sortOrder" xsi:type="string">95</item>
-                                                            </item>
-                                                        </item>
-                                                        
-                                                    </item>
-                                                </item>
-                                                
-                                            </item>
-                                        </item>
-                                    </item>
-                                </item>
-                                
-                            </item>
-                        </item>
-                    </item>
-                </argument>
-            </arguments>
-        </referenceBlock>
-        
-        <!-- Add Custom CSS for Professional Styling -->
+        <!-- Add Custom CSS for Professional Styling ONLY -->
         <referenceContainer name="head.additional">
             <block class="Magento\Framework\View\Element\Template" 
                    name="checkout.custom.styles" 
                    template="Mab_CheckoutCustomization::checkout-styles.phtml"/>
         </referenceContainer>
-        
     </body>
 </page>
