@@ -1,8 +1,14 @@
+<?xml version="1.0"?>
 <!--
-    This file was previously empty or invalid, causing layout XML errors.
-    If you do not need any layout changes from Mab_Core for default layout, leave this as a harmless comment.
-    If you need to add layout updates, add valid XML below.
+/**
+ * Tawk Widget - Homepage Only Configuration
+ * Restricts widget to homepage and fixes positioning
+ */
 -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <!-- No layout updates. Placeholder to avoid XML parse errors. -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- Remove Tawk from all pages by default -->
+        <referenceBlock name="tawk_widget.embed" remove="true"/>
+    </body>
 </page>

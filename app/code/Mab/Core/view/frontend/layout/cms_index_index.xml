@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Tawk Widget - Homepage Only
+ * Shows widget ONLY on homepage with proper positioning
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mab_Core::css/tawk-custom.css"/>
+    </head>
+    <body>
+        <!-- Add Tawk widget back ONLY for homepage -->
+        <referenceContainer name="before.body.end">
+            <block class="Tawk\Widget\Block\Embed" 
+                   name="tawk_widget.embed" 
+                   template="embed.phtml" 
+                   after="-">
+                <arguments>
+                    <argument name="css_class" xsi:type="string">tawk-homepage-widget</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

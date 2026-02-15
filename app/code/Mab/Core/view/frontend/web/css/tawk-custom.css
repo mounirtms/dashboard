@@ -1,0 +1,96 @@
+/**
+ * Tawk Widget Custom Styling
+ * Fix positioning for desktop and mobile
+ */
+
+/* Desktop - Bottom Right Corner */
+@media (min-width: 768px) {
+    /* Tawk iframe container */
+    #tawkchat-container,
+    .tawk-homepage-widget {
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        z-index: 9999 !important;
+        left: auto !important;
+        top: auto !important;
+    }
+    
+    /* Tawk main iframe */
+    iframe[title*="chat"],
+    iframe[src*="tawk.to"] {
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        left: auto !important;
+        top: auto !important;
+        margin: 0 !important;
+    }
+}
+
+/* Mobile - Bottom Right, Sticky */
+@media (max-width: 767px) {
+    /* Tawk iframe container */
+    #tawkchat-container,
+    .tawk-homepage-widget {
+        position: fixed !important;
+        bottom: 10px !important;
+        right: 10px !important;
+        left: auto !important;
+        top: auto !important;
+        z-index: 9999 !important;
+        max-width: 60px !important;
+    }
+    
+    /* Tawk main iframe */
+    iframe[title*="chat"],
+    iframe[src*="tawk.to"] {
+        position: fixed !important;
+        bottom: 10px !important;
+        right: 10px !important;
+        left: auto !important;
+        top: auto !important;
+        margin: 0 !important;
+        max-width: 300px !important;
+    }
+    
+    /* Minimized button on mobile */
+    iframe[title*="chat"][style*="height: 60px"],
+    iframe[title*="chat"][style*="height:60px"] {
+        max-width: 60px !important;
+        bottom: 10px !important;
+        right: 10px !important;
+    }
+    
+    /* Expanded chat on mobile */
+    iframe[title*="chat"]:not([style*="height: 60px"]):not([style*="height:60px"]) {
+        bottom: 10px !important;
+        right: 10px !important;
+        max-width: calc(100vw - 20px) !important;
+        max-height: calc(100vh - 80px) !important;
+    }
+}
+
+/* Prevent Tawk from appearing in middle of screen */
+body > iframe[src*="tawk.to"] {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+}
+
+/* Force sticky positioning */
+.tawk-homepage-widget,
+#tawkchat-container {
+    position: fixed !important;
+    will-change: auto !important;
+}
+
+/* Hide on non-homepage (backup) */
+body:not(.cms-index-index) #tawkchat-container,
+body:not(.cms-index-index) iframe[src*="tawk.to"] {
+    display: none !important;
+}
