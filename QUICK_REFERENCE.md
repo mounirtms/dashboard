@@ -1,107 +1,91 @@
-# 🚀 Quick Reference Card - Checkout & Locale
+# Quick Reference Card - technostationery.com
 
-## 📍 Test URLs
-- **Cart:** https://technostationery.com/checkout/cart/
-- **Checkout:** https://technostationery.com/checkout/
-- **Homepage:** https://technostationery.com/
+## 🚨 Emergency Contacts
+- **Production**: https://technostationery.com/
+- **Beta**: https://beta.technostationery.com/
+- **Server IP**: 205.134.249.177
+- **Repository**: https://github.com/mounirtms/techno-magento
 
-## ✅ Current Status
-```
-✅ French translations: 1,561 lines
-✅ Amasty checkout: ENABLED
-✅ Professional styling: APPLIED
-✅ Algeria regions: 58 wilayas
-✅ Page status: HTTP 200 (Cart & Home)
-✅ Git: Pushed to master (commit c6c9fc66e)
-```
-
-## 🔧 Essential Commands
-
-### Check Configuration
+## 📁 Critical Paths
 ```bash
-cd /home/technadminy7/public_html
-php bin/magento config:show amasty_checkout/general/enabled
-php bin/magento config:show general/locale/code
+# Production
+/home/technadminy7/public_html/
+/home/technadminy7/public_html/app/code/Mab/
+
+# Beta
+/home/beta/public_html/
+/home/beta/public_html/app/code/Mab/
 ```
+
+## 🔐 Database Access
+```bash
+# Production
+/opt/mariadb10.6/mariadb/bin/mysql -u root -p'YourNewStrongPassword' \
+  -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22
+
+# Beta
+/opt/mariadb10.6/mariadb/bin/mysql -u root -p'YourNewStrongPassword' \
+  -h 127.0.0.1 -P 3307 beta_dBT8x12y22
+```
+
+## ⚡ Quick Fixes
 
 ### Clear Caches
 ```bash
 cd /home/technadminy7/public_html
+rm -rf var/cache/* var/page_cache/* var/view_preprocessed/*
 php bin/magento cache:flush
 ```
 
-### View Logs
+### Fix Permissions
 ```bash
 cd /home/technadminy7/public_html
-tail -50 var/log/system.log
-tail -50 var/log/exception.log
+chmod -R 777 var/ pub/static/ generated/
+sudo chown -R technadminy7:technadminy7 var/ pub/static/ generated/
 ```
 
-### Redeploy Static Content
+### Regenerate Code
 ```bash
 cd /home/technadminy7/public_html
-php bin/magento setup:static-content:deploy fr_FR --theme Sm/market -f
+rm -rf generated/code generated/metadata
+php bin/magento setup:di:compile
 ```
 
-## 📋 Key Features Implemented
-- [x] 1,561 French translations (Amasty modules included)
-- [x] Modern 3-column checkout layout
-- [x] Mageplaza-style checkboxes
-- [x] Professional form styling
-- [x] Algeria Wilaya/Commune selectors
-- [x] Gift Card styling with gradients
-- [x] Responsive design
-- [x] Discount code field
-- [x] Order comments
-- [x] Newsletter subscription
-- [x] Create account option
-
-## 📂 Modified Files
-```
-app/i18n/Mab/fr_FR/fr_FR.csv (1,561 lines)
-app/code/Mab/CheckoutCustomization/view/frontend/layout/checkout_index_index.xml (4.6K)
-app/code/Mab/CheckoutCustomization/view/frontend/templates/checkout-styles.phtml (5.9K)
-COMPREHENSIVE_CHECKOUT_FIX_REPORT.md (new)
+### Enable Module
+```bash
+cd /home/technadminy7/public_html
+php bin/magento module:enable Mab_ElasticsearchFix
+php bin/magento setup:upgrade
+php bin/magento cache:flush
 ```
 
-## 💾 Backup Location
+## 📊 Health Checks
+```bash
+# Server load
+uptime
+
+# PHP-FPM processes
+ps aux | grep php-fpm | wc -l
+
+# Apache status
+systemctl status httpd
+
+# Test site
+curl -I https://technostationery.com/
+curl -I https://technostationery.com/techno/tous-les-produits/bureautique.html
 ```
-/home/technadminy7/public_html_backups/comprehensive_fix_20260215_105328/
-```
 
-## 🔗 Repository
-```
-Repository: https://github.com/mounirtms/techno-magento
-Branch: master
-Commit: c6c9fc66e
-Status: ✅ Synced
-```
+## 📝 Recent Changes
+- **Feb 15, 2026**: Elasticsearch XSD fix module created
+- **Status**: Production operational, beta testing
+- **Latest Commit**: b19e925c3
 
-## ⚠️ Important Notes
-1. **Arabic removed** - only French (fr_FR) deployed
-2. **Developer mode** - ready for testing
-3. **Theme:** Sm/market (theme_id = 8)
-4. **Maintenance:** DISABLED
+## 🔧 TODO (Next Session)
+1. [ ] Enable Mab_ElasticsearchFix module (15 min)
+2. [ ] Fix commune dropdown on beta (60-90 min)
+3. [ ] Investigate Print PDF button (60-90 min)
 
-## 🧪 Testing Checklist
-- [ ] Cart page loads (French)
-- [ ] Add product to cart
-- [ ] Proceed to checkout
-- [ ] Test Wilaya selector (58 options)
-- [ ] Test Commune selector
-- [ ] Test all checkboxes
-- [ ] Test discount code
-- [ ] Test order comments
-- [ ] Place test order (COD)
-
-## 📞 Quick Troubleshooting
-| Issue | Solution |
-|-------|----------|
-| Checkout not loading | `rm -f var/.maintenance_flag && php bin/magento maintenance:disable` |
-| Translations not showing | `php bin/magento cache:flush` |
-| Layout issues | `rm -rf var/view_preprocessed/* && php bin/magento cache:clean` |
-| 500 Error | Check `tail -50 var/log/exception.log` |
-
----
-**Last Updated:** 2026-02-15  
-**Status:** ✅ READY FOR USER ACCEPTANCE TESTING
+## 📖 Documentation
+- `ACTION_PLAN_REMAINING_ISSUES.md` - Full action plan
+- `FIX_SUMMARY_2026-02-15.md` - Today's fixes
+- `app/code/Mab/ElasticsearchFix/README.md` - Module docs
