@@ -13,8 +13,10 @@ define([
     "Magento_Theme/js/view/messages",
     "ko",
     "Magento_Catalog/js/product/list/toolbar",
-    "jquery/ui-modules/widgets/slider"
-], function ($, ui, messageComponent, ko) {
+    "jquery/ui-modules/widgets/slider",
+    "Magento_Customer/js/customer-data",
+    "Magento_Ui/js/model/messageList"
+], function ($, ui, messageComponent, ko, toolbar, slider, customerData, globalMessageList) {
 
     $.widget('mage.productListToolbarForm', $.mage.productListToolbarForm, {
         options: {
@@ -352,10 +354,11 @@ define([
         },
 
         setMessage: function (obj) {
-            var messages = ko.observableArray([obj]);
-            messageComponent().messages({
-                messages: messages
-            });
+            if (obj.type === 'error') {
+                globalMessageList.addErrorMessage(obj);
+            } else {
+                globalMessageList.addSuccessMessage(obj);
+            }
         }
     });
 
