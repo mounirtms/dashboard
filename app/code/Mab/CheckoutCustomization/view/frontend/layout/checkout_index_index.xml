@@ -1,22 +1,20 @@
 <?xml version="1.0"?>
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<!--
+  Mab Checkout Customization - Compatible with Amasty One Step Checkout
+  This layout customizes the checkout but preserves Amasty's structure
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <!-- Preserve Amasty checkout root block -->
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
                     <item name="components" xsi:type="array">
                         <item name="checkout" xsi:type="array">
                             <item name="children" xsi:type="array">
-                                <item name="estimation" xsi:type="array">
-                                    <item name="config" xsi:type="array">
-                                        <item name="componentDisabled" xsi:type="boolean">true</item>
-                                    </item>
-                                </item>
-                                <item name="authentication" xsi:type="array">
-                                    <item name="config" xsi:type="array">
-                                        <item name="componentDisabled" xsi:type="boolean">true</item>
-                                    </item>
-                                </item>
+                                
+                                <!-- Ensure customer email is in shipping address section -->
                                 <item name="steps" xsi:type="array">
                                     <item name="children" xsi:type="array">
                                         <item name="shipping-step" xsi:type="array">
@@ -34,19 +32,7 @@
                                         </item>
                                     </item>
                                 </item>
-                                <item name="sidebar" xsi:type="array">
-                                    <item name="children" xsi:type="array">
-                                        <item name="summary" xsi:type="array">
-                                            <item name="children" xsi:type="array">
-                                                <item name="discount" xsi:type="array">
-                                                    <item name="config" xsi:type="array">
-                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
-                                                    </item>
-                                                </item>
-                                            </item>
-                                        </item>
-                                    </item>
-                                </item>
+                                
                             </item>
                         </item>
                     </item>
