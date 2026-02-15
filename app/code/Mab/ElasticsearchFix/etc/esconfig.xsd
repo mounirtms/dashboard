@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Fixed XSD schema for Elasticsearch configuration
+ * 
+ * This schema fixes the non-deterministic content model error in
+ * vendor/magento/module-elasticsearch/etc/esconfig.xsd
+ * 
+ * Changes:
+ * 1. Changed xs:choice to xs:sequence in configType (deterministic)
+ * 2. Simplified mixedDataType to use only xs:any with processContents="skip"
+ * 3. Added mixed="true" to allow text content
+ * 
+ * Copyright © Mab, All rights reserved.
+ */
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="config" type="configType" />
+    
+    <xs:complexType name="configType" mixed="true">
+        <xs:sequence maxOccurs="unbounded" minOccurs="0">
+            <xs:element name="stemmer" type="mixedDataType" minOccurs="0" />
+            <xs:element name="stopwords_file" type="mixedDataType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="mixedDataType" mixed="true">
+        <xs:sequence>
+            <xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
