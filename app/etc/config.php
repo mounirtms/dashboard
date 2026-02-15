@@ -403,7 +403,7 @@ return [
         'Amasty_Promo' => 1,
         'Amasty_PromoBanners' => 1,
         'Amasty_PromoBannersProPackage' => 1,
-        'Amasty_Stockstatus' => 1,
+        'Amasty_Stockstatus' => 0,
         'Amasty_PromotionSuitePremium' => 0,
         'Amasty_QuickOrder' => 0,
         'Amasty_RegenerateUrlRewrites' => 0,
