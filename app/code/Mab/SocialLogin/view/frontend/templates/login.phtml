@@ -13,7 +13,7 @@
 
 <script type="text/javascript">
     require(['jquery', 'https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js', 'https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js'], function($, firebase) {
-        var firebaseConfig = <?php echo $block->getFirebaseConfig(); ?>;
+        var firebaseConfig = <?php echo json_encode($block->getFirebaseConfig()); ?>;
         firebase.initializeApp(firebaseConfig);
 
         var auth = firebase.auth();
