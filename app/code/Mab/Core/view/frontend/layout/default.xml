@@ -2,13 +2,14 @@
 <!--
 /**
  * Tawk Widget - Homepage Only Configuration
- * Restricts widget to homepage and fixes positioning
+ *
+ * The widget display is now controlled by Tawk/Widget/Block/Embed.php::_toHtml()
+ * which checks if the current page is the homepage (cms_index_index).
  */
 -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <!-- Remove Tawk from all pages by default -->
-        <referenceBlock name="tawk_widget.embed" remove="true"/>
+        <!-- No changes needed - widget display controlled by Embed.php block -->
     </body>
 </page>

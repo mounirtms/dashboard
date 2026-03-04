@@ -164,6 +164,13 @@ class Embed extends Template
             return '';
         }
 
+        // MAB Core override: Only display on homepage (cms-index-index)
+        // This overrides the Tawk admin settings to ensure widget only appears on main page
+        $fullActionName = $this->getRequest()->getFullActionName();
+        if ($fullActionName !== 'cms_index_index') {
+            return '';
+        }
+
         $alwaysdisplay = $this->model->getAlwaysDisplay();
         $donotdisplay = $this->model->getDoNotDisplay();
         $display = true;
