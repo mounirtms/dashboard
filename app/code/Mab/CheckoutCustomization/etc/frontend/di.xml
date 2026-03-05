@@ -1,24 +1,18 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <!-- Plugin to modify checkout layout based on admin configuration -->
-    <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
-        <plugin name="mab_checkout_customization_layout_processor" 
-                type="Mab\CheckoutCustomization\Plugin\LayoutProcessor" 
-                sortOrder="100"/>
-    </type>
-    <!-- Plugin to handle discount code visibility -->
-    <type name="Magento\Checkout\Block\Cart\Coupon">
-        <plugin name="mab_checkout_customize_coupon_block" 
-                type="Mab\CheckoutCustomization\Plugin\Block\Cart\CouponPlugin" 
+<!--
+/**
+ * Checkout Customization DI Configuration
+ * Plugins for checkout field customization
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    
+    <!-- Plugin to remove fax from checkout configuration -->
+    <type name="Magento\Checkout\Block\Checkout\LayoutMerger">
+        <plugin name="mab_checkout_remove_fax_field"
+                type="Mab\CheckoutCustomization\Plugin\Checkout\RemoveFaxField"
                 sortOrder="10"/>
     </type>
-    <!-- Preference for custom coupon block -->
-    <preference for="Magento\Checkout\Block\Cart\Coupon" 
-                type="Mab\CheckoutCustomization\Block\Cart\Coupon" />
-    <!-- Plugin to ensure quote customer data is properly updated when customer logs in -->
-    <type name="Magento\Customer\Model\Session">
-        <plugin name="mab_checkoutcustomization_customer_login_quote_update" 
-                type="Mab\CheckoutCustomization\Plugin\Customer\CustomerLoginQuoteUpdate" 
-                sortOrder="100"/>
-    </type>
+    
 </config>

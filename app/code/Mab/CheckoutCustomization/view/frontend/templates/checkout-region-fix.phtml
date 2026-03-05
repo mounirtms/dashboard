@@ -1,0 +1,23 @@
+<?php
+/**
+ * Algeria Wilaya/Region Fix for Checkout
+ * Ensures proper display of wilayas in state/region dropdown
+ */
+?>
+<script type="text/x-magento-init">
+{
+    "*": {
+        "Mab_CheckoutCustomization/js/checkout-region-fix": {}
+    }
+}
+</script>
+<script type="text/javascript">
+require(['jquery', 'Mab_CheckoutCustomization/js/region-updater-mixin'], function ($) {
+    'use strict';
+    
+    // Initialize region fix when checkout loads
+    $(document).ready(function () {
+        console.log('Algeria Wilaya Fix initialized');
+    });
+});
+</script>

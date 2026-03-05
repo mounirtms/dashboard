@@ -1,54 +1,93 @@
 <style>
 /* =============================================
    PROFESSIONAL MAGENTO CHECKOUT STYLING
-   Minimal & Clean - Matches Sm/market Theme
+   Enhanced Layout - Algeria Wilaya/Region Focus
+   No Postcode - Wilaya Only
+   Matches Sm/market Theme
    ============================================= */
 
-/* Main Checkout Container */
+/* ============ MAIN LAYOUT ============ */
 .checkout-container {
-    max-width: 1140px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
-/* Step Title */
+.opc-wrapper {
+    background: #fff;
+}
+
+/* ============ STEP TITLE ============ */
 .opc-wrapper .step-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #333;
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c2c2c;
     padding-bottom: 15px;
-    margin-bottom: 25px;
-    border-bottom: 2px solid #e5e5e5;
+    margin-bottom: 30px;
+    border-bottom: 3px solid #007bff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Form Fields - Clean Professional Input Styling */
+.opc-wrapper .step-title > strong {
+    font-size: 22px;
+}
+
+/* ============ FORM FIELD LAYOUT ============ */
+/* Fieldset Spacing */
+.fieldset > .field,
 .form-shipping-address .field,
-.form-payment .field,
-.fieldset > .field {
-    margin-bottom: 20px;
+.form-payment .field {
+    margin-bottom: 18px;
 }
 
-.field .label {
-    font-weight: 500;
-    color: #666;
+/* Field Labels */
+.field .label,
+.fieldset > .field > .label {
+    font-weight: 600;
+    color: #444;
     margin-bottom: 8px;
     display: block;
-    font-size: 14px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
+.field .label::after {
+    content: ':';
+    margin-left: 2px;
+}
+
+/* Required Field Indicator */
+.field.required .label::after {
+    content: ' *';
+    color: #dc3545;
+}
+
+/* ============ INPUT FIELDS ============ */
 .field .control input[type="text"],
 .field .control input[type="email"],
 .field .control input[type="tel"],
 .field .control input[type="number"],
+.field .control input[type="password"],
 .field .control select,
 .field .control textarea {
     width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
+    padding: 12px 16px;
+    border: 2px solid #e1e1e1;
+    border-radius: 5px;
     font-size: 14px;
-    transition: border-color 0.3s ease;
+    font-family: inherit;
+    transition: all 0.3s ease;
     background: #fff;
+    color: #333;
+    box-sizing: border-box;
+}
+
+.field .control input:hover,
+.field .control select:hover,
+.field .control textarea:hover {
+    border-color: #bbb;
 }
 
 .field .control input:focus,
@@ -56,126 +95,303 @@
 .field .control textarea:focus {
     border-color: #007bff;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
 }
 
-/* Select Dropdowns - Clean Arrow */
-select {
-    background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23666" d="M6 9L1 4h10z"/></svg>') no-repeat right 15px center;
-    padding-right: 40px;
+/* Placeholder Styling */
+.field .control input::placeholder,
+.field .control textarea::placeholder {
+    color: #999;
+    font-size: 13px;
+}
+
+/* ============ SELECT DROPDOWNS ============ */
+.field .control select {
+    background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat right 12px center;
+    padding-right: 42px;
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     cursor: pointer;
+    height: 46px;
 }
 
-/* Checkboxes - Clean Modern Style */
+.field .control select option {
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* Wilaya Select - Special Styling */
+.field select[name="region_id"],
+.wilaya-select {
+    background-color: #f0f7ff;
+    border-color: #007bff;
+    font-weight: 600;
+}
+
+.field select[name="region_id"]:focus,
+.wilaya-select:focus {
+    background-color: #e7f3ff;
+    border-color: #0056b3;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+/* ============ FIELD GROUPS (2 Columns) ============ */
+/* Customer Email */
+.customer-email.fieldset {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+/* Shipping Address - Two Column Layout */
+.shipping-address-fieldset .field[name="firstname"],
+.shipping-address-fieldset .field[name="lastname"] {
+    width: 48.5%;
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 2%;
+}
+
+.shipping-address-fieldset .field[name="lastname"] {
+    margin-right: 0;
+}
+
+.shipping-address-fieldset .field[name="telephone"],
+.shipping-address-fieldset .field[name="fax"] {
+    width: 48.5%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+/* Hide fax field completely */
+.shipping-address-fieldset .field[name="fax"],
+.billing-address-fieldset .field[name="fax"] {
+    display: none !important;
+}
+
+/* Street Address Fields */
+.shipping-address-fieldset .field[name="street\\[0\\]"] {
+    margin-bottom: 12px;
+}
+
+.shipping-address-fieldset .field[name="street\\[1\\]"],
+.shipping-address-fieldset .field[name="street\\[2\\]"],
+.shipping-address-fieldset .field[name="street\\[3\\]"] {
+    margin-bottom: 12px;
+}
+
+/* City and Region (Wilaya) - Two Column Layout for Algeria */
+.shipping-address-fieldset .field[name="city"],
+.shipping-address-fieldset .field[name="region_id"] {
+    width: 48.5%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.shipping-address-fieldset .field[name="city"] {
+    margin-right: 2%;
+}
+
+.shipping-address-fieldset .field[name="region_id"] {
+    margin-right: 0;
+}
+
+/* Hide postcode completely for Algeria */
+.shipping-address-fieldset .field[name="postcode"],
+.billing-address-fieldset .field[name="postcode"],
+.field[name="postcode"] {
+    display: none !important;
+}
+
+/* Country Field - Full Width */
+.shipping-address-fieldset .field[name="country_id"] {
+    clear: both;
+    margin-top: 5px;
+}
+
+/* ============ CHECKBOXES ============ */
+.field.choice,
 .field .choice {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
-    background: #f9f9f9;
-    border: 1px solid #e5e5e5;
-    border-radius: 4px;
-    transition: all 0.2s;
+    padding: 14px 16px;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 5px;
+    transition: all 0.2s ease;
     cursor: pointer;
+    margin-bottom: 10px;
 }
 
+.field.choice:hover,
 .field .choice:hover {
-    background: #f0f0f0;
+    background: #e9ecef;
     border-color: #007bff;
 }
 
-.field .choice input[type="checkbox"],
+.field.choice input[type="checkbox"],
 .field .choice input[type="radio"] {
     width: 20px;
     height: 20px;
-    margin-right: 10px;
+    margin-right: 12px;
     cursor: pointer;
     accent-color: #007bff;
+    flex-shrink: 0;
 }
 
+.field.choice label,
 .field .choice label {
     cursor: pointer;
     font-size: 14px;
-    color: #666;
+    color: #495057;
+    font-weight: 500;
     flex: 1;
+    margin: 0;
 }
 
-/* Payment Methods - Clean Cards */
+/* ============ SHIPPING METHODS ============ */
+.table-checkout-shipping-method {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-checkout-shipping-method thead th {
+    background: #f8f9fa;
+    padding: 14px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.table-checkout-shipping-method tbody td {
+    padding: 14px;
+    border: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.table-checkout-shipping-method .row {
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.table-checkout-shipping-method .row:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+}
+
+.table-checkout-shipping-method .row._selected {
+    background: #e7f3ff;
+    border-color: #007bff;
+}
+
+.table-checkout-shipping-method .col-price {
+    font-weight: 700;
+    color: #007bff;
+    font-size: 15px;
+}
+
+.table-checkout-shipping-method .col-method {
+    font-weight: 500;
+    color: #333;
+}
+
+/* ============ PAYMENT METHODS ============ */
 .payment-method {
     background: #fff;
-    border: 2px solid #e5e5e5;
-    border-radius: 4px;
-    padding: 15px;
-    margin: 10px 0;
-    transition: all 0.2s;
+    border: 2px solid #e9ecef;
+    border-radius: 5px;
+    padding: 16px;
+    margin: 12px 0;
+    transition: all 0.2s ease;
     cursor: pointer;
 }
 
 .payment-method:hover {
     border-color: #007bff;
+    background: #f8f9fa;
 }
 
 .payment-method._active {
     border-color: #007bff;
-    background: #f0f7ff;
+    background: #e7f3ff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
 }
 
 .payment-method .payment-method-title {
-    font-weight: 600;
-    color: #333;
+    font-weight: 700;
+    color: #2c2c2c;
     font-size: 15px;
+    margin: 0;
+    display: flex;
+    align-items: center;
 }
 
-/* Shipping Methods */
-.table-checkout-shipping-method {
-    width: 100%;
+.payment-method .payment-method-title img {
+    margin-right: 10px;
+    max-height: 30px;
 }
 
-.table-checkout-shipping-method .row {
-    padding: 12px;
-    border: 1px solid #e5e5e5;
-    border-radius: 4px;
-    margin: 8px 0;
-    transition: all 0.2s;
+.payment-method .payment-method-content {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
 }
 
-.table-checkout-shipping-method .row:hover {
-    background: #f9f9f9;
-    border-color: #007bff;
-}
-
-/* Order Summary - Clean Sidebar */
+/* ============ ORDER SUMMARY SIDEBAR ============ */
 .opc-block-summary {
-    background: #f9f9f9;
-    padding: 20px;
-    border-radius: 4px;
-    border: 1px solid #e5e5e5;
+    background: #f8f9fa;
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
 }
 
 .opc-block-summary .title {
     font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: #333;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #e5e5e5;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #2c2c2c;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #007bff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .opc-block-summary .items-in-cart .product-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #e5e5e5;
+    padding: 15px 0;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+}
+
+.opc-block-summary .product-item .product-item-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    margin: 0 0 5px 0;
+}
+
+.opc-block-summary .product-item .product-item-name a {
+    color: #333;
+}
+
+.opc-block-summary .product-item .product-item-name a:hover {
+    color: #007bff;
 }
 
 .opc-block-summary .table-totals {
     width: 100%;
-    margin: 15px 0;
+    margin: 20px 0;
+    border-collapse: collapse;
 }
 
 .opc-block-summary .table-totals tr td {
-    padding: 8px 0;
+    padding: 10px 0;
     font-size: 14px;
+    border-bottom: 1px solid #e9ecef;
 }
 
 .opc-block-summary .table-totals .mark {
@@ -189,117 +405,290 @@ select {
     text-align: right;
 }
 
-.opc-block-summary .grand.totals .mark,
-.opc-block-summary .grand.totals .amount {
-    font-size: 16px;
-    font-weight: 700;
-    color: #333;
-    padding-top: 10px;
-    border-top: 2px solid #e5e5e5;
+.opc-block-summary .table-totals .grand.totals {
+    border-top: 2px solid #dee2e6;
+    margin-top: 10px;
+    padding-top: 15px;
 }
 
-/* Place Order Button - Professional */
+.opc-block-summary .table-totals .grand.totals .mark,
+.opc-block-summary .table-totals .grand.totals .amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c2c2c;
+    border-top: none;
+    padding: 15px 0 5px;
+}
+
+.opc-block-summary .table-totals .grand.totals .amount {
+    color: #007bff;
+}
+
+/* ============ PLACE ORDER BUTTON ============ */
+.actions-toolbar {
+    margin-top: 30px;
+}
+
 .actions-toolbar .primary .action.primary.checkout {
-    background: #28a745;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: #fff;
     border: none;
-    padding: 15px 30px;
+    padding: 16px 40px;
     font-size: 16px;
-    font-weight: 600;
-    border-radius: 4px;
+    font-weight: 700;
+    border-radius: 5px;
     cursor: pointer;
     width: 100%;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
 .actions-toolbar .primary .action.primary.checkout:hover {
-    background: #218838;
+    background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
 .actions-toolbar .primary .action.primary.checkout:active {
     transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
 }
 
-/* Error & Success Messages */
+.actions-toolbar .primary .action.primary.checkout:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ============ MESSAGES ============ */
+.message {
+    padding: 14px 18px;
+    border-radius: 5px;
+    margin: 15px 0;
+    font-size: 14px;
+    border-left: 4px solid;
+}
+
 .message-error {
     background: #f8d7da;
-    border: 1px solid #f5c6cb;
+    border-color: #dc3545;
     color: #721c24;
-    padding: 12px;
-    border-radius: 4px;
-    margin: 10px 0;
 }
 
 .message-success {
     background: #d4edda;
-    border: 1px solid #c3e6cb;
+    border-color: #28a745;
     color: #155724;
-    padding: 12px;
-    border-radius: 4px;
-    margin: 10px 0;
 }
 
-/* Field Validation */
+.message-warning {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.message-info {
+    background: #d1ecf1;
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+
+/* ============ VALIDATION ============ */
 .field._error .control input,
-.field._error .control select {
+.field._error .control select,
+.field._error .control textarea {
     border-color: #dc3545;
+    background: #fff5f5;
 }
 
 .field-error,
 .mage-error {
     color: #dc3545;
     font-size: 12px;
-    margin-top: 5px;
+    margin-top: 6px;
     display: block;
+    font-weight: 500;
 }
 
-/* Responsive Design */
+.mage-error[generated] {
+    display: flex;
+    align-items: center;
+}
+
+.mage-error[generated]::before {
+    content: '⚠';
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+/* ============ LOADING SPINNER ============ */
+.loading-mask {
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.loading-mask .loader {
+    background: rgba(0, 123, 255, 0.1);
+    border: 3px solid #007bff;
+    border-top-color: transparent;
+    border-radius: 50%;
+}
+
+/* ============ RESPONSIVE DESIGN ============ */
+@media (max-width: 991px) {
+    .opc-wrapper {
+        display: block;
+    }
+    
+    .opc-block-summary {
+        margin-top: 30px;
+    }
+}
+
 @media (max-width: 768px) {
     .checkout-container {
-        padding: 15px;
+        padding: 15px 10px;
     }
-    
+
     .opc-wrapper .step-title {
         font-size: 18px;
+        margin-bottom: 20px;
     }
-    
+
+    /* Stack all fields on mobile */
+    .shipping-address-fieldset .field[name="firstname"],
+    .shipping-address-fieldset .field[name="lastname"],
+    .shipping-address-fieldset .field[name="telephone"],
+    .shipping-address-fieldset .field[name="city"],
+    .shipping-address-fieldset .field[name="region_id"] {
+        width: 100%;
+        display: block;
+        margin-right: 0;
+    }
+
     .field .control input,
     .field .control select {
-        padding: 10px 12px;
+        padding: 11px 14px;
+        font-size: 14px;
     }
-    
+
     .actions-toolbar .primary .action.primary.checkout {
-        padding: 12px 24px;
+        padding: 14px 24px;
         font-size: 15px;
+    }
+
+    .opc-block-summary {
+        padding: 18px;
     }
 }
 
-/* Animations - Subtle */
+/* ============ ANIMATIONS ============ */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
 .opc-wrapper .step-content,
-.opc-block-summary {
+.opc-block-summary,
+.payment-method,
+.table-checkout-shipping-method .row {
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Focus Styles - Accessibility */
+/* ============ FOCUS & ACCESSIBILITY ============ */
 button:focus,
 input:focus,
 select:focus,
-textarea:focus {
+textarea:focus,
+.payment-method:focus {
     outline: 2px solid #007bff;
     outline-offset: 2px;
 }
 
-/* Loading State */
-.loading-mask {
-    background: rgba(255,255,255,0.95) !important;
+/* ============ UTILITY CLASSES ============ */
+.checkout-separator {
+    border-top: 2px solid #e9ecef;
+    margin: 25px 0;
+}
+
+.checkout-section {
+    margin-bottom: 30px;
+}
+
+/* ============ HIDE FIELDS GLOBALLY ============ */
+.field[name="fax"],
+input[name="fax"],
+#fax,
+.fax,
+.field[name="postcode"],
+input[name="postcode"],
+#postcode,
+.postcode {
+    display: none !important;
+}
+
+/* ============ WILAYA HIGHLIGHT ============ */
+.wilaya-highlight {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e7f3ff 100%);
+    border: 2px solid #007bff;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.wilaya-highlight .label {
+    color: #007bff;
+    font-weight: 700;
 }
 
 </style>
+
+<script>
+/**
+ * Checkout Field Layout Enhancements - Algeria Wilaya Focus
+ */
+require(['jquery'], function($) {
+    'use strict';
+    
+    $(document).ready(function() {
+        // Hide fax and postcode fields if they somehow appear
+        $('input[name="fax"]').closest('.field').hide();
+        $('input[name="postcode"]').closest('.field').hide();
+        
+        // Add placeholder text to inputs
+        $('input[name="firstname"]').attr('placeholder', 'Prénom');
+        $('input[name="lastname"]').attr('placeholder', 'Nom');
+        $('input[name="email"]').attr('placeholder', 'Email');
+        $('input[name="telephone"]').attr('placeholder', 'Téléphone');
+        $('input[name="city"]').attr('placeholder', 'Commune / Ville');
+        
+        // Add better labels
+        $('select[name="country_id"] option[value="DZ"]').text('Algérie');
+        
+        // Add wilaya highlight when Algeria is selected
+        $('select[name="country_id"]').on('change', function() {
+            if ($(this).val() === 'DZ') {
+                $('select[name="region_id"]').closest('.field').addClass('wilaya-highlight');
+                $('select[name="region_id"] option[value=""]').text('Sélectionnez une wilaya');
+            } else {
+                $('select[name="region_id"]').closest('.field').removeClass('wilaya-highlight');
+            }
+        });
+        
+        // Initialize wilaya highlight on page load
+        if ($('select[name="country_id"]').val() === 'DZ') {
+            $('select[name="region_id"]').closest('.field').addClass('wilaya-highlight');
+        }
+        
+        console.log('Checkout Algeria Wilaya layout enhancements applied');
+    });
+});
+</script>

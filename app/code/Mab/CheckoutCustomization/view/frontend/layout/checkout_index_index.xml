@@ -1,18 +1,108 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Minimal Checkout Customization - NO CONFLICTS with Amasty
- * Only adds custom CSS styling, does NOT modify jsLayout
+ * Remove Fax and Postcode Fields from Checkout
+ * Hides fax and postcode fields from shipping and billing address forms
+ * Optimized for Algeria with Wilaya/Region only
  */
 -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <!-- Add Enhanced Professional CSS for Amasty Checkout -->
-        <referenceContainer name="head.additional">
-            <block class="Magento\Framework\View\Element\Template" 
-                   name="checkout.custom.styles.enhanced" 
-                   template="Mab_CheckoutCustomization::checkout-styles-enhanced.phtml"/>
-        </referenceContainer>
+        <!-- Remove Fax and Postcode from Shipping Address Form -->
+        <referenceBlock name="checkout.shipping.address.form.additional">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="checkout" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="steps" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="shipping-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="shippingAddress" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="shipping-address-fieldset" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <!-- Remove Fax Field -->
+                                                                <item name="fax" xsi:type="array">
+                                                                    <item name="displayArea" xsi:type="string">additional-fieldsets</item>
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="visible" xsi:type="boolean">false</item>
+                                                                    </item>
+                                                                </item>
+                                                                <!-- Remove Postcode Field -->
+                                                                <item name="postcode" xsi:type="array">
+                                                                    <item name="displayArea" xsi:type="string">additional-fieldsets</item>
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="visible" xsi:type="boolean">false</item>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+
+        <!-- Remove Fax and Postcode from Billing Address Form -->
+        <referenceBlock name="checkout.billing.address.form">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="checkout" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="steps" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="billing-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="payment" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="payments-list" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="billing-address-form" xsi:type="array">
+                                                                    <item name="children" xsi:type="array">
+                                                                        <item name="billing-address-fieldset" xsi:type="array">
+                                                                            <item name="children" xsi:type="array">
+                                                                                <!-- Remove Fax Field -->
+                                                                                <item name="fax" xsi:type="array">
+                                                                                    <item name="displayArea" xsi:type="string">additional-fieldsets</item>
+                                                                                    <item name="config" xsi:type="array">
+                                                                                        <item name="visible" xsi:type="boolean">false</item>
+                                                                                    </item>
+                                                                                </item>
+                                                                                <!-- Remove Postcode Field -->
+                                                                                <item name="postcode" xsi:type="array">
+                                                                                    <item name="displayArea" xsi:type="string">additional-fieldsets</item>
+                                                                                    <item name="config" xsi:type="array">
+                                                                                        <item name="visible" xsi:type="boolean">false</item>
+                                                                                    </item>
+                                                                                </item>
+                                                                            </item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
     </body>
 </page>
