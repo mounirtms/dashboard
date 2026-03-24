@@ -12,8 +12,11 @@ define([
             initialize: function () {
                 this._super();
                 
-                // Apply default region
-                setDefaultRegion();
+                // Apply default region after a short delay
+                // This ensures Magento's region dropdown is properly initialized
+                setTimeout(function () {
+                    setDefaultRegion();
+                }, 200);
                 
                 return this;
             }
