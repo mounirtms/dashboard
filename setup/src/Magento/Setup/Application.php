@@ -3,79 +3,84 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
 namespace Magento\Setup;
 
-use Magento\Framework\App\Bootstrap;
-use Magento\Framework\ObjectManagerInterface;
+use Laminas\Mvc\Application as LaminasApplication;
+use Laminas\Mvc\Service\ServiceManagerConfig;
+use Laminas\ServiceManager\ServiceManager;
 
 /**
- * Application class for Magento Setup
+ * This class is wrapper on \Laminas\Mvc\Application
+ *
+ * It allows to do more customization like services loading, which
+ * cannot be loaded via configuration.
  */
-class Application extends \Symfony\Component\Console\Application
+class Application
 {
     /**
-     * @var ObjectManagerInterface
-     */
-    private $objectManager;
-
-    /**
-     * @var mixed
-     */
-    private $serviceManager;
-
-    /**
-     * @param string $name
-     * @param string $version
-     */
-    public function __construct($name = 'Magento', $version = '2.4.0')
-    {
-        parent::__construct($name, $version);
-    }
-
-    /**
-     * Retrieve object manager
-     *
-     * @return ObjectManagerInterface
-     */
-    public function getObjectManager()
-    {
-        if (!$this->objectManager) {
-            // Define magento-init-params if needed
-            if (!defined('MAGENTO_INIT_PARAMS')) {
-                define('MAGENTO_INIT_PARAMS', '');
-            }
-            
-            $bootstrap = Bootstrap::create(BP, $_SERVER);
-            $this->objectManager = $bootstrap->getObjectManager();
-        }
-        return $this->objectManager;
-    }
-
-    /**
-     * Bootstrap the application
+     * Creates \Laminas\Mvc\Application and bootstrap it.
+     * This method is similar to \Laminas\Mvc\Application::init but allows to load
+     * Magento specific services.
      *
      * @param array $configuration
-     * @return $this
+     * @return LaminasApplication
      */
-    public function bootstrap(array $configuration = [])
+    public function bootstrap(array $configuration)
     {
-        // Initialize object manager
-        $objectManager = $this->getObjectManager();
-        
-        // Set service manager - use object manager itself as the service manager
-        $this->serviceManager = $objectManager;
-        
-        return $this;
+        $managerConfig = isset($configuration['service_manager']) ? $configuration['service_manager'] : [];
+        $managerConfig = new ServiceManagerConfig($managerConfig);
+
+        $serviceManager = new ServiceManager();
+        $managerConfig->configureServiceManager($serviceManager);
+        $serviceManager->setService('ApplicationConfig', $configuration);
+
+        $serviceManager->get('ModuleManager')->loadModules();
+
+        // load specific services
+        if (!empty($configuration['required_services'])) {
+            $this->loadServices($serviceManager, $configuration['required_services']);
+        }
+
+        $listeners = $this->getListeners($serviceManager, $configuration);
+        $application = new LaminasApplication(
+            $serviceManager,
+            $serviceManager->get('EventManager'),
+            $serviceManager->get('Request'),
+            $serviceManager->get('Response')
+        );
+        $application->bootstrap($listeners);
+        return $application;
     }
 
     /**
-     * Get service manager
+     * Uses \Laminas\ServiceManager\ServiceManager::get method to load different kind of services.
+     * Some services cannot be loaded via configuration like \Laminas\ServiceManager\Di\DiAbstractServiceFactory and
+     * should be initialized via corresponding factory.
      *
-     * @return mixed
+     * @param ServiceManager $serviceManager
+     * @param array $services
+     * @return void
      */
-    public function getServiceManager()
+    private function loadServices(ServiceManager $serviceManager, array $services)
     {
-        return $this->serviceManager;
+        foreach ($services as $serviceName) {
+            $serviceManager->get($serviceName);
+        }
+    }
+
+    /**
+     * Gets list of application listeners.
+     *
+     * @param ServiceManager $serviceManager
+     * @param array $configuration
+     * @return array
+     */
+    private function getListeners(ServiceManager $serviceManager, array $configuration)
+    {
+        $appConfigListeners = isset($configuration['listeners']) ? $configuration['listeners'] : [];
+        $config = $serviceManager->get('config');
+        $serviceConfigListeners = isset($config['listeners']) ? $config['listeners'] : [];
+
+        return array_unique(array_merge($serviceConfigListeners, $appConfigListeners));
     }
 }
