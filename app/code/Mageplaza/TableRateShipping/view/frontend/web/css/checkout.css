@@ -89,13 +89,19 @@
 }
 
 /* ============================================
-   Radio Button Column - Compact
+   Radio Button + Icon Column - Combined
    ============================================ */
 
-.col-select {
-    width: 40px;
+.col-method {
+    width: 80px;
     text-align: center;
-    padding: 18px 10px;
+}
+
+.method-select-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
 .radio-wrapper {
@@ -146,13 +152,8 @@
 }
 
 /* ============================================
-   Icon Column
+   Icon Styling
    ============================================ */
-
-.col-icon {
-    width: 70px;
-    text-align: center;
-}
 
 .method-icon-wrapper {
     display: flex;
@@ -160,7 +161,6 @@
     justify-content: center;
     width: 56px;
     height: 56px;
-    margin: 0 auto;
     background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%);
     border-radius: 12px;
     padding: 10px;
@@ -170,10 +170,6 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-}
-
-.method-icon-default {
-    background: linear-gradient(135deg, #f0f4f8 0%, #e8edf2 100%);
 }
 
 .method-icon-svg {

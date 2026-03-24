@@ -22,8 +22,8 @@
 <tr class="shipping-method-row row" 
     data-bind="click: $parent.selectShippingMethod, 
                css: { 'selected': $parent.isSelected() }">
-    <td class="col col-select">
-        <div class="radio-wrapper">
+    <td class="col col-method">
+        <div class="method-select-wrapper">
             <input type="radio" 
                    class="radio shipping-method-radio" 
                    data-bind="
@@ -35,29 +35,27 @@
                           }"/>
             <label data-bind="attr: {for: 's_method_' + method.carrier_code + '_' + method.method_code}" 
                    class="radio-label"></label>
-        </div>
-    </td>
-    <td class="col col-icon">
-        <div class="method-icon-wrapper">
-            <!-- ko if: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
-            <img data-bind="attr: {src: method.extension_attributes.mptablerate_image, alt: method.method_title}" 
-                 class="method-icon" 
-                 src=""/>
-            <!-- /ko -->
-            <!-- ko ifnot: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
-            <!-- ko if: method.carrier_code.toLowerCase().includes('mptablerate') && (method.method_code.includes('23') || method.method_code.includes('24') || method.method_title.toLowerCase().includes('techno') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin')) -->
-            <img src="/pub/media/favicon/default/techno.png" alt="Techno" class="method-icon"/>
-            <!-- /ko -->
-            <!-- ko if: method.carrier_code.toLowerCase().includes('yalidine') || method.method_title.toLowerCase().includes('yalidine') -->
-            <img src="/pub/media/mageplaza/tablerate/yalidine-logo.jpg" alt="Yalidine" class="method-icon"/>
-            <!-- /ko -->
-            <!-- ko if: !(method.carrier_code.toLowerCase().includes('mptablerate') && (method.method_code.includes('23') || method.method_code.includes('24') || method.method_title.toLowerCase().includes('techno') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin'))) && !(method.carrier_code.toLowerCase().includes('yalidine') || method.method_title.toLowerCase().includes('yalidine')) -->
-            <svg class="method-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <!-- /ko -->
-            <!-- /ko -->
+            <div class="method-icon-wrapper">
+                <!-- ko if: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
+                <img data-bind="attr: {src: method.extension_attributes.mptablerate_image, alt: method.method_title}" 
+                     class="method-icon" 
+                     src=""/>
+                <!-- /ko -->
+                <!-- ko ifnot: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
+                <!-- ko if: method.carrier_code.toLowerCase().includes('mptablerate') && (method.method_code.includes('23') || method.method_code.includes('24') || method.method_title.toLowerCase().includes('techno') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin')) -->
+                <img src="/pub/media/favicon/default/techno.png" alt="Techno" class="method-icon"/>
+                <!-- /ko -->
+                <!-- ko if: method.carrier_code.toLowerCase().includes('yalidine') || method.method_title.toLowerCase().includes('yalidine') -->
+                <img src="/pub/media/mageplaza/tablerate/yalidine-logo.jpg" alt="Yalidine" class="method-icon"/>
+                <!-- /ko -->
+                <!-- ko if: !(method.carrier_code.toLowerCase().includes('mptablerate') && (method.method_code.includes('23') || method.method_code.includes('24') || method.method_title.toLowerCase().includes('techno') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin'))) && !(method.carrier_code.toLowerCase().includes('yalidine') || method.method_title.toLowerCase().includes('yalidine')) -->
+                <svg class="method-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- /ko -->
+                <!-- /ko -->
+            </div>
         </div>
     </td>
     <td class="col col-price">
@@ -77,7 +75,7 @@
 </tr>
 <!-- ko if: method.error_message -->
 <tr class="row row-error">
-    <td class="col col-error" colspan="4">
+    <td class="col col-error" colspan="3">
         <div role="alert" class="message error">
             <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
