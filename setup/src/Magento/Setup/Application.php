@@ -8,8 +8,6 @@ namespace Magento\Setup;
 
 use Magento\Framework\App\Bootstrap;
 use Magento\Framework\ObjectManagerInterface;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Application class for Magento Setup
@@ -20,6 +18,11 @@ class Application extends \Symfony\Component\Console\Application
      * @var ObjectManagerInterface
      */
     private $objectManager;
+
+    /**
+     * @var mixed
+     */
+    private $serviceManager;
 
     /**
      * @param string $name
@@ -38,6 +41,11 @@ class Application extends \Symfony\Component\Console\Application
     public function getObjectManager()
     {
         if (!$this->objectManager) {
+            // Define magento-init-params if needed
+            if (!defined('MAGENTO_INIT_PARAMS')) {
+                define('MAGENTO_INIT_PARAMS', '');
+            }
+            
             $bootstrap = Bootstrap::create(BP, $_SERVER);
             $this->objectManager = $bootstrap->getObjectManager();
         }
@@ -47,13 +55,27 @@ class Application extends \Symfony\Component\Console\Application
     /**
      * Bootstrap the application
      *
-     * @param InputInterface|array $input
-     * @param OutputInterface $output
-     * @return void
+     * @param array $configuration
+     * @return $this
      */
-    public function bootstrap($input, $output = null)
+    public function bootstrap(array $configuration = [])
     {
-        // Minimal bootstrap - just initialize object manager if needed
-        $this->getObjectManager();
+        // Initialize object manager
+        $objectManager = $this->getObjectManager();
+        
+        // Set service manager - use object manager itself as the service manager
+        $this->serviceManager = $objectManager;
+        
+        return $this;
+    }
+
+    /**
+     * Get service manager
+     *
+     * @return mixed
+     */
+    public function getServiceManager()
+    {
+        return $this->serviceManager;
     }
 }
