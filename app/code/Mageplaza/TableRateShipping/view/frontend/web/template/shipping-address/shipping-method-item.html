@@ -22,7 +22,7 @@
 <tr class="shipping-method-row row" 
     data-bind="click: $parent.selectShippingMethod, 
                css: { 'selected': $parent.isSelected() }">
-    <td class="col col-method col-select">
+    <td class="col col-select">
         <div class="radio-wrapper">
             <input type="radio" 
                    class="radio shipping-method-radio" 
@@ -31,47 +31,34 @@
                           checked: $parent.isSelected,
                           attr: {
                           'id': 's_method_' + method.carrier_code + '_' + method.method_code,
-                          'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code + ' ' + 'label_carrier_' + method.method_code + '_' + method.carrier_code
+                          'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code
                           }"/>
             <label data-bind="attr: {for: 's_method_' + method.carrier_code + '_' + method.method_code}" 
                    class="radio-label"></label>
         </div>
     </td>
     <td class="col col-icon">
-        <!-- ko if: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
         <div class="method-icon-wrapper">
+            <!-- ko if: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
             <img data-bind="attr: {src: method.extension_attributes.mptablerate_image, alt: method.method_title}" 
                  class="method-icon" 
                  src=""/>
-        </div>
-        <!-- /ko -->
-        <!-- ko ifnot: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
-        <div class="method-icon-wrapper method-icon-default">
-            <!-- ko if: method.method_code.includes('store') || method.method_code.includes('pickup') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin') -->
-            <svg class="method-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M9 22V12h6v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M12 2L7 7h10L12 2z" fill="currentColor"/>
-            </svg>
             <!-- /ko -->
-            <!-- ko if: method.method_code.includes('home') || method.method_code.includes('delivery') || method.method_title.toLowerCase().includes('domicile') || method.method_title.toLowerCase().includes('livraison') -->
-            <svg class="method-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3v18h18V3H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M7 7h2v2H7V7z" fill="currentColor"/>
-                <path d="M15 7h2v2h-2V7z" fill="currentColor"/>
-                <path d="M7 15h2v2H7v-2z" fill="currentColor"/>
-                <path d="M15 15h2v2h-2v-2z" fill="currentColor"/>
-                <path d="M12 12l3-3M9 15l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <!-- ko ifnot: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
+            <!-- ko if: method.carrier_code.toLowerCase().includes('mptablerate') && (method.method_code.includes('23') || method.method_code.includes('24') || method.method_title.toLowerCase().includes('techno') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin')) -->
+            <img src="/pub/media/favicon/default/techno.png" alt="Techno" class="method-icon"/>
             <!-- /ko -->
-            <!-- ko if: !(method.method_code.includes('store') || method.method_code.includes('pickup') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin')) && !(method.method_code.includes('home') || method.method_code.includes('delivery') || method.method_title.toLowerCase().includes('domicile') || method.method_title.toLowerCase().includes('livraison')) -->
+            <!-- ko if: method.carrier_code.toLowerCase().includes('yalidine') || method.method_title.toLowerCase().includes('yalidine') -->
+            <img src="/pub/media/mageplaza/tablerate/yalidine-logo.jpg" alt="Yalidine" class="method-icon"/>
+            <!-- /ko -->
+            <!-- ko if: !(method.carrier_code.toLowerCase().includes('mptablerate') && (method.method_code.includes('23') || method.method_code.includes('24') || method.method_title.toLowerCase().includes('techno') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin'))) && !(method.carrier_code.toLowerCase().includes('yalidine') || method.method_title.toLowerCase().includes('yalidine')) -->
             <svg class="method-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
                 <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
             <!-- /ko -->
+            <!-- /ko -->
         </div>
-        <!-- /ko -->
     </td>
     <td class="col col-price">
         <!-- ko foreach: $parent.getRegion('price') -->
@@ -87,16 +74,10 @@
             <!-- /ko -->
         </div>
     </td>
-    <td class="col col-carrier"
-        data-bind="attr: {'id': 'label_carrier_' + method.method_code + '_' + method.carrier_code}">
-        <div class="carrier-info">
-            <span class="carrier-title" data-bind="text: method.carrier_title"></span>
-        </div>
-    </td>
 </tr>
 <!-- ko if: method.error_message -->
 <tr class="row row-error">
-    <td class="col col-error" colspan="5">
+    <td class="col col-error" colspan="4">
         <div role="alert" class="message error">
             <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
