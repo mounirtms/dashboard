@@ -4,6 +4,7 @@
  * Remove Fax and Postcode Fields from Checkout
  * Hides fax and postcode fields from shipping and billing address forms
  * Optimized for Algeria with Wilaya/Region only
+ * Sets default region to Alger (Wilaya ID 16)
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -36,6 +37,19 @@
                                                                     <item name="displayArea" xsi:type="string">additional-fieldsets</item>
                                                                     <item name="config" xsi:type="array">
                                                                         <item name="visible" xsi:type="boolean">false</item>
+                                                                    </item>
+                                                                </item>
+                                                                <!-- Set Default Region to Alger (ID 16) -->
+                                                                <item name="region_id" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="defaultOption" xsi:type="string">16</item>
+                                                                        <item name="defaultValue" xsi:type="string">16</item>
+                                                                    </item>
+                                                                </item>
+                                                                <item name="region" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="defaultOption" xsi:type="string">16</item>
+                                                                        <item name="defaultValue" xsi:type="string">Alger</item>
                                                                     </item>
                                                                 </item>
                                                             </item>
@@ -84,6 +98,19 @@
                                                                                     <item name="displayArea" xsi:type="string">additional-fieldsets</item>
                                                                                     <item name="config" xsi:type="array">
                                                                                         <item name="visible" xsi:type="boolean">false</item>
+                                                                                    </item>
+                                                                                </item>
+                                                                                <!-- Set Default Region to Alger (ID 16) -->
+                                                                                <item name="region_id" xsi:type="array">
+                                                                                    <item name="config" xsi:type="array">
+                                                                                        <item name="defaultOption" xsi:type="string">16</item>
+                                                                                        <item name="defaultValue" xsi:type="string">16</item>
+                                                                                    </item>
+                                                                                </item>
+                                                                                <item name="region" xsi:type="array">
+                                                                                    <item name="config" xsi:type="array">
+                                                                                        <item name="defaultOption" xsi:type="string">16</item>
+                                                                                        <item name="defaultValue" xsi:type="string">Alger</item>
                                                                                     </item>
                                                                                 </item>
                                                                             </item>
