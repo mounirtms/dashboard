@@ -1,18 +1,15 @@
 var config = {
-    map: {
-        '*': {
-            // Wilaya-Commune filter for Algeria checkout
-            'wilayaCommuneFilter': 'Mab_CheckoutCustomization/js/wilaya-commune-filter',
-            // Checkout region fix for Algeria wilayas
-            'checkoutRegionFix': 'Mab_CheckoutCustomization/js/checkout-region-fix'
-        }
-    },
     config: {
         mixins: {
-            // Override Magento region updater for Algeria wilaya support
-            'Magento_Directory/js/region-updater': {
-                'Mab_CheckoutCustomization/js/region-updater-mixin': true
+            'Magento_Checkout/js/view/shipping-address': {
+                'Mab_CheckoutCustomization/js/view/shipping-address-mixin': true
             }
+        }
+    },
+    map: {
+        '*': {
+            'Mab_CheckoutCustomization/js/model/set-default-region': 
+                'Mab_CheckoutCustomization/js/model/set-default-region'
         }
     }
 };
