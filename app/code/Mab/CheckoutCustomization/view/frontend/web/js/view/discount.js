@@ -1,6 +1,6 @@
 /**
- * Discount view component (placeholder)
- * Discount functionality is disabled for this store
+ * Mab_CheckoutCustomization - Discount View (disabled placeholder)
+ * Discount code entry is disabled for this store via layout XML.
  */
 define([
     'uiComponent'
@@ -12,6 +12,7 @@ define([
             template: 'Mab_CheckoutCustomization/summary/discount-disabled'
         },
 
+        /** @returns {Boolean} */
         isDisplayed: function () {
             return false;
         }

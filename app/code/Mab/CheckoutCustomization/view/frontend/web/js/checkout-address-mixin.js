@@ -1,8 +1,10 @@
 /**
- * Wilaya-Commune Conditional Dropdown for Checkout
- * Filters communes based on selected wilaya in Magento 2 checkout
- * 
- * Usage: Apply as mixin to checkout address form components
+ * Mab_CheckoutCustomization - Checkout Address Mixin
+ * Extends checkout address form to support wilaya-commune filtering.
+ * Loads commune data and updates the city field when region (wilaya) changes.
+ *
+ * NOTE: This mixin is NOT currently registered in requirejs-config.
+ * It is kept as a reference for future commune-dropdown integration.
  */
 define([
     'jquery',
@@ -11,174 +13,85 @@ define([
 ], function ($, urlBuilder, _) {
     'use strict';
 
+    var communesCache = null;
+
+    /**
+     * Load and cache communes grouped by wilaya_id.
+     * @param {Function} callback - receives {wilayaId: [communes]}
+     */
+    function loadCommunes(callback) {
+        if (communesCache) {
+            callback(communesCache);
+            return;
+        }
+
+        $.ajax({
+            url: urlBuilder.build('rest/V1/directory/communes'),
+            type: 'GET',
+            dataType: 'json'
+        }).done(function (data) {
+            communesCache = {};
+
+            _.each(data || [], function (c) {
+                var wid = c.wilaya_id || c.region_id;
+
+                if (!communesCache[wid]) {
+                    communesCache[wid] = [];
+                }
+                communesCache[wid].push(c);
+            });
+
+            callback(communesCache);
+        }).fail(function () {
+            communesCache = {};
+            callback(communesCache);
+        });
+    }
+
     return function (target) {
         return target.extend({
-            defaults: {
-                template: 'Mab_CheckoutCustomization/address-with-commune',
-                communeOptions: [],
-                selectedWilayaId: null
-            },
 
             /**
-             * Initialize component
+             * On initialisation, subscribe to region_id changes.
              */
             initialize: function () {
                 this._super();
-                
-                // Load communes data
-                this.loadCommunesData();
-                
-                // Listen to region (wilaya) changes
-                if (this.customAttributes && this.customAttributes.region_id) {
-                    this.customAttributes.region_id.subscribe(function (wilayaId) {
-                        this.onWilayaChange(wilayaId);
-                    }, this);
+
+                var self = this;
+
+                // Observe region changes via the quote shipping address
+                if (this.source && typeof this.source.get === 'function') {
+                    // Will trigger when region_id observable changes
+                    this.source.on('shippingAddress.region_id', function (regionId) {
+                        self.onWilayaChange(regionId);
+                    });
                 }
-                
+
                 return this;
             },
 
             /**
-             * Load communes from API
+             * When wilaya changes, update commune options on the city field.
+             * @param {String|Number} regionId
              */
-            loadCommunesData: function () {
-                var self = this;
-                
-                $.ajax({
-                    url: urlBuilder.build('rest/V1/directory/communes'),
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (data) {
-                        self.communeOptions = data;
-                        self.groupCommunesByWilaya();
-                    },
-                    error: function () {
-                        console.warn('Could not load communes data. Using fallback.');
-                        self.loadCommunesFallback();
-                    }
-                });
-            },
-
-            /**
-             * Load communes from static fallback
-             */
-            loadCommunesFallback: function () {
-                var self = this;
-                
-                $.ajax({
-                    url: '/pub/media/communes.json',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (data) {
-                        self.communeOptions = data;
-                        self.groupCommunesByWilaya();
-                    }
-                });
-            },
-
-            /**
-             * Group communes by wilaya_id for easy lookup
-             */
-            groupCommunesByWilaya: function () {
-                var grouped = {};
-                
-                _.each(this.communeOptions, function (commune) {
-                    var wilayaId = commune.wilaya_id;
-                    if (!grouped[wilayaId]) {
-                        grouped[wilayaId] = [];
-                    }
-                    grouped[wilayaId].push(commune);
-                });
-                
-                this.communeOptions = grouped;
-            },
-
-            /**
-             * Handle wilaya change
-             * @param {String|Number} wilayaId
-             */
-            onWilayaChange: function (wilayaId) {
-                this.selectedWilayaId = wilayaId;
-                
-                if (!wilayaId) {
-                    this.clearCommuneOptions();
+            onWilayaChange: function (regionId) {
+                if (!regionId) {
                     return;
                 }
-                
-                this.filterCommunes(wilayaId);
-            },
 
-            /**
-             * Filter communes based on wilaya
-             * @param {String|Number} wilayaId
-             */
-            filterCommunes: function (wilayaId) {
-                var communes = this.communeOptions[wilayaId] || [];
-                var options = [{
-                    value: '',
-                    label: 'Sélectionnez une commune'
-                }];
-                
-                _.each(communes, function (commune) {
-                    options.push({
-                        value: commune.id,
-                        label: commune.name
+                loadCommunes(function (grouped) {
+                    var communes = grouped[regionId] || [],
+                        options  = [{value: '', label: 'S\u00e9lectionnez une commune'}];
+
+                    _.each(communes, function (c) {
+                        options.push({
+                            value: c.name || c.id,
+                            label: c.name || c.id
+                        });
                     });
+
+                    $(document).trigger('commune:updated', [options]);
                 });
-                
-                this.updateCommuneOptions(options);
-            },
-
-            /**
-             * Clear commune options
-             */
-            clearCommuneOptions: function () {
-                this.updateCommuneOptions([{
-                    value: '',
-                    label: 'Sélectionnez une commune'
-                }]);
-            },
-
-            /**
-             * Update commune dropdown options
-             * @param {Array} options
-             */
-            updateCommuneOptions: function (options) {
-                if (this.communeOptionsObservable) {
-                    this.communeOptionsObservable(options);
-                }
-                
-                // Trigger change event for validation
-                $(document).trigger('commune:updated', [options]);
-            },
-
-            /**
-             * Get commune options for template
-             * @returns {Array}
-             */
-            getCommuneOptions: function () {
-                return this.communeOptionsObservable || [];
-            },
-
-            /**
-             * Set selected commune
-             * @param {String} communeId
-             */
-            setCommune: function (communeId) {
-                if (this.customAttributes && this.customAttributes.city) {
-                    this.customAttributes.city(communeId);
-                }
-            },
-
-            /**
-             * Get selected commune
-             * @returns {String}
-             */
-            getCommune: function () {
-                if (this.customAttributes && this.customAttributes.city) {
-                    return this.customAttributes.city();
-                }
-                return '';
             }
         });
     };

@@ -1,3 +1,7 @@
+/**
+ * Mab_CheckoutCustomization - Custom Checkout Form Component
+ * Provides an optional custom field in the checkout flow.
+ */
 define([
     'uiComponent',
     'ko',
@@ -5,26 +9,30 @@ define([
     'mage/translate'
 ], function (Component, ko, $, $t) {
     'use strict';
+
     return Component.extend({
         defaults: {
             template: 'Mab_CheckoutCustomization/custom-checkout-form'
         },
+
         initialize: function () {
             this._super();
-            this.customField = ko.observable('');
+            this.customField    = ko.observable('');
             this.successMessage = ko.observable('');
-            this.errorMessage = ko.observable('');
+            this.errorMessage   = ko.observable('');
             return this;
         },
+
         submitForm: function () {
-            var self = this;
-            self.successMessage('');
-            self.errorMessage('');
-            // TODO: Implement AJAX call to save custom field
-            if (self.customField()) {
-                self.successMessage($t('Custom field submitted: ') + self.customField());
+            this.successMessage('');
+            this.errorMessage('');
+
+            if (this.customField()) {
+                this.successMessage(
+                    $t('Custom field submitted: ') + this.customField()
+                );
             } else {
-                self.errorMessage($t('Please enter a value.'));
+                this.errorMessage($t('Please enter a value.'));
             }
         }
     });

@@ -4,6 +4,9 @@
    Enhanced Layout - Algeria Wilaya/Region Focus
    No Postcode - Wilaya Only
    Matches Sm/market Theme
+   
+   IMPORTANT: Magento KO renders field wrapper divs with
+   name="shippingAddress.fieldname" (NOT just "fieldname")
    ============================================= */
 
 /* ============ MAIN LAYOUT ============ */
@@ -34,7 +37,6 @@
 }
 
 /* ============ FORM FIELD LAYOUT ============ */
-/* Fieldset Spacing */
 .fieldset > .field,
 .form-shipping-address .field,
 .form-payment .field {
@@ -58,8 +60,8 @@
     margin-left: 2px;
 }
 
-/* Required Field Indicator */
-.field.required .label::after {
+.field.required .label::after,
+.field._required .label::after {
     content: ' *';
     color: #dc3545;
 }
@@ -98,7 +100,6 @@
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
 }
 
-/* Placeholder Styling */
 .field .control input::placeholder,
 .field .control textarea::placeholder {
     color: #999;
@@ -121,7 +122,7 @@
     font-size: 14px;
 }
 
-/* Wilaya Select - Special Styling */
+/* Wilaya Select - Special Styling (targets the actual <select> element) */
 .field select[name="region_id"],
 .wilaya-select {
     background-color: #f0f7ff;
@@ -137,7 +138,8 @@
 }
 
 /* ============ FIELD GROUPS (2 Columns) ============ */
-/* Customer Email */
+/* NOTE: Magento KO renders name="shippingAddress.fieldname" on wrapper divs */
+
 .customer-email.fieldset {
     margin-bottom: 25px;
     padding-bottom: 25px;
@@ -145,67 +147,58 @@
 }
 
 /* Shipping Address - Two Column Layout */
-.shipping-address-fieldset .field[name="firstname"],
-.shipping-address-fieldset .field[name="lastname"] {
+#shipping-new-address-form .field[name="shippingAddress.firstname"],
+#shipping-new-address-form .field[name="shippingAddress.lastname"] {
     width: 48.5%;
     display: inline-block;
     vertical-align: top;
     margin-right: 2%;
 }
 
-.shipping-address-fieldset .field[name="lastname"] {
+#shipping-new-address-form .field[name="shippingAddress.lastname"] {
     margin-right: 0;
 }
 
-.shipping-address-fieldset .field[name="telephone"],
-.shipping-address-fieldset .field[name="fax"] {
+/* City and Region (Wilaya) - Two Column Layout */
+#shipping-new-address-form .field[name="shippingAddress.city"],
+#shipping-new-address-form .field[name="shippingAddress.region_id"] {
     width: 48.5%;
     display: inline-block;
     vertical-align: top;
 }
 
-/* Hide fax field completely */
-.shipping-address-fieldset .field[name="fax"],
-.billing-address-fieldset .field[name="fax"] {
+#shipping-new-address-form .field[name="shippingAddress.city"] {
+    margin-right: 2%;
+}
+
+#shipping-new-address-form .field[name="shippingAddress.region_id"] {
+    margin-right: 0;
+}
+
+/* ============ HIDE FIELDS GLOBALLY ============ */
+/* Use the actual KO-rendered name attribute pattern */
+.field[name="shippingAddress.fax"],
+.field[name="shippingAddress.company"],
+.field[name="shippingAddress.middlename"],
+.field[name="shippingAddress.postcode"],
+.field[name="billingAddressfree.fax"],
+.field[name="billingAddressfree.company"],
+.field[name="billingAddressfree.middlename"],
+.field[name="billingAddressfree.postcode"],
+.field[name="billingAddresscashondelivery.fax"],
+.field[name="billingAddresscashondelivery.company"],
+.field[name="billingAddresscashondelivery.middlename"],
+.field[name="billingAddresscashondelivery.postcode"] {
     display: none !important;
 }
 
-/* Street Address Fields */
-.shipping-address-fieldset .field[name="street\\[0\\]"] {
-    margin-bottom: 12px;
-}
-
-.shipping-address-fieldset .field[name="street\\[1\\]"],
-.shipping-address-fieldset .field[name="street\\[2\\]"],
-.shipping-address-fieldset .field[name="street\\[3\\]"] {
-    margin-bottom: 12px;
-}
-
-/* City and Region (Wilaya) - Two Column Layout for Algeria */
-.shipping-address-fieldset .field[name="city"],
-.shipping-address-fieldset .field[name="region_id"] {
-    width: 48.5%;
-    display: inline-block;
-    vertical-align: top;
-}
-
-.shipping-address-fieldset .field[name="city"] {
-    margin-right: 2%;
-}
-
-.shipping-address-fieldset .field[name="region_id"] {
-    margin-right: 0;
-}
-
-/* Hide postcode completely for Algeria */
-.shipping-address-fieldset .field[name="postcode"],
-.billing-address-fieldset .field[name="postcode"],
-.field[name="postcode"] {
+/* Also hide region text input (only the dropdown should show) */
+.field[name="shippingAddress.region"] {
     display: none !important;
 }
 
 /* Country Field - Full Width */
-.shipping-address-fieldset .field[name="country_id"] {
+#shipping-new-address-form .field[name="shippingAddress.country_id"] {
     clear: both;
     margin-top: 5px;
 }
@@ -518,22 +511,9 @@
     align-items: center;
 }
 
-.mage-error[generated]::before {
-    content: '⚠';
-    margin-right: 5px;
-    font-size: 14px;
-}
-
 /* ============ LOADING SPINNER ============ */
 .loading-mask {
     background: rgba(255, 255, 255, 0.95) !important;
-}
-
-.loading-mask .loader {
-    background: rgba(0, 123, 255, 0.1);
-    border: 3px solid #007bff;
-    border-top-color: transparent;
-    border-radius: 50%;
 }
 
 /* ============ RESPONSIVE DESIGN ============ */
@@ -541,7 +521,7 @@
     .opc-wrapper {
         display: block;
     }
-    
+
     .opc-block-summary {
         margin-top: 30px;
     }
@@ -558,11 +538,11 @@
     }
 
     /* Stack all fields on mobile */
-    .shipping-address-fieldset .field[name="firstname"],
-    .shipping-address-fieldset .field[name="lastname"],
-    .shipping-address-fieldset .field[name="telephone"],
-    .shipping-address-fieldset .field[name="city"],
-    .shipping-address-fieldset .field[name="region_id"] {
+    #shipping-new-address-form .field[name="shippingAddress.firstname"],
+    #shipping-new-address-form .field[name="shippingAddress.lastname"],
+    #shipping-new-address-form .field[name="shippingAddress.telephone"],
+    #shipping-new-address-form .field[name="shippingAddress.city"],
+    #shipping-new-address-form .field[name="shippingAddress.region_id"] {
         width: 100%;
         display: block;
         margin-right: 0;
@@ -586,13 +566,13 @@
 
 /* ============ ANIMATIONS ============ */
 @keyframes fadeIn {
-    from { 
-        opacity: 0; 
-        transform: translateY(10px); 
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -613,28 +593,6 @@ textarea:focus,
     outline-offset: 2px;
 }
 
-/* ============ UTILITY CLASSES ============ */
-.checkout-separator {
-    border-top: 2px solid #e9ecef;
-    margin: 25px 0;
-}
-
-.checkout-section {
-    margin-bottom: 30px;
-}
-
-/* ============ HIDE FIELDS GLOBALLY ============ */
-.field[name="fax"],
-input[name="fax"],
-#fax,
-.fax,
-.field[name="postcode"],
-input[name="postcode"],
-#postcode,
-.postcode {
-    display: none !important;
-}
-
 /* ============ WILAYA HIGHLIGHT ============ */
 .wilaya-highlight {
     background: linear-gradient(135deg, #f0f7ff 0%, #e7f3ff 100%);
@@ -648,47 +606,30 @@ input[name="postcode"],
     color: #007bff;
     font-weight: 700;
 }
-
 </style>
 
 <script>
 /**
- * Checkout Field Layout Enhancements - Algeria Wilaya Focus
+ * Checkout Field Enhancements - Algeria Focus
+ * Uses correct Knockout-rendered name attributes (shippingAddress.X)
  */
-require(['jquery'], function($) {
+require(['jquery', 'domReady!'], function($) {
     'use strict';
-    
-    $(document).ready(function() {
-        // Hide fax and postcode fields if they somehow appear
-        $('input[name="fax"]').closest('.field').hide();
-        $('input[name="postcode"]').closest('.field').hide();
-        
-        // Add placeholder text to inputs
-        $('input[name="firstname"]').attr('placeholder', 'Prénom');
-        $('input[name="lastname"]').attr('placeholder', 'Nom');
-        $('input[name="email"]').attr('placeholder', 'Email');
-        $('input[name="telephone"]').attr('placeholder', 'Téléphone');
-        $('input[name="city"]').attr('placeholder', 'Commune / Ville');
-        
-        // Add better labels
-        $('select[name="country_id"] option[value="DZ"]').text('Algérie');
-        
-        // Add wilaya highlight when Algeria is selected
-        $('select[name="country_id"]').on('change', function() {
-            if ($(this).val() === 'DZ') {
-                $('select[name="region_id"]').closest('.field').addClass('wilaya-highlight');
-                $('select[name="region_id"] option[value=""]').text('Sélectionnez une wilaya');
-            } else {
-                $('select[name="region_id"]').closest('.field').removeClass('wilaya-highlight');
-            }
-        });
-        
-        // Initialize wilaya highlight on page load
-        if ($('select[name="country_id"]').val() === 'DZ') {
-            $('select[name="region_id"]').closest('.field').addClass('wilaya-highlight');
-        }
-        
-        console.log('Checkout Algeria Wilaya layout enhancements applied');
-    });
+
+    // Add placeholders to inputs (these target the actual <input> name attrs which ARE short)
+    $('input[name="firstname"]').attr('placeholder', 'Pr\u00e9nom');
+    $('input[name="lastname"]').attr('placeholder', 'Nom');
+    $('input[name="telephone"]').attr('placeholder', 'T\u00e9l\u00e9phone');
+    $('input[name="city"]').attr('placeholder', 'Commune / Ville');
+
+    // Rename Algeria in country dropdown
+    $('select[name="country_id"] option[value="DZ"]').text('Alg\u00e9rie');
+
+    // Hide fields via correct KO name attributes (backup for CSS)
+    $('div[name="shippingAddress.fax"]').hide();
+    $('div[name="shippingAddress.company"]').hide();
+    $('div[name="shippingAddress.middlename"]').hide();
+    $('div[name="shippingAddress.postcode"]').hide();
+    $('div[name="shippingAddress.region"]').hide();
 });
 </script>

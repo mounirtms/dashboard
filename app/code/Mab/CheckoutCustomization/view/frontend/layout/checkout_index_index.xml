@@ -2,13 +2,25 @@
 <!--
 /**
  * Checkout Layout Customization for Algeria
- * - Remove Fax and Postcode fields from shipping address
- * - Ensure region dropdown works with Amasty OSC
+ * - Remove Fax, Company, Middlename, Postcode fields
+ * - Force region dropdown visible for DZ
+ * - Load enhanced checkout styles and Algeria region fix JS
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <!-- Load Algeria region fix JS and enhanced checkout styles -->
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="mab.checkout.region.fix"
+                   template="Mab_CheckoutCustomization::checkout-region-fix.phtml"
+                   after="-"/>
+            <block class="Magento\Framework\View\Element\Template"
+                   name="mab.checkout.styles.enhanced"
+                   template="Mab_CheckoutCustomization::checkout-styles-enhanced.phtml"
+                   after="mab.checkout.region.fix"/>
+        </referenceContainer>
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
@@ -23,19 +35,40 @@
                                                     <item name="children" xsi:type="array">
                                                         <item name="shipping-address-fieldset" xsi:type="array">
                                                             <item name="children" xsi:type="array">
-                                                                <!-- Remove Fax Field -->
+                                                                <!-- Remove Fax Field completely -->
                                                                 <item name="fax" xsi:type="array">
                                                                     <item name="config" xsi:type="array">
                                                                         <item name="componentDisabled" xsi:type="boolean">true</item>
                                                                     </item>
                                                                 </item>
-                                                                <!-- Hide Postcode Field (Algeria uses wilaya/commune) -->
+                                                                <!-- Remove Company (Entreprise) Field -->
+                                                                <item name="company" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                    </item>
+                                                                </item>
+                                                                <!-- Remove Middlename (Patronyme) Field -->
+                                                                <item name="middlename" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                    </item>
+                                                                </item>
+                                                                <!-- Hide Postcode Field (Algeria uses wilaya only) -->
                                                                 <item name="postcode" xsi:type="array">
                                                                     <item name="config" xsi:type="array">
                                                                         <item name="visible" xsi:type="boolean">false</item>
                                                                     </item>
                                                                     <item name="validation" xsi:type="array">
                                                                         <item name="required-entry" xsi:type="boolean">false</item>
+                                                                    </item>
+                                                                </item>
+                                                                <!-- Force Region (Wilaya) dropdown visible -->
+                                                                <item name="region_id" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="visible" xsi:type="boolean">true</item>
+                                                                    </item>
+                                                                    <item name="validation" xsi:type="array">
+                                                                        <item name="required-entry" xsi:type="boolean">true</item>
                                                                     </item>
                                                                 </item>
                                                             </item>

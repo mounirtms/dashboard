@@ -1,75 +1,27 @@
 /**
- * Disabled Discount Component
- * Replaces the original discount component with a non-functional placeholder
- * that maintains the UI component structure without breaking initialization
+ * Mab_CheckoutCustomization - Disabled Discount Component
+ * Replaces the discount component with a hidden placeholder
+ * that keeps the UI component tree intact without displaying anything.
  */
 define([
-    'uiComponent',
-    'ko'
-], function (Component, ko) {
+    'uiComponent'
+], function (Component) {
     'use strict';
 
     return Component.extend({
         defaults: {
             template: 'Mab_CheckoutCustomization/summary/discount-disabled',
-            displayArea: 'discount',
-            customMessage: ''
+            visible: false
         },
 
-        /**
-         * Initialize component
-         */
-        initialize: function () {
-            this._super();
-            
-            // Set observables
-            this.isDisplayed = ko.observable(false);
-            this.visible = ko.observable(false);
-            this.customMessage = ko.observable(this.customMessage);
-            
-            return this;
-        },
-
-        /**
-         * Initialize observables
-         */
-        initObservable: function () {
-            this._super()
-                .observe([
-                    'isDisplayed',
-                    'visible',
-                    'customMessage'
-                ]);
-
-            // Set initial state
-            this.isDisplayed(false);
-            this.visible(false);
-
-            return this;
-        },
-
-        /**
-         * Check if component should be displayed
-         * @returns {boolean}
-         */
+        /** @returns {Boolean} */
         isDisplayed: function () {
             return false;
         },
 
-        /**
-         * Check if component is visible
-         * @returns {boolean}
-         */
+        /** @returns {Boolean} */
         isVisible: function () {
             return false;
-        },
-
-        /**
-         * Get template
-         * @returns {string}
-         */
-        getTemplate: function () {
-            return this.template;
         }
     });
 });

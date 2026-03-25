@@ -1,6 +1,9 @@
 /**
- * Wilaya-Commune Conditional Dropdown
- * Filters communes based on selected wilaya
+ * Mab_CheckoutCustomization - Wilaya-Commune Conditional Dropdown
+ * Loads commune data and filters the city select based on the chosen wilaya.
+ *
+ * Usage (data-mage-init on a wilaya <select>):
+ *   <select data-mage-init='{"wilayaCommuneFilter": {}}'>
  */
 define([
     'jquery',
@@ -8,88 +11,107 @@ define([
 ], function ($, urlBuilder) {
     'use strict';
 
-    return function (config, element) {
-        var $wilayaSelect = $(element);
-        var $communeSelect = $('select[name="city"]');
-        
-        // Store all communes data
-        var communesData = {};
-        
-        /**
-         * Load communes from JSON file
-         */
-        function loadCommunesData() {
-            $.ajax({
-                url: urlBuilder.build('rest/V1/directory/communes'),
-                type: 'GET',
-                dataType: 'json',
-                async: false,
-                success: function(data) {
-                    communesData = data;
-                },
-                error: function() {
-                    // Fallback: try loading from static file
-                    $.ajax({
-                        url: '/pub/media/communes.json',
-                        type: 'GET',
-                        dataType: 'json',
-                        async: false,
-                        success: function(data) {
-                            // Group by wilaya_id
-                            data.forEach(function(commune) {
-                                if (!communesData[commune.wilaya_id]) {
-                                    communesData[commune.wilaya_id] = [];
-                                }
-                                communesData[commune.wilaya_id].push(commune);
-                            });
-                        }
-                    });
+    /** Module-level commune cache shared across instances. */
+    var communesCache = null,
+        loading       = false,
+        callbacks     = [];
+
+    /**
+     * Load communes data (async, cached).
+     * @param {Function} done - callback(communesByWilaya)
+     */
+    function loadCommunes(done) {
+        if (communesCache) {
+            done(communesCache);
+            return;
+        }
+
+        callbacks.push(done);
+
+        if (loading) {
+            return;
+        }
+
+        loading = true;
+
+        $.ajax({
+            url: urlBuilder.build('rest/V1/directory/communes'),
+            type: 'GET',
+            dataType: 'json'
+        }).done(function (data) {
+            communesCache = groupByWilaya(data || []);
+        }).fail(function () {
+            // Fallback to static JSON
+            $.getJSON('/pub/media/communes.json').done(function (data) {
+                communesCache = groupByWilaya(data || []);
+            }).fail(function () {
+                communesCache = {};
+            });
+        }).always(function () {
+            loading = false;
+            $.each(callbacks, function (_, cb) {
+                cb(communesCache || {});
+            });
+            callbacks = [];
+        });
+    }
+
+    /**
+     * Group flat commune array by wilaya_id.
+     * @param {Array} data
+     * @returns {Object}
+     */
+    function groupByWilaya(data) {
+        var grouped = {};
+
+        $.each(data, function (_, commune) {
+            var wid = commune.wilaya_id || commune.region_id;
+
+            if (wid) {
+                if (!grouped[wid]) {
+                    grouped[wid] = [];
                 }
-            });
-        }
-        
-        /**
-         * Filter communes based on wilaya
-         */
-        function filterCommunes(wilayaId) {
-            if (!wilayaId) {
-                $communeSelect.html('<option value="">Sélectionnez une commune</option>').prop('disabled', true);
-                return;
+                grouped[wid].push(commune);
             }
-            
-            var communes = communesData[wilayaId] || [];
-            var options = '<option value="">Sélectionnez une commune</option>';
-            
-            communes.forEach(function(commune) {
-                options += '<option value="' + commune.id + '">' + commune.name + '</option>';
-            });
-            
-            $communeSelect.html(options).prop('disabled', false);
+        });
+
+        return grouped;
+    }
+
+    /**
+     * Update the commune <select> based on the chosen wilaya.
+     */
+    function filterCommunes($communeSelect, communesByWilaya, wilayaId) {
+        var communes = communesByWilaya[wilayaId] || [],
+            html     = '<option value="">S\u00e9lectionnez une commune</option>';
+
+        $.each(communes, function (_, c) {
+            html += '<option value="' + (c.name || c.id) + '">' +
+                    (c.name || c.id) + '</option>';
+        });
+
+        $communeSelect.html(html).prop('disabled', communes.length === 0);
+    }
+
+    return function (config, element) {
+        var $wilayaSelect  = $(element),
+            $communeSelect = $wilayaSelect.closest('fieldset, form')
+                                          .find('select[name="city"], input[name="city"]');
+
+        if (!$communeSelect.length) {
+            return;
         }
-        
-        /**
-         * Initialize
-         */
-        function init() {
-            // Load communes data
-            loadCommunesData();
-            
-            // Listen to wilaya change
-            $wilayaSelect.on('change', function() {
-                var wilayaId = $(this).val();
-                filterCommunes(wilayaId);
+
+        loadCommunes(function (communesByWilaya) {
+            // React to wilaya changes
+            $wilayaSelect.on('change', function () {
+                filterCommunes($communeSelect, communesByWilaya, $(this).val());
             });
-            
-            // Initialize on page load if wilaya is already selected
-            var initialWilayaId = $wilayaSelect.val();
-            if (initialWilayaId) {
-                filterCommunes(initialWilayaId);
+
+            // Apply initial filter if a wilaya is already selected
+            if ($wilayaSelect.val()) {
+                filterCommunes($communeSelect, communesByWilaya, $wilayaSelect.val());
             }
-        }
-        
-        // Execute on DOM ready
-        $(document).ready(function() {
-            init();
         });
     };
 });
