@@ -1,15 +1,16 @@
 var config = {
-    config: {
-        mixins: {
-            'Magento_Checkout/js/view/shipping-address': {
-                'Mab_CheckoutCustomization/js/view/shipping-address-mixin': true
-            }
-        }
-    },
     map: {
         '*': {
-            'Mab_CheckoutCustomization/js/model/set-default-region': 
-                'Mab_CheckoutCustomization/js/model/set-default-region'
+            'wilayaCommuneFilter': 'Mab_CheckoutCustomization/js/wilaya-commune-filter',
+            'checkoutRegionFix': 'Mab_CheckoutCustomization/js/checkout-region-fix',
+            'checkoutDefaultRegion': 'Mab_CheckoutCustomization/js/checkout-default-region'
+        }
+    },
+    config: {
+        mixins: {
+            'Magento_Directory/js/region-updater': {
+                'Mab_CheckoutCustomization/js/region-updater-mixin': true
+            }
         }
     }
 };
