@@ -17,71 +17,50 @@
  * @package     Mageplaza_TableRateShipping
  * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
  * @license     https://www.mageplaza.com/LICENSE.txt
+ *
+ * Customized: Logo-only shipping method display
+ * Shows only the shipping method logo as a clickable card.
+ * Radio button hidden but functional for Magento checkout flow.
  */
 -->
-<tr class="shipping-method-row row" 
-    data-bind="click: $parent.selectShippingMethod, 
+<tr class="shipping-method-row row"
+    data-bind="click: $parent.selectShippingMethod,
                css: { 'selected': $parent.isSelected() }">
-    <td class="col col-method">
-        <div class="method-select-wrapper">
-            <input type="radio" 
-                   class="radio shipping-method-radio" 
-                   data-bind="
-                          value: method.carrier_code + '_' + method.method_code,
-                          checked: $parent.isSelected,
-                          attr: {
-                          'id': 's_method_' + method.carrier_code + '_' + method.method_code,
-                          'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code
-                          }"/>
-            <label data-bind="attr: {for: 's_method_' + method.carrier_code + '_' + method.method_code}" 
-                   class="radio-label"></label>
-            <div class="method-icon-wrapper">
-                <!-- ko if: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
-                <img data-bind="attr: {src: method.extension_attributes.mptablerate_image, alt: method.method_title}" 
-                     class="method-icon" 
-                     src=""/>
-                <!-- /ko -->
-                <!-- ko ifnot: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
-                <!-- ko if: method.carrier_code.toLowerCase().includes('mptablerate') && (method.method_code.includes('23') || method.method_code.includes('24') || method.method_title.toLowerCase().includes('techno') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin')) -->
-                <img src="/pub/media/favicon/default/techno.png" alt="Techno" class="method-icon"/>
-                <!-- /ko -->
-                <!-- ko if: method.carrier_code.toLowerCase().includes('yalidine') || method.method_title.toLowerCase().includes('yalidine') -->
-                <img src="/pub/media/mageplaza/tablerate/yalidine-logo.jpg" alt="Yalidine" class="method-icon"/>
-                <!-- /ko -->
-                <!-- ko if: !(method.carrier_code.toLowerCase().includes('mptablerate') && (method.method_code.includes('23') || method.method_code.includes('24') || method.method_title.toLowerCase().includes('techno') || method.method_title.toLowerCase().includes('retrait') || method.method_title.toLowerCase().includes('magasin'))) && !(method.carrier_code.toLowerCase().includes('yalidine') || method.method_title.toLowerCase().includes('yalidine')) -->
-                <svg class="method-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <!-- /ko -->
-                <!-- /ko -->
-            </div>
-        </div>
-    </td>
-    <td class="col col-price">
-        <!-- ko foreach: $parent.getRegion('price') -->
-        <!-- ko template: getTemplate() --><!-- /ko -->
-        <!-- /ko -->
-    </td>
-    <td class="col col-method col-info"
-        data-bind="attr: {'id': 'label_method_' + method.method_code + '_' + method.carrier_code}">
-        <div class="method-info">
-            <span class="method-title" data-bind="text: method.method_title"></span>
-            <!-- ko if: (method.extension_attributes && method.extension_attributes.mptablerate_comment) -->
-            <span class="method-description" data-bind="html: method.extension_attributes.mptablerate_comment"></span>
+    <!-- Single column: logo-only card -->
+    <td class="col col-logo-card" colspan="4">
+        <input type="radio"
+               class="radio shipping-method-radio"
+               data-bind="
+                      value: method.carrier_code + '_' + method.method_code,
+                      checked: $parent.isSelected,
+                      attr: {
+                      'id': 's_method_' + method.carrier_code + '_' + method.method_code,
+                      'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code
+                      }"/>
+        <label class="shipping-logo-card"
+               data-bind="attr: {for: 's_method_' + method.carrier_code + '_' + method.method_code,
+                                  'id': 'label_method_' + method.method_code + '_' + method.carrier_code}">
+            <!-- ko if: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
+            <img data-bind="attr: {src: method.extension_attributes.mptablerate_image, alt: method.method_title}"
+                 class="shipping-logo-img"
+                 src=""/>
             <!-- /ko -->
-        </div>
+            <!-- ko ifnot: (method.extension_attributes && method.extension_attributes.mptablerate_image) -->
+            <!-- ko if: method.method_title.toLowerCase().indexOf('yalidine') !== -1 || method.carrier_code.toLowerCase().indexOf('yalidine') !== -1 -->
+            <img src="/pub/media/mageplaza/tablerate/yalidine-logo.jpg" alt="Yalidine" class="shipping-logo-img"/>
+            <!-- /ko -->
+            <!-- ko if: method.method_title.toLowerCase().indexOf('yalidine') === -1 && method.carrier_code.toLowerCase().indexOf('yalidine') === -1 -->
+            <img src="/pub/media/mageplaza/tablerate/techno.png" alt="Techno" class="shipping-logo-img"/>
+            <!-- /ko -->
+            <!-- /ko -->
+            <span class="shipping-logo-name" data-bind="text: method.method_title"></span>
+        </label>
     </td>
 </tr>
 <!-- ko if: method.error_message -->
 <tr class="row row-error">
-    <td class="col col-error" colspan="3">
+    <td class="col col-error" colspan="4">
         <div role="alert" class="message error">
-            <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="12" cy="16" r="1" fill="currentColor"/>
-            </svg>
             <span data-bind="text: method.error_message"></span>
         </div>
     </td>

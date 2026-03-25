@@ -197,10 +197,15 @@
     display: none !important;
 }
 
-/* Country Field - Full Width */
-#shipping-new-address-form .field[name="shippingAddress.country_id"] {
-    clear: both;
-    margin-top: 5px;
+/* ============ HIDE COUNTRY FIELD ============ */
+/* Algeria-only store: country is always DZ. 
+   The KO component must remain for region_id filterBy to work,
+   but we hide it visually. */
+#shipping-new-address-form .field[name="shippingAddress.country_id"],
+.field[name="billingAddressfree.country_id"],
+.field[name="billingAddresscashondelivery.country_id"],
+.billing-address-form .field[name$=".country_id"] {
+    display: none !important;
 }
 
 /* ============ CHECKBOXES ============ */
@@ -244,20 +249,18 @@
 }
 
 /* ============ SHIPPING METHODS ============ */
+/* The table header is hidden entirely; the row template
+   (shipping-method-item.html) shows: radio+logo | price | method name.
+   The Magento core shipping-method-list.html thead is hidden via CSS
+   so we don't need to override the core KO template. */
 .table-checkout-shipping-method {
     width: 100%;
     border-collapse: collapse;
 }
 
-.table-checkout-shipping-method thead th {
-    background: #f8f9fa;
-    padding: 14px;
-    text-align: left;
-    font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #dee2e6;
-    font-size: 13px;
-    text-transform: uppercase;
+/* Hide the entire thead - no column headers needed */
+.table-checkout-shipping-method thead {
+    display: none !important;
 }
 
 .table-checkout-shipping-method tbody td {
@@ -285,6 +288,11 @@
     font-weight: 700;
     color: #007bff;
     font-size: 15px;
+}
+
+/* Hide the carrier title column if it ever appears */
+.table-checkout-shipping-method .col-carrier {
+    display: none !important;
 }
 
 .table-checkout-shipping-method .col-method {
@@ -631,5 +639,16 @@ require(['jquery', 'domReady!'], function($) {
     $('div[name="shippingAddress.middlename"]').hide();
     $('div[name="shippingAddress.postcode"]').hide();
     $('div[name="shippingAddress.region"]').hide();
+
+    // Hide country field - Algeria only store (KO component stays for region filter)
+    $('div[name="shippingAddress.country_id"]').hide();
+    $('div[name$=".country_id"]').each(function() {
+        if ($(this).closest('.billing-address-form').length) {
+            $(this).hide();
+        }
+    });
+
+    // Hide shipping table header row (4-column header)
+    $('.table-checkout-shipping-method thead').hide();
 });
 </script>

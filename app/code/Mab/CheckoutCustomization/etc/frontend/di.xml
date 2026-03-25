@@ -8,11 +8,18 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     
-    <!-- Plugin to remove fax from checkout configuration -->
-    <type name="Magento\Checkout\Block\Checkout\LayoutMerger">
-        <plugin name="mab_checkout_remove_fax_field"
-                type="Mab\CheckoutCustomization\Plugin\Checkout\RemoveFaxField"
-                sortOrder="10"/>
+    <!-- 
+        REMOVED: Plugin on non-existent LayoutMerger class.
+        Fax field is already disabled via checkout_index_index.xml (componentDisabled=true).
+        The RemoveFaxField plugin targeted Magento\Checkout\Block\Checkout\LayoutMerger
+        which does not exist in this Magento version.
+    -->
+
+    <!-- Fix country_id visibility for Algeria checkout (region filter depends on it) -->
+    <type name="Magento\Checkout\Block\Checkout\AttributeMerger">
+        <plugin name="mab_checkout_country_field_fix"
+                type="Mab\CheckoutCustomization\Plugin\Checkout\CountryFieldFix"
+                sortOrder="5"/>
     </type>
-    
+
 </config>

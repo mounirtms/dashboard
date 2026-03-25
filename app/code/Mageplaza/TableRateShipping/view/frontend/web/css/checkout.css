@@ -16,335 +16,209 @@
  * @package     Mageplaza_TableRateShipping
  * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
  * @license     https://www.mageplaza.com/LICENSE.txt
+ *
+ * Customized: Logo-only shipping method cards
  */
 
 /* ============================================
-   Shipping Methods Table - Professional Styling
+   Shipping Methods - Logo Card Grid Layout
    ============================================ */
 
 .table-checkout-shipping-method {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: none;
+    background: transparent;
+    box-shadow: none;
 }
 
+/* Hide the entire table header (4-column Magento core) */
 .table-checkout-shipping-method thead {
-    background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%);
-    border-bottom: 2px solid #e0e0e0;
+    display: none !important;
 }
 
-.table-checkout-shipping-method thead th {
-    padding: 16px 20px;
-    font-weight: 600;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #333333;
-    text-align: left;
-    border-right: 1px solid #e8e8e8;
+/* Hide carrier column if present */
+.table-checkout-shipping-method .col-carrier {
+    display: none !important;
 }
 
-.table-checkout-shipping-method thead th:last-child {
-    border-right: none;
+.table-checkout-shipping-method tbody {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-.table-checkout-shipping-method tbody .row {
-    transition: all 0.2s ease;
-    border-bottom: 1px solid #f0f0f0;
+.table-checkout-shipping-method tbody .shipping-method-row {
+    display: block;
+    flex: 0 0 calc(33.333% - 8px);
+    max-width: calc(33.333% - 8px);
+    border: none;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.table-checkout-shipping-method tbody .row:last-child {
-    border-bottom: none;
+.table-checkout-shipping-method tbody .shipping-method-row:hover {
+    box-shadow: none;
+    background: transparent;
 }
 
-.table-checkout-shipping-method tbody .row:hover {
-    background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
-    box-shadow: inset 3px 0 0 #0066cc;
-}
-
-.table-checkout-shipping-method tbody .row.selected {
-    background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
-    box-shadow: inset 3px 0 0 #0066cc;
-}
-
-.table-checkout-shipping-method tbody .row.selected .radio-label::after {
-    background: #0066cc;
-    border-color: #0066cc;
-}
-
-.table-checkout-shipping-method tbody .col {
-    padding: 18px 20px;
-    vertical-align: middle;
-    border-right: 1px solid #f5f5f5;
-}
-
-.table-checkout-shipping-method tbody .col:last-child {
-    border-right: none;
+.table-checkout-shipping-method tbody .col-logo-card {
+    display: block;
+    padding: 0;
+    border: none;
 }
 
 /* ============================================
-   Radio Button + Icon Column - Combined
+   Hidden Radio Button (functional only)
    ============================================ */
-
-.col-method {
-    width: 80px;
-    text-align: center;
-}
-
-.method-select-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.radio-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 .shipping-method-radio {
     position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
-}
-
-.radio-label {
-    position: relative;
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #d0d0d0;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: #ffffff;
-}
-
-.radio-label::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    width: 10px;
-    height: 10px;
-    background: #0066cc;
-    border-radius: 50%;
-    transition: transform 0.2s ease;
-}
-
-.shipping-method-radio:checked + .radio-label::after {
-    transform: translate(-50%, -50%) scale(1);
-}
-
-.shipping-method-radio:focus + .radio-label {
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
-    border-color: #0066cc;
+    pointer-events: none;
 }
 
 /* ============================================
-   Icon Styling
+   Logo Card Label - The Visible Element
    ============================================ */
 
-.method-icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%);
-    border-radius: 12px;
-    padding: 10px;
-}
-
-.method-icon {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.method-icon-svg {
-    width: 32px;
-    height: 32px;
-    color: #555555;
-    transition: color 0.2s ease;
-}
-
-.row:hover .method-icon-svg,
-.row.selected .method-icon-svg {
-    color: #0066cc;
-}
-
-/* ============================================
-   Price Column
-   ============================================ */
-
-.col-price {
-    width: 130px;
-    text-align: right;
-    font-weight: 600;
-}
-
-.col-price .price {
-    font-size: 17px;
-    color: #2c2c2c;
-    font-weight: 700;
-}
-
-/* ============================================
-   Method Info Column - Wider for Full Names
-   ============================================ */
-
-.col-info {
-    min-width: 350px;
-    width: 50%;
-}
-
-.method-info {
+.shipping-logo-card {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+    min-height: 100px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.method-title {
-    font-size: 15px;
+.shipping-logo-card:hover {
+    border-color: #0066cc;
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Selected state */
+.shipping-method-radio:checked + .shipping-logo-card,
+.shipping-method-row.selected .shipping-logo-card {
+    border-color: #0066cc;
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+    box-shadow: 0 4px 16px rgba(0, 102, 204, 0.2);
+}
+
+/* ============================================
+   Logo Image
+   ============================================ */
+
+.shipping-logo-img {
+    max-width: 100%;
+    max-height: 60px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+
+/* ============================================
+   Method Name (below the logo)
+   ============================================ */
+
+.shipping-logo-name {
+    font-size: 12px;
     font-weight: 600;
-    color: #1a1a1a;
-    line-height: 1.5;
+    color: #333;
+    line-height: 1.3;
+    text-align: center;
     word-wrap: break-word;
-    white-space: normal;
+    max-width: 100%;
 }
 
-.method-description {
-    font-size: 13px;
-    color: #666666;
-    line-height: 1.5;
+.shipping-method-radio:checked + .shipping-logo-card .shipping-logo-name,
+.shipping-method-row.selected .shipping-logo-card .shipping-logo-name {
+    color: #0066cc;
 }
 
 /* ============================================
    Error Row Styling
    ============================================ */
 
-.row-error {
-    background: #fff5f5;
-    border-top: 1px solid #ffcdd2;
+.table-checkout-shipping-method tbody .row-error {
+    flex: 0 0 100%;
+    max-width: 100%;
 }
 
 .row-error .col-error {
-    padding: 12px 20px;
+    padding: 8px 0;
 }
 
 .row-error .message.error {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 10px 16px;
     background: #ffebee;
     border: 1px solid #ffcdd2;
     border-radius: 6px;
     color: #c62828;
-    font-size: 14px;
-}
-
-.error-icon {
-    width: 20px;
-    height: 20px;
-    color: #c62828;
-    flex-shrink: 0;
-}
-
-/* ============================================
-   Comment Row Styling
-   ============================================ */
-
-.mp-row-comment .mp-col-comment {
-    border: none;
-    padding-top: 0;
-    padding-bottom: 16px;
-    background: #fafbfc;
-}
-
-.mp-row-comment .mp-col-comment > div {
-    padding: 12px 20px;
     font-size: 13px;
-    color: #555555;
-    line-height: 1.6;
-    background: #ffffff;
-    border: 1px solid #e8e8e8;
-    border-radius: 6px;
-    margin-left: 20px;
 }
 
 /* ============================================
    Responsive Design
    ============================================ */
 
+@media (max-width: 991px) {
+    .table-checkout-shipping-method tbody .shipping-method-row {
+        flex: 0 0 calc(33.333% - 8px);
+        max-width: calc(33.333% - 8px);
+    }
+}
+
 @media (max-width: 768px) {
-    .table-checkout-shipping-method {
-        font-size: 14px;
+    .table-checkout-shipping-method tbody .shipping-method-row {
+        flex: 0 0 calc(50% - 6px);
+        max-width: calc(50% - 6px);
     }
 
-    .table-checkout-shipping-method thead th {
-        padding: 12px 14px;
+    .table-checkout-shipping-method tbody {
+        gap: 8px;
+    }
+
+    .shipping-logo-card {
+        padding: 12px 8px;
+        min-height: 80px;
+    }
+
+    .shipping-logo-img {
+        max-height: 48px;
+    }
+
+    .shipping-logo-name {
         font-size: 11px;
     }
+}
 
-    .table-checkout-shipping-method tbody .col {
-        padding: 14px;
+@media (max-width: 480px) {
+    .table-checkout-shipping-method tbody .shipping-method-row {
+        flex: 0 0 calc(50% - 4px);
+        max-width: calc(50% - 4px);
     }
 
-    .col-select {
-        width: 35px;
-        padding: 14px 8px;
+    .shipping-logo-card {
+        padding: 10px 6px;
+        min-height: 70px;
     }
 
-    .radio-label {
-        width: 18px;
-        height: 18px;
-    }
-
-    .radio-label::after {
-        width: 9px;
-        height: 9px;
-    }
-
-    .col-icon {
-        width: 60px;
-    }
-
-    .method-icon-wrapper {
-        width: 48px;
-        height: 48px;
-    }
-
-    .method-icon-svg {
-        width: 28px;
-        height: 28px;
-    }
-
-    .col-price {
-        width: 100px;
-    }
-
-    .col-price .price {
-        font-size: 15px;
-    }
-
-    .col-info {
-        min-width: 200px;
-        width: auto;
-    }
-
-    .method-title {
-        font-size: 14px;
+    .shipping-logo-img {
+        max-height: 40px;
     }
 }
