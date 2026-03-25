@@ -22,7 +22,7 @@ define([], function () {
             s1.async = true;
             s1.src = embedUrl;
             s1.charset = 'UTF-8';
-            s1.setAttribute('crossorigin','*');
+            // Removed crossorigin='*' which caused CORS errors
             s0.parentNode.insertBefore(s1,s0);
         })();
     };
