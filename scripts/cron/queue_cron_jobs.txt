@@ -1,0 +1,21 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Queue Management Cron Jobs - Magento 2
+# Add these to your crontab to prevent queue buildup
+# Location: /home/technadminy7/public_html/scripts/cron/queue_cron_jobs.txt
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ── Queue Monitor (Every 5 minutes) ─────────────────────────────────────
+# Monitors queue size, CPU, and memory. Alerts before issues become critical.
+*/5 * * * * /bin/bash /home/technadminy7/public_html/scripts/monitoring/queue_monitor.sh
+
+# ── Queue Cleanup (Every 30 minutes) ────────────────────────────────────
+# Cleans old/stuck queue messages to prevent buildup.
+*/30 * * * * /bin/bash /home/technadminy7/public_html/scripts/queue_cleanup.sh >> /home/technadminy7/public_html/var/log/queue_cleanup.log 2>&1
+
+# ── Queue Consumer Health Check (Every 10 minutes) ──────────────────────
+# Restarts stuck consumers if needed.
+*/10 * * * * /bin/bash /home/technadminy7/public_html/scripts/queue_consumer_watchdog.sh >> /home/technadminy7/public_html/var/log/queue_watchdog.log 2>&1
+
+# ── Daily Queue Optimization (3 AM) ─────────────────────────────────────
+# Optimize queue tables and clean old data daily.
+0 3 * * * /bin/bash /home/technadminy7/public_html/scripts/queue_optimize.sh >> /home/technadminy7/public_html/var/log/queue_optimize.log 2>&1
