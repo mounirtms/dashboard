@@ -8,7 +8,8 @@
 /pub/pma/
 /pub/media/amasty/
 /pub/media/sm/
-
+/tests/
+/webapp
 # Composer dependencies
 /vendor/
 
