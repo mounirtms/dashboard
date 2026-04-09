@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Test Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card .value {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .stat-card.total .value { color: #667eea; }
+        .stat-card.passed .value { color: #28a745; }
+        .stat-card.failed .value { color: #dc3545; }
+        .stat-card.rate .value { color: #17a2b8; }
+        .details {
+            padding: 40px;
+        }
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Dashboard Test Report</h1>
+            <p>2026-04-09_23-35-53</p>
+        </div>
+        <div class="stats">
+            <div class="stat-card total">
+                <h3>Total Tests</h3>
+                <div class="value">5</div>
+            </div>
+            <div class="stat-card passed">
+                <h3>Passed</h3>
+                <div class="value">4</div>
+            </div>
+            <div class="stat-card failed">
+                <h3>Failed</h3>
+                <div class="value">1</div>
+            </div>
+            <div class="stat-card rate">
+                <h3>Success Rate</h3>
+                <div class="value">80.0%</div>
+            </div>
+        </div>
+        <div class="details">
+            <h2>Test Execution Details</h2>
+            <p>Log file: /home/dashboard/public_html/logs/testing/test_run_2026-04-09_23-35-53.log</p>
+        </div>
+        <div class="footer">
+            <p>TechnoStationery Dashboard Test Suite &copy; 2026</p>
+        </div>
+    </div>
+</body>
+</html>
