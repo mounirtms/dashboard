@@ -1,0 +1,96 @@
+[0;36m============================================================================[0m
+[0;36mTechnoStationery System Optimization[0m
+[0;36m============================================================================[0m
+
+[0;36mℹ[0m Started at: Fri Apr 10 00:11:12 CET 2026
+[0;36mℹ[0m Log file: /home/dashboard/public_html/logs/optimization_2026-04-10_00-11-12.log
+
+[0;36mℹ[0m Running as root - full system access available
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mCurrent System Status[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+Load Average: 7.74
+Memory Usage: 51.8%
+CPU Busy: 67.9%
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mOptimizing Elasticsearch[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;36mℹ[0m Current Elasticsearch status: yellow
+[0;36mℹ[0m Clearing Elasticsearch cache...
+[0;32m✓[0m Elasticsearch cache cleared
+[0;36mℹ[0m Optimizing indices (this may take a few minutes)...
+[0;32m✓[0m Elasticsearch indices optimized
+[0;36mℹ[0m Elasticsearch status after optimization: yellow
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mOptimizing PHP-FPM[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;36mℹ[0m Current PHP-FPM status: Running
+[0;36mℹ[0m Production PHP-FPM CPU usage: 360.5%
+[0;36mℹ[0m Reloading PHP-FPM configuration...
+[0;32m✓[0m PHP-FPM reloaded successfully
+[0;36mℹ[0m PHP-FPM CPU usage after reload: 300.5%
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mOptimizing Redis[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;32m✓[0m Redis is responding
+[0;36mℹ[0m Redis memory usage: 1.74G
+[0;36mℹ[0m Redis key count: 
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mCleaning Magento Caches[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;36mℹ[0m Cleaning prod Magento cache...
+[0;32m✓[0m prod cache flushed
+[0;36mℹ[0m prod cache directory size: 4.0K
+[0;36mℹ[0m Cleaning beta Magento cache...
+[0;32m✓[0m beta cache flushed
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mChecking for Hung Processes[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;32m✓[0m No hung processes detected
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mOptimizing System Settings[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;36mℹ[0m Current swappiness: 10
+[0;36mℹ[0m Open files: 307151 / 4096
+[0;36mℹ[0m High file descriptor usage detected
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mOptimizing Databases[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;36mℹ[0m Running database optimization...
+[0;31m✗[0m Database optimization encountered errors (check logs)
+
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+[0;34mOptimization Summary[0m
+[0;34m────────────────────────────────────────────────────────────────────────[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m                    OPTIMIZATION RESULTS                              [0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;34mMetric              Before          After           Change[0m
+────────────────────────────────────────────────────────────────────────
+Load Average        7.74            8.70
+Memory Usage        51.8%          46.7%
+CPU Usage           67.9%          82.3%
+
+[0;32mOptimization completed at Fri Apr 10 00:11:44 CET 2026[0m
+[0;32mFull log: /home/dashboard/public_html/logs/optimization_2026-04-10_00-11-12.log[0m
+
+[0;36m============================================================================[0m
+[0;36mOptimization Complete[0m
+[0;36m============================================================================[0m
+
+[0;36mNext Steps:[0m
+1. Monitor system for 15-30 minutes
+2. Run health check: bash /home/dashboard/public_html/scripts/utilities/health-monitor.sh once
+3. Check performance: php /home/dashboard/public_html/scripts/performance/system_performance_monitor.php
+4. Review logs: tail -f /home/dashboard/public_html/logs/optimization_2026-04-10_00-11-12.log
+
