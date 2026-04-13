@@ -17,8 +17,8 @@ return [
         'connection' => [
             'default' => [
                 'host' => '127.0.0.1:3307',
-                'dbname' => 'technadminy7_dBT8x12y22',
-                'username' => 'technadminy7_ntdbusr24',
+                'dbname' => 'dev_dBT8x12y22',
+                'username' => 'dev_ntdbusr24',
                 'password' => 'the-correct-password',
                 'model' => 'mysql4',
                 'engine' => 'innodb',
@@ -150,14 +150,14 @@ return [
             ],
             'web' => [
                 'unsecure' => [
-                    'base_url' => 'https://technostationery.com/',
-                    'base_link_url' => 'http://technostationery.com/',
+                    'base_url' => 'https://dev.technostationery.com/',
+                    'base_link_url' => 'http://dev.technostationery.com/',
                     'base_static_url' => null,
                     'base_media_url' => null
                 ],
                 'secure' => [
-                    'base_url' => 'https://technostationery.com/',
-                    'base_link_url' => 'https://technostationery.com/',
+                    'base_url' => 'https://dev.technostationery.com/',
+                    'base_link_url' => 'https://dev.technostationery.com/',
                     'base_static_url' => null,
                     'base_media_url' => null
                 ],
@@ -177,27 +177,9 @@ return [
                     'youtube_api_key' => null
                 ],
                 'search' => [
-                    'elasticsearch5_server_hostname' => 'localhost',
                     'elasticsearch7_server_hostname' => '127.0.0.1',
-                    'opensearch_server_hostname' => 'localhost',
-                    'elasticsearch5_server_port' => '9200',
                     'elasticsearch7_server_port' => '9200',
-                    'opensearch_server_port' => '9200',
-                    'elasticsearch5_index_prefix' => 'magento2',
-                    'elasticsearch7_index_prefix' => 'techno_stationery',
-                    'opensearch_index_prefix' => 'magento2',
-                    'elasticsearch5_enable_auth' => '0',
-                    'elasticsearch7_enable_auth' => '0',
-                    'opensearch_enable_auth' => '0',
-                    'elasticsearch5_username' => null,
-                    'elasticsearch7_username' => null,
-                    'opensearch_username' => null,
-                    'elasticsearch5_password' => null,
-                    'elasticsearch7_password' => null,
-                    'opensearch_password' => null,
-                    'elasticsearch5_server_timeout' => '15',
-                    'elasticsearch7_server_timeout' => '15',
-                    'opensearch_server_timeout' => '15'
+                    'elasticsearch7_index_prefix' => 'techno_stationery'
                 ]
             ],
             'cataloginventory' => [
