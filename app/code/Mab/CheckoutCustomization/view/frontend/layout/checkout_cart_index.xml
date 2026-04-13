@@ -1,8 +1,27 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <!-- Remove shipping estimation from cart -->
         <referenceBlock name="checkout.cart.shipping" remove="true"/>
         <referenceBlock name="checkout.cart.shipping.address" remove="true"/>
         <referenceBlock name="checkout.cart.shipping.estimate" remove="true"/>
+        
+        <!-- Add enhanced gift card block in cart -->
+        <referenceContainer name="checkout.cart.container">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="mab.cart.giftcard.enhanced"
+                   template="Mab_CheckoutCustomization::cart/gift-card-enhanced.phtml"
+                   after="checkout.cart.form">
+                <arguments>
+                    <argument name="jsLayout" xsi:type="array">
+                        <item name="components" xsi:type="array">
+                            <item name="gift-card-cart" xsi:type="array">
+                                <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/gift-card-cart</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
     </body>
 </page>
