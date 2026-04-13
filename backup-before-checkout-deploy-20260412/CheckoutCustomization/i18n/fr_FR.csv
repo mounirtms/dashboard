@@ -1,0 +1,18 @@
+"Checkout Customization","Personnalisation du Checkout"
+"Discount Code Settings","Paramètres du Code de Réduction"
+"Layout Settings","Paramètres de Mise en Page"
+
+"Disable Discount Code Field","Désactiver le Champ Code de Réduction"
+"Hide the discount code field in checkout while keeping gift card functionality","Masquer le champ code de réduction dans le checkout tout en conservant la fonctionnalité carte cadeau"
+"Hide Method","Méthode de Masquage"
+"Choose how to hide the discount code field","Choisir comment masquer le champ code de réduction"
+"Custom Message","Message Personnalisé"
+"Display a custom message instead of the discount code field","Afficher un message personnalisé au lieu du champ code de réduction"
+
+"CSS Only (Simple)","CSS Uniquement (Simple)"
+"JavaScript Mixin (Advanced)","Mixin JavaScript (Avancé)"
+"Component Replacement (Recommended)","Remplacement de Composant (Recommandé)"
+"Layout XML (Complete Removal)","XML de Mise en Page (Suppression Complète)"
+
+"Custom CSS","CSS Personnalisé"
+"Add custom CSS for additional checkout modifications","Ajouter du CSS personnalisé pour des modifications supplémentaires du checkout"

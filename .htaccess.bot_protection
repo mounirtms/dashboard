@@ -1,0 +1,18 @@
+# Bot Protection - Block aggressive crawlers
+SetEnvIfNoCase User-Agent "GPTBot" bad_bot
+SetEnvIfNoCase User-Agent "ChatGPT-User" bad_bot
+SetEnvIfNoCase User-Agent "Google-Extended" bad_bot
+SetEnvIfNoCase User-Agent "CCBot" bad_bot
+SetEnvIfNoCase User-Agent "anthropic-ai" bad_bot
+SetEnvIfNoCase User-Agent "Claude-Web" bad_bot
+SetEnvIfNoCase User-Agent "AhrefsBot" bad_bot
+SetEnvIfNoCase User-Agent "SemrushBot" bad_bot
+SetEnvIfNoCase User-Agent "MJ12bot" bad_bot
+SetEnvIfNoCase User-Agent "DotBot" bad_bot
+SetEnvIfNoCase User-Agent "PetalBot" bad_bot
+SetEnvIfNoCase User-Agent "Bytespider" bad_bot
+
+<RequireAll>
+    Require all granted
+    Require not env bad_bot
+</RequireAll>
