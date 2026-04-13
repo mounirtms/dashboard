@@ -117,7 +117,7 @@ define([
                                 </div>
                                 <div class="price-wrapper">
                                     ${isFree ? 
-                                        '<span class="free-badge">' + $t('Free') + '</span>' : 
+                                        '<span class="free-badge">' + $t('Gratuit') + '</span>' : 
                                         '<span class="price">' + priceText + '</span>'
                                     }
                                 </div>
@@ -191,16 +191,16 @@ define([
             var name = methodName.toLowerCase();
             
             if (carrier === 'yalidine') {
-                return $t('2-4 business days');
+                return $t('2-4 jours ouvrables');
             } else if (carrier === 'ecotrak') {
-                return $t('3-5 business days');
+                return $t('3-5 jours ouvrables');
             } else if (carrier === 'store-pickup' || name.indexOf('techno') >= 0) {
-                return $t('Ready for pickup today');
+                return $t('Prêt pour le retrait aujourd\'hui');
             } else if (carrier === 'free') {
-                return $t('5-7 business days');
+                return $t('5-7 jours ouvrables');
             }
             
-            return $t('Standard delivery');
+            return $t('Livraison standard');
         }
     });
 });

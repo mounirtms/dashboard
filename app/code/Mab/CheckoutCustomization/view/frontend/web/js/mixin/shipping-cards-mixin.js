@@ -1,11 +1,13 @@
 /**
  * Mab_CheckoutCustomization - Shipping Component Mixin
  * Integrates shipping method cards with default Magento checkout shipping
+ * Now with region-aware shipping method filtering for Mageplaza TableRateShipping
  */
 define([
     'jquery',
-    'ko'
-], function ($, ko) {
+    'ko',
+    'Magento_Checkout/js/model/quote'
+], function ($, ko, quote) {
     'use strict';
 
     var mixin = {
@@ -24,6 +26,37 @@ define([
                     }, 500);
                 }
             });
+
+            // Watch for address changes (especially region/wilaya changes)
+            if (quote.shippingAddress) {
+                quote.shippingAddress.subscribe(function (address) {
+                    if (address && address.regionId) {
+                        console.log('Region changed to:', address.regionId, 'Region name:', address.region);
+                        // Reset cards initialization flag to allow re-rendering
+                        window.shippingCardsInitialized = false;
+                        // Wait for new rates to be fetched, then reinitialize cards
+                        setTimeout(function () {
+                            if (self.rates() && self.rates().length > 0 && !self.isLoading()) {
+                                self.initializeShippingCards();
+                            }
+                        }, 1500);
+                    }
+                });
+            }
+
+            // Also watch the rates observable directly for changes
+            if (this.rates) {
+                this.rates.subscribe(function (newRates) {
+                    if (newRates && newRates.length > 0) {
+                        console.log('Shipping rates updated, count:', newRates.length);
+                        // Reset and reinitialize cards
+                        window.shippingCardsInitialized = false;
+                        setTimeout(function () {
+                            self.initializeShippingCards();
+                        }, 300);
+                    }
+                });
+            }
 
             return this;
         },
@@ -54,6 +87,7 @@ define([
             // Reinitialize cards after shipping info is set
             setTimeout(function () {
                 if (self.rates() && self.rates().length > 0) {
+                    window.shippingCardsInitialized = false;
                     self.initializeShippingCards();
                 }
             }, 1000);

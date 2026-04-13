@@ -15,8 +15,8 @@
                 </svg>
             </div>
             <div class="header-text">
-                <h3 class="title"><?= $escaper->escapeHtml(__('Gift Card or Voucher')) ?></h3>
-                <p class="subtitle"><?= $escaper->escapeHtml(__('Enter your gift card code to apply discount')) ?></p>
+                <h3 class="title"><?= $escaper->escapeHtml(__('Carte Cadeau ou Bon d\'Achat')) ?></h3>
+                <p class="subtitle"><?= $escaper->escapeHtml(__('Entrez votre code de carte cadeau pour appliquer la réduction')) ?></p>
             </div>
         </div>
 
@@ -27,7 +27,7 @@
                            id="gift-card-code-input" 
                            name="gift_card_code" 
                            class="gift-card-input" 
-                           placeholder="<?= $escaper->escapeHtmlAttr(__('Enter gift card code')) ?>"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Entrez le code de la carte cadeau')) ?>"
                            maxlength="50"
                            data-bind="
                                value: giftCardCode, 
@@ -49,7 +49,7 @@
                             css: { loading: isApplying }
                         ">
                     <span class="button-text" data-bind="visible: !isApplying()">
-                        <?= $escaper->escapeHtml(__('Apply')) ?>
+                        <?= $escaper->escapeHtml(__('Appliquer')) ?>
                     </span>
                     <span class="button-loader" data-bind="visible: isApplying()">
                         <span class="spinner"></span>
@@ -78,7 +78,7 @@
 
         <!-- Applied Gift Cards List -->
         <div class="applied-cards-list" data-bind="visible: appliedCards().length > 0">
-            <h4 class="list-title"><?= $escaper->escapeHtml(__('Applied Gift Cards')) ?></h4>
+            <h4 class="list-title"><?= $escaper->escapeHtml(__('Cartes Cadeaux Appliquées')) ?></h4>
             <div data-bind="foreach: appliedCards">
                 <div class="applied-card-item">
                     <div class="card-info">
@@ -91,7 +91,7 @@
                         <svg width="16" height="16" viewBox="0 0 16 16">
                             <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
-                        <span><?= $escaper->escapeHtml(__('Remove')) ?></span>
+                        <span><?= $escaper->escapeHtml(__('Retirer')) ?></span>
                     </button>
                 </div>
             </div>
@@ -103,7 +103,7 @@
                 <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
                 <path d="M8 6v5M8 4v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            <span><?= $escaper->escapeHtml(__('Gift cards can be purchased from our stores or online')) ?></span>
+            <span><?= $escaper->escapeHtml(__('Les cartes cadeaux peuvent être achetées dans nos magasins ou en ligne')) ?></span>
         </div>
     </div>
 </div>
@@ -411,7 +411,9 @@ require([
                     appliedCards: ko.observableArray([]),
                     
                     canApply: ko.computed(function () {
-                        return this.giftCardCode().length >= 4 && !this.isApplying();
+                        var code = this.giftCardCode().trim();
+                        // Gift card code validation: at least 6 characters, alphanumeric
+                        return code.length >= 6 && /^[A-Z0-9-]+$/i.test(code) && !this.isApplying();
                     }, this),
                     
                     applyGiftCard: function () {
@@ -435,12 +437,17 @@ require([
                                 giftCardCode: code
                             }),
                             success: function (response) {
-                                self.successMessage('Gift card applied successfully!');
+                                self.successMessage('Carte cadeau appliquée avec succès!');
                                 self.appliedCards.push({
                                     code: code,
-                                    amount: response.discount || '0.00 DZD'
+                                    amount: response.discount || '0,00 DZD'
                                 });
                                 self.giftCardCode('');
+                                
+                                // Clear messages after 5 seconds
+                                setTimeout(function() {
+                                    self.successMessage('');
+                                }, 5000);
                                 
                                 // Reload cart
                                 var sections = ['cart'];
@@ -448,7 +455,7 @@ require([
                                 customerData.reload(sections, true);
                             },
                             error: function (xhr) {
-                                var error = 'Failed to apply gift card. Please check the code and try again.';
+                                var error = 'Échec de l\'application de la carte cadeau. Veuillez vérifier le code et réessayer.';
                                 try {
                                     var response = JSON.parse(xhr.responseText);
                                     if (response.message) {
@@ -456,6 +463,11 @@ require([
                                     }
                                 } catch (e) {}
                                 self.errorMessage(error);
+                                
+                                // Clear error after 5 seconds
+                                setTimeout(function() {
+                                    self.errorMessage('');
+                                }, 5000);
                             },
                             complete: function () {
                                 self.isApplying(false);
@@ -476,7 +488,12 @@ require([
                                 giftCardCode: card.code
                             }),
                             success: function () {
-                                self.successMessage('Gift card removed');
+                                self.successMessage('Carte cadeau retirée');
+                                
+                                // Clear message after 3 seconds
+                                setTimeout(function() {
+                                    self.successMessage('');
+                                }, 3000);
                                 
                                 // Reload cart
                                 var sections = ['cart'];
