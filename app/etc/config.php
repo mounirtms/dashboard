@@ -499,6 +499,6 @@ return [
         'Xtento_PdfCustomizer' => 1,
         'Xtento_XtCore' => 1,
         'Yireo_CspUtilities' => 0,
-        'Yireo_GoogleTagManager2' => 1
+        'Yireo_GoogleTagManager2' => 0
     ]
 ];
