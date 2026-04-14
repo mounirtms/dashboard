@@ -74,18 +74,37 @@
                                                                     <item name="label" xsi:type="string" translate="true">Wilaya</item>
                                                                 </item>
                                                                 <!-- Hide Street Address Line 2 (second address field) -->
+                                                                <!-- Note: Street array is zero-indexed: 0=first line, 1=second line, 2=third line -->
                                                                 <item name="street" xsi:type="array">
                                                                     <item name="children" xsi:type="array">
+                                                                        <!-- Keep first address line (index 0) visible -->
+                                                                        <item name="0" xsi:type="array">
+                                                                            <item name="label" xsi:type="string" translate="true">Adresse complète</item>
+                                                                            <item name="config" xsi:type="array">
+                                                                                <item name="visible" xsi:type="boolean">true</item>
+                                                                            </item>
+                                                                            <item name="validation" xsi:type="array">
+                                                                                <item name="required-entry" xsi:type="boolean">true</item>
+                                                                            </item>
+                                                                        </item>
+                                                                        <!-- Hide second address line (index 1) -->
                                                                         <item name="1" xsi:type="array">
                                                                             <item name="config" xsi:type="array">
                                                                                 <item name="visible" xsi:type="boolean">false</item>
                                                                                 <item name="componentDisabled" xsi:type="boolean">true</item>
                                                                             </item>
+                                                                            <item name="validation" xsi:type="array">
+                                                                                <item name="required-entry" xsi:type="boolean">false</item>
+                                                                            </item>
                                                                         </item>
+                                                                        <!-- Hide third address line (index 2) if exists -->
                                                                         <item name="2" xsi:type="array">
                                                                             <item name="config" xsi:type="array">
                                                                                 <item name="visible" xsi:type="boolean">false</item>
                                                                                 <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                            </item>
+                                                                            <item name="validation" xsi:type="array">
+                                                                                <item name="required-entry" xsi:type="boolean">false</item>
                                                                             </item>
                                                                         </item>
                                                                     </item>
