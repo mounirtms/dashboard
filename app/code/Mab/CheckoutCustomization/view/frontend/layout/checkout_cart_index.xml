@@ -6,6 +6,14 @@
         <referenceBlock name="checkout.cart.shipping.address" remove="true"/>
         <referenceBlock name="checkout.cart.shipping.estimate" remove="true"/>
         
+        <!-- Initialize checkoutConfig for cart page -->
+        <referenceContainer name="content">
+            <block class="Mab\CheckoutCustomization\Block\Cart\CheckoutConfig"
+                   name="mab.cart.checkout.config"
+                   template="Mab_CheckoutCustomization::cart/checkout-config.phtml"
+                   before="-"/>
+        </referenceContainer>
+        
         <!-- Add enhanced gift card block in cart -->
         <referenceContainer name="checkout.cart.container">
             <block class="Magento\Framework\View\Element\Template"
