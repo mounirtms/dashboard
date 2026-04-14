@@ -12,22 +12,15 @@
         <!-- Remove shipping estimation from cart sidebar -->
         <referenceBlock name="checkout.cart.shipping" remove="true"/>
         
-        <!-- Add enhanced gift card block in cart.summary (sidebar) -->
+        <!-- Remove or hide Amasty banner in cart summary (optional) -->
+        <!-- <referenceBlock name="ambanners.below_total" remove="true"/> -->
+        
+        <!-- Add simplified gift card block (collapsible like coupon) -->
         <referenceContainer name="cart.summary">
             <block class="Magento\Framework\View\Element\Template"
-                   name="mab.cart.giftcard.enhanced"
-                   template="Mab_CheckoutCustomization::cart/gift-card-enhanced.phtml"
-                   after="checkout.cart.coupon">
-                <arguments>
-                    <argument name="jsLayout" xsi:type="array">
-                        <item name="components" xsi:type="array">
-                            <item name="gift-card-cart" xsi:type="array">
-                                <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/gift-card-cart</item>
-                            </item>
-                        </item>
-                    </argument>
-                </arguments>
-            </block>
+                   name="mab.cart.giftcard.simple"
+                   template="Mab_CheckoutCustomization::cart/gift-card-simple.phtml"
+                   after="checkout.cart.coupon"/>
         </referenceContainer>
     </body>
 </page>
