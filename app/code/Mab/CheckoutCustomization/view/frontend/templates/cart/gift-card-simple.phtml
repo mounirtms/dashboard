@@ -4,15 +4,20 @@
  * Collapsible style matching the discount coupon block
  */
 -->
-<div class="block gift-card" id="block-gift-card" data-collapsible="true" role="tablist" data-bind="scope: 'gift-card-cart'">
-    <div class="title" data-role="title" role="tab" aria-selected="false" aria-expanded="false" tabindex="0">
-        <strong id="block-gift-card-heading" role="heading" aria-level="2">
+<?php
+/** @var $escaper \Magento\Framework\Escaper */
+$escaper = $block->getEscaper();
+?>
+
+<div class="block gift-card" id="block-gift-card" data-mage-init='{"collapsible":{"active":false}}'>
+    <div class="title" data-role="title">
+        <strong id="block-gift-card-heading">
             <?= $escaper->escapeHtml(__('Carte Cadeau ou Bon d\'Achat')) ?>
         </strong>
     </div>
     
-    <div class="content" data-role="content" aria-labelledby="block-gift-card-heading" role="tabpanel" aria-hidden="true">
-        <form class="form-gift-card">
+    <div class="content" data-role="content">
+        <form class="form-gift-card" data-bind="scope: 'giftCardForm'">
             <div class="fieldset gift-card">
                 <!-- Gift Card Input Field -->
                 <div class="field">
@@ -27,11 +32,7 @@
                                value="" 
                                placeholder="<?= $escaper->escapeHtmlAttr(__('Code de la carte cadeau')) ?>"
                                maxlength="50"
-                               data-bind="
-                                   value: giftCardCode,
-                                   valueUpdate: 'input',
-                                   attr: { disabled: isApplying }
-                               " />
+                               data-bind="value: giftCardCode, valueUpdate: 'input', attr: { disabled: isApplying }" />
                     </div>
                 </div>
                 
@@ -40,11 +41,7 @@
                     <div class="primary">
                         <button class="action apply primary" 
                                 type="button" 
-                                data-bind="
-                                    click: applyGiftCard,
-                                    enable: canApply,
-                                    css: { disabled: !canApply() || isApplying() }
-                                ">
+                                data-bind="click: applyGiftCard, enable: canApply, css: { disabled: !canApply() || isApplying() }">
                             <span data-bind="visible: !isApplying()">
                                 <?= $escaper->escapeHtml(__('Appliquer la Carte Cadeau')) ?>
                             </span>
@@ -57,12 +54,10 @@
                 
                 <!-- Messages -->
                 <div class="messages" data-bind="visible: errorMessage().length > 0 || successMessage().length > 0">
-                    <!-- Error Message -->
                     <div class="message message-error error" data-bind="visible: errorMessage().length > 0">
                         <div data-bind="text: errorMessage"></div>
                     </div>
                     
-                    <!-- Success Message -->
                     <div class="message message-success success" data-bind="visible: successMessage().length > 0">
                         <div data-bind="text: successMessage"></div>
                     </div>
@@ -88,6 +83,20 @@
                 </div>
             </div>
         </form>
+        
+        <script type="text/x-magento-init">
+        {
+            "[data-bind*='giftCardForm']": {
+                "Magento_Ui/js/core/app": {
+                    "components": {
+                        "giftCardForm": {
+                            "component": "Mab_CheckoutCustomization/js/view/gift-card-form"
+                        }
+                    }
+                }
+            }
+        }
+        </script>
     </div>
 </div>
 
@@ -127,7 +136,6 @@
     border-radius: 4px 4px 0 0;
 }
 
-/* Form styling to match coupon */
 .block.gift-card .fieldset {
     margin: 0;
 }
@@ -141,10 +149,6 @@
     margin-bottom: 8px;
     font-weight: 600;
     color: #333;
-}
-
-.block.gift-card .field .control {
-    position: relative;
 }
 
 .block.gift-card .field .input-text {
@@ -167,7 +171,6 @@
     cursor: not-allowed;
 }
 
-/* Button styling */
 .block.gift-card .actions-toolbar {
     margin-top: 15px;
 }
@@ -176,7 +179,6 @@
     padding: 12px 24px;
     font-size: 14px;
     font-weight: 600;
-    text-transform: none;
 }
 
 .block.gift-card .action.apply.disabled {
@@ -184,7 +186,6 @@
     cursor: not-allowed;
 }
 
-/* Messages */
 .block.gift-card .messages {
     margin-top: 15px;
 }
@@ -208,7 +209,6 @@
     color: #2e7d32;
 }
 
-/* Applied Cards List */
 .block.gift-card .applied-gift-cards {
     margin-top: 20px;
     padding-top: 20px;
@@ -217,11 +217,6 @@
 
 .block.gift-card .applied-title {
     margin-bottom: 12px;
-}
-
-.block.gift-card .applied-title strong {
-    font-size: 14px;
-    color: #333;
 }
 
 .block.gift-card .applied-list {
@@ -246,7 +241,6 @@
     font-size: 13px;
     font-weight: 600;
     color: #333;
-    letter-spacing: 0.5px;
 }
 
 .block.gift-card .applied-item .card-amount {
@@ -273,7 +267,6 @@
     color: #fff;
 }
 
-/* Responsive */
 @media (max-width: 767px) {
     .block.gift-card .applied-item {
         flex-wrap: wrap;
@@ -285,155 +278,3 @@
     }
 }
 </style>
-
-<script>
-require([
-    'jquery',
-    'ko',
-    'uiComponent',
-    'Magento_Customer/js/customer-data',
-    'mage/collapsible'
-], function ($, ko, Component, customerData) {
-    'use strict';
-
-    ko.components.register('gift-card-cart', {
-        viewModel: {
-            createViewModel: function (params, componentInfo) {
-                return {
-                    giftCardCode: ko.observable(''),
-                    isApplying: ko.observable(false),
-                    errorMessage: ko.observable(''),
-                    successMessage: ko.observable(''),
-                    appliedCards: ko.observableArray([]),
-                    
-                    /**
-                     * Check if gift card can be applied
-                     */
-                    canApply: ko.pureComputed(function () {
-                        var code = this.giftCardCode().trim();
-                        // Minimum 6 characters, alphanumeric + hyphen, not currently applying
-                        return code.length >= 6 && 
-                               /^[A-Z0-9-]+$/i.test(code) && 
-                               !this.isApplying();
-                    }, this),
-                    
-                    /**
-                     * Apply gift card
-                     */
-                    applyGiftCard: function () {
-                        var self = this;
-                        var code = self.giftCardCode().trim();
-                        
-                        if (!code || !self.canApply()) {
-                            return;
-                        }
-                        
-                        // Reset messages
-                        self.errorMessage('');
-                        self.successMessage('');
-                        self.isApplying(true);
-                        
-                        // Call API
-                        $.ajax({
-                            url: '/rest/V1/carts/mine/giftCard',
-                            type: 'POST',
-                            contentType: 'application/json',
-                            data: JSON.stringify({
-                                giftCardCode: code
-                            }),
-                            success: function (response) {
-                                self.successMessage('Carte cadeau appliquée avec succès!');
-                                self.appliedCards.push({
-                                    code: code,
-                                    amount: response.discount || '0,00 DZD'
-                                });
-                                self.giftCardCode('');
-                                
-                                // Auto-clear success message after 5 seconds
-                                setTimeout(function() {
-                                    self.successMessage('');
-                                }, 5000);
-                                
-                                // Reload cart data
-                                var sections = ['cart'];
-                                customerData.invalidate(sections);
-                                customerData.reload(sections, true);
-                            },
-                            error: function (xhr) {
-                                var error = 'Échec de l\'application de la carte cadeau. Veuillez vérifier le code et réessayer.';
-                                try {
-                                    var response = JSON.parse(xhr.responseText);
-                                    if (response.message) {
-                                        error = response.message;
-                                    }
-                                } catch (e) {
-                                    // Use default error message
-                                }
-                                self.errorMessage(error);
-                                
-                                // Auto-clear error message after 5 seconds
-                                setTimeout(function() {
-                                    self.errorMessage('');
-                                }, 5000);
-                            },
-                            complete: function () {
-                                self.isApplying(false);
-                            }
-                        });
-                    },
-                    
-                    /**
-                     * Remove gift card
-                     */
-                    removeGiftCard: function (card) {
-                        var self = this;
-                        
-                        // Remove from UI immediately
-                        self.appliedCards.remove(card);
-                        
-                        // Call API to remove from backend
-                        $.ajax({
-                            url: '/rest/V1/carts/mine/giftCard',
-                            type: 'DELETE',
-                            contentType: 'application/json',
-                            data: JSON.stringify({
-                                giftCardCode: card.code
-                            }),
-                            success: function () {
-                                self.successMessage('Carte cadeau retirée');
-                                
-                                // Auto-clear message
-                                setTimeout(function() {
-                                    self.successMessage('');
-                                }, 3000);
-                                
-                                // Reload cart data
-                                var sections = ['cart'];
-                                customerData.invalidate(sections);
-                                customerData.reload(sections, true);
-                            },
-                            error: function () {
-                                // Re-add card if removal failed
-                                self.appliedCards.push(card);
-                                self.errorMessage('Échec de la suppression de la carte cadeau');
-                                
-                                setTimeout(function() {
-                                    self.errorMessage('');
-                                }, 3000);
-                            }
-                        });
-                    }
-                };
-            }
-        }
-    });
-    
-    // Initialize collapsible
-    $(document).ready(function() {
-        $('#block-gift-card').collapsible({
-            active: false,
-            collapsible: true
-        });
-    });
-});
-</script>
