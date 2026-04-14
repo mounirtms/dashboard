@@ -2,11 +2,20 @@
 /**
  * Mab_CheckoutCustomization - Simplified Gift Card Block for Cart
  * Collapsible style matching the discount coupon block
+ * 
+ * @var $block \Magento\Framework\View\Element\Template
+ * @var $escaper \Magento\Framework\Escaper
  */
 -->
 <?php
-/** @var $escaper \Magento\Framework\Escaper */
-$escaper = $block->getEscaper();
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+$escaper = $block->getData('escaper');
+if (!$escaper) {
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $escaper = $objectManager->get(Escaper::class);
+}
 $blockId = 'block-gift-card-' . uniqid();
 ?>
 
