@@ -259,6 +259,55 @@
 }
 
 /* ========================================
+   7. ENHANCED REGION/STATE DROPDOWN
+   ======================================== */
+
+/* Wilaya (Region) Dropdown Enhancement */
+.checkout-index-index .field[name="shippingAddress.region_id"] select,
+.checkout-index-index .field[name="billingAddress.region_id"] select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="12" height="8" viewBox="0 0 12 8" fill="%23333" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+    padding-right: 40px;
+    font-weight: 500;
+    color: #333;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"],
+.checkout-index-index .field[name="billingAddress.region_id"] {
+    position: relative;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] .label,
+.checkout-index-index .field[name="billingAddress.region_id"] .label {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+/* Hide second street address line */
+.checkout-index-index .field[name="shippingAddress.street.1"],
+.checkout-index-index .field[name="billingAddress.street.1"],
+.checkout-index-index .field[name="shippingAddress.street.2"],
+.checkout-index-index .field[name="billingAddress.street.2"] {
+    display: none !important;
+}
+
+/* Optimize first address field */
+.checkout-index-index .field[name="shippingAddress.street.0"] .control,
+.checkout-index-index .field[name="billingAddress.street.0"] .control {
+    width: 100%;
+}
+
+.checkout-index-index .field[name="shippingAddress.street.0"] input,
+.checkout-index-index .field[name="billingAddress.street.0"] input {
+    width: 100%;
+}
+
+/* ========================================
    7. ACCESSIBILITY - Better UX for all
    ======================================== */
 
@@ -367,6 +416,118 @@
     
     .checkout-index-index .opc-block-summary {
         border: 1px solid #000;
+    }
+}
+
+/* ========================================
+   11. CHECKOUT LAYOUT OPTIMIZATION
+   ======================================== */
+
+/* Main checkout wrapper */
+.checkout-index-index .opc-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Shipping step optimization */
+.checkout-index-index .checkout-shipping-address {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+/* Form fieldset spacing */
+.checkout-index-index .fieldset {
+    margin-bottom: 0;
+}
+
+.checkout-index-index .fieldset > .field {
+    margin-bottom: 20px;
+}
+
+/* Two-column layout for name fields */
+.checkout-index-index .field[name$=".firstname"],
+.checkout-index-index .field[name$=".lastname"] {
+    width: calc(50% - 10px);
+    display: inline-block;
+    vertical-align: top;
+}
+
+.checkout-index-index .field[name$=".firstname"] {
+    margin-right: 20px;
+}
+
+/* Enhanced field focus states */
+.checkout-index-index .field._error .control input,
+.checkout-index-index .field._error .control select {
+    border-color: #f44336;
+    background: #fff5f5;
+}
+
+.checkout-index-index .field._error .control input:focus,
+.checkout-index-index .field._error .control select:focus {
+    border-color: #d32f2f;
+    box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+}
+
+/* Shipping method section */
+.checkout-index-index #checkout-shipping-method-load {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.checkout-index-index .step-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+/* Checkout actions */
+.checkout-index-index .actions-toolbar {
+    padding: 20px 0;
+    margin-top: 30px;
+    border-top: 2px solid #e0e0e0;
+}
+
+/* Payment section optimization */
+.checkout-index-index .payment-method {
+    background: #fff;
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.checkout-index-index .payment-method:hover {
+    border-color: #4caf50;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+}
+
+.checkout-index-index .payment-method._active {
+    border-color: #4caf50;
+    background: #f1f8f4;
+}
+
+/* Order summary sidebar */
+.checkout-index-index .opc-sidebar {
+    position: sticky;
+    top: 20px;
+}
+
+@media (max-width: 768px) {
+    .checkout-index-index .opc-sidebar {
+        position: relative;
+        top: 0;
     }
 }
 
@@ -484,6 +645,14 @@
 .shipping-card .carrier-logo svg {
     max-width: 80px;
     max-height: 40px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.shipping-card .carrier-logo img.carrier-img {
+    max-width: 80px;
+    max-height: 40px;
+    object-fit: contain;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }

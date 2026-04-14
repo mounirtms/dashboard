@@ -181,10 +181,11 @@ define([
          * Get carrier logo HTML
          */
         getCarrierLogo: function (carrier) {
+            var baseUrl = window.BASE_URL || '';
             var logos = {
-                'yalidine': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#FF6B35"/><text x="40" y="24" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Yalidine</text></svg>',
-                'ecotrak': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#4CAF50"/><text x="40" y="24" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Ecotrak</text></svg>',
-                'store-pickup': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#2196F3"/><text x="40" y="20" font-family="Arial" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Retrait</text><text x="40" y="32" font-family="Arial" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Magasin</text></svg>',
+                'yalidine': '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/yalidine.png" alt="Yalidine" class="carrier-img" onerror="this.src=\'' + baseUrl + 'pub/media/logo/default/logo_techno.png\'" />',
+                'ecotrak': '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/ecotrak.png" alt="Ecotrak" class="carrier-img" onerror="this.style.display=\'none\'" />',
+                'store-pickup': '<img src="' + baseUrl + 'pub/media/logo/default/logo_techno.png" alt="Retrait Magasin" class="carrier-img" />',
                 'free': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#9C27B0"/><text x="40" y="24" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Gratuit</text></svg>',
                 'default': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#757575"/><text x="40" y="24" font-family="Arial" font-size="12" font-weight="bold" fill="white" text-anchor="middle">Standard</text></svg>'
             };
