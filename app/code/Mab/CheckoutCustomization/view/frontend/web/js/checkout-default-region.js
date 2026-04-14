@@ -31,28 +31,14 @@ define([
     /**
      * Set default region to Alger using the Knockout UI component.
      * The region_id component uses Knockout observables, not jQuery.
+     * 
+     * DISABLED: Do not auto-select default region.
+     * Let user choose wilaya after selecting country.
      */
     function setDefaultRegion(regionComponent) {
-        if (!regionComponent) {
-            return;
-        }
-
-        // Only set if no region is already selected
-        if (!regionComponent.value()) {
-            // Wait a bit for the options to load from the country change
-            setTimeout(function () {
-                var options = regionComponent.options();
-                if (options && options.length > 0) {
-                    // Check if Alger (874) exists in options
-                    var hasAlger = options.some(function (opt) {
-                        return String(opt.value) === ALGER_REGION_ID;
-                    });
-                    if (hasAlger) {
-                        regionComponent.value(ALGER_REGION_ID);
-                    }
-                }
-            }, 500);
-        }
+        // Disabled - do not auto-select region
+        // User must manually select their wilaya
+        return;
     }
 
     /**
@@ -98,7 +84,8 @@ define([
             // After country is set, handle region
             registry.get(shippingPrefix + 'region_id', function (regionComponent) {
                 forceRegionVisible(regionComponent);
-                setDefaultRegion(regionComponent);
+                // DO NOT auto-select default region - let user choose
+                // setDefaultRegion(regionComponent);
             });
         });
 

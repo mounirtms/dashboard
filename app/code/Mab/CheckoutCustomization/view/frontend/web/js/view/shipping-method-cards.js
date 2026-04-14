@@ -214,32 +214,73 @@ define([
 
         /**
          * Identify carrier from method name
+         * Supports: Yalidine (home/agence), Ecotrak, Techno (retrait/pickup), Free shipping
          */
         identifyCarrier: function (methodName) {
             var name = methodName.toLowerCase();
-            if (name.indexOf('yalidine') >= 0) return 'yalidine';
-            if (name.indexOf('ecotrak') >= 0) return 'ecotrak';
-            if (name.indexOf('techno') >= 0 || name.indexOf('retrait') >= 0 || name.indexOf('pickup') >= 0) return 'store-pickup';
-            if (name.indexOf('gratuit') >= 0 || name.indexOf('free') >= 0) return 'free';
+            
+            // Yalidine - home or agence pickup
+            if (name.indexOf('yalidine') >= 0) {
+                return 'yalidine';
+            }
+            
+            // Ecotrak
+            if (name.indexOf('ecotrak') >= 0) {
+                return 'ecotrak';
+            }
+            
+            // Techno store pickup (Retrait magasin)
+            if (name.indexOf('techno') >= 0 || 
+                name.indexOf('retrait') >= 0 || 
+                name.indexOf('pickup') >= 0 || 
+                name.indexOf('magasin') >= 0 ||
+                name.indexOf('store') >= 0) {
+                return 'store-pickup';
+            }
+            
+            // Free shipping
+            if (name.indexOf('gratuit') >= 0 || 
+                name.indexOf('free') >= 0 ||
+                name.indexOf('offert') >= 0) {
+                return 'free';
+            }
+            
             return 'default';
         },
 
         /**
-         * Estimate delivery time
+         * Estimate delivery time with French locale
+         * All text in French for Algeria market
          */
         estimateDeliveryTime: function (carrier, methodName) {
             var name = methodName.toLowerCase();
             
+            // Yalidine - check for home vs agence
             if (carrier === 'yalidine') {
-                return $t('2-4 jours ouvrables');
-            } else if (carrier === 'ecotrak') {
-                return $t('3-5 jours ouvrables');
-            } else if (carrier === 'store-pickup' || name.indexOf('techno') >= 0) {
-                return $t('Prêt pour le retrait aujourd\'hui');
-            } else if (carrier === 'free') {
-                return $t('5-7 jours ouvrables');
+                if (name.indexOf('agence') >= 0 || name.indexOf('agency') >= 0) {
+                    return $t('Retrait en agence - 2-3 jours');
+                } else if (name.indexOf('home') >= 0 || name.indexOf('domicile') >= 0 || name.indexOf('maison') >= 0) {
+                    return $t('Livraison à domicile - 3-5 jours');
+                }
+                return $t('Livraison - 2-5 jours ouvrables');
             }
             
+            // Ecotrak
+            if (carrier === 'ecotrak') {
+                return $t('Livraison - 3-5 jours ouvrables');
+            }
+            
+            // Techno store pickup (Retrait magasin)
+            if (carrier === 'store-pickup' || name.indexOf('techno') >= 0 || name.indexOf('retrait') >= 0) {
+                return $t('Retrait immédiat en magasin');
+            }
+            
+            // Free shipping
+            if (carrier === 'free') {
+                return $t('Livraison gratuite - 5-7 jours');
+            }
+            
+            // Default
             return $t('Livraison standard');
         }
     });
