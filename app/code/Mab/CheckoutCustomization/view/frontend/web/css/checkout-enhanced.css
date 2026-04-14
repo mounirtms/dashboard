@@ -369,3 +369,209 @@
         border: 1px solid #000;
     }
 }
+
+/* ========================================
+   11. SHIPPING METHOD CARDS - Modern UI
+   ======================================== */
+
+/* Hide original Mageplaza table */
+.shipping-table-hidden {
+    display: none !important;
+}
+
+/* Shipping cards grid */
+.shipping-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+/* Individual shipping card */
+.shipping-card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.shipping-card:hover {
+    border-color: #4caf50;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+    transform: translateY(-2px);
+}
+
+.shipping-card.selected {
+    border-color: #4caf50;
+    background: #f1f8f4;
+    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
+}
+
+.shipping-card.free-shipping {
+    border-color: #9c27b0;
+}
+
+.shipping-card.free-shipping.selected {
+    background: #f3e5f5;
+    border-color: #9c27b0;
+    box-shadow: 0 4px 16px rgba(156, 39, 176, 0.2);
+}
+
+/* Card header with radio and logo */
+.shipping-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Custom radio button */
+.shipping-card .radio-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.shipping-card .shipping-radio {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #c2c2c2;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.shipping-card .shipping-radio:checked {
+    border-color: #4caf50;
+    background: #4caf50;
+}
+
+.shipping-card .shipping-radio:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+}
+
+.shipping-card.free-shipping .shipping-radio:checked {
+    border-color: #9c27b0;
+    background: #9c27b0;
+}
+
+.shipping-card .radio-label {
+    display: none;
+}
+
+/* Carrier logo */
+.shipping-card .carrier-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.shipping-card .carrier-logo svg {
+    max-width: 80px;
+    max-height: 40px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Card body */
+.shipping-card .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Method name */
+.shipping-card .method-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Method details */
+.shipping-card .method-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Delivery time */
+.shipping-card .delivery-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.shipping-card .delivery-time svg {
+    flex-shrink: 0;
+    color: #757575;
+}
+
+/* Price wrapper */
+.shipping-card .price-wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.shipping-card .price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+.shipping-card .free-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+}
+
+/* Responsive design for shipping cards */
+@media (max-width: 768px) {
+    .shipping-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .shipping-card {
+        padding: 12px;
+    }
+    
+    .shipping-card .carrier-logo svg {
+        max-width: 60px;
+        max-height: 30px;
+    }
+    
+    .shipping-card .method-name {
+        font-size: 15px;
+    }
+    
+    .shipping-card .price {
+        font-size: 16px;
+    }
+}

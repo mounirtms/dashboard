@@ -90,6 +90,8 @@ define([
                 // Extract carrier info
                 var carrier = self.identifyCarrier(methodName);
                 var deliveryTime = self.estimateDeliveryTime(carrier, methodName);
+                var carrierLogo = self.getCarrierLogo(carrier);
+                var formattedPrice = self.formatPrice(priceText);
 
                 // Create card HTML
                 var cardHtml = `
@@ -104,21 +106,24 @@ define([
                                     class="shipping-radio" />
                                 <label for="card-${methodCode}" class="radio-label"></label>
                             </div>
-                            <div class="carrier-icon">
-                                <i class="icon-${carrier}"></i>
+                            <div class="carrier-logo">
+                                ${carrierLogo}
                             </div>
                         </div>
                         <div class="card-body">
                             <h3 class="method-name">${methodName}</h3>
                             <div class="method-details">
                                 <div class="delivery-time">
-                                    <i class="icon-clock"></i>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
                                     <span>${deliveryTime}</span>
                                 </div>
                                 <div class="price-wrapper">
                                     ${isFree ? 
                                         '<span class="free-badge">' + $t('Gratuit') + '</span>' : 
-                                        '<span class="price">' + priceText + '</span>'
+                                        '<span class="price">' + formattedPrice + '</span>'
                                     }
                                 </div>
                             </div>
@@ -173,13 +178,47 @@ define([
         },
 
         /**
+         * Get carrier logo HTML
+         */
+        getCarrierLogo: function (carrier) {
+            var logos = {
+                'yalidine': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#FF6B35"/><text x="40" y="24" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Yalidine</text></svg>',
+                'ecotrak': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#4CAF50"/><text x="40" y="24" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Ecotrak</text></svg>',
+                'store-pickup': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#2196F3"/><text x="40" y="20" font-family="Arial" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Retrait</text><text x="40" y="32" font-family="Arial" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Magasin</text></svg>',
+                'free': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#9C27B0"/><text x="40" y="24" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Gratuit</text></svg>',
+                'default': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#757575"/><text x="40" y="24" font-family="Arial" font-size="12" font-weight="bold" fill="white" text-anchor="middle">Standard</text></svg>'
+            };
+            return logos[carrier] || logos['default'];
+        },
+
+        /**
+         * Format price to Algerian format (e.g., 2,500.00 DZD)
+         */
+        formatPrice: function (priceText) {
+            // Extract numeric value
+            var matches = priceText.match(/[\d,\.]+/);
+            if (!matches) return priceText;
+            
+            var numStr = matches[0].replace(/,/g, '');
+            var num = parseFloat(numStr);
+            
+            if (isNaN(num)) return priceText;
+            
+            // Format with thousands separator and 2 decimals
+            var formatted = num.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+            
+            // Add currency
+            return formatted + ' DZD';
+        },
+
+        /**
          * Identify carrier from method name
          */
         identifyCarrier: function (methodName) {
             var name = methodName.toLowerCase();
             if (name.indexOf('yalidine') >= 0) return 'yalidine';
             if (name.indexOf('ecotrak') >= 0) return 'ecotrak';
-            if (name.indexOf('techno') >= 0) return 'store-pickup';
+            if (name.indexOf('techno') >= 0 || name.indexOf('retrait') >= 0 || name.indexOf('pickup') >= 0) return 'store-pickup';
             if (name.indexOf('gratuit') >= 0 || name.indexOf('free') >= 0) return 'free';
             return 'default';
         },

@@ -7,17 +7,18 @@
 <?php
 /** @var $escaper \Magento\Framework\Escaper */
 $escaper = $block->getEscaper();
+$blockId = 'block-gift-card-' . uniqid();
 ?>
 
-<div class="block gift-card" id="block-gift-card" data-mage-init='{"collapsible":{"active":false}}'>
+<div class="block gift-card" id="<?= $escaper->escapeHtmlAttr($blockId) ?>">
     <div class="title" data-role="title">
-        <strong id="block-gift-card-heading">
+        <strong id="<?= $escaper->escapeHtmlAttr($blockId) ?>-heading" role="heading" aria-level="2">
             <?= $escaper->escapeHtml(__('Carte Cadeau ou Bon d\'Achat')) ?>
         </strong>
     </div>
     
-    <div class="content" data-role="content">
-        <form class="form-gift-card" data-bind="scope: 'giftCardForm'">
+    <div class="content" data-role="content" style="display: none;">
+        <form class="form-gift-card" id="gift-card-form" data-hasrequired="<?= $escaper->escapeHtmlAttr(__('* Required Fields')) ?>">
             <div class="fieldset gift-card">
                 <!-- Gift Card Input Field -->
                 <div class="field">
@@ -32,7 +33,7 @@ $escaper = $block->getEscaper();
                                value="" 
                                placeholder="<?= $escaper->escapeHtmlAttr(__('Code de la carte cadeau')) ?>"
                                maxlength="50"
-                               data-bind="value: giftCardCode, valueUpdate: 'input', attr: { disabled: isApplying }" />
+                               autocomplete="off" />
                     </div>
                 </div>
                 
@@ -41,64 +42,226 @@ $escaper = $block->getEscaper();
                     <div class="primary">
                         <button class="action apply primary" 
                                 type="button" 
-                                data-bind="click: applyGiftCard, enable: canApply, css: { disabled: !canApply() || isApplying() }">
-                            <span data-bind="visible: !isApplying()">
-                                <?= $escaper->escapeHtml(__('Appliquer la Carte Cadeau')) ?>
-                            </span>
-                            <span data-bind="visible: isApplying()" style="display:none;">
-                                <?= $escaper->escapeHtml(__('Application...')) ?>
-                            </span>
+                                id="apply-gift-card-btn">
+                            <span><?= $escaper->escapeHtml(__('Appliquer la Carte Cadeau')) ?></span>
                         </button>
                     </div>
                 </div>
                 
                 <!-- Messages -->
-                <div class="messages" data-bind="visible: errorMessage().length > 0 || successMessage().length > 0">
-                    <div class="message message-error error" data-bind="visible: errorMessage().length > 0">
-                        <div data-bind="text: errorMessage"></div>
+                <div class="messages" id="gift-card-messages" style="display:none;">
+                    <div class="message message-error error" id="gift-card-error" style="display:none;">
+                        <div id="gift-card-error-text"></div>
                     </div>
                     
-                    <div class="message message-success success" data-bind="visible: successMessage().length > 0">
-                        <div data-bind="text: successMessage"></div>
+                    <div class="message message-success success" id="gift-card-success" style="display:none;">
+                        <div id="gift-card-success-text"></div>
                     </div>
                 </div>
                 
                 <!-- Applied Gift Cards -->
-                <div class="applied-gift-cards" data-bind="visible: appliedCards().length > 0">
+                <div class="applied-gift-cards" id="applied-gift-cards" style="display:none;">
                     <div class="applied-title">
                         <strong><?= $escaper->escapeHtml(__('Cartes Appliquées')) ?></strong>
                     </div>
-                    <ul class="applied-list" data-bind="foreach: appliedCards">
-                        <li class="applied-item">
-                            <span class="card-code" data-bind="text: code"></span>
-                            <span class="card-amount" data-bind="text: amount"></span>
-                            <button type="button" 
-                                    class="action delete" 
-                                    data-bind="click: $parent.removeGiftCard"
-                                    title="<?= $escaper->escapeHtmlAttr(__('Retirer la carte cadeau')) ?>">
-                                <span><?= $escaper->escapeHtml(__('Retirer')) ?></span>
-                            </button>
-                        </li>
+                    <ul class="applied-list" id="applied-cards-list">
+                        <!-- Dynamically populated -->
                     </ul>
                 </div>
             </div>
         </form>
-        
-        <script type="text/x-magento-init">
-        {
-            "[data-bind*='giftCardForm']": {
-                "Magento_Ui/js/core/app": {
-                    "components": {
-                        "giftCardForm": {
-                            "component": "Mab_CheckoutCustomization/js/view/gift-card-form"
-                        }
-                    }
-                }
-            }
-        }
-        </script>
     </div>
 </div>
+
+<script>
+require([
+    'jquery',
+    'jquery/ui',
+    'mage/collapsible'
+], function($) {
+    'use strict';
+    
+    $(document).ready(function() {
+        var $block = $('#<?= $escaper->escapeJs($blockId) ?>');
+        var $input = $('#gift_card_code');
+        var $applyBtn = $('#apply-gift-card-btn');
+        var $errorMsg = $('#gift-card-error');
+        var $errorText = $('#gift-card-error-text');
+        var $successMsg = $('#gift-card-success');
+        var $successText = $('#gift-card-success-text');
+        var $appliedCardsContainer = $('#applied-gift-cards');
+        var $appliedCardsList = $('#applied-cards-list');
+        var appliedCards = [];
+        
+        // Initialize collapsible
+        $block.collapsible({
+            active: false,
+            collapsible: true,
+            openedState: 'active',
+            closedState: '',
+            animate: 200
+        });
+        
+        // Validation function
+        function validateGiftCardCode(code) {
+            code = code.trim();
+            if (code.length < 6) {
+                return { valid: false, message: '<?= $escaper->escapeJs(__('Le code doit contenir au moins 6 caractères')) ?>' };
+            }
+            if (!/^[A-Z0-9-]+$/i.test(code)) {
+                return { valid: false, message: '<?= $escaper->escapeJs(__('Le code ne peut contenir que des lettres, chiffres et tirets')) ?>' };
+            }
+            return { valid: true };
+        }
+        
+        // Show message function
+        function showMessage(type, message, duration) {
+            $errorMsg.hide();
+            $successMsg.hide();
+            
+            if (type === 'error') {
+                $errorText.text(message);
+                $errorMsg.show();
+            } else if (type === 'success') {
+                $successText.text(message);
+                $successMsg.show();
+            }
+            
+            $('#gift-card-messages').show();
+            
+            if (duration) {
+                setTimeout(function() {
+                    $errorMsg.hide();
+                    $successMsg.hide();
+                    $('#gift-card-messages').hide();
+                }, duration);
+            }
+        }
+        
+        // Apply gift card function
+        function applyGiftCard() {
+            var code = $input.val();
+            var validation = validateGiftCardCode(code);
+            
+            if (!validation.valid) {
+                showMessage('error', validation.message, 5000);
+                return;
+            }
+            
+            // Disable button and show loading
+            $applyBtn.prop('disabled', true).addClass('disabled');
+            $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Application...')) ?>');
+            
+            // Make AJAX request
+            $.ajax({
+                url: '/rest/V1/carts/mine/giftCard',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ giftCardCode: code }),
+                success: function(response) {
+                    showMessage('success', '<?= $escaper->escapeJs(__('Carte cadeau appliquée avec succès!')) ?>', 5000);
+                    
+                    // Add to applied cards
+                    appliedCards.push({
+                        code: code,
+                        amount: response.discount || '0,00 DZD'
+                    });
+                    
+                    // Update applied cards list
+                    updateAppliedCards();
+                    
+                    // Clear input
+                    $input.val('');
+                    
+                    // Reload cart data
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                },
+                error: function(xhr) {
+                    var errorMessage = '<?= $escaper->escapeJs(__('Échec de l\'application de la carte cadeau.')) ?>';
+                    
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {}
+                    
+                    showMessage('error', errorMessage, 5000);
+                },
+                complete: function() {
+                    $applyBtn.prop('disabled', false).removeClass('disabled');
+                    $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Appliquer la Carte Cadeau')) ?>');
+                }
+            });
+        }
+        
+        // Update applied cards list
+        function updateAppliedCards() {
+            if (appliedCards.length === 0) {
+                $appliedCardsContainer.hide();
+                return;
+            }
+            
+            $appliedCardsList.empty();
+            
+            appliedCards.forEach(function(card, index) {
+                var $item = $('<li class="applied-item"></li>');
+                $item.html(
+                    '<span class="card-code">' + card.code + '</span>' +
+                    '<span class="card-amount">' + card.amount + '</span>' +
+                    '<button type="button" class="action delete" data-index="' + index + '" title="<?= $escaper->escapeHtmlAttr(__('Retirer la carte cadeau')) ?>">' +
+                    '<span><?= $escaper->escapeJs(__('Retirer')) ?></span>' +
+                    '</button>'
+                );
+                $appliedCardsList.append($item);
+            });
+            
+            $appliedCardsContainer.show();
+        }
+        
+        // Remove gift card
+        function removeGiftCard(index) {
+            var card = appliedCards[index];
+            
+            $.ajax({
+                url: '/rest/V1/carts/mine/giftCard',
+                type: 'DELETE',
+                contentType: 'application/json',
+                data: JSON.stringify({ giftCardCode: card.code }),
+                success: function() {
+                    appliedCards.splice(index, 1);
+                    updateAppliedCards();
+                    showMessage('success', '<?= $escaper->escapeJs(__('Carte cadeau retirée')) ?>', 3000);
+                    
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                },
+                error: function() {
+                    showMessage('error', '<?= $escaper->escapeJs(__('Échec de la suppression')) ?>', 3000);
+                }
+            });
+        }
+        
+        // Event handlers
+        $applyBtn.on('click', applyGiftCard);
+        
+        $input.on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                applyGiftCard();
+            }
+        });
+        
+        $appliedCardsList.on('click', '.action.delete', function() {
+            var index = $(this).data('index');
+            removeGiftCard(index);
+        });
+    });
+});
+</script>
 
 <style>
 /* Match the discount block styling */
