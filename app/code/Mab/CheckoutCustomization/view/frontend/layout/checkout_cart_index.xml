@@ -1,25 +1,23 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <!-- Remove shipping estimation from cart -->
-        <referenceBlock name="checkout.cart.shipping" remove="true"/>
-        <referenceBlock name="checkout.cart.shipping.address" remove="true"/>
-        <referenceBlock name="checkout.cart.shipping.estimate" remove="true"/>
-        
-        <!-- Initialize checkoutConfig for cart page -->
+        <!-- Initialize checkoutConfig for cart page (before any cart content) -->
         <referenceContainer name="content">
             <block class="Mab\CheckoutCustomization\Block\Cart\CheckoutConfig"
                    name="mab.cart.checkout.config"
                    template="Mab_CheckoutCustomization::cart/checkout-config.phtml"
-                   before="-"/>
+                   before="checkout.cart"/>
         </referenceContainer>
         
-        <!-- Add enhanced gift card block in cart -->
-        <referenceContainer name="checkout.cart.container">
+        <!-- Remove shipping estimation from cart sidebar -->
+        <referenceBlock name="checkout.cart.shipping" remove="true"/>
+        
+        <!-- Add enhanced gift card block in cart.summary (sidebar) -->
+        <referenceContainer name="cart.summary">
             <block class="Magento\Framework\View\Element\Template"
                    name="mab.cart.giftcard.enhanced"
                    template="Mab_CheckoutCustomization::cart/gift-card-enhanced.phtml"
-                   after="checkout.cart.form">
+                   after="checkout.cart.coupon">
                 <arguments>
                     <argument name="jsLayout" xsi:type="array">
                         <item name="components" xsi:type="array">
