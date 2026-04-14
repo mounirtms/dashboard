@@ -31,7 +31,7 @@ define([
             if (quote.shippingAddress) {
                 quote.shippingAddress.subscribe(function (address) {
                     if (address && address.regionId) {
-                        console.log('Region changed to:', address.regionId, 'Region name:', address.region);
+                        // Debug removed for production
                         // Reset cards initialization flag to allow re-rendering
                         window.shippingCardsInitialized = false;
                         // Wait for new rates to be fetched, then reinitialize cards
@@ -48,7 +48,7 @@ define([
             if (this.rates) {
                 this.rates.subscribe(function (newRates) {
                     if (newRates && newRates.length > 0) {
-                        console.log('Shipping rates updated, count:', newRates.length);
+                        // Debug removed for production
                         // Reset and reinitialize cards
                         window.shippingCardsInitialized = false;
                         setTimeout(function () {

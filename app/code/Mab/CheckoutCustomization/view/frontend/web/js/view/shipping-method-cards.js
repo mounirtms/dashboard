@@ -57,7 +57,7 @@ define([
             var $shippingTable = $('#checkout-shipping-method-load table.table-checkout-shipping-method');
 
             if ($shippingTable.length === 0) {
-                console.log('Shipping table not found, retrying...');
+                // Retry if table not loaded yet
                 setTimeout(function () {
                     self.convertToCards();
                 }, 500);
@@ -147,8 +147,6 @@ define([
                     self.selectCard($card, methodCode, $radio);
                 });
             });
-
-            console.log('Shipping methods converted to cards');
         },
 
         /**
@@ -165,8 +163,6 @@ define([
             if ($originalRadio && $originalRadio.length) {
                 $originalRadio.prop('checked', true).trigger('click');
             }
-
-            console.log('Selected shipping method:', methodCode);
         },
 
         /**

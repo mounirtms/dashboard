@@ -31,13 +31,13 @@ define([
 
             // Subscribe to shipping rates changes (triggered by region selection)
             shippingService.getShippingRates().subscribe(function (rates) {
-                console.log('Shipping rates updated:', rates);
+                // Debug removed for production
                 self.processShippingRates(rates);
             });
 
             // Subscribe to region/address changes
             quote.shippingAddress.subscribe(function (address) {
-                console.log('Shipping address changed:', address);
+                // Debug removed for production
                 self.isLoading(true);
                 // Wait for Mageplaza to filter methods by region
                 setTimeout(function () {
@@ -90,7 +90,7 @@ define([
             });
 
             self.shippingMethods(methods);
-            console.log('Processed shipping methods:', methods.length);
+            // Debug removed for production
         },
 
         /**
@@ -101,7 +101,7 @@ define([
             var $shippingTable = $('#checkout-shipping-method-load table.table-checkout-shipping-method');
 
             if ($shippingTable.length === 0 || $shippingTable.find('tbody tr').length === 0) {
-                console.log('Waiting for shipping table to load...');
+                // Debug removed for production
                 setTimeout(function () {
                     self.refreshShippingCards();
                 }, 500);
@@ -137,7 +137,7 @@ define([
 
             self.shippingMethods(methods);
             self.isLoading(false);
-            console.log('Refreshed shipping methods from table:', methods.length);
+            // Debug removed for production
 
             // Hide original table, show cards
             $shippingTable.addClass('shipping-table-hidden');
@@ -228,7 +228,7 @@ define([
                 'method_code': method.method_code
             });
 
-            console.log('Selected shipping method:', methodCode);
+            // Debug removed for production
         },
 
         /**
