@@ -86,16 +86,31 @@ define([
                 
                 var methodCode = $radio.val();
                 
-                // Extract method title from col-method (3rd column)
-                var methodName = $row.find('.col-method').eq(1).text().trim();
+                // Extract method title - try multiple selectors for robustness
+                var methodName = $row.find('.col-method').first().text().trim();
+                if (!methodName) {
+                    methodName = $row.find('td').eq(2).text().trim(); // 3rd column
+                }
+                if (!methodName) {
+                    methodName = $radio.attr('data-title') || 'Shipping Method';
+                }
                 
-                // Extract carrier title from col-carrier (4th column)
+                // Extract carrier title - try multiple selectors
                 var carrierTitle = $row.find('.col-carrier').text().trim();
+                if (!carrierTitle) {
+                    carrierTitle = $row.find('td').eq(3).text().trim(); // 4th column
+                }
                 
-                // Extract price from col-price (2nd column)
+                // Extract price - try multiple selectors
                 var $priceCol = $row.find('.col-price');
-                var priceText = $priceCol.find('.price').last().text().trim();
-                var isFree = priceText.indexOf('0,00') === 0 || priceText.indexOf('0.00') === 0;
+                var priceText = '';
+                if ($priceCol.length) {
+                    priceText = $priceCol.find('.price').last().text().trim();
+                }
+                if (!priceText) {
+                    priceText = $row.find('td').eq(1).text().trim(); // 2nd column
+                }
+                var isFree = !priceText || priceText.indexOf('0,00') === 0 || priceText.indexOf('0.00') === 0 || priceText.toLowerCase().indexOf('gratuit') >= 0 || priceText.toLowerCase().indexOf('free') >= 0;
                 
                 // Extract carrier info
                 var carrier = self.identifyCarrier(methodName);

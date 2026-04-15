@@ -262,22 +262,47 @@
    7. ENHANCED REGION/STATE DROPDOWN
    ======================================== */
 
-/* Wilaya (Region) Dropdown Enhancement */
+/* Wilaya (Region) Dropdown Enhancement - Green Arrow */
 .checkout-index-index .field[name="shippingAddress.region_id"] select,
 .checkout-index-index .field[name="billingAddress.region_id"] select {
     appearance: none;
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="12" height="8" viewBox="0 0 12 8" fill="%23333" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1"/></svg>');
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="14" height="10" viewBox="0 0 14 10" fill="%234caf50" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L7 8L13 1" stroke="%234caf50" stroke-width="2" fill="none"/></svg>');
     background-repeat: no-repeat;
-    background-position: right 15px center;
-    background-size: 12px;
+    background-position: right 12px center;
+    background-size: 14px 10px;
+    background-color: #fff;
     padding-right: 40px;
+    padding-left: 12px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     font-weight: 500;
+    font-size: 15px;
     color: #333;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] select:hover,
+.checkout-index-index .field[name="billingAddress.region_id"] select:hover {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] select:focus,
+.checkout-index-index .field[name="billingAddress.region_id"] select:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15);
+    outline: none;
 }
 
 .checkout-index-index .field[name="shippingAddress.region_id"],
 .checkout-index-index .field[name="billingAddress.region_id"] {
     position: relative;
+    width: 100%;
 }
 
 .checkout-index-index .field[name="shippingAddress.region_id"] .label,
@@ -286,6 +311,29 @@
     color: #333;
     font-size: 15px;
     margin-bottom: 8px;
+    display: block;
+}
+
+/* Ensure region select displays properly with all options */
+.checkout-index-index .field[name="shippingAddress.region_id"] select,
+.checkout-index-index .field[name="billingAddress.region_id"] select {
+    width: 100%;
+    max-width: 100%;
+    min-height: 45px;
+}
+
+/* Style select options to ensure they're visible */
+.checkout-index-index .field[name="shippingAddress.region_id"] select option,
+.checkout-index-index .field[name="billingAddress.region_id"] select option {
+    padding: 10px;
+    color: #333;
+    background-color: #fff;
+    font-size: 14px;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] select option:hover,
+.checkout-index-index .field[name="billingAddress.region_id"] select option:hover {
+    background-color: #f1f8f4;
 }
 
 /* Hide second street address line */
@@ -535,8 +583,14 @@
    11. SHIPPING METHOD CARDS - Modern UI
    ======================================== */
 
-/* Hide original Mageplaza table */
+/* Hide original Mageplaza shipping table when cards are displayed */
 .shipping-table-hidden {
+    display: none !important;
+}
+
+/* Additional selector to ensure table is hidden when cards container exists */
+#shipping-method-cards-container ~ #checkout-shipping-method-load table.table-checkout-shipping-method,
+#shipping-method-cards-container ~ .table-checkout-shipping-method {
     display: none !important;
 }
 
