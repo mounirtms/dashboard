@@ -1,511 +1,488 @@
 <!-- 
 /**
  * Mab_CheckoutCustomization - Enhanced Gift Card Block for Cart
- * Modern, user-friendly gift card input with validation and feedback
+ * Simplified interface with visual distinction from coupon
+ * Uses Amasty Gift Card Account module
+ * 
+ * @var $block \Magento\Framework\View\Element\Template
+ * @var $escaper \Magento\Framework\Escaper
  */
 -->
-<div class="cart-gift-card-wrapper" data-bind="scope: 'gift-card-cart'">
-    <div class="gift-card-container">
-        <div class="gift-card-header">
-            <div class="header-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 12v-1.5c0-1-1-1.5-1-1.5s.008-1 0-2.5c-.008-1.5-1.5-2-1.5-2s1.228-5-4.5-5S8 2.5 8 2.5 6.508 3 6.5 4.5C6.492 6 6.5 7 6.5 7S5 7.5 5 9v1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <rect x="2" y="12" width="20" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 12v10" stroke="currentColor" stroke-width="2"/>
-                </svg>
-            </div>
-            <div class="header-text">
-                <h3 class="title"><?= $escaper->escapeHtml(__('Carte Cadeau ou Bon d\'Achat')) ?></h3>
-                <p class="subtitle"><?= $escaper->escapeHtml(__('Entrez votre code de carte cadeau pour appliquer la réduction')) ?></p>
-            </div>
-        </div>
+<?php
+use Magento\Framework\Escaper;
 
-        <div class="gift-card-form">
-            <div class="form-row">
-                <div class="input-wrapper">
-                    <input type="text" 
-                           id="gift-card-code-input" 
-                           name="gift_card_code" 
-                           class="gift-card-input" 
-                           placeholder="<?= $escaper->escapeHtmlAttr(__('Entrez le code de la carte cadeau')) ?>"
-                           maxlength="50"
-                           data-bind="
-                               value: giftCardCode, 
-                               valueUpdate: 'input',
-                               attr: { disabled: isApplying }
-                           " />
-                    <span class="input-icon" data-bind="visible: giftCardCode().length > 0">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14z" stroke="#4caf50" stroke-width="2"/>
-                            <path d="M5 8l2 2 4-4" stroke="#4caf50" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </span>
+/** @var Escaper $escaper */
+$escaper = $block->getData('escaper');
+if (!$escaper) {
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $escaper = $objectManager->get(Escaper::class);
+}
+$blockId = 'block-gift-card-' . uniqid();
+?>
+
+<div class="block gift-card enhanced" id="<?= $escaper->escapeHtmlAttr($blockId) ?>">
+    <div class="title" data-role="title">
+        <strong id="<?= $escaper->escapeHtmlAttr($blockId) ?>-heading" role="heading" aria-level="2">
+            <span class="gift-icon">🎁</span>
+            <?= $escaper->escapeHtml(__('Carte Cadeau')) ?>
+        </strong>
+    </div>
+    
+    <div class="content" data-role="content" style="display: none;">
+        <form class="form-gift-card" id="gift-card-form">
+            <div class="fieldset gift-card">
+                <!-- Helpful hint -->
+                <div class="gift-card-hint">
+                    <span class="hint-text">💡 <?= $escaper->escapeHtml(__('Entrez votre code de carte cadeau Techno pour l\'appliquer à votre commande')) ?></span>
                 </div>
-                <button type="button" 
-                        class="apply-button" 
-                        data-bind="
-                            click: applyGiftCard,
-                            enable: canApply,
-                            css: { loading: isApplying }
-                        ">
-                    <span class="button-text" data-bind="visible: !isApplying()">
-                        <?= $escaper->escapeHtml(__('Appliquer')) ?>
-                    </span>
-                    <span class="button-loader" data-bind="visible: isApplying()">
-                        <span class="spinner"></span>
-                    </span>
-                </button>
-            </div>
-
-            <!-- Error Message -->
-            <div class="message-wrapper error" data-bind="visible: errorMessage().length > 0">
-                <svg class="message-icon" width="16" height="16" viewBox="0 0 16 16">
-                    <circle cx="8" cy="8" r="7" fill="#f44336"/>
-                    <path d="M8 4v5M8 11v1" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <span class="message-text" data-bind="text: errorMessage"></span>
-            </div>
-
-            <!-- Success Message -->
-            <div class="message-wrapper success" data-bind="visible: successMessage().length > 0">
-                <svg class="message-icon" width="16" height="16" viewBox="0 0 16 16">
-                    <circle cx="8" cy="8" r="7" fill="#4caf50"/>
-                    <path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <span class="message-text" data-bind="text: successMessage"></span>
-            </div>
-        </div>
-
-        <!-- Applied Gift Cards List -->
-        <div class="applied-cards-list" data-bind="visible: appliedCards().length > 0">
-            <h4 class="list-title"><?= $escaper->escapeHtml(__('Cartes Cadeaux Appliquées')) ?></h4>
-            <div data-bind="foreach: appliedCards">
-                <div class="applied-card-item">
-                    <div class="card-info">
-                        <span class="card-code" data-bind="text: code"></span>
-                        <span class="card-amount" data-bind="text: amount"></span>
+                
+                <!-- Gift Card Input Field -->
+                <div class="field">
+                    <label for="gift_card_code" class="label">
+                        <span><?= $escaper->escapeHtml(__('Code de la carte cadeau')) ?></span>
+                    </label>
+                    <div class="control">
+                        <input type="text" 
+                               class="input-text" 
+                               id="gift_card_code" 
+                               name="gift_card_code" 
+                               value="" 
+                               placeholder="<?= $escaper->escapeHtmlAttr(__('Ex: GIFT-XXXX-XXXX')) ?>"
+                               maxlength="50"
+                               autocomplete="off" />
                     </div>
-                    <button type="button" 
-                            class="remove-button" 
-                            data-bind="click: $parent.removeGiftCard">
-                        <svg width="16" height="16" viewBox="0 0 16 16">
-                            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <span><?= $escaper->escapeHtml(__('Retirer')) ?></span>
-                    </button>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="actions-toolbar">
+                    <div class="primary">
+                        <button class="action apply primary gift-card-apply" 
+                                type="button" 
+                                id="apply-gift-card-btn">
+                            <span><?= $escaper->escapeHtml(__('Appliquer')) ?></span>
+                        </button>
+                    </div>
+                    <div class="secondary">
+                        <button class="action check secondary" 
+                                type="button" 
+                                id="check-gift-card-btn">
+                            <span><?= $escaper->escapeHtml(__('Vérifier le solde')) ?></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Balance Check Result -->
+                <div class="gift-card-balance" id="gift-card-balance" style="display:none;">
+                    <div class="balance-info">
+                        <span class="balance-label"><?= $escaper->escapeHtml(__('Solde disponible:')) ?></span>
+                        <span class="balance-amount" id="balance-amount">0,00 DZD</span>
+                    </div>
+                </div>
+                
+                <!-- Messages -->
+                <div class="messages" id="gift-card-messages" style="display:none;">
+                    <div class="message message-error error" id="gift-card-error" style="display:none;">
+                        <div id="gift-card-error-text"></div>
+                    </div>
+                    
+                    <div class="message message-success success" id="gift-card-success" style="display:none;">
+                        <div id="gift-card-success-text"></div>
+                    </div>
+                </div>
+                
+                <!-- Applied Gift Cards -->
+                <div class="applied-gift-cards" id="applied-gift-cards" style="display:none;">
+                    <div class="applied-title">
+                        <strong><?= $escaper->escapeHtml(__('Cartes Appliquées')) ?></strong>
+                    </div>
+                    <ul class="applied-list" id="applied-cards-list">
+                        <!-- Dynamically populated -->
+                    </ul>
                 </div>
             </div>
-        </div>
-
-        <!-- Help Text -->
-        <div class="gift-card-help">
-            <svg class="help-icon" width="16" height="16" viewBox="0 0 16 16">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
-                <path d="M8 6v5M8 4v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <span><?= $escaper->escapeHtml(__('Les cartes cadeaux peuvent être achetées dans nos magasins ou en ligne')) ?></span>
-        </div>
+        </form>
     </div>
 </div>
 
 <style>
-/* Gift Card Container */
-.cart-gift-card-wrapper {
-    margin: 20px 0;
-}
-
-.gift-card-container {
-    background: #fff;
-    border: 2px solid #e0e0e0;
+/* Gift Card Block Styling - Distinguished from Coupon */
+.block.gift-card.enhanced {
+    border: 2px solid #e91e63;
     border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-/* Header */
-.gift-card-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
     margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff5f8 0%, #ffffff 100%);
 }
 
-.gift-card-header .header-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    flex-shrink: 0;
-}
-
-.gift-card-header .title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 4px 0;
-}
-
-.gift-card-header .subtitle {
-    font-size: 13px;
-    color: #666;
-    margin: 0;
-}
-
-/* Form */
-.gift-card-form .form-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.gift-card-form .input-wrapper {
-    position: relative;
-    flex: 1;
-}
-
-.gift-card-form .gift-card-input {
-    width: 100%;
+.block.gift-card.enhanced .title {
+    background: linear-gradient(135deg, #e91e63 0%, #d81b60 100%);
+    color: white;
     padding: 14px 16px;
-    padding-right: 40px;
-    font-size: 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    font-family: 'Courier New', monospace;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.gift-card-form .gift-card-input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.gift-card-form .gift-card-input:disabled {
-    background: #f5f5f5;
-    cursor: not-allowed;
-}
-
-.gift-card-form .input-icon {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-}
-
-.gift-card-form .apply-button {
-    padding: 14px 32px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
     cursor: pointer;
+    border-radius: 10px 10px 0 0;
     transition: all 0.3s ease;
-    white-space: nowrap;
-    min-width: 120px;
 }
 
-.gift-card-form .apply-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+.block.gift-card.enhanced .title:hover {
+    background: linear-gradient(135deg, #d81b60 0%, #c2185b 100%);
 }
 
-.gift-card-form .apply-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.gift-card-form .apply-button.loading {
-    pointer-events: none;
-}
-
-.gift-card-form .button-loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.gift-card-form .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Messages */
-.message-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-top: 12px;
-    animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.message-wrapper.error {
-    background: #ffebee;
-    color: #c62828;
-    border-left: 4px solid #f44336;
-}
-
-.message-wrapper.success {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border-left: 4px solid #4caf50;
-}
-
-.message-wrapper .message-icon {
-    flex-shrink: 0;
-}
-
-/* Applied Cards List */
-.applied-cards-list {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
-}
-
-.applied-cards-list .list-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 12px 0;
-}
-
-.applied-card-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    margin-bottom: 8px;
-}
-
-.applied-card-item .card-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.applied-card-item .card-code {
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    letter-spacing: 1px;
-}
-
-.applied-card-item .card-amount {
-    font-size: 13px;
-    color: #4caf50;
-    font-weight: 600;
-}
-
-.applied-card-item .remove-button {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    color: #666;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.applied-card-item .remove-button:hover {
-    background: #f44336;
-    border-color: #f44336;
-    color: #fff;
-}
-
-/* Help Text */
-.gift-card-help {
+.block.gift-card.enhanced .title strong {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 16px;
-    padding: 12px;
-    background: #f8f9fa;
+    font-size: 16px;
+}
+
+.block.gift-card.enhanced .gift-icon {
+    font-size: 20px;
+}
+
+.block.gift-card.enhanced .content {
+    padding: 20px 16px;
+}
+
+.block.gift-card.enhanced .gift-card-hint {
+    background: #fff9e6;
+    border: 1px solid #ffd54f;
     border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
     font-size: 13px;
-    color: #666;
+    color: #f57f17;
 }
 
-.gift-card-help .help-icon {
-    flex-shrink: 0;
-    color: #999;
+.block.gift-card.enhanced .hint-text {
+    display: block;
+    line-height: 1.5;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .gift-card-form .form-row {
-        flex-direction: column;
-    }
-    
-    .gift-card-form .apply-button {
-        width: 100%;
-    }
-    
-    .applied-card-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .applied-card-item .remove-button {
-        width: 100%;
-        justify-content: center;
-    }
+.block.gift-card.enhanced .field {
+    margin-bottom: 16px;
+}
+
+.block.gift-card.enhanced .label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.block.gift-card.enhanced .input-text {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.block.gift-card.enhanced .input-text:focus {
+    border-color: #e91e63;
+    box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+    outline: none;
+}
+
+.block.gift-card.enhanced .actions-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.block.gift-card.enhanced .actions-toolbar .primary,
+.block.gift-card.enhanced .actions-toolbar .secondary {
+    flex: 1;
+}
+
+.block.gift-card.enhanced button.gift-card-apply {
+    background: linear-gradient(135deg, #e91e63 0%, #d81b60 100%);
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.block.gift-card.enhanced button.gift-card-apply:hover:not(:disabled) {
+    background: linear-gradient(135deg, #d81b60 0%, #c2185b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.block.gift-card.enhanced button.check {
+    background: #fff;
+    border: 2px solid #e91e63;
+    color: #e91e63;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.block.gift-card.enhanced button.check:hover:not(:disabled) {
+    background: #fff5f8;
+    border-color: #d81b60;
+}
+
+.block.gift-card.enhanced button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.block.gift-card.enhanced .gift-card-balance {
+    background: #e8f5e9;
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.block.gift-card.enhanced .balance-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.block.gift-card.enhanced .balance-label {
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+.block.gift-card.enhanced .balance-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1b5e20;
+}
+
+.block.gift-card.enhanced .applied-gift-cards {
+    background: #f3e5f5;
+    border: 1px solid #ce93d8;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 16px;
+}
+
+.block.gift-card.enhanced .applied-title {
+    margin-bottom: 8px;
+    color: #6a1b9a;
+}
+
+.block.gift-card.enhanced .applied-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.block.gift-card.enhanced .applied-list li {
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.block.gift-card.enhanced .message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.block.gift-card.enhanced .message-error {
+    background: #ffebee;
+    border: 1px solid #ef5350;
+    color: #c62828;
+}
+
+.block.gift-card.enhanced .message-success {
+    background: #e8f5e9;
+    border: 1px solid #66bb6a;
+    color: #2e7d32;
+}
+
+/* Distinguish from Coupon Block */
+.block.discount {
+    border-color: #2196f3;
+    background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+}
+
+.block.discount .title {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
 }
 </style>
 
 <script>
 require([
     'jquery',
-    'ko',
-    'uiComponent',
+    'jquery/ui',
+    'mage/collapsible',
     'Magento_Customer/js/customer-data'
-], function ($, ko, Component, customerData) {
+], function($, ui, collapsible, customerData) {
     'use strict';
-
-    ko.components.register('gift-card-cart', {
-        viewModel: {
-            createViewModel: function (params, componentInfo) {
-                return {
-                    giftCardCode: ko.observable(''),
-                    isApplying: ko.observable(false),
-                    errorMessage: ko.observable(''),
-                    successMessage: ko.observable(''),
-                    appliedCards: ko.observableArray([]),
-                    
-                    canApply: ko.computed(function () {
-                        var code = this.giftCardCode().trim();
-                        // Gift card code validation: at least 6 characters, alphanumeric
-                        return code.length >= 6 && /^[A-Z0-9-]+$/i.test(code) && !this.isApplying();
-                    }, this),
-                    
-                    applyGiftCard: function () {
-                        var self = this;
-                        var code = self.giftCardCode().trim();
-                        
-                        if (!code) {
-                            return;
-                        }
-                        
-                        self.isApplying(true);
-                        self.errorMessage('');
-                        self.successMessage('');
-                        
-                        // Call Amasty Gift Card API
-                        $.ajax({
-                            url: '/rest/V1/carts/mine/giftCard',
-                            type: 'POST',
-                            contentType: 'application/json',
-                            data: JSON.stringify({
-                                giftCardCode: code
-                            }),
-                            success: function (response) {
-                                self.successMessage('Carte cadeau appliquée avec succès!');
-                                self.appliedCards.push({
-                                    code: code,
-                                    amount: response.discount || '0,00 DZD'
-                                });
-                                self.giftCardCode('');
-                                
-                                // Clear messages after 5 seconds
-                                setTimeout(function() {
-                                    self.successMessage('');
-                                }, 5000);
-                                
-                                // Reload cart
-                                var sections = ['cart'];
-                                customerData.invalidate(sections);
-                                customerData.reload(sections, true);
-                            },
-                            error: function (xhr) {
-                                var error = 'Échec de l\'application de la carte cadeau. Veuillez vérifier le code et réessayer.';
-                                try {
-                                    var response = JSON.parse(xhr.responseText);
-                                    if (response.message) {
-                                        error = response.message;
-                                    }
-                                } catch (e) {}
-                                self.errorMessage(error);
-                                
-                                // Clear error after 5 seconds
-                                setTimeout(function() {
-                                    self.errorMessage('');
-                                }, 5000);
-                            },
-                            complete: function () {
-                                self.isApplying(false);
-                            }
-                        });
-                    },
-                    
-                    removeGiftCard: function (card) {
-                        var self = this;
-                        self.appliedCards.remove(card);
-                        
-                        // Call API to remove
-                        $.ajax({
-                            url: '/rest/V1/carts/mine/giftCard',
-                            type: 'DELETE',
-                            contentType: 'application/json',
-                            data: JSON.stringify({
-                                giftCardCode: card.code
-                            }),
-                            success: function () {
-                                self.successMessage('Carte cadeau retirée');
-                                
-                                // Clear message after 3 seconds
-                                setTimeout(function() {
-                                    self.successMessage('');
-                                }, 3000);
-                                
-                                // Reload cart
-                                var sections = ['cart'];
-                                customerData.invalidate(sections);
-                                customerData.reload(sections, true);
-                            }
-                        });
-                    }
-                };
+    
+    $(document).ready(function() {
+        var $block = $('#<?= $escaper->escapeJs($blockId) ?>');
+        var $input = $('#gift_card_code');
+        var $applyBtn = $('#apply-gift-card-btn');
+        var $checkBtn = $('#check-gift-card-btn');
+        var $balanceDiv = $('#gift-card-balance');
+        var $balanceAmount = $('#balance-amount');
+        var $errorMsg = $('#gift-card-error');
+        var $errorText = $('#gift-card-error-text');
+        var $successMsg = $('#gift-card-success');
+        var $successText = $('#gift-card-success-text');
+        var $appliedCardsContainer = $('#applied-gift-cards');
+        var $appliedCardsList = $('#applied-cards-list');
+        
+        // Initialize collapsible
+        $block.collapsible({
+            active: false,
+            collapsible: true,
+            openedState: 'active',
+            closedState: '',
+            animate: 200
+        });
+        
+        // Validation function
+        function validateGiftCardCode(code) {
+            code = code.trim();
+            if (code.length < 4) {
+                return { valid: false, message: '<?= $escaper->escapeJs(__('Le code doit contenir au moins 4 caractères')) ?>' };
             }
-        },
-        template: { element: 'gift-card-cart-template' }
+            return { valid: true };
+        }
+        
+        // Show message function
+        function showMessage(type, message, duration) {
+            $errorMsg.hide();
+            $successMsg.hide();
+            
+            if (type === 'error') {
+                $errorText.text(message);
+                $errorMsg.show();
+            } else if (type === 'success') {
+                $successText.text(message);
+                $successMsg.show();
+            }
+            
+            $('#gift-card-messages').show();
+            
+            if (duration) {
+                setTimeout(function() {
+                    $errorMsg.hide();
+                    $successMsg.hide();
+                    $('#gift-card-messages').hide();
+                }, duration);
+            }
+        }
+        
+        // Check balance function
+        $checkBtn.on('click', function() {
+            var code = $input.val();
+            var validation = validateGiftCardCode(code);
+            
+            if (!validation.valid) {
+                showMessage('error', validation.message, 5000);
+                return;
+            }
+            
+            // Disable button
+            $checkBtn.prop('disabled', true).addClass('disabled');
+            $checkBtn.find('span').text('<?= $escaper->escapeJs(__('Vérification...')) ?>');
+            
+            // Make AJAX request to check balance
+            $.ajax({
+                url: '/amasty_giftcard/account/check',
+                type: 'POST',
+                data: { code: code },
+                success: function(response) {
+                    if (response.success && response.balance) {
+                        $balanceAmount.text(response.balance + ' DZD');
+                        $balanceDiv.show();
+                        showMessage('success', '<?= $escaper->escapeJs(__('Carte valide!')) ?>', 5000);
+                    } else {
+                        showMessage('error', response.message || '<?= $escaper->escapeJs(__('Code invalide ou carte expirée')) ?>', 5000);
+                    }
+                },
+                error: function() {
+                    showMessage('error', '<?= $escaper->escapeJs(__('Erreur lors de la vérification')) ?>', 5000);
+                },
+                complete: function() {
+                    $checkBtn.prop('disabled', false).removeClass('disabled');
+                    $checkBtn.find('span').text('<?= $escaper->escapeJs(__('Vérifier le solde')) ?>');
+                }
+            });
+        });
+        
+        // Apply gift card function
+        $applyBtn.on('click', function() {
+            var code = $input.val();
+            var validation = validateGiftCardCode(code);
+            
+            if (!validation.valid) {
+                showMessage('error', validation.message, 5000);
+                return;
+            }
+            
+            // Disable button
+            $applyBtn.prop('disabled', true).addClass('disabled');
+            $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Application...')) ?>');
+            
+            // Use Amasty Gift Card endpoint
+            $.ajax({
+                url: '/amasty_giftcard/cart/apply',
+                type: 'POST',
+                data: { 
+                    giftcard_code: code,
+                    form_key: $('input[name="form_key"]').val()
+                },
+                success: function(response) {
+                    showMessage('success', '<?= $escaper->escapeJs(__('Carte cadeau appliquée avec succès!')) ?>', 3000);
+                    
+                    // Clear input
+                    $input.val('');
+                    $balanceDiv.hide();
+                    
+                    // Reload page to update cart totals
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                },
+                error: function(xhr) {
+                    var errorMessage = '<?= $escaper->escapeJs(__('Échec de l\'application de la carte cadeau.')) ?>';
+                    
+                    try {
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        }
+                    } catch (e) {}
+                    
+                    showMessage('error', errorMessage, 5000);
+                },
+                complete: function() {
+                    $applyBtn.prop('disabled', false).removeClass('disabled');
+                    $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Appliquer')) ?>');
+                }
+            });
+        });
+        
+        // Enter key support
+        $input.on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                $applyBtn.click();
+            }
+        });
     });
 });
 </script>

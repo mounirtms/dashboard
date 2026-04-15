@@ -112,10 +112,17 @@ define([
                 }
                 var isFree = !priceText || priceText.indexOf('0,00') === 0 || priceText.indexOf('0.00') === 0 || priceText.toLowerCase().indexOf('gratuit') >= 0 || priceText.toLowerCase().indexOf('free') >= 0;
                 
+                // Extract carrier image from table (MagePlaza stores it in the row)
+                var carrierImageSrc = '';
+                var $imageCell = $row.find('img');
+                if ($imageCell.length) {
+                    carrierImageSrc = $imageCell.attr('src');
+                }
+                
                 // Extract carrier info
-                var carrier = self.identifyCarrier(methodName);
+                var carrier = self.identifyCarrier(methodName, carrierTitle);
                 var deliveryTime = self.estimateDeliveryTime(carrier, methodName);
-                var carrierLogo = self.getCarrierLogo(carrier);
+                var carrierLogo = self.getCarrierLogo(carrier, carrierImageSrc, methodName);
                 
                 // Format price - keep original DZD format
                 var formattedPrice = isFree ? '' : priceText;
@@ -202,16 +209,39 @@ define([
         },
 
         /**
-         * Get carrier logo HTML
+         * Get carrier logo HTML - reads from MagePlaza table or uses defaults
          */
-        getCarrierLogo: function (carrier) {
+        getCarrierLogo: function (carrier, imageFromTable, methodName) {
             var baseUrl = window.BASE_URL || '';
+            var name = methodName.toLowerCase();
+            
+            // If we have an image from the table, use it
+            if (imageFromTable && imageFromTable.length > 0) {
+                // Check if it's a full URL or relative path
+                var imgSrc = imageFromTable;
+                if (imageFromTable.indexOf('http') !== 0 && imageFromTable.indexOf('//') !== 0) {
+                    // Relative path - ensure it starts from baseUrl
+                    imgSrc = baseUrl + imageFromTable.replace(/^\/+/, '');
+                }
+                
+                // Determine fallback based on carrier type
+                var fallback = baseUrl + 'pub/media/logo/default/logo_techno.png';
+                
+                return '<img src="' + imgSrc + '" alt="' + methodName + '" class="carrier-img" onerror="this.src=\'' + fallback + '\'" />';
+            }
+            
+            // Fallback to hardcoded logos based on carrier detection
             var logos = {
-                'yalidine': '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/yalidine.png" alt="Yalidine" class="carrier-img" onerror="this.src=\'' + baseUrl + 'pub/media/logo/default/logo_techno.png\'" />',
+                // Yalidine - use JPG logo
+                'yalidine': '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/y/a/yalidine-logo.jpg" alt="Yalidine" class="carrier-img" onerror="this.src=\'' + baseUrl + 'pub/media/mageplaza/tablerate/yalidine.png\'" />',
+                // Ecotrak - use PNG
                 'ecotrak': '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/ecotrak.png" alt="Ecotrak" class="carrier-img" onerror="this.style.display=\'none\'" />',
-                'store-pickup': '<img src="' + baseUrl + 'pub/media/logo/default/logo_techno.png" alt="Retrait Magasin" class="carrier-img" />',
+                // Techno store pickup - use Techno PNG for ALL Techno stores
+                'store-pickup': '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/techno.png" alt="Techno Store" class="carrier-img" onerror="this.src=\'' + baseUrl + 'pub/media/logo/default/logo_techno.png\'" />',
+                // Free shipping - purple badge
                 'free': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#9C27B0"/><text x="40" y="24" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Gratuit</text></svg>',
-                'default': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#757575"/><text x="40" y="24" font-family="Arial" font-size="12" font-weight="bold" fill="white" text-anchor="middle">Standard</text></svg>'
+                // Default
+                'default': '<svg width="80" height="40" viewBox="0 0 80 40"><rect width="80" height="40" fill="#757575"/><text x="40" y="24" font-family="Arial" font-size="12" font-weight="bold" fill="white" text-anchor="middle">Livraison</text></svg>'
             };
             return logos[carrier] || logos['default'];
         },
@@ -237,24 +267,28 @@ define([
         },
 
         /**
-         * Identify carrier from method name
+         * Identify carrier from method name and carrier title
          * Supports: Yalidine (home/agence), Ecotrak, Techno (retrait/pickup), Free shipping
          */
-        identifyCarrier: function (methodName) {
+        identifyCarrier: function (methodName, carrierTitle) {
             var name = methodName.toLowerCase();
+            var carrier = carrierTitle ? carrierTitle.toLowerCase() : '';
             
             // Yalidine - home or agence pickup
-            if (name.indexOf('yalidine') >= 0) {
+            if (name.indexOf('yalidine') >= 0 || carrier.indexOf('yalidine') >= 0) {
                 return 'yalidine';
             }
             
             // Ecotrak
-            if (name.indexOf('ecotrak') >= 0) {
+            if (name.indexOf('ecotrak') >= 0 || carrier.indexOf('ecotrak') >= 0) {
                 return 'ecotrak';
             }
             
-            // Techno store pickup (Retrait magasin)
+            // Techno store pickup (ALL Techno stores: Pins Maritimes, etc.)
             if (name.indexOf('techno') >= 0 || 
+                carrier.indexOf('techno') >= 0 ||
+                name.indexOf('pins') >= 0 ||
+                name.indexOf('maritimes') >= 0 ||
                 name.indexOf('retrait') >= 0 || 
                 name.indexOf('pickup') >= 0 || 
                 name.indexOf('magasin') >= 0 ||
