@@ -15,11 +15,11 @@
         <!-- Remove or hide Amasty banner in cart summary (optional) -->
         <!-- <referenceBlock name="ambanners.below_total" remove="true"/> -->
         
-        <!-- Add enhanced gift card block (collapsible with visual distinction) -->
+        <!-- Add professional gift card block (collapsible) -->
         <referenceContainer name="cart.summary">
             <block class="Magento\Framework\View\Element\Template"
-                   name="mab.cart.giftcard.enhanced"
-                   template="Mab_CheckoutCustomization::cart/gift-card-enhanced.phtml"
+                   name="mab.cart.giftcard.simple"
+                   template="Mab_CheckoutCustomization::cart/gift-card-simple.phtml"
                    after="checkout.cart.coupon"/>
         </referenceContainer>
     </body>

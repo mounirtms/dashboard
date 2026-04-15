@@ -1,7 +1,7 @@
 <!-- 
 /**
- * Mab_CheckoutCustomization - Simplified Gift Card Block for Cart
- * Collapsible style matching the discount coupon block
+ * Mab_CheckoutCustomization - Professional Gift Card Block for Cart
+ * Simple, clean interface using Amasty Gift Card Account module
  * 
  * @var $block \Magento\Framework\View\Element\Template
  * @var $escaper \Magento\Framework\Escaper
@@ -22,17 +22,17 @@ $blockId = 'block-gift-card-' . uniqid();
 <div class="block gift-card" id="<?= $escaper->escapeHtmlAttr($blockId) ?>">
     <div class="title" data-role="title">
         <strong id="<?= $escaper->escapeHtmlAttr($blockId) ?>-heading" role="heading" aria-level="2">
-            <?= $escaper->escapeHtml(__('Carte Cadeau ou Bon d\'Achat')) ?>
+            <?= $escaper->escapeHtml(__('Carte Cadeau')) ?>
         </strong>
     </div>
     
     <div class="content" data-role="content" style="display: none;">
-        <form class="form-gift-card" id="gift-card-form" data-hasrequired="<?= $escaper->escapeHtmlAttr(__('* Required Fields')) ?>">
+        <form class="form-gift-card" id="gift-card-form">
             <div class="fieldset gift-card">
-                <!-- Gift Card Input Field -->
+                <!-- Gift Card Input -->
                 <div class="field">
                     <label for="gift_card_code" class="label">
-                        <span><?= $escaper->escapeHtml(__('Entrez le code de la carte cadeau')) ?></span>
+                        <span><?= $escaper->escapeHtml(__('Code de la carte cadeau')) ?></span>
                     </label>
                     <div class="control">
                         <input type="text" 
@@ -40,21 +40,34 @@ $blockId = 'block-gift-card-' . uniqid();
                                id="gift_card_code" 
                                name="gift_card_code" 
                                value="" 
-                               placeholder="<?= $escaper->escapeHtmlAttr(__('Code de la carte cadeau')) ?>"
+                               placeholder="<?= $escaper->escapeHtmlAttr(__('Entrez votre code')) ?>"
                                maxlength="50"
                                autocomplete="off" />
                     </div>
                 </div>
                 
-                <!-- Apply Button -->
+                <!-- Action Buttons -->
                 <div class="actions-toolbar">
                     <div class="primary">
                         <button class="action apply primary" 
                                 type="button" 
                                 id="apply-gift-card-btn">
-                            <span><?= $escaper->escapeHtml(__('Appliquer la Carte Cadeau')) ?></span>
+                            <span><?= $escaper->escapeHtml(__('Appliquer')) ?></span>
                         </button>
                     </div>
+                    <div class="secondary">
+                        <button class="action check secondary" 
+                                type="button" 
+                                id="check-gift-card-btn">
+                            <span><?= $escaper->escapeHtml(__('Vérifier')) ?></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Balance Display -->
+                <div class="gift-card-balance" id="gift-card-balance" style="display:none;">
+                    <span class="balance-label"><?= $escaper->escapeHtml(__('Solde:')) ?></span>
+                    <span class="balance-amount" id="balance-amount">0,00 DZD</span>
                 </div>
                 
                 <!-- Messages -->
@@ -62,25 +75,145 @@ $blockId = 'block-gift-card-' . uniqid();
                     <div class="message message-error error" id="gift-card-error" style="display:none;">
                         <div id="gift-card-error-text"></div>
                     </div>
-                    
                     <div class="message message-success success" id="gift-card-success" style="display:none;">
                         <div id="gift-card-success-text"></div>
                     </div>
-                </div>
-                
-                <!-- Applied Gift Cards -->
-                <div class="applied-gift-cards" id="applied-gift-cards" style="display:none;">
-                    <div class="applied-title">
-                        <strong><?= $escaper->escapeHtml(__('Cartes Appliquées')) ?></strong>
-                    </div>
-                    <ul class="applied-list" id="applied-cards-list">
-                        <!-- Dynamically populated -->
-                    </ul>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+/* Simple, Professional Gift Card Styling */
+.block.gift-card .title {
+    background: #333;
+    color: white;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+}
+
+.block.gift-card .content {
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+}
+
+.block.gift-card .field {
+    margin-bottom: 12px;
+}
+
+.block.gift-card .label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+    display: block;
+    font-size: 14px;
+}
+
+.block.gift-card .input-text {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.block.gift-card .input-text:focus {
+    border-color: #4caf50;
+    outline: none;
+}
+
+.block.gift-card .actions-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.block.gift-card .actions-toolbar .primary,
+.block.gift-card .actions-toolbar .secondary {
+    flex: 1;
+}
+
+.block.gift-card button {
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.block.gift-card button.apply {
+    background: #4caf50;
+    color: white;
+}
+
+.block.gift-card button.apply:hover:not(:disabled) {
+    background: #43a047;
+}
+
+.block.gift-card button.check {
+    background: #fff;
+    border: 1px solid #ccc;
+    color: #333;
+}
+
+.block.gift-card button.check:hover:not(:disabled) {
+    background: #f5f5f5;
+}
+
+.block.gift-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.block.gift-card .gift-card-balance {
+    background: #f1f8f1;
+    border: 1px solid #c8e6c9;
+    padding: 10px 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.block.gift-card .balance-label {
+    font-weight: 600;
+    color: #2e7d32;
+    font-size: 14px;
+}
+
+.block.gift-card .balance-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1b5e20;
+}
+
+.block.gift-card .message {
+    padding: 10px 12px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.block.gift-card .message-error {
+    background: #ffebee;
+    border: 1px solid #ef5350;
+    color: #c62828;
+}
+
+.block.gift-card .message-success {
+    background: #e8f5e9;
+    border: 1px solid #66bb6a;
+    color: #2e7d32;
+}
+</style>
 
 <script>
 require([
@@ -94,13 +227,13 @@ require([
         var $block = $('#<?= $escaper->escapeJs($blockId) ?>');
         var $input = $('#gift_card_code');
         var $applyBtn = $('#apply-gift-card-btn');
+        var $checkBtn = $('#check-gift-card-btn');
+        var $balanceDiv = $('#gift-card-balance');
+        var $balanceAmount = $('#balance-amount');
         var $errorMsg = $('#gift-card-error');
         var $errorText = $('#gift-card-error-text');
         var $successMsg = $('#gift-card-success');
         var $successText = $('#gift-card-success-text');
-        var $appliedCardsContainer = $('#applied-gift-cards');
-        var $appliedCardsList = $('#applied-cards-list');
-        var appliedCards = [];
         
         // Initialize collapsible
         $block.collapsible({
@@ -111,19 +244,16 @@ require([
             animate: 200
         });
         
-        // Validation function
-        function validateGiftCardCode(code) {
+        // Validation
+        function validateCode(code) {
             code = code.trim();
-            if (code.length < 6) {
-                return { valid: false, message: '<?= $escaper->escapeJs(__('Le code doit contenir au moins 6 caractères')) ?>' };
-            }
-            if (!/^[A-Z0-9-]+$/i.test(code)) {
-                return { valid: false, message: '<?= $escaper->escapeJs(__('Le code ne peut contenir que des lettres, chiffres et tirets')) ?>' };
+            if (code.length < 4) {
+                return { valid: false, message: '<?= $escaper->escapeJs(__('Le code doit contenir au moins 4 caractères')) ?>' };
             }
             return { valid: true };
         }
         
-        // Show message function
+        // Show message
         function showMessage(type, message, duration) {
             $errorMsg.hide();
             $successMsg.hide();
@@ -147,302 +277,106 @@ require([
             }
         }
         
-        // Apply gift card function
-        function applyGiftCard() {
+        // Check balance
+        $checkBtn.on('click', function() {
             var code = $input.val();
-            var validation = validateGiftCardCode(code);
+            var validation = validateCode(code);
             
             if (!validation.valid) {
                 showMessage('error', validation.message, 5000);
                 return;
             }
             
-            // Disable button and show loading
-            $applyBtn.prop('disabled', true).addClass('disabled');
+            $checkBtn.prop('disabled', true);
+            $checkBtn.find('span').text('<?= $escaper->escapeJs(__('Vérification...')) ?>');
+            
+            $.ajax({
+                url: '/amgcard/cart/check',
+                type: 'POST',
+                dataType: 'json',
+                data: { amgiftcard: code },
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    try {
+                        // Response is double-encoded JSON string
+                        var data = typeof response === 'string' ? JSON.parse(response) : response;
+                        
+                        if (data && data.current_value) {
+                            $balanceAmount.text(data.current_value);
+                            $balanceDiv.show();
+                            showMessage('success', '<?= $escaper->escapeJs(__('Carte valide!')) ?>', 5000);
+                        } else {
+                            showMessage('error', '<?= $escaper->escapeJs(__('Code invalide ou solde épuisé')) ?>', 5000);
+                        }
+                    } catch (e) {
+                        showMessage('error', '<?= $escaper->escapeJs(__('Erreur lors de la vérification')) ?>', 5000);
+                    }
+                },
+                error: function() {
+                    showMessage('error', '<?= $escaper->escapeJs(__('Code invalide ou carte expirée')) ?>', 5000);
+                },
+                complete: function() {
+                    $checkBtn.prop('disabled', false);
+                    $checkBtn.find('span').text('<?= $escaper->escapeJs(__('Vérifier')) ?>');
+                }
+            });
+        });
+        
+        // Apply gift card
+        $applyBtn.on('click', function() {
+            var code = $input.val();
+            var validation = validateCode(code);
+            
+            if (!validation.valid) {
+                showMessage('error', validation.message, 5000);
+                return;
+            }
+            
+            $applyBtn.prop('disabled', true);
             $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Application...')) ?>');
             
-            // Make AJAX request
             $.ajax({
-                url: '/rest/V1/carts/mine/giftCard',
+                url: '/amgcard/cart/apply',
                 type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ giftCardCode: code }),
-                success: function(response) {
-                    showMessage('success', '<?= $escaper->escapeJs(__('Carte cadeau appliquée avec succès!')) ?>', 5000);
-                    
-                    // Add to applied cards
-                    appliedCards.push({
-                        code: code,
-                        amount: response.discount || '0,00 DZD'
-                    });
-                    
-                    // Update applied cards list
-                    updateAppliedCards();
-                    
-                    // Clear input
+                data: { 
+                    am_giftcard_code: code
+                },
+                success: function() {
+                    showMessage('success', '<?= $escaper->escapeJs(__('Carte appliquée avec succès!')) ?>', 2000);
                     $input.val('');
+                    $balanceDiv.hide();
                     
-                    // Reload cart data
                     setTimeout(function() {
                         location.reload();
                     }, 1500);
                 },
                 error: function(xhr) {
-                    var errorMessage = '<?= $escaper->escapeJs(__('Échec de l\'application de la carte cadeau.')) ?>';
+                    var errorMessage = '<?= $escaper->escapeJs(__('Code invalide ou erreur')) ?>';
                     
                     try {
-                        var response = JSON.parse(xhr.responseText);
-                        if (response.message) {
-                            errorMessage = response.message;
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
                         }
                     } catch (e) {}
                     
                     showMessage('error', errorMessage, 5000);
                 },
                 complete: function() {
-                    $applyBtn.prop('disabled', false).removeClass('disabled');
-                    $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Appliquer la Carte Cadeau')) ?>');
+                    $applyBtn.prop('disabled', false);
+                    $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Appliquer')) ?>');
                 }
             });
-        }
+        });
         
-        // Update applied cards list
-        function updateAppliedCards() {
-            if (appliedCards.length === 0) {
-                $appliedCardsContainer.hide();
-                return;
-            }
-            
-            $appliedCardsList.empty();
-            
-            appliedCards.forEach(function(card, index) {
-                var $item = $('<li class="applied-item"></li>');
-                $item.html(
-                    '<span class="card-code">' + card.code + '</span>' +
-                    '<span class="card-amount">' + card.amount + '</span>' +
-                    '<button type="button" class="action delete" data-index="' + index + '" title="<?= $escaper->escapeHtmlAttr(__('Retirer la carte cadeau')) ?>">' +
-                    '<span><?= $escaper->escapeJs(__('Retirer')) ?></span>' +
-                    '</button>'
-                );
-                $appliedCardsList.append($item);
-            });
-            
-            $appliedCardsContainer.show();
-        }
-        
-        // Remove gift card
-        function removeGiftCard(index) {
-            var card = appliedCards[index];
-            
-            $.ajax({
-                url: '/rest/V1/carts/mine/giftCard',
-                type: 'DELETE',
-                contentType: 'application/json',
-                data: JSON.stringify({ giftCardCode: card.code }),
-                success: function() {
-                    appliedCards.splice(index, 1);
-                    updateAppliedCards();
-                    showMessage('success', '<?= $escaper->escapeJs(__('Carte cadeau retirée')) ?>', 3000);
-                    
-                    setTimeout(function() {
-                        location.reload();
-                    }, 1500);
-                },
-                error: function() {
-                    showMessage('error', '<?= $escaper->escapeJs(__('Échec de la suppression')) ?>', 3000);
-                }
-            });
-        }
-        
-        // Event handlers
-        $applyBtn.on('click', applyGiftCard);
-        
+        // Enter key support
         $input.on('keypress', function(e) {
             if (e.which === 13) {
                 e.preventDefault();
-                applyGiftCard();
+                $applyBtn.click();
             }
-        });
-        
-        $appliedCardsList.on('click', '.action.delete', function() {
-            var index = $(this).data('index');
-            removeGiftCard(index);
         });
     });
 });
 </script>
-
-<style>
-/* Match the discount block styling */
-.block.gift-card {
-    margin-bottom: 20px;
-}
-
-.block.gift-card .title {
-    cursor: pointer;
-    background: #f5f5f5;
-    border-radius: 4px;
-    transition: background 0.2s ease;
-}
-
-.block.gift-card .title:hover {
-    background: #ebebeb;
-}
-
-.block.gift-card .title strong {
-    font-size: 16px;
-    color: #333;
-}
-
-.block.gift-card .content {
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    background: #fff;
-}
-
-.block.gift-card.active .title {
-    border-radius: 4px 4px 0 0;
-}
-
-.block.gift-card .fieldset {
-    margin: 0;
-}
-
-.block.gift-card .field {
-    margin-bottom: 15px;
-}
-
-.block.gift-card .field .label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-}
-
-.block.gift-card .field .input-text {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #c2c2c2;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: border-color 0.2s ease;
-}
-
-.block.gift-card .field .input-text:focus {
-    outline: none;
-    border-color: #1979c3;
-    box-shadow: 0 0 0 1px rgba(25, 121, 195, 0.2);
-}
-
-.block.gift-card .field .input-text:disabled {
-    background: #f5f5f5;
-    cursor: not-allowed;
-}
-
-.block.gift-card .actions-toolbar {
-    margin-top: 15px;
-}
-
-.block.gift-card .action.apply {
-   
-}
-
-.block.gift-card .action.apply.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.block.gift-card .messages {
-    margin-top: 15px;
-}
-
-.block.gift-card .message {
-    padding: 12px 15px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.block.gift-card .message-error {
-    background: #ffebee;
-    border-left: 3px solid #f44336;
-    color: #c62828;
-}
-
-.block.gift-card .message-success {
-    background: #e8f5e9;
-    border-left: 3px solid #4caf50;
-    color: #2e7d32;
-}
-
-.block.gift-card .applied-gift-cards {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
-}
-
-.block.gift-card .applied-title {
-    margin-bottom: 12px;
-}
-
-.block.gift-card .applied-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.block.gift-card .applied-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    margin-bottom: 8px;
-}
-
-.block.gift-card .applied-item .card-code {
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-}
-
-.block.gift-card .applied-item .card-amount {
-    margin-left: 12px;
-    font-size: 13px;
-    color: #4caf50;
-    font-weight: 600;
-}
-
-.block.gift-card .applied-item .action.delete {
-    padding: 6px 12px;
-    font-size: 12px;
-    background: transparent;
-    border: 1px solid #c2c2c2;
-    border-radius: 3px;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.block.gift-card .applied-item .action.delete:hover {
-    background: #f44336;
-    border-color: #f44336;
-    color: #fff;
-}
-
-@media (max-width: 767px) {
-    .block.gift-card .applied-item {
-        flex-wrap: wrap;
-    }
-    
-    .block.gift-card .applied-item .action.delete {
-        width: 100%;
-        margin-top: 8px;
-    }
-}
-</style>
