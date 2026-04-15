@@ -580,899 +580,307 @@
 }
 
 /* ========================================
-   11. SHIPPING METHOD CARDS - Modern UI
+   OPTIMIZED SHIPPING METHOD CARDS
+   Modern, Clean Design - 2026
    ======================================== */
 
-/* Hide original Mageplaza shipping table when cards are displayed */
-.shipping-table-hidden {
-    display: none !important;
-}
-
-/* Additional selector to ensure table is hidden when cards container exists */
-#shipping-method-cards-container ~ #checkout-shipping-method-load table.table-checkout-shipping-method,
-#shipping-method-cards-container ~ .table-checkout-shipping-method {
-    display: none !important;
-}
-
-/* Shipping cards grid */
-.shipping-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-    margin: 20px 0;
-}
-
-/* Individual shipping card */
-.shipping-card {
-    background: #fff;
-    border: 2px solid #e0e0e0;
+/* Cards Wrapper */
+.shipping-methods-cards-wrapper {
+    margin: 24px 0;
+    background: #fafafa;
     border-radius: 12px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
+    padding: 20px;
 }
 
-.shipping-card:hover {
-    border-color: #4caf50;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
-    transform: translateY(-2px);
+/* Header Section */
+.shipping-methods-cards-wrapper .cards-header {
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-.shipping-card.selected {
-    border-color: #4caf50;
-    background: #f1f8f4;
-    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
-}
-
-.shipping-card.free-shipping {
-    border-color: #9c27b0;
-}
-
-.shipping-card.free-shipping.selected {
-    background: #f3e5f5;
-    border-color: #9c27b0;
-    box-shadow: 0 4px 16px rgba(156, 39, 176, 0.2);
-}
-
-/* Card header with radio and logo */
-.shipping-card .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-/* Custom radio button */
-.shipping-card .radio-wrapper {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.shipping-card .shipping-radio {
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    border: 2px solid #c2c2c2;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.shipping-card .shipping-radio:checked {
-    border-color: #4caf50;
-    background: #4caf50;
-}
-
-.shipping-card .shipping-radio:checked::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
-    background: white;
-    border-radius: 50%;
-}
-
-.shipping-card.free-shipping .shipping-radio:checked {
-    border-color: #9c27b0;
-    background: #9c27b0;
-}
-
-.shipping-card .radio-label {
-    display: none;
-}
-
-/* Carrier logo */
-.shipping-card .carrier-logo {
+.shipping-methods-cards-wrapper .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 8px 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-}
-
-.shipping-card .carrier-logo svg {
-    max-width: 80px;
-    max-height: 40px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.shipping-card .carrier-logo img.carrier-img {
-    max-width: 80px;
-    max-height: 40px;
-    object-fit: contain;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Card body */
-.shipping-card .card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-/* Method name */
-.shipping-card .method-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-    line-height: 1.3;
-}
-
-/* Method details */
-.shipping-card .method-details {
-    display: flex;
-    flex-direction: column;
     gap: 8px;
 }
 
-/* Delivery time */
-.shipping-card .delivery-time {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.shipping-methods-cards-wrapper .section-subtitle {
     font-size: 14px;
-    color: #666;
-}
-
-.shipping-card .delivery-time svg {
-    flex-shrink: 0;
-    color: #757575;
-}
-
-/* Price wrapper */
-.shipping-card .price-wrapper {
-    display: flex;
-    align-items: center;
-    margin-top: 4px;
-}
-
-.shipping-card .price {
-    font-size: 18px;
-    font-weight: 700;
-    color: #2e7d32;
-}
-
-.shipping-card .free-badge {
-    display: inline-block;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
-    color: white;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
-}
-
-/* Responsive design for shipping cards */
-@media (max-width: 768px) {
-    .shipping-cards-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-    
-    .shipping-card {
-        padding: 12px;
-    }
-    
-    .shipping-card .carrier-logo svg {
-        max-width: 60px;
-        max-height: 30px;
-    }
-    
-    .shipping-card .method-name {
-        font-size: 15px;
-    }
-    
-    .shipping-card .price {
-        font-size: 16px;
-    }
-}
-
-/* ========================================
-   12. SIMPLIFIED AMASTY GIFT CARD STYLES
-   ======================================== */
-
-/* Simplify Amasty Gift Card in Cart */
-.block.giftcard,
-.block[class*="amcard"],
-.cart-container .amcard-block {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 0;
-    margin-bottom: 16px;
-    overflow: hidden;
-}
-
-.block.giftcard .title,
-.amcard-block .title {
-    background: #f5f5f5;
-    padding: 14px 18px;
+    color: #7f8c8d;
     margin: 0;
-    cursor: pointer;
-    border-bottom: 1px solid #e0e0e0;
-    transition: background 0.2s ease;
+    font-weight: 400;
 }
 
-.block.giftcard .title:hover,
-.amcard-block .title:hover {
-    background: #ebebeb;
-}
-
-.block.giftcard .title strong,
-.amcard-block .title strong {
-    font-size: 15px;
-    font-weight: 600;
-    color: #333;
-}
-
-.block.giftcard .content,
-.amcard-block .content {
-    padding: 18px;
-}
-
-/* Simplify Gift Card Input Fields */
-.amcard-input,
-.amcard-code-input,
-.block.giftcard input[type="text"] {
-    width: 100% !important;
-    padding: 12px 14px !important;
-    border: 1px solid #c2c2c2 !important;
-    border-radius: 6px !important;
-    font-size: 14px !important;
-    transition: border-color 0.2s ease !important;
-}
-
-.amcard-input:focus,
-.amcard-code-input:focus,
-.block.giftcard input[type="text"]:focus {
-    border-color: #4caf50 !important;
-    outline: none !important;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1) !important;
-}
-
-/* Simplify Apply Button */
-.amcard-apply,
-.amcard-button,
-.block.giftcard button.action.apply {
-    background: linear-gradient(135deg, #4caf50 0%, #43a047 100%) !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    color: #fff !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.amcard-apply:hover,
-.amcard-button:hover,
-.block.giftcard button.action.apply:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
-}
-
-/* Simplify Applied Gift Cards List */
-.amcard-applied-list,
-.block.giftcard .applied-gift-cards {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #e0e0e0;
-}
-
-.amcard-applied-item,
-.block.giftcard .applied-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    margin-bottom: 8px;
-}
-
-.amcard-code,
-.block.giftcard .card-code {
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-}
-
-.amcard-amount,
-.block.giftcard .card-amount {
-    margin-left: 12px;
-    font-size: 13px;
-    color: #4caf50;
-    font-weight: 600;
-}
-
-.amcard-remove,
-.block.giftcard .action.delete {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-    background: transparent !important;
-    border: 1px solid #c2c2c2 !important;
-    border-radius: 4px !important;
-    color: #666 !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-}
-
-.amcard-remove:hover,
-.block.giftcard .action.delete:hover {
-    background: #f44336 !important;
-    border-color: #f44336 !important;
-    color: #fff !important;
-}
-
-/* Checkout Gift Card Block */
-.checkout-index-index .payment-method-content .amgiftcard-payment-method,
-.checkout-index-index .opc-payment .amgiftcard-block {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-}
-
-.checkout-index-index .amgiftcard-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 12px;
-}
-
-/* Hide Amasty Gift Card Complex UI Elements */
-.amcard-balance-check,
-.amcard-extra-info,
-.amcard-terms-link {
-    display: none !important;
-}
-
-/* Mobile Responsive */
-@media (max-width: 767px) {
-    .amcard-applied-item,
-    .block.giftcard .applied-item {
-        flex-wrap: wrap;
-    }
-    
-    .amcard-remove,
-    .block.giftcard .action.delete {
-        width: 100%;
-        margin-top: 8px;
-    }
-}
-
-/* ========================================
-   13. OPTIMIZED SHIPPING CARDS - SIMPLIFIED
-   ======================================== */
-
-/* Simplify Shipping Cards Container */
+/* Cards Grid */
 .shipping-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 12px;
-    margin: 16px 0;
-}
-
-/* Simplified Shipping Card */
-.shipping-card {
-    background: #fff;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 14px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    position: relative;
-}
-
-.shipping-card:hover {
-    border-color: #4caf50;
-    box-shadow: 0 3px 10px rgba(76, 175, 80, 0.15);
-    transform: translateY(-1px);
-}
-
-.shipping-card.selected {
-    border-color: #4caf50;
-    background: #f1f8f4;
-    box-shadow: 0 4px 14px rgba(76, 175, 80, 0.2);
-}
-
-/* Simplified Card Header */
-.shipping-card .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-/* Simplified Radio Button */
-.shipping-card .shipping-radio {
-    appearance: none;
-    width: 22px;
-    height: 22px;
-    border: 2px solid #c2c2c2;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.shipping-card .shipping-radio:checked {
-    border-color: #4caf50;
-    background: #4caf50;
-}
-
-.shipping-card .shipping-radio:checked::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    background: white;
-    border-radius: 50%;
-}
-
-/* Simplified Carrier Logo */
-.shipping-card .carrier-logo img {
-    max-width: 70px;
-    max-height: 35px;
-    object-fit: contain;
-}
-
-/* Simplified Method Name */
-.shipping-card .method-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 8px 0;
-    line-height: 1.3;
-}
-
-/* Simplified Price Display */
-.shipping-card .price {
-    font-size: 16px;
-    font-weight: 700;
-    color: #2e7d32;
-}
-
-.shipping-card .free-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    background: #9c27b0;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 4px;
-    text-transform: uppercase;
-}
-
-/* Simplified Delivery Time */
-.shipping-card .delivery-time {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 8px;
-}
-
-.shipping-card .delivery-time svg {
-    width: 14px;
-    height: 14px;
-    opacity: 0.7;
-}
-
-/* Mobile Responsive for Shipping Cards */
-@media (max-width: 768px) {
-    .shipping-cards-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .shipping-card {
-        padding: 12px;
-    }
-    
-    .shipping-card .method-name {
-        font-size: 14px;
-    }
-}
-
-
-/* ========================================
-   WILAYA/REGION DROPDOWN STYLING
-   ======================================== */
-
-/* Wilaya field highlight and styling */
-.checkout-index-index .field.wilaya-highlight,
-.checkout-index-index [name="shippingAddress.region_id"],
-.checkout-index-index [name="billingAddressmptablerate.region_id"] {
-    position: relative;
-}
-
-/* Region/Wilaya select dropdown */
-.checkout-index-index select[name="region_id"] {
-    width: 100%;
-    padding: 12px 40px 12px 16px;
-    font-size: 15px;
-    font-weight: 500;
-    color: #333;
-    background-color: #fff;
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1" stroke="%234caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-size: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.checkout-index-index select[name="region_id"]:hover {
-    border-color: #4caf50;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
-}
-
-.checkout-index-index select[name="region_id"]:focus {
-    outline: none;
-    border-color: #4caf50;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-    background-color: #f9fff9;
-}
-
-/* Wilaya dropdown options */
-.checkout-index-index select[name="region_id"] option {
-    padding: 12px;
-    font-size: 14px;
-    color: #333;
-}
-
-.checkout-index-index select[name="region_id"] option:hover,
-.checkout-index-index select[name="region_id"] option:checked {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-}
-
-/* Wilaya label styling */
-.checkout-index-index .field.wilaya-highlight .label,
-.checkout-index-index [name="shippingAddress.region_id"] .label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 8px;
-    display: block;
-}
-
-/* ========================================
-   IMPROVED SHIPPING METHOD CARDS
-   ======================================== */
-
-/* Card grid improvements */
-.shipping-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 16px;
-    margin: 20px 0;
+    margin-bottom: 16px;
 }
 
-/* Individual card improvements */
+/* Individual Shipping Card */
 .shipping-card {
     background: #ffffff;
-    border: 2px solid #e8e8e8;
+    border: 2px solid #e8ecef;
     border-radius: 12px;
-    padding: 16px;
+    padding: 20px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .shipping-card:hover {
     border-color: #4caf50;
-    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.15);
-    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.15);
+    transform: translateY(-4px);
 }
 
 .shipping-card.selected {
     border-color: #4caf50;
-    border-width: 3px;
     background: linear-gradient(135deg, #f1f8f4 0%, #ffffff 100%);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25);
+    box-shadow: 0 8px 24px rgba(76, 175, 80, 0.25);
 }
 
+/* Free Shipping Variant */
 .shipping-card.free-shipping {
-    border-color: #9c27b0;
-    background: linear-gradient(135deg, #f3e5f5 0%, #ffffff 100%);
+    border-color: #ff9800;
+}
+
+.shipping-card.free-shipping:hover {
+    border-color: #f57c00;
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.15);
 }
 
 .shipping-card.free-shipping.selected {
-    border-color: #9c27b0;
-    background: linear-gradient(135deg, #f3e5f5 0%, #fce4ec 100%);
+    border-color: #ff9800;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);
+    box-shadow: 0 8px 24px rgba(255, 152, 0, 0.25);
 }
 
-/* Card header - radio and logo */
-.shipping-card .card-header {
+/* Radio Button (Hidden) */
+.shipping-card .shipping-radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Card Content Layout */
+.shipping-card .card-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f0f0f0;
+    gap: 16px;
 }
 
-/* Radio button wrapper */
-.shipping-card .radio-wrapper {
+.shipping-card .card-left {
     display: flex;
     align-items: center;
+    gap: 16px;
+    flex: 1;
 }
 
-/* Improved radio button - no checkbox */
-.shipping-card .shipping-radio {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    width: 24px;
-    height: 24px;
-    border: 2px solid #c2c2c2;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    background: #fff;
-    margin: 0;
+.shipping-card .card-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
 }
 
-.shipping-card .shipping-radio:hover {
-    border-color: #4caf50;
-}
-
-.shipping-card .shipping-radio:checked {
-    border-color: #4caf50;
-    background: #4caf50;
-}
-
-.shipping-card .shipping-radio:checked::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
-    background: white;
-    border-radius: 50%;
-}
-
-.shipping-card.free-shipping .shipping-radio:checked {
-    border-color: #9c27b0;
-    background: #9c27b0;
-}
-
-/* Hide checkbox input type if any */
-.shipping-card input[type="checkbox"] {
-    display: none !important;
-}
-
-/* Carrier logo improvements */
+/* Carrier Logo */
 .shipping-card .carrier-logo {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 80px;
-    height: 40px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    padding: 6px;
+    width: 90px;
+    height: 50px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 8px;
+    flex-shrink: 0;
 }
 
-.shipping-card .carrier-logo img {
-    max-width: 70px;
-    max-height: 35px;
+.shipping-card .carrier-logo .carrier-img {
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
 }
 
-.shipping-card .carrier-logo svg {
-    max-width: 70px;
-    max-height: 35px;
-}
-
-/* Card body */
-.shipping-card .card-body {
+/* Method Info */
+.shipping-card .method-info {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    flex: 1;
 }
 
-/* Method name (title) */
 .shipping-card .method-name {
     font-size: 16px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 4px 0;
-    line-height: 1.3;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .shipping-card.selected .method-name {
     color: #2e7d32;
 }
 
-/* Carrier title */
-.shipping-card .carrier-title {
-    font-size: 13px;
-    color: #757575;
-    margin: 0 0 8px 0;
-    font-style: italic;
-}
-
-/* Method details */
-.shipping-card .method-details {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-/* Delivery time */
+/* Delivery Time */
 .shipping-card .delivery-time {
     display: flex;
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #616161;
+    color: #6c757d;
 }
 
-.shipping-card .delivery-time svg {
-    width: 16px;
-    height: 16px;
-    opacity: 0.7;
-    flex-shrink: 0;
+.shipping-card .delivery-time .clock-icon {
+    width: 14px;
+    height: 14px;
+    color: #95a5a6;
 }
 
-/* Price wrapper */
-.shipping-card .price-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 4px;
-}
-
-/* Price display */
+/* Price Display */
 .shipping-card .price {
-    font-size: 18px;
-    font-weight: 800;
-    color: #2e7d32;
-    letter-spacing: -0.5px;
-}
-
-/* Free badge */
-.shipping-card .free-badge {
-    display: inline-block;
-    padding: 6px 14px;
-    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
-}
-
-/* Cards header section */
-.cards-header {
-    margin-bottom: 20px;
-}
-
-.cards-header .section-title {
     font-size: 20px;
     font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 6px 0;
+    color: #2c3e50;
+    white-space: nowrap;
 }
 
-.cards-header .section-subtitle {
+.shipping-card.selected .price {
+    color: #2e7d32;
+}
+
+/* Free Badge */
+.shipping-card .free-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: #ffffff;
+    border-radius: 20px;
     font-size: 14px;
-    color: #757575;
-    margin: 0;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 }
 
-/* Shipping info notice */
-.shipping-info-notice {
+/* Check Indicator */
+.shipping-card .check-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    background: #4caf50;
+    border-radius: 50%;
     display: flex;
     align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.shipping-card.selected .check-indicator {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.shipping-card .check-indicator svg {
+    width: 18px;
+    height: 18px;
+    fill: #ffffff;
+}
+
+/* Info Notice */
+.shipping-info-notice {
+    display: flex;
+    align-items: flex-start;
     gap: 10px;
     padding: 12px 16px;
     background: #e3f2fd;
-    border-radius: 8px;
     border-left: 4px solid #2196f3;
+    border-radius: 8px;
     font-size: 13px;
     color: #1565c0;
-    margin-top: 16px;
+    margin-top: 8px;
 }
 
-/* Mobile responsive */
+.shipping-info-notice .info-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    stroke: #2196f3;
+}
+
+.shipping-info-notice span {
+    flex: 1;
+    line-height: 1.5;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .shipping-cards-grid {
         grid-template-columns: 1fr;
-        gap: 12px;
+    }
+    
+    .shipping-card {
+        padding: 16px;
+    }
+    
+    .shipping-card .card-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .shipping-card .card-right {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .shipping-card .carrier-logo {
+        width: 80px;
+        height: 45px;
+    }
+    
+    .shipping-methods-cards-wrapper .section-title {
+        font-size: 20px;
+    }
+    
+    .shipping-card .method-name {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .shipping-methods-cards-wrapper {
+        padding: 16px;
+        margin: 16px 0;
     }
     
     .shipping-card {
         padding: 14px;
     }
     
-    .shipping-card .method-name {
-        font-size: 15px;
+    .shipping-card .card-left {
+        gap: 12px;
     }
     
-    .shipping-card .carrier-logo {
-        width: 60px;
-        height: 30px;
-    }
-    
-    .shipping-card .carrier-logo img {
-        max-width: 55px;
-        max-height: 28px;
-    }
-    
-    .checkout-index-index select[name="region_id"] {
-        font-size: 14px;
-        padding: 10px 36px 10px 12px;
+    .shipping-card .price {
+        font-size: 18px;
     }
 }
-
-/* Tablet responsive */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .shipping-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Desktop responsive */
-@media (min-width: 1025px) {
     .shipping-cards-grid {
         grid-template-columns: repeat(3, 1fr);
     }

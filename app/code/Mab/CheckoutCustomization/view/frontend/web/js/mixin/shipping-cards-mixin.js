@@ -70,10 +70,12 @@ define([
             }
 
             require(['shippingMethodCards'], function (ShippingCards) {
-                // Create instance and convert to cards
+                // Create instance and replace shipping step with cards
                 var cardsComponent = new ShippingCards();
-                cardsComponent.convertToCards();
-                window.shippingCardsInitialized = true;
+                if (typeof cardsComponent.replaceShippingStep === 'function') {
+                    cardsComponent.replaceShippingStep();
+                    window.shippingCardsInitialized = true;
+                }
             });
         },
 
