@@ -121,6 +121,25 @@
                                                 </item>
                                             </item>
                                         </item>
+                                        <!-- Customize Amasty Gift Card for logged-in users with French translations -->
+                                        <item name="billing-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="payment" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="afterMethods" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="amgift-card" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/payment/gift-card-fr</item>
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="requireLogin" xsi:type="boolean">true</item>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
                                     </item>
                                 </item>
                             </item>
