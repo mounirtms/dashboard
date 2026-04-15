@@ -77,29 +77,41 @@ define([
             $container.empty();
 
             // Process each shipping method row
-            $shippingTable.find('tbody tr').each(function () {
+            $shippingTable.find('tbody tr.row').each(function () {
                 var $row = $(this);
                 var $radio = $row.find('input[type="radio"]');
-                var $label = $row.find('label');
+                
+                // Skip if no radio button (extension rows)
+                if (!$radio.length) return;
+                
                 var methodCode = $radio.val();
-                var methodName = $label.text().trim();
-                var $price = $row.find('.price');
-                var priceText = $price.length ? $price.text().trim() : 'Free';
-                var isFree = priceText.toLowerCase().indexOf('0') === 0 || priceText.toLowerCase().indexOf('free') >= 0 || priceText.toLowerCase().indexOf('gratuit') >= 0;
+                
+                // Extract method title from col-method (3rd column)
+                var methodName = $row.find('.col-method').eq(1).text().trim();
+                
+                // Extract carrier title from col-carrier (4th column)
+                var carrierTitle = $row.find('.col-carrier').text().trim();
+                
+                // Extract price from col-price (2nd column)
+                var $priceCol = $row.find('.col-price');
+                var priceText = $priceCol.find('.price').last().text().trim();
+                var isFree = priceText.indexOf('0,00') === 0 || priceText.indexOf('0.00') === 0;
                 
                 // Extract carrier info
                 var carrier = self.identifyCarrier(methodName);
                 var deliveryTime = self.estimateDeliveryTime(carrier, methodName);
                 var carrierLogo = self.getCarrierLogo(carrier);
-                var formattedPrice = self.formatPrice(priceText);
+                
+                // Format price - keep original DZD format
+                var formattedPrice = isFree ? '' : priceText;
 
-                // Create card HTML
+                // Create card HTML - only use radio, no checkbox
                 var cardHtml = `
                     <div class="shipping-card ${isFree ? 'free-shipping' : ''}" data-method-code="${methodCode}">
                         <div class="card-header">
                             <div class="radio-wrapper">
                                 <input type="radio" 
-                                    name="shipping-method" 
+                                    name="shipping-method-card" 
                                     id="card-${methodCode}" 
                                     value="${methodCode}" 
                                     ${$radio.is(':checked') ? 'checked' : ''} 
@@ -112,6 +124,7 @@ define([
                         </div>
                         <div class="card-body">
                             <h3 class="method-name">${methodName}</h3>
+                            <p class="carrier-title">${carrierTitle}</p>
                             <div class="method-details">
                                 <div class="delivery-time">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
