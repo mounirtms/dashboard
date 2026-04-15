@@ -95,10 +95,7 @@ $blockId = 'block-gift-card-' . uniqid();
 }
 
 .block.gift-card .content {
-    padding: 16px;
-    border: 1px solid #ddd;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
+    
 }
 
 .block.gift-card .field {
@@ -324,7 +321,7 @@ require([
             });
         });
         
-        // Apply gift card
+        // Apply gift card - using form submission (requires customer login)
         $applyBtn.on('click', function() {
             var code = $input.val();
             var validation = validateCode(code);
@@ -334,40 +331,30 @@ require([
                 return;
             }
             
+            // Check if user is logged in
+            var isLoggedIn = $('body').hasClass('customer-logged-in');
+            if (!isLoggedIn) {
+                showMessage('error', '<?= $escaper->escapeJs(__('Veuillez vous connecter pour appliquer une carte cadeau')) ?>', 5000);
+                return;
+            }
+            
             $applyBtn.prop('disabled', true);
             $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Application...')) ?>');
             
-            $.ajax({
-                url: '/amgcard/cart/apply',
-                type: 'POST',
-                data: { 
-                    am_giftcard_code: code
-                },
-                success: function() {
-                    showMessage('success', '<?= $escaper->escapeJs(__('Carte appliquée avec succès!')) ?>', 2000);
-                    $input.val('');
-                    $balanceDiv.hide();
-                    
-                    setTimeout(function() {
-                        location.reload();
-                    }, 1500);
-                },
-                error: function(xhr) {
-                    var errorMessage = '<?= $escaper->escapeJs(__('Code invalide ou erreur')) ?>';
-                    
-                    try {
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
-                        }
-                    } catch (e) {}
-                    
-                    showMessage('error', errorMessage, 5000);
-                },
-                complete: function() {
-                    $applyBtn.prop('disabled', false);
-                    $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Appliquer')) ?>');
-                }
+            // Create hidden form and submit
+            var $form = $('<form>', {
+                method: 'POST',
+                action: '/amgcard/cart/apply'
             });
+            
+            $form.append($('<input>', {
+                type: 'hidden',
+                name: 'am_giftcard_code',
+                value: code
+            }));
+            
+            $('body').append($form);
+            $form.submit();
         });
         
         // Enter key support
