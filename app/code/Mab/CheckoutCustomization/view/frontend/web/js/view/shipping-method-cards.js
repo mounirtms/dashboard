@@ -127,17 +127,17 @@ define([
                 // Format price - keep original DZD format
                 var formattedPrice = isFree ? '' : priceText;
 
-                // Create simplified card HTML - radio + logo + name + price only
+                // Create simplified card HTML - logo + name + price only (radio hidden)
                 var cardHtml = `
                     <div class="shipping-card ${isFree ? 'free-shipping' : ''}" data-method-code="${methodCode}">
+                        <input type="radio"
+                            name="shipping-method-card"
+                            id="card-${methodCode}"
+                            value="${methodCode}"
+                            ${$radio.is(':checked') ? 'checked' : ''}
+                            class="shipping-radio" style="display:none;" />
                         <div class="card-content">
                             <div class="card-left">
-                                <input type="radio"
-                                    name="shipping-method-card"
-                                    id="card-${methodCode}"
-                                    value="${methodCode}"
-                                    ${$radio.is(':checked') ? 'checked' : ''}
-                                    class="shipping-radio" />
                                 <div class="carrier-logo">
                                     ${carrierLogo}
                                 </div>
@@ -158,6 +158,11 @@ define([
                                     '<span class="price">' + formattedPrice + '</span>'
                                 }
                             </div>
+                        </div>
+                        <div class="check-indicator">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
                         </div>
                     </div>
                 `;
@@ -261,8 +266,16 @@ define([
             var name = methodName.toLowerCase();
             var carrier = carrierTitle ? carrierTitle.toLowerCase() : '';
 
-            // Yalidine - all Yalidine methods (home delivery or agence)
+            // Yalidine - detect by name or French keywords
             if (name.indexOf('yalidine') >= 0 || carrier.indexOf('yalidine') >= 0) {
+                return 'yalidine';
+            }
+            // Yalidine French keywords: domicile delivery, agence pickup
+            if (name.indexOf('domicile') >= 0 || 
+                name.indexOf('agence') >= 0 || 
+                name.indexOf('retrait en agence') >= 0 ||
+                name.indexOf('livraison à domicile') >= 0 ||
+                name.indexOf('yalidine') >= 0) {
                 return 'yalidine';
             }
 

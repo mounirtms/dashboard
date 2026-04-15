@@ -36,26 +36,51 @@
     border-radius: 12px;
     padding: 16px 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
 }
 
 .shipping-card:hover {
     border-color: #4caf50;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+    transform: translateY(-1px);
 }
 
 .shipping-card.selected {
     border-color: #4caf50;
-    background: linear-gradient(135deg, #e8f5e9 0%, #fff 100%);
-    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+    background: linear-gradient(135deg, #f0f9f1 0%, #fff 100%);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.2);
+}
+
+/* Check indicator - hidden by default, shown when selected */
+.shipping-card .check-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    background: #4caf50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.25s ease;
+}
+
+.shipping-card .check-indicator svg {
+    color: #fff;
+}
+
+.shipping-card.selected .check-indicator {
+    opacity: 1;
+    transform: scale(1);
 }
 
 .shipping-card.free-shipping {
     border-color: #4caf50;
-    background: linear-gradient(135deg, #f1f8f4 0%, #fff 100%);
 }
 
 /* Card Content Layout */
@@ -130,23 +155,34 @@
 
 /* Price */
 .shipping-card .price {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
-    color: #2e7d32;
+    color: #1a7f37;
     white-space: nowrap;
+    line-height: 1;
+    padding: 8px 16px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    border: 1px solid #bbf7d0;
+}
+
+.shipping-card.selected .price {
+    background: #dcfce7;
+    border-color: #4caf50;
 }
 
 .shipping-card .free-badge {
     display: inline-block;
-    background: #4caf50;
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
     color: #fff;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 /* Section Header */
