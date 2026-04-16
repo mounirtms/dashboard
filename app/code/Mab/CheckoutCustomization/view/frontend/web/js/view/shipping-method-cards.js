@@ -81,21 +81,19 @@ define([
             var $stepContent = $('#checkout-step-shipping_method');
 
             if ($stepContent.length === 0) {
+                console.log('⏳ Waiting for shipping step container...');
                 setTimeout(function () {
                     self.replaceShippingStep();
                 }, 500);
                 return;
             }
 
-            // Prevent duplicate rendering
-            if ($stepContent.data('cards-rendered')) return;
-            $stepContent.data('cards-rendered', true);
-
             // Find the shipping method form/table
             var $shippingForm = $stepContent.find('#co-shipping-method-form');
             var $shippingTable = $stepContent.find('table.table-checkout-shipping-method');
 
             if ($shippingTable.length === 0 || $shippingForm.length === 0) {
+                console.log('⏳ Waiting for shipping table...');
                 // Remove render flag to allow retry
                 $stepContent.data('cards-rendered', false);
                 setTimeout(function () {
@@ -104,11 +102,27 @@ define([
                 return;
             }
 
+            // Prevent duplicate rendering (check if already done)
+            if ($stepContent.data('cards-rendered') && $('.shipping-methods-cards-wrapper').length > 0) {
+                console.log('✅ Cards already rendered, updating selection only');
+                return;
+            }
+
+            console.log('🎨 Building shipping method cards...');
+            
+            // Mark as rendered
+            $stepContent.data('cards-rendered', true);
+
             // Hide the entire step container
             $stepContent.hide();
 
             // Build cards HTML
             var cardsHtml = this.buildCardsHtml($shippingTable);
+
+            if (!cardsHtml) {
+                console.warn('⚠️ No shipping methods found in table');
+                return;
+            }
 
             // Remove any existing cards wrapper to prevent duplicates
             $('.shipping-methods-cards-wrapper').remove();
@@ -130,6 +144,8 @@ define([
 
             // Bind click handlers
             this.bindCardHandlers();
+            
+            console.log('✅ Shipping cards rendered successfully');
         },
 
         /**

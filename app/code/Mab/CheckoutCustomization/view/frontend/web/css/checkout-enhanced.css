@@ -3,6 +3,9 @@
  * Modern, fast, maintainable styles for checkout page
  */
 
+/* Import Unified Form Field Design System */
+@import url('form-fields-unified.css');
+
 /* ========================================
    1. CHECKOUT BUTTONS - Enhanced styles
    ======================================== */
@@ -259,51 +262,9 @@
 }
 
 /* ========================================
-   7. ENHANCED REGION/STATE DROPDOWN
+   7. FORM FIELDS - Now using unified system
+   See: form-fields-unified.css
    ======================================== */
-
-/* Wilaya (Region) Dropdown Enhancement - Green Arrow */
-.checkout-index-index .field[name="shippingAddress.region_id"] select,
-.checkout-index-index .field[name="billingAddress.region_id"] select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="14" height="10" viewBox="0 0 14 10" fill="%234caf50" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L7 8L13 1" stroke="%234caf50" stroke-width="2" fill="none"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 14px 10px;
-    background-color: #fff;
-    padding-right: 40px;
-    padding-left: 12px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    font-weight: 500;
-    font-size: 15px;
-    color: #333;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.checkout-index-index .field[name="shippingAddress.region_id"] select:hover,
-.checkout-index-index .field[name="billingAddress.region_id"] select:hover {
-    border-color: #4caf50;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-.checkout-index-index .field[name="shippingAddress.region_id"] select:focus,
-.checkout-index-index .field[name="billingAddress.region_id"] select:focus {
-    border-color: #4caf50;
-    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15);
-    outline: none;
-}
-
-.checkout-index-index .field[name="shippingAddress.region_id"],
-.checkout-index-index .field[name="billingAddress.region_id"] {
-    position: relative;
-    width: 100%;
-}
 
 .checkout-index-index .field[name="shippingAddress.region_id"] .label,
 .checkout-index-index .field[name="billingAddress.region_id"] .label {
