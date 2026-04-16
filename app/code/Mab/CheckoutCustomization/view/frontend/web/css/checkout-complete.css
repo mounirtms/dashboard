@@ -1,0 +1,304 @@
+/**
+ * Mab_CheckoutCustomization - Complete Checkout Styles
+ * Comprehensive styles for checkout page including field ordering,
+ * shipping cards, gift card, and all customizations
+ */
+
+/* Import base form field styles */
+@import 'form-fields-unified.css';
+@import 'checkout-enhanced.css';
+@import 'gift-card-minimal.css';
+@import 'shipping-cards-enhanced.css';
+
+/* ========================================
+   FIELD ORDERING & LAYOUT FIXES
+   ======================================== */
+
+/* Hide country field completely - not needed for Algeria-only store */
+.checkout-index-index .field[name="shippingAddress.country_id"],
+.checkout-index-index .field[name="billingAddress.country_id"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Region (Wilaya) and City (Commune) - Side by side half-width layout */
+.checkout-index-index .field[name="shippingAddress.region_id"],
+.checkout-index-index .field[name="billingAddress.region_id"] {
+    display: inline-block !important;
+    width: calc(50% - 8px) !important;
+    margin-right: 16px !important;
+    vertical-align: top !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.city"],
+.checkout-index-index .field[name="billingAddress.city"] {
+    display: inline-block !important;
+    width: calc(50% - 8px) !important;
+    margin-right: 0 !important;
+    vertical-align: top !important;
+}
+
+/* Force region/city to appear before street address */
+.checkout-index-index .field[name="shippingAddress.region_id"] {
+    order: 1 !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.city"] {
+    order: 2 !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.street.0"] {
+    order: 3 !important;
+    clear: both !important;
+    width: 100% !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.telephone"] {
+    order: 4 !important;
+}
+
+/* Apply flexbox to fieldset for proper ordering */
+.checkout-index-index .fieldset.address {
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+/* Ensure all address fields participate in flex layout */
+.checkout-index-index .fieldset.address > .field {
+    flex: 0 0 100%;
+}
+
+/* Responsive: Stack fields on mobile */
+@media (max-width: 768px) {
+    .checkout-index-index .field[name="shippingAddress.region_id"],
+    .checkout-index-index .field[name="billingAddress.region_id"],
+    .checkout-index-index .field[name="shippingAddress.city"],
+    .checkout-index-index .field[name="billingAddress.city"] {
+        display: block !important;
+        width: 100% !important;
+        margin-right: 0 !important;
+    }
+}
+
+/* ========================================
+   SHIPPING METHODS VISIBILITY FIX
+   ======================================== */
+
+/* Ensure shipping methods container is always visible when region is selected */
+.shipping-methods-cards-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transition: opacity 0.3s ease;
+}
+
+/* Hide wrapper only when explicitly marked as hidden */
+.shipping-methods-cards-wrapper[data-region-selected="false"] {
+    display: none !important;
+}
+
+/* Show shipping cards when region is selected */
+.shipping-methods-cards-wrapper[data-region-selected="true"] {
+    display: block !important;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   LOADING MASK WITH TECHNO LOGO
+   ======================================== */
+
+/* Custom loading mask overlay */
+.checkout-index-index .loading-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+/* Techno Logo Container */
+.checkout-index-index .loading-mask .loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Techno Logo */
+.checkout-index-index .loading-mask .techno-logo {
+    width: 120px;
+    height: 120px;
+    background-image: url('https://dev.technostationery.com/media/mageplaza/tablerate/techno.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Animated spinner ring around logo */
+.checkout-index-index .loading-mask .spinner-ring {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.checkout-index-index .loading-mask .spinner-ring:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #4caf50;
+    border-radius: 50%;
+    animation: spin 1.5s linear infinite;
+}
+
+.checkout-index-index .loading-mask .techno-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Loading text */
+.checkout-index-index .loading-mask .loading-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4caf50;
+    margin-top: 16px;
+    text-align: center;
+}
+
+/* Loading progress bar */
+.checkout-index-index .loading-mask .progress-bar {
+    width: 200px;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.checkout-index-index .loading-mask .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
+    border-radius: 2px;
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% {
+        width: 0%;
+    }
+    50% {
+        width: 70%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   FIX: ENSURE SHIPPING CARDS RENDER ON REGION CHANGE
+   ======================================== */
+
+/* Prevent shipping step from collapsing */
+.checkout-index-index #checkout-step-shipping {
+    min-height: 400px;
+    transition: min-height 0.3s ease;
+}
+
+/* Shipping method list should always be visible structure */
+.checkout-index-index .table-checkout-shipping-method {
+    position: relative;
+}
+
+/* Hide default Magento shipping method table but keep structure */
+.checkout-index-index .table-checkout-shipping-method tbody {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Show our custom shipping cards instead */
+.checkout-index-index .shipping-methods-cards-wrapper {
+    position: relative;
+    z-index: 10;
+}
+
+/* ========================================
+   ADDITIONAL PERFORMANCE & ACCESSIBILITY
+   ======================================== */
+
+/* Smooth transitions for field changes */
+.checkout-index-index .field {
+    transition: order 0.3s ease, opacity 0.3s ease;
+}
+
+/* Focus visible for keyboard navigation */
+.checkout-index-index .shipping-card:focus-visible {
+    outline: 3px solid #4caf50;
+    outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .checkout-index-index .loading-mask *,
+    .checkout-index-index .shipping-methods-cards-wrapper {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Print styles - hide loading and non-selected methods */
+@media print {
+    .checkout-index-index .loading-mask {
+        display: none !important;
+    }
+}

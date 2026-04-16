@@ -76,6 +76,8 @@ define([
             return perfOptimizer.measure('shipping-cards-init', function () {
                 self._super();
                 self.selectedMethod = ko.observable(null);
+                self.isVisible = ko.observable(false);
+                self.currentRegion = ko.observable(null);
                 
                 // Try to get from cache first
                 if (window.MabCache) {
@@ -99,8 +101,41 @@ define([
                     self.selectedMethod(currentMethod.carrier_code + '_' + currentMethod.method_code);
                 }
 
+                // Subscribe to shipping address changes to detect region selection
+                quote.shippingAddress.subscribe(function (address) {
+                    if (address && address.regionId) {
+                        console.log('Region changed:', address.regionId, address.region);
+                        self.currentRegion(address.regionId);
+                        self.isVisible(true);
+                        
+                        // Update wrapper visibility
+                        setTimeout(function() {
+                            var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                            if (wrapper) {
+                                wrapper.setAttribute('data-region-selected', 'true');
+                            }
+                        }, 100);
+                        
+                        // Trigger shipping rates reload
+                        self.reloadShippingMethods();
+                    } else {
+                        self.isVisible(false);
+                        var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                        if (wrapper) {
+                            wrapper.setAttribute('data-region-selected', 'false');
+                        }
+                    }
+                }, self);
+
                 // Preload images for faster display
                 self.preloadImages();
+                
+                // Check initial address state
+                var initialAddress = quote.shippingAddress();
+                if (initialAddress && initialAddress.regionId) {
+                    self.currentRegion(initialAddress.regionId);
+                    self.isVisible(true);
+                }
                 
                 return self;
             });
@@ -185,6 +220,30 @@ define([
                 classes += ' free-shipping';
             }
             return classes;
+        },
+
+        /**
+         * Reload shipping methods after region change
+         */
+        reloadShippingMethods: function () {
+            var self = this;
+            console.log('Reloading shipping methods for region:', self.currentRegion());
+            
+            // Force re-render by triggering observable change
+            var currentMethods = self.shippingMethods.slice();
+            self.shippingMethods = [];
+            
+            setTimeout(function() {
+                self.shippingMethods = currentMethods;
+                
+                // Ensure wrapper is visible
+                var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                if (wrapper) {
+                    wrapper.style.display = 'block';
+                    wrapper.style.visibility = 'visible';
+                    wrapper.style.opacity = '1';
+                }
+            }, 50);
         }
     });
 });
