@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <!-- Load critical checkout CSS first -->
+        <css src="Mab_CheckoutCustomization::css/checkout-critical.css"/>
+        <!-- Load unified form fields CSS -->
+        <css src="Mab_CheckoutCustomization::css/form-fields-unified.css"/>
+        <!-- Load enhanced shipping cards CSS -->
+        <css src="Mab_CheckoutCustomization::css/shipping-cards-enhanced.css"/>
+        <!-- Load gift card minimal CSS -->
+        <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
+        <!-- Load checkout enhanced CSS -->
+        <css src="Mab_CheckoutCustomization::css/checkout-enhanced.css"/>
+    </head>
+</page>

@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mab CheckoutCustomization
+ * Customize checkout with shipping cards and French gift card
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mab_CheckoutCustomization::css/checkout-complete.css"/>
+    </head>
+    <body>
+        <referenceBlock name="checkout.root">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="checkout" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="steps" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <!-- Shipping Step -->
+                                        <item name="shipping-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="shippingAddress" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="shipping-method-cards" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards-working</item>
+                                                            <item name="sortOrder" xsi:type="string">-100</item>
+                                                            <item name="displayArea" xsi:type="string">before-shipping-method-form</item>
+                                                            <item name="config" xsi:type="array">
+                                                                <item name="debugMode" xsi:type="boolean">true</item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                        <!-- Payment Step -->
+                                        <item name="billing-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="payment" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <!-- Gift Card Component -->
+                                                        <item name="afterMethods" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="amgift-card" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/payment/gift-card-fr</item>
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="requireLogin" xsi:type="boolean">true</item>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                        <!-- Fix: Override grand-total template -->
+                                                        <item name="grand-total" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Magento_Tax/js/view/checkout/summary/grand-total</item>
+                                                            <item name="config" xsi:type="array">
+                                                                <item name="template" xsi:type="string">Mab_CheckoutCustomization/checkout/cart/totals/grand-total</item>
+                                                                <item name="title" xsi:type="string" translate="true">Order Total</item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>
