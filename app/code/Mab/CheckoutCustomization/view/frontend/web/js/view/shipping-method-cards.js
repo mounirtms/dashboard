@@ -1,6 +1,7 @@
 /**
- * Shipping Method Cards Component
+ * Shipping Method Cards Component - Optimized
  * Displays Mageplaza shipping options as cards for Batna region
+ * Features: Caching, performance tracking, optimized rendering
  */
 define([
     'jquery',
@@ -9,13 +10,18 @@ define([
     'Magento_Checkout/js/model/quote',
     'Magento_Checkout/js/model/shipping-service',
     'Magento_Checkout/js/action/select-shipping-method',
-    'Magento_Checkout/js/checkout-data'
-], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, checkoutData) {
+    'Magento_Checkout/js/checkout-data',
+    'Mab_CheckoutCustomization/js/performance-optimizer'
+], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, checkoutData, perfOptimizer) {
     'use strict';
+
+    // Initialize performance optimizer
+    perfOptimizer.init();
 
     return Component.extend({
         defaults: {
-            template: 'Mab_CheckoutCustomization/shipping-method-cards'
+            template: 'Mab_CheckoutCustomization/shipping-method-cards',
+            cacheKey: 'mab_shipping_methods_batna'
         },
 
         /**
@@ -64,23 +70,52 @@ define([
          * Initialize component
          */
         initialize: function () {
-            this._super();
-            this.selectedMethod = ko.observable(null);
+            var self = this;
             
-            // Subscribe to quote shipping method changes
-            quote.shippingMethod.subscribe(function (method) {
-                if (method) {
-                    this.selectedMethod(method.carrier_code + '_' + method.method_code);
+            // Use performance measurement
+            return perfOptimizer.measure('shipping-cards-init', function () {
+                self._super();
+                self.selectedMethod = ko.observable(null);
+                
+                // Try to get from cache first
+                if (window.MabCache) {
+                    var cached = window.MabCache.get(self.cacheKey);
+                    if (cached) {
+                        console.log('Using cached shipping methods');
+                        self.shippingMethods = cached;
+                    }
                 }
-            }, this);
+                
+                // Subscribe to quote shipping method changes
+                quote.shippingMethod.subscribe(function (method) {
+                    if (method) {
+                        self.selectedMethod(method.carrier_code + '_' + method.method_code);
+                    }
+                }, self);
 
-            // Set initial selection
-            var currentMethod = quote.shippingMethod();
-            if (currentMethod) {
-                this.selectedMethod(currentMethod.carrier_code + '_' + currentMethod.method_code);
-            }
+                // Set initial selection
+                var currentMethod = quote.shippingMethod();
+                if (currentMethod) {
+                    self.selectedMethod(currentMethod.carrier_code + '_' + currentMethod.method_code);
+                }
 
-            return this;
+                // Preload images for faster display
+                self.preloadImages();
+                
+                return self;
+            });
+        },
+
+        /**
+         * Preload carrier logo images
+         */
+        preloadImages: function () {
+            this.shippingMethods.forEach(function (method) {
+                if (method.carrier_logo) {
+                    var img = new Image();
+                    img.src = method.carrier_logo;
+                }
+            });
         },
 
         /**
@@ -92,30 +127,39 @@ define([
         },
 
         /**
-         * Select shipping method
+         * Select shipping method (optimized with performance tracking)
          * @param {Object} method
          */
         selectMethod: function (method) {
-            console.log('Selecting shipping method:', method);
+            var self = this;
             
-            this.selectedMethod(method.method_code);
-            
-            // Create method object for Magento
-            var shippingMethod = {
-                carrier_code: method.carrier_code,
-                method_code: method.method_id,
-                carrier_title: method.method_title,
-                method_title: method.method_title,
-                amount: method.amount,
-                base_amount: method.amount,
-                available: true,
-                error_message: '',
-                price_excl_tax: method.amount,
-                price_incl_tax: method.amount
-            };
+            perfOptimizer.measure('shipping-method-select', function () {
+                console.log('Selecting shipping method:', method);
+                
+                self.selectedMethod(method.method_code);
+                
+                // Create method object for Magento
+                var shippingMethod = {
+                    carrier_code: method.carrier_code,
+                    method_code: method.method_id,
+                    carrier_title: method.method_title,
+                    method_title: method.method_title,
+                    amount: method.amount,
+                    base_amount: method.amount,
+                    available: true,
+                    error_message: '',
+                    price_excl_tax: method.amount,
+                    price_incl_tax: method.amount
+                };
 
-            selectShippingMethodAction(shippingMethod);
-            checkoutData.setSelectedShippingRate(method.method_code);
+                selectShippingMethodAction(shippingMethod);
+                checkoutData.setSelectedShippingRate(method.method_code);
+                
+                // Cache the selection
+                if (window.MabCache) {
+                    window.MabCache.set('mab_selected_shipping', method.method_code, 3600000);
+                }
+            });
         },
 
         /**

@@ -1,0 +1,168 @@
+/* ============================================
+   SHIPPING CARDS - DEFERRED CSS
+   Non-critical styles loaded after page render
+   ============================================ */
+
+/* Transitions & Animations - Deferred */
+.shipping-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, box-shadow;
+}
+
+.shipping-card:hover {
+    border-color: #4CAF50;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+    transform: translateY(-2px);
+}
+
+.shipping-card:not(:hover) {
+    will-change: auto; /* Remove will-change when not needed */
+}
+
+.shipping-card.free-shipping:hover {
+    border-color: #FF6F00;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
+}
+
+/* Check Indicator Animation - Deferred */
+.check-indicator {
+    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    will-change: transform, opacity;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Logo & Details - Deferred */
+.shipping-card .carrier-logo {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F5F5F5;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.shipping-card .carrier-logo .carrier-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-rendering: -webkit-optimize-contrast; /* Optimize image rendering */
+}
+
+.shipping-card .method-description {
+    font-size: 13px;
+    color: #7F8C8D;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.shipping-card .delivery-time {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #5A6C7D;
+}
+
+/* Advanced Responsive - Deferred */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .shipping-card .carrier-logo {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+@media (max-width: 767px) {
+    .shipping-card .carrier-logo {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .shipping-card .method-name {
+        font-size: 15px;
+    }
+    
+    .shipping-notice {
+        padding: 10px 12px;
+    }
+    
+    .shipping-notice .notice-text {
+        font-size: 13px;
+    }
+}
+
+/* Accessibility - Deferred */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .shipping-card {
+        border-width: 3px;
+    }
+    
+    .shipping-card.selected {
+        border-width: 4px;
+    }
+}
+
+/* Print Styles - Deferred */
+@media print {
+    .shipping-card:not(.selected) {
+        display: none;
+    }
+    
+    .shipping-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* Focus Styles - Deferred */
+.shipping-card:focus-visible {
+    outline: 3px solid #4CAF50;
+    outline-offset: 2px;
+}
+
+/* Loading States - Deferred */
+.shipping-card.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.shipping-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #4CAF50;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
