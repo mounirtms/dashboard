@@ -35,6 +35,35 @@
     vertical-align: top !important;
 }
 
+.checkout-index-index .field[name="shippingAddress.region_id"] select,
+.checkout-index-index .field[name="billingAddress.region_id"] select {
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 48px !important;
+    padding: 12px 45px 12px 14px !important;
+    background-color: #ffffff !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L8 8L15 1" stroke="%234caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 16px 10px !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] select:focus,
+.checkout-index-index .field[name="billingAddress.region_id"] select:focus {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1) !important;
+    outline: none !important;
+}
+
 .checkout-index-index .field[name="shippingAddress.city"],
 .checkout-index-index .field[name="billingAddress.city"] {
     display: inline-block !important;
@@ -89,12 +118,20 @@
    SHIPPING METHODS VISIBILITY FIX
    ======================================== */
 
-/* Ensure shipping methods container is always visible when region is selected */
+/* Ensure shipping methods container is always visible */
 .shipping-methods-cards-wrapper {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     transition: opacity 0.3s ease;
+    min-height: 200px;
+}
+
+/* Override any knockout binding that might hide it */
+.shipping-methods-cards-wrapper[style*="display: none"],
+.shipping-methods-cards-wrapper[style*="visibility: hidden"] {
+    display: block !important;
+    visibility: visible !important;
 }
 
 /* Hide wrapper only when explicitly marked as hidden */

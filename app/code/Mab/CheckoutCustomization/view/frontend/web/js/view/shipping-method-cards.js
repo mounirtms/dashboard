@@ -76,7 +76,7 @@ define([
             return perfOptimizer.measure('shipping-cards-init', function () {
                 self._super();
                 self.selectedMethod = ko.observable(null);
-                self.isVisible = ko.observable(false);
+                self.isVisible = ko.observable(true); // Start visible
                 self.currentRegion = ko.observable(null);
                 
                 // Try to get from cache first
@@ -103,26 +103,28 @@ define([
 
                 // Subscribe to shipping address changes to detect region selection
                 quote.shippingAddress.subscribe(function (address) {
-                    if (address && address.regionId) {
-                        console.log('Region changed:', address.regionId, address.region);
-                        self.currentRegion(address.regionId);
-                        self.isVisible(true);
-                        
-                        // Update wrapper visibility
-                        setTimeout(function() {
-                            var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
-                            if (wrapper) {
-                                wrapper.setAttribute('data-region-selected', 'true');
-                            }
-                        }, 100);
-                        
-                        // Trigger shipping rates reload
-                        self.reloadShippingMethods();
-                    } else {
-                        self.isVisible(false);
-                        var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
-                        if (wrapper) {
-                            wrapper.setAttribute('data-region-selected', 'false');
+                    console.log('Address subscription triggered:', address);
+                    if (address) {
+                        // Check for regionId or region text
+                        if (address.regionId || address.region) {
+                            console.log('Region detected:', address.regionId || address.region);
+                            self.currentRegion(address.regionId || address.region);
+                            self.isVisible(true);
+                            
+                            // Update wrapper visibility
+                            setTimeout(function() {
+                                var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                                console.log('Wrapper found:', wrapper);
+                                if (wrapper) {
+                                    wrapper.setAttribute('data-region-selected', 'true');
+                                    wrapper.style.display = 'block';
+                                    wrapper.style.visibility = 'visible';
+                                    wrapper.style.opacity = '1';
+                                }
+                            }, 100);
+                            
+                            // Trigger shipping rates reload
+                            self.reloadShippingMethods();
                         }
                     }
                 }, self);
@@ -130,12 +132,27 @@ define([
                 // Preload images for faster display
                 self.preloadImages();
                 
-                // Check initial address state
+                // Check initial address state and force visibility
                 var initialAddress = quote.shippingAddress();
-                if (initialAddress && initialAddress.regionId) {
-                    self.currentRegion(initialAddress.regionId);
-                    self.isVisible(true);
+                console.log('Initial address check:', initialAddress);
+                if (initialAddress) {
+                    if (initialAddress.regionId || initialAddress.region) {
+                        self.currentRegion(initialAddress.regionId || initialAddress.region);
+                        self.isVisible(true);
+                    }
                 }
+                
+                // Force visibility after DOM is ready
+                setTimeout(function() {
+                    console.log('Force visibility timeout');
+                    self.isVisible(true);
+                    var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                    if (wrapper) {
+                        wrapper.style.display = 'block';
+                        wrapper.style.visibility = 'visible';
+                        wrapper.style.opacity = '1';
+                    }
+                }, 1000);
                 
                 return self;
             });
