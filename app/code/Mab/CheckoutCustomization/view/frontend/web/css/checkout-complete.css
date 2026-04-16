@@ -64,6 +64,39 @@
     outline: none !important;
 }
 
+/* Ensure region dropdown displays selected value properly */
+.checkout-index-index .field[name="shippingAddress.region_id"] select option,
+.checkout-index-index .field[name="billingAddress.region_id"] select option {
+    color: #2c3e50 !important;
+    padding: 8px !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] select option:checked,
+.checkout-index-index .field[name="billingAddress.region_id"] select option:checked {
+    background-color: #4caf50 !important;
+    color: #ffffff !important;
+}
+
+/* Override any Knockout bindings that might hide the select */
+.checkout-index-index select[name="region_id"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+}
+
+/* Ensure the region field label is visible */
+.checkout-index-index .field[name="shippingAddress.region_id"] label,
+.checkout-index-index .field[name="billingAddress.region_id"] label {
+    display: block !important;
+    visibility: visible !important;
+    margin-bottom: 8px !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
 .checkout-index-index .field[name="shippingAddress.city"],
 .checkout-index-index .field[name="billingAddress.city"] {
     display: inline-block !important;

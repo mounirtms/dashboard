@@ -5,7 +5,7 @@
             <circle cx="10" cy="10" r="9" stroke="#2196F3" stroke-width="2"/>
             <path d="M10 6V10M10 14H10.01" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span class="notice-text">Sélectionnez votre mode de livraison pour la région de Batna</span>
+        <span class="notice-text" data-bind="text: 'Sélectionnez votre mode de livraison pour la région de ' + getRegionName()"></span>
     </div>
 
     <div class="shipping-cards-grid" data-bind="foreach: getShippingMethods()">

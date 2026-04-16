@@ -1,7 +1,7 @@
 /**
- * Shipping Method Cards Component - Optimized
- * Displays Mageplaza shipping options as cards for Batna region
- * Features: Caching, performance tracking, optimized rendering
+ * Shipping Method Cards Component - Dynamic Version
+ * Displays shipping options as cards for ANY region
+ * Reads methods dynamically from Magento shipping service
  */
 define([
     'jquery',
@@ -11,60 +11,14 @@ define([
     'Magento_Checkout/js/model/shipping-service',
     'Magento_Checkout/js/action/select-shipping-method',
     'Magento_Checkout/js/checkout-data',
-    'Mab_CheckoutCustomization/js/performance-optimizer'
-], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, checkoutData, perfOptimizer) {
+    'mage/translate'
+], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, checkoutData, $t) {
     'use strict';
-
-    // Initialize performance optimizer
-    perfOptimizer.init();
 
     return Component.extend({
         defaults: {
-            template: 'Mab_CheckoutCustomization/shipping-method-cards',
-            cacheKey: 'mab_shipping_methods_batna'
+            template: 'Mab_CheckoutCustomization/shipping-method-cards'
         },
-
-        /**
-         * Shipping methods data
-         */
-        shippingMethods: [
-            {
-                method_code: 'mptablerate_17',
-                carrier_code: 'mptablerate',
-                method_id: '17',
-                method_title: 'Retrait Techno Batna',
-                amount: 0,
-                price_formatted: 'Gratuit',
-                carrier_logo: 'https://dev.technostationery.com/media/mageplaza/tablerate/techno.png',
-                delivery_time: 'Retrait immédiat',
-                is_free: true,
-                description: 'Retirez votre commande à notre magasin de Batna'
-            },
-            {
-                method_code: 'mptablerate_24',
-                carrier_code: 'mptablerate',
-                method_id: '24',
-                method_title: 'Retrait en agence',
-                amount: 400,
-                price_formatted: '400 DA',
-                carrier_logo: 'https://dev.technostationery.com/media/mageplaza/tablerate/yalidine-logo.jpg',
-                delivery_time: '2-3 jours',
-                is_free: false,
-                description: 'Retrait à l\'agence Yalidine la plus proche'
-            },
-            {
-                method_code: 'mptablerate_2',
-                carrier_code: 'mptablerate',
-                method_id: '2',
-                method_title: 'Livraison à domicile',
-                amount: 500,
-                price_formatted: '500 DA',
-                carrier_logo: 'https://dev.technostationery.com/media/mageplaza/tablerate/yalidine-logo.jpg',
-                delivery_time: '3-5 jours',
-                is_free: false,
-                description: 'Livraison directement à votre domicile'
-            }
-        ],
 
         /**
          * Initialize component
@@ -72,102 +26,188 @@ define([
         initialize: function () {
             var self = this;
             
-            // Use performance measurement
-            return perfOptimizer.measure('shipping-cards-init', function () {
-                self._super();
-                self.selectedMethod = ko.observable(null);
-                self.isVisible = ko.observable(true); // Start visible
-                self.currentRegion = ko.observable(null);
-                
-                // Try to get from cache first
-                if (window.MabCache) {
-                    var cached = window.MabCache.get(self.cacheKey);
-                    if (cached) {
-                        console.log('Using cached shipping methods');
-                        self.shippingMethods = cached;
-                    }
-                }
-                
-                // Subscribe to quote shipping method changes
-                quote.shippingMethod.subscribe(function (method) {
-                    if (method) {
-                        self.selectedMethod(method.carrier_code + '_' + method.method_code);
-                    }
-                }, self);
-
-                // Set initial selection
-                var currentMethod = quote.shippingMethod();
-                if (currentMethod) {
-                    self.selectedMethod(currentMethod.carrier_code + '_' + currentMethod.method_code);
-                }
-
-                // Subscribe to shipping address changes to detect region selection
-                quote.shippingAddress.subscribe(function (address) {
-                    console.log('Address subscription triggered:', address);
-                    if (address) {
-                        // Check for regionId or region text
-                        if (address.regionId || address.region) {
-                            console.log('Region detected:', address.regionId || address.region);
-                            self.currentRegion(address.regionId || address.region);
-                            self.isVisible(true);
-                            
-                            // Update wrapper visibility
-                            setTimeout(function() {
-                                var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
-                                console.log('Wrapper found:', wrapper);
-                                if (wrapper) {
-                                    wrapper.setAttribute('data-region-selected', 'true');
-                                    wrapper.style.display = 'block';
-                                    wrapper.style.visibility = 'visible';
-                                    wrapper.style.opacity = '1';
-                                }
-                            }, 100);
-                            
-                            // Trigger shipping rates reload
-                            self.reloadShippingMethods();
-                        }
-                    }
-                }, self);
-
-                // Preload images for faster display
-                self.preloadImages();
-                
-                // Check initial address state and force visibility
-                var initialAddress = quote.shippingAddress();
-                console.log('Initial address check:', initialAddress);
-                if (initialAddress) {
-                    if (initialAddress.regionId || initialAddress.region) {
-                        self.currentRegion(initialAddress.regionId || initialAddress.region);
-                        self.isVisible(true);
-                    }
-                }
-                
-                // Force visibility after DOM is ready
-                setTimeout(function() {
-                    console.log('Force visibility timeout');
-                    self.isVisible(true);
-                    var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
-                    if (wrapper) {
-                        wrapper.style.display = 'block';
-                        wrapper.style.visibility = 'visible';
-                        wrapper.style.opacity = '1';
-                    }
-                }, 1000);
-                
-                return self;
+            self._super();
+            
+            // Observable arrays and properties
+            self.shippingMethods = ko.observableArray([]);
+            self.selectedMethod = ko.observable(null);
+            self.isVisible = ko.observable(false);
+            self.currentRegion = ko.observable(null);
+            self.isLoading = ko.observable(false);
+            
+            console.log('Shipping cards component initialized');
+            
+            // Subscribe to shipping rates from Magento
+            shippingService.getShippingRates().subscribe(function (rates) {
+                console.log('Shipping rates received:', rates);
+                self.processShippingRates(rates);
             });
+            
+            // Subscribe to quote shipping method changes
+            quote.shippingMethod.subscribe(function (method) {
+                if (method) {
+                    console.log('Quote shipping method changed:', method);
+                    self.selectedMethod(method.carrier_code + '_' + method.method_code);
+                }
+            });
+            
+            // Subscribe to shipping address changes to detect region
+            quote.shippingAddress.subscribe(function (address) {
+                console.log('Address changed:', address);
+                if (address && (address.regionId || address.region)) {
+                    var regionName = address.region || 'Region ' + address.regionId;
+                    console.log('Region detected:', regionName);
+                    self.currentRegion(regionName);
+                    self.isVisible(true);
+                }
+            });
+            
+            // Check initial state
+            var initialRates = shippingService.getShippingRates()();
+            if (initialRates && initialRates.length > 0) {
+                console.log('Processing initial rates:', initialRates);
+                self.processShippingRates(initialRates);
+            }
+            
+            var initialAddress = quote.shippingAddress();
+            if (initialAddress && (initialAddress.regionId || initialAddress.region)) {
+                var regionName = initialAddress.region || 'Region ' + initialAddress.regionId;
+                self.currentRegion(regionName);
+                self.isVisible(true);
+            }
+            
+            var currentMethod = quote.shippingMethod();
+            if (currentMethod) {
+                self.selectedMethod(currentMethod.carrier_code + '_' + currentMethod.method_code);
+            }
+            
+            return self;
         },
 
         /**
-         * Preload carrier logo images
+         * Process shipping rates from Magento
+         * @param {Array} rates
          */
-        preloadImages: function () {
-            this.shippingMethods.forEach(function (method) {
-                if (method.carrier_logo) {
-                    var img = new Image();
-                    img.src = method.carrier_logo;
-                }
+        processShippingRates: function (rates) {
+            var self = this;
+            var methods = [];
+            
+            console.log('Processing rates, count:', rates.length);
+            
+            rates.forEach(function (rate) {
+                console.log('Processing rate:', rate);
+                
+                var method = {
+                    method_code: rate.carrier_code + '_' + rate.method_code,
+                    carrier_code: rate.carrier_code,
+                    method_id: rate.method_code,
+                    method_title: rate.method_title || rate.carrier_title,
+                    amount: parseFloat(rate.amount) || 0,
+                    price_formatted: self.formatPrice(rate.amount),
+                    carrier_logo: self.getCarrierLogo(rate),
+                    delivery_time: self.getDeliveryTime(rate),
+                    is_free: parseFloat(rate.amount) === 0,
+                    description: self.getMethodDescription(rate),
+                    error_message: rate.error_message || '',
+                    available: rate.available !== false
+                };
+                
+                console.log('Created method object:', method);
+                methods.push(method);
             });
+            
+            console.log('Setting methods array, count:', methods.length);
+            self.shippingMethods(methods);
+            
+            // Make visible if we have methods
+            if (methods.length > 0) {
+                self.isVisible(true);
+                console.log('Methods loaded, setting visible');
+            }
+        },
+
+        /**
+         * Get carrier logo URL
+         * @param {Object} rate
+         * @returns {String}
+         */
+        getCarrierLogo: function (rate) {
+            var baseUrl = 'https://dev.technostationery.com/media/mageplaza/tablerate/';
+            var methodCode = rate.method_code;
+            
+            // Map method codes to logos
+            var logoMap = {
+                '17': 'techno.png',      // Retrait Techno Batna
+                '20': 'techno.png',      // Retrait Techno Setif
+                '24': 'yalidine-logo.jpg', // Retrait en agence
+                '2': 'yalidine-logo.jpg'   // Livraison à domicile
+            };
+            
+            // Check if rate has image property
+            if (rate.image) {
+                return rate.image;
+            }
+            
+            // Use mapping or default
+            var logo = logoMap[methodCode] || 'default-carrier.png';
+            return baseUrl + logo;
+        },
+
+        /**
+         * Get delivery time text
+         * @param {Object} rate
+         * @returns {String}
+         */
+        getDeliveryTime: function (rate) {
+            var methodCode = rate.method_code;
+            var title = (rate.method_title || '').toLowerCase();
+            
+            // Map based on method code or title
+            if (methodCode === '17' || methodCode === '20' || title.includes('retrait techno')) {
+                return $t('Retrait immédiat');
+            } else if (methodCode === '24' || title.includes('retrait en agence')) {
+                return $t('2-3 jours');
+            } else if (methodCode === '2' || title.includes('livraison')) {
+                return $t('3-5 jours');
+            }
+            
+            return $t('Délai standard');
+        },
+
+        /**
+         * Get method description
+         * @param {Object} rate
+         * @returns {String}
+         */
+        getMethodDescription: function (rate) {
+            var methodCode = rate.method_code;
+            var title = (rate.method_title || '').toLowerCase();
+            var region = this.currentRegion() || '';
+            
+            if (methodCode === '17' || methodCode === '20' || title.includes('retrait techno')) {
+                return $t('Retirez votre commande à notre magasin de %1').replace('%1', region);
+            } else if (methodCode === '24' || title.includes('retrait en agence')) {
+                return $t('Retrait à l\'agence Yalidine la plus proche');
+            } else if (methodCode === '2' || title.includes('livraison')) {
+                return $t('Livraison directement à votre domicile');
+            }
+            
+            return rate.carrier_title || '';
+        },
+
+        /**
+         * Format price
+         * @param {Number} amount
+         * @returns {String}
+         */
+        formatPrice: function (amount) {
+            var price = parseFloat(amount) || 0;
+            
+            if (price === 0) {
+                return $t('Gratuit');
+            }
+            
+            return price.toFixed(0) + ' DA';
         },
 
         /**
@@ -175,43 +215,42 @@ define([
          * @returns {Array}
          */
         getShippingMethods: function () {
-            return this.shippingMethods;
+            return this.shippingMethods();
         },
 
         /**
-         * Select shipping method (optimized with performance tracking)
+         * Select shipping method
          * @param {Object} method
          */
         selectMethod: function (method) {
             var self = this;
             
-            perfOptimizer.measure('shipping-method-select', function () {
-                console.log('Selecting shipping method:', method);
-                
-                self.selectedMethod(method.method_code);
-                
-                // Create method object for Magento
-                var shippingMethod = {
-                    carrier_code: method.carrier_code,
-                    method_code: method.method_id,
-                    carrier_title: method.method_title,
-                    method_title: method.method_title,
-                    amount: method.amount,
-                    base_amount: method.amount,
-                    available: true,
-                    error_message: '',
-                    price_excl_tax: method.amount,
-                    price_incl_tax: method.amount
-                };
+            console.log('Selecting shipping method:', method);
+            
+            if (!method.available) {
+                console.warn('Method not available:', method);
+                return;
+            }
+            
+            self.selectedMethod(method.method_code);
+            
+            // Create method object for Magento
+            var shippingMethod = {
+                carrier_code: method.carrier_code,
+                method_code: method.method_id,
+                carrier_title: method.method_title,
+                method_title: method.method_title,
+                amount: method.amount,
+                base_amount: method.amount,
+                available: true,
+                error_message: '',
+                price_excl_tax: method.amount,
+                price_incl_tax: method.amount
+            };
 
-                selectShippingMethodAction(shippingMethod);
-                checkoutData.setSelectedShippingRate(method.method_code);
-                
-                // Cache the selection
-                if (window.MabCache) {
-                    window.MabCache.set('mab_selected_shipping', method.method_code, 3600000);
-                }
-            });
+            console.log('Calling selectShippingMethodAction with:', shippingMethod);
+            selectShippingMethodAction(shippingMethod);
+            checkoutData.setSelectedShippingRate(method.carrier_code + '_' + method.method_id);
         },
 
         /**
@@ -230,37 +269,28 @@ define([
          */
         getCardClasses: function (method) {
             var classes = 'shipping-card';
+            
             if (this.isSelected(method)) {
                 classes += ' selected';
             }
+            
             if (method.is_free) {
                 classes += ' free-shipping';
             }
+            
+            if (!method.available) {
+                classes += ' unavailable';
+            }
+            
             return classes;
         },
 
         /**
-         * Reload shipping methods after region change
+         * Get region name for display
+         * @returns {String}
          */
-        reloadShippingMethods: function () {
-            var self = this;
-            console.log('Reloading shipping methods for region:', self.currentRegion());
-            
-            // Force re-render by triggering observable change
-            var currentMethods = self.shippingMethods.slice();
-            self.shippingMethods = [];
-            
-            setTimeout(function() {
-                self.shippingMethods = currentMethods;
-                
-                // Ensure wrapper is visible
-                var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
-                if (wrapper) {
-                    wrapper.style.display = 'block';
-                    wrapper.style.visibility = 'visible';
-                    wrapper.style.opacity = '1';
-                }
-            }, 50);
+        getRegionName: function () {
+            return this.currentRegion() || $t('votre région');
         }
     });
 });
