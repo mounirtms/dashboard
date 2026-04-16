@@ -1,26 +1,16 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Checkout Layout Customization for Algeria
- * - Remove Fax, Company, Middlename, Postcode fields
- * - Force region dropdown visible for DZ
- * - Load enhanced checkout styles and Algeria region fix JS
+ * Mab CheckoutCustomization
+ * Customize checkout with shipping cards and French gift card
  */
 -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mab_CheckoutCustomization::css/checkout-complete.css"/>
+    </head>
     <body>
-        <!-- Load Algeria region fix JS and enhanced checkout styles -->
-        <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Template"
-                   name="mab.checkout.region.fix"
-                   template="Mab_CheckoutCustomization::checkout-region-fix.phtml"
-                   after="-"/>
-            <block class="Magento\Framework\View\Element\Template"
-                   name="mab.checkout.styles.enhanced"
-                   template="Mab_CheckoutCustomization::checkout-styles-enhanced.phtml"
-                   after="mab.checkout.region.fix"/>
-        </referenceContainer>
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
@@ -29,99 +19,21 @@
                             <item name="children" xsi:type="array">
                                 <item name="steps" xsi:type="array">
                                     <item name="children" xsi:type="array">
+                                        <!-- Shipping Step -->
                                         <item name="shipping-step" xsi:type="array">
                                             <item name="children" xsi:type="array">
                                                 <item name="shippingAddress" xsi:type="array">
                                                     <item name="children" xsi:type="array">
-                                                        <item name="shipping-address-fieldset" xsi:type="array">
-                                                            <item name="children" xsi:type="array">
-                                                                <!-- Remove Fax Field completely -->
-                                                                <item name="fax" xsi:type="array">
-                                                                    <item name="config" xsi:type="array">
-                                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
-                                                                    </item>
-                                                                </item>
-                                                                <!-- Remove Company (Entreprise) Field -->
-                                                                <item name="company" xsi:type="array">
-                                                                    <item name="config" xsi:type="array">
-                                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
-                                                                    </item>
-                                                                </item>
-                                                                <!-- Remove Middlename (Patronyme) Field -->
-                                                                <item name="middlename" xsi:type="array">
-                                                                    <item name="config" xsi:type="array">
-                                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
-                                                                    </item>
-                                                                </item>
-                                                                <!-- Hide Postcode Field (Algeria uses wilaya only) -->
-                                                                <item name="postcode" xsi:type="array">
-                                                                    <item name="config" xsi:type="array">
-                                                                        <item name="visible" xsi:type="boolean">false</item>
-                                                                    </item>
-                                                                    <item name="validation" xsi:type="array">
-                                                                        <item name="required-entry" xsi:type="boolean">false</item>
-                                                                    </item>
-                                                                </item>
-                                                                <!-- Force Region (Wilaya) dropdown visible -->
-                                                                <item name="region_id" xsi:type="array">
-                                                                    <item name="config" xsi:type="array">
-                                                                        <item name="visible" xsi:type="boolean">true</item>
-                                                                        <item name="customScope" xsi:type="string">shippingAddress.region_id</item>
-                                                                    </item>
-                                                                    <item name="validation" xsi:type="array">
-                                                                        <item name="required-entry" xsi:type="boolean">true</item>
-                                                                    </item>
-                                                                    <item name="label" xsi:type="string" translate="true">Wilaya</item>
-                                                                </item>
-                                                                <!-- Hide Street Address Line 2 (second address field) -->
-                                                                <!-- Note: Street array is zero-indexed: 0=first line, 1=second line, 2=third line -->
-                                                                <item name="street" xsi:type="array">
-                                                                    <item name="children" xsi:type="array">
-                                                                        <!-- Keep first address line (index 0) visible -->
-                                                                        <item name="0" xsi:type="array">
-                                                                            <item name="label" xsi:type="string" translate="true">Adresse complète</item>
-                                                                            <item name="config" xsi:type="array">
-                                                                                <item name="visible" xsi:type="boolean">true</item>
-                                                                            </item>
-                                                                            <item name="validation" xsi:type="array">
-                                                                                <item name="required-entry" xsi:type="boolean">true</item>
-                                                                            </item>
-                                                                        </item>
-                                                                        <!-- Hide second address line (index 1) -->
-                                                                        <item name="1" xsi:type="array">
-                                                                            <item name="config" xsi:type="array">
-                                                                                <item name="visible" xsi:type="boolean">false</item>
-                                                                                <item name="componentDisabled" xsi:type="boolean">true</item>
-                                                                            </item>
-                                                                            <item name="validation" xsi:type="array">
-                                                                                <item name="required-entry" xsi:type="boolean">false</item>
-                                                                            </item>
-                                                                        </item>
-                                                                        <!-- Hide third address line (index 2) if exists -->
-                                                                        <item name="2" xsi:type="array">
-                                                                            <item name="config" xsi:type="array">
-                                                                                <item name="visible" xsi:type="boolean">false</item>
-                                                                                <item name="componentDisabled" xsi:type="boolean">true</item>
-                                                                            </item>
-                                                                            <item name="validation" xsi:type="array">
-                                                                                <item name="required-entry" xsi:type="boolean">false</item>
-                                                                            </item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
-                                                            </item>
-                                                        </item>
-                                                        <!-- Add Shipping Method Cards Component -->
-                                                        <item name="beforeMethods" xsi:type="array">
+                                                        <item name="shipping-method-cards" xsi:type="array">
                                                             <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards</item>
+                                                            <item name="sortOrder" xsi:type="string">1</item>
                                                             <item name="displayArea" xsi:type="string">before-shipping-method-form</item>
-                                                            <item name="sortOrder" xsi:type="string">-100</item>
                                                         </item>
                                                     </item>
                                                 </item>
                                             </item>
                                         </item>
-                                        <!-- Customize Amasty Gift Card for logged-in users with French translations -->
+                                        <!-- Payment Step -->
                                         <item name="billing-step" xsi:type="array">
                                             <item name="children" xsi:type="array">
                                                 <item name="payment" xsi:type="array">

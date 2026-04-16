@@ -105,7 +105,14 @@ define([
         loadCommunes(function (communesByWilaya) {
             // React to wilaya changes
             $wilayaSelect.on('change', function () {
-                filterCommunes($communeSelect, communesByWilaya, $(this).val());
+                var wilayaId = $(this).val();
+                filterCommunes($communeSelect, communesByWilaya, wilayaId);
+                
+                // Trigger event for shipping cards to listen
+                if (wilayaId) {
+                    $wilayaSelect.trigger('wilaya:changed', [wilayaId]);
+                    $(document).trigger('wilaya:changed', [wilayaId]);
+                }
             });
 
             // Apply initial filter if a wilaya is already selected

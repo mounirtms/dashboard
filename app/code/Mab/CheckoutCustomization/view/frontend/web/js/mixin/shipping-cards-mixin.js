@@ -2,7 +2,7 @@
  * Mab_CheckoutCustomization - Shipping Component Mixin
  * Integrates shipping method cards with default Magento checkout shipping
  * Responds to region/wilaya changes and updates shipping methods dynamically
- * OPTIMIZED: Debouncing, caching, requestAnimationFrame
+ * OPTIMIZED: Debouncing, caching, requestAnimationFrame, better wilaya handling
  */
 define([
     'jquery',
@@ -30,6 +30,7 @@ define([
         // Cache initialization state
         _initTimer: null,
         _regionTimer: null,
+        _initialLoadDone: false,
         
         /**
          * Initialize mixin
@@ -38,14 +39,19 @@ define([
             this._super();
             var self = this;
 
+            console.log('📋 Shipping cards mixin initializing...');
+
             // Watch for rates loading completion (debounced)
             var debouncedInit = debounce(function() {
-                self.initializeShippingCards();
-            }, 250);
+                if (!self._initialLoadDone || !window.shippingCardsInitialized) {
+                    self.initializeShippingCards();
+                    self._initialLoadDone = true;
+                }
+            }, 300);
             
             this.isLoading.subscribe(function (isLoading) {
+                console.log('📊 Loading state changed:', isLoading);
                 if (!isLoading && self.rates() && self.rates().length > 0) {
-                    // Use requestAnimationFrame for better performance
                     window.requestAnimationFrame(debouncedInit);
                 }
             });
@@ -55,8 +61,9 @@ define([
                 var handleRegionChange = debounce(function (address) {
                     if (address && address.regionId) {
                         console.log('🗺️ Region changed to:', address.regionId, address.region);
-                        // Reset initialization flag
+                        // Clear caches to force re-render
                         window.shippingCardsInitialized = false;
+                        window.shippingCardsLastRegion = address.regionId;
                         
                         // Wait for new rates, then re-render
                         clearTimeout(self._regionTimer);
@@ -67,9 +74,9 @@ define([
                                     self.initializeShippingCards();
                                 });
                             }
-                        }, 800); // Reduced from 1000ms
+                        }, 800);
                     }
-                }, 300); // Debounce region changes
+                }, 300);
                 
                 quote.shippingAddress.subscribe(handleRegionChange);
             }
@@ -85,10 +92,34 @@ define([
                             self.initializeShippingCards();
                         });
                     }
-                }, 150); // Debounce rate changes
+                }, 200);
                 
                 this.rates.subscribe(handleRatesChange);
             }
+
+            // Listen for wilaya:changed event from wilaya-commune-filter
+            $(document).on('wilaya:changed', function (e, wilayaId) {
+                console.log('📍 Wilaya changed to:', wilayaId);
+                window.shippingCardsInitialized = false;
+                window.shippingCardsLastRegion = null;
+                
+                // Wait for rates to update
+                clearTimeout(self._regionTimer);
+                self._regionTimer = setTimeout(function () {
+                    window.requestAnimationFrame(function() {
+                        self.initializeShippingCards();
+                    });
+                }, 1000);
+            });
+
+            // Fallback: Initial load after a delay
+            setTimeout(function () {
+                if (!self._initialLoadDone || !window.shippingCardsInitialized) {
+                    console.log('🔄 Fallback: Initializing shipping cards...');
+                    self.initializeShippingCards();
+                    self._initialLoadDone = true;
+                }
+            }, 1500);
 
             return this;
         },
@@ -97,12 +128,12 @@ define([
          * Initialize shipping method cards
          */
         initializeShippingCards: function () {
-            // Prevent duplicate initialization
-            if (window.shippingCardsInitialized) {
-                console.log('⏭️ Shipping cards already initialized, skipping');
-                return;
-            }
-
+            console.log('🎨 Attempting to initialize shipping cards...');
+            
+            // Always force re-render when called from mixin (wilaya change)
+            // This ensures fresh data is read from the updated table
+            $('.shipping-methods-cards-wrapper').remove();
+            
             console.log('🎨 Initializing shipping cards...');
             
             require(['shippingMethodCards'], function (ShippingCards) {
@@ -111,6 +142,8 @@ define([
                 if (typeof cardsComponent.replaceShippingStep === 'function') {
                     cardsComponent.replaceShippingStep();
                     window.shippingCardsInitialized = true;
+                    var currentRegion = quote.shippingAddress() ? quote.shippingAddress().regionId : null;
+                    window.shippingCardsLastRegion = currentRegion;
                     console.log('✅ Shipping cards initialized successfully');
                 } else {
                     console.error('❌ replaceShippingStep method not found');

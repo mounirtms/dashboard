@@ -60,14 +60,12 @@ define([
             return this;
         },
 
-        /**
+/**
          * Override removeDone to show French message
          */
         removeDone: function (code) {
             var message = $t('Le bon cadeau %1 a été retiré avec succès.').replace('%1', code);
             this._super(code);
         }
-    });
-});
     });
 });

@@ -1,354 +1,146 @@
 /**
- * Mab_CheckoutCustomization - Shipping Method Cards Display
- * Replaces Magento shipping step with custom card layout
- * 
- * Yalidine method IDs (from mageplaza_tablerate_method): 2, 24, 29
- * All other method IDs are Techno store pickup (Retrait en magasin)
+ * Shipping Method Cards Component
+ * Displays Mageplaza shipping options as cards for Batna region
  */
 define([
     'jquery',
     'ko',
     'uiComponent',
     'Magento_Checkout/js/model/quote',
+    'Magento_Checkout/js/model/shipping-service',
     'Magento_Checkout/js/action/select-shipping-method',
-    'mage/translate'
-], function ($, ko, Component, quote, selectShippingMethodAction, $t) {
+    'Magento_Checkout/js/checkout-data'
+], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, checkoutData) {
     'use strict';
-
-    // Exact Yalidine method IDs from mageplaza_tablerate_method database table
-    var YALIDINE_IDS = [2, 24, 29];
 
     return Component.extend({
         defaults: {
-            template: 'Mab_CheckoutCustomization/shipping-method-cards',
-            // Cache DOM elements
-            $stepContent: null,
-            $shippingTable: null,
-            $cardsWrapper: null,
-            // Debounce timers
-            renderTimer: null,
-            updateTimer: null
+            template: 'Mab_CheckoutCustomization/shipping-method-cards'
         },
+
+        /**
+         * Shipping methods data
+         */
+        shippingMethods: [
+            {
+                method_code: 'mptablerate_17',
+                carrier_code: 'mptablerate',
+                method_id: '17',
+                method_title: 'Retrait Techno Batna',
+                amount: 0,
+                price_formatted: 'Gratuit',
+                carrier_logo: 'https://dev.technostationery.com/media/mageplaza/tablerate/techno.png',
+                delivery_time: 'Retrait immédiat',
+                is_free: true,
+                description: 'Retirez votre commande à notre magasin de Batna'
+            },
+            {
+                method_code: 'mptablerate_24',
+                carrier_code: 'mptablerate',
+                method_id: '24',
+                method_title: 'Retrait en agence',
+                amount: 400,
+                price_formatted: '400 DA',
+                carrier_logo: 'https://dev.technostationery.com/media/mageplaza/tablerate/yalidine-logo.jpg',
+                delivery_time: '2-3 jours',
+                is_free: false,
+                description: 'Retrait à l\'agence Yalidine la plus proche'
+            },
+            {
+                method_code: 'mptablerate_2',
+                carrier_code: 'mptablerate',
+                method_id: '2',
+                method_title: 'Livraison à domicile',
+                amount: 500,
+                price_formatted: '500 DA',
+                carrier_logo: 'https://dev.technostationery.com/media/mageplaza/tablerate/yalidine-logo.jpg',
+                delivery_time: '3-5 jours',
+                is_free: false,
+                description: 'Livraison directement à votre domicile'
+            }
+        ],
 
         /**
          * Initialize component
          */
         initialize: function () {
             this._super();
-            var self = this;
-
-            // Watch for shipping methods changes with debounce
+            this.selectedMethod = ko.observable(null);
+            
+            // Subscribe to quote shipping method changes
             quote.shippingMethod.subscribe(function (method) {
                 if (method) {
-                    clearTimeout(self.updateTimer);
-                    self.updateTimer = setTimeout(function() {
-                        self.updateSelectedCard(method.carrier_code + '_' + method.method_code);
-                    }, 100); // Debounce updates
+                    this.selectedMethod(method.carrier_code + '_' + method.method_code);
                 }
-            });
+            }, this);
 
-            // Replace entire shipping step with our cards after page load
-            // Use requestAnimationFrame for better performance
-            setTimeout(function () {
-                window.requestAnimationFrame(function() {
-                    self.replaceShippingStep();
-                });
-            }, 800);
+            // Set initial selection
+            var currentMethod = quote.shippingMethod();
+            if (currentMethod) {
+                this.selectedMethod(currentMethod.carrier_code + '_' + currentMethod.method_code);
+            }
 
             return this;
         },
 
         /**
-         * Get available shipping methods
+         * Get shipping methods
+         * @returns {Array}
          */
         getShippingMethods: function () {
-            return ko.computed(function () {
-                var methods = quote.shippingMethod() ? quote.shippingMethod().available_rates || [] : [];
-                return methods;
-            });
+            return this.shippingMethods;
         },
 
         /**
-         * Extract method ID from code (e.g., "mptablerate_24" => 24)
+         * Select shipping method
+         * @param {Object} method
          */
-        extractMethodId: function (methodCode) {
-            var parts = methodCode.split('_');
-            if (parts.length > 1) {
-                return parseInt(parts[parts.length - 1], 10);
-            }
-            return 0;
-        },
-
-        /**
-         * Check if method ID is a Yalidine method
-         */
-        isYalidine: function (methodId) {
-            return YALIDINE_IDS.indexOf(methodId) !== -1;
-        },
-
-        /**
-         * Replace entire shipping step with custom cards
-         */
-        replaceShippingStep: function () {
-            var self = this;
-            var $stepContent = $('#checkout-step-shipping_method');
-
-            if ($stepContent.length === 0) {
-                console.log('⏳ Waiting for shipping step container...');
-                setTimeout(function () {
-                    self.replaceShippingStep();
-                }, 500);
-                return;
-            }
-
-            // Find the shipping method form/table
-            var $shippingForm = $stepContent.find('#co-shipping-method-form');
-            var $shippingTable = $stepContent.find('table.table-checkout-shipping-method');
-
-            if ($shippingTable.length === 0 || $shippingForm.length === 0) {
-                console.log('⏳ Waiting for shipping table...');
-                // Remove render flag to allow retry
-                $stepContent.data('cards-rendered', false);
-                setTimeout(function () {
-                    self.replaceShippingStep();
-                }, 500);
-                return;
-            }
-
-            // Prevent duplicate rendering (check if already done)
-            if ($stepContent.data('cards-rendered') && $('.shipping-methods-cards-wrapper').length > 0) {
-                console.log('✅ Cards already rendered, updating selection only');
-                return;
-            }
-
-            console.log('🎨 Building shipping method cards...');
+        selectMethod: function (method) {
+            console.log('Selecting shipping method:', method);
             
-            // Mark as rendered
-            $stepContent.data('cards-rendered', true);
-
-            // Hide the entire step container
-            $stepContent.hide();
-
-            // Build cards HTML
-            var cardsHtml = this.buildCardsHtml($shippingTable);
-
-            if (!cardsHtml) {
-                console.warn('⚠️ No shipping methods found in table');
-                return;
-            }
-
-            // Remove any existing cards wrapper to prevent duplicates
-            $('.shipping-methods-cards-wrapper').remove();
-
-            // Insert our cards wrapper BEFORE the hidden step
-            var $cardsWrapper = $('<div class="shipping-methods-cards-wrapper">' +
-                '<div class="cards-header">' +
-                    '<h3 class="section-title">🚚 Modes de livraison</h3>' +
-                    '<p class="section-subtitle">Choisissez votre option de livraison préférée</p>' +
-                '</div>' +
-                '<div id="shipping-method-cards-container" class="shipping-cards-grid">' + cardsHtml + '</div>' +
-                '<div class="shipping-info-notice">' +
-                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="info-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>' +
-                    '<span>Les délais de livraison sont des estimations et peuvent varier selon votre wilaya</span>' +
-                '</div>' +
-            '</div>');
-
-            $stepContent.before($cardsWrapper);
-
-            // Bind click handlers
-            this.bindCardHandlers();
+            this.selectedMethod(method.method_code);
             
-            console.log('✅ Shipping cards rendered successfully');
+            // Create method object for Magento
+            var shippingMethod = {
+                carrier_code: method.carrier_code,
+                method_code: method.method_id,
+                carrier_title: method.method_title,
+                method_title: method.method_title,
+                amount: method.amount,
+                base_amount: method.amount,
+                available: true,
+                error_message: '',
+                price_excl_tax: method.amount,
+                price_incl_tax: method.amount
+            };
+
+            selectShippingMethodAction(shippingMethod);
+            checkoutData.setSelectedShippingRate(method.method_code);
         },
 
         /**
-         * Build cards HTML from table data
+         * Check if method is selected
+         * @param {Object} method
+         * @returns {Boolean}
          */
-        buildCardsHtml: function ($shippingTable) {
-            var self = this;
-            var html = '';
-
-            $shippingTable.find('tbody tr.row').each(function () {
-                var $row = $(this);
-                var $radio = $row.find('input[type="radio"]');
-
-                if (!$radio.length) return;
-
-                var methodCode = $radio.val();
-                var methodId = self.extractMethodId(methodCode);
-
-                // Extract method title
-                var methodName = $row.find('.col-method').first().text().trim();
-                if (!methodName) {
-                    methodName = $row.find('td').eq(2).text().trim();
-                }
-                if (!methodName) {
-                    methodName = 'Method';
-                }
-
-                // Extract price
-                var priceText = '';
-                var $priceCol = $row.find('.col-price .price').last();
-                if ($priceCol.length) {
-                    priceText = $priceCol.text().trim();
-                }
-                if (!priceText) {
-                    priceText = $row.find('td').eq(1).text().trim();
-                }
-
-                var isFree = !priceText || priceText.indexOf('0,00') === 0 || priceText.indexOf('0.00') === 0 || priceText.toLowerCase().indexOf('gratuit') >= 0 || priceText.toLowerCase().indexOf('free') >= 0;
-                var formattedPrice = isFree ? '' : priceText;
-                var carrier = self.identifyCarrier(methodId, methodName);
-                var carrierLogo = self.getCarrierLogo(carrier);
-                var deliveryTime = self.estimateDeliveryTime(carrier, methodId, methodName);
-                var isChecked = $radio.is(':checked');
-
-                // Build improved card HTML with better structure
-                html += '<div class="shipping-card ' + (isFree ? 'free-shipping ' : '') + (isChecked ? 'selected' : '') + '" data-method-code="' + methodCode + '">' +
-                    '<input type="radio" name="shipping-method-card" id="card-' + methodCode + '" value="' + methodCode + '" ' + (isChecked ? 'checked' : '') + ' class="shipping-radio" />' +
-                    
-                    '<!-- Check Indicator -->' +
-                    '<div class="check-indicator">' +
-                        '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color: #ffffff;">' +
-                            '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>' +
-                        '</svg>' +
-                    '</div>' +
-                    
-                    '<!-- Card Header: Logo + Method Name -->' +
-                    '<div class="card-header">' +
-                        '<div class="carrier-logo">' + carrierLogo + '</div>' +
-                        '<div class="method-info">' +
-                            '<h4 class="method-name">' + methodName + '</h4>' +
-                            '<div class="delivery-time">' +
-                                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="clock-icon">' +
-                                    '<circle cx="12" cy="12" r="10"/>' +
-                                    '<polyline points="12 6 12 12 16 14"/>' +
-                                '</svg>' +
-                                '<span>' + deliveryTime + '</span>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    
-                    '<!-- Card Footer: Price -->' +
-                    '<div class="card-footer">' +
-                        (isFree ? 
-                            '<span class="free-badge">🎁 Gratuit</span>' : 
-                            '<span class="price">' + formattedPrice + '</span>'
-                        ) +
-                    '</div>' +
-                '</div>';
-            });
-
-            return html;
+        isSelected: function (method) {
+            return this.selectedMethod() === method.method_code;
         },
 
         /**
-         * Bind click handlers to cards (with event delegation)
+         * Get card CSS classes
+         * @param {Object} method
+         * @returns {String}
          */
-        bindCardHandlers: function () {
-            var self = this;
-            
-            // Use event delegation for better performance
-            var $container = $('#shipping-method-cards-container');
-            
-            // Remove previous handlers to prevent duplicates
-            $container.off('click', '.shipping-card');
-            
-            $container.on('click', '.shipping-card', function (e) {
-                var $card = $(this);
-                var methodCode = $card.data('method-code');
-                
-                // Early return if already selected
-                if ($card.hasClass('selected')) {
-                    return;
-                }
-                
-                var $radio = $card.find('.shipping-radio');
-
-                if (!$(e.target).is('input[type="radio"]')) {
-                    $radio.prop('checked', true);
-                }
-
-                // Cache original radio selector
-                if (!self.$shippingTable) {
-                    self.$shippingTable = $('table.table-checkout-shipping-method');
-                }
-                
-                var $originalRadio = self.$shippingTable.find('input[value="' + methodCode + '"]');
-                if ($originalRadio.length) {
-                    $originalRadio.prop('checked', true).trigger('click');
-                }
-
-                self.selectCard($card);
-            });
-        },
-
-        /**
-         * Select a shipping card
-         */
-        selectCard: function ($card) {
-            $('.shipping-card').removeClass('selected');
-            $card.addClass('selected');
-        },
-
-        /**
-         * Update selected card when method changes (optimized)
-         */
-        updateSelectedCard: function (methodCode) {
-            // Cache cards container
-            if (!this.$cardsWrapper) {
-                this.$cardsWrapper = $('.shipping-methods-cards-wrapper');
+        getCardClasses: function (method) {
+            var classes = 'shipping-card';
+            if (this.isSelected(method)) {
+                classes += ' selected';
             }
-            
-            // Use find() on cached container instead of global selector
-            var $cards = this.$cardsWrapper.find('.shipping-card');
-            $cards.removeClass('selected');
-            $cards.filter('[data-method-code="' + methodCode + '"]').addClass('selected');
-        },
-
-        /**
-         * Get carrier logo HTML with improved fallback
-         */
-        getCarrierLogo: function (carrier) {
-            var baseUrl = window.BASE_URL || '';
-
-            if (carrier === 'yalidine') {
-                // Yalidine logo with multiple fallbacks
-                return '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/yalidine.png" ' +
-                       'onerror="this.onerror=null; ' +
-                       'this.src=\'' + baseUrl + 'pub/media/mageplaza/tablerate/y/a/yalidine-logo.jpg\'; ' +
-                       'if(this.error){this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 50%22%3E%3Ctext x=%2210%22 y=%2230%22 font-family=%22Arial%22 font-size=%2218%22 fill=%22%234caf50%22%3EYalidine%3C/text%3E%3C/svg%3E\'}" ' +
-                       'alt="Yalidine" class="carrier-img" />';
+            if (method.is_free) {
+                classes += ' free-shipping';
             }
-
-            // Techno store pickup with SVG fallback
-            return '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/techno.png" ' +
-                   'onerror="this.onerror=null; ' +
-                   'this.src=\'' + baseUrl + 'pub/media/logo/default/logo_techno.png\'; ' +
-                   'if(this.error){this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 50%22%3E%3Ctext x=%2210%22 y=%2230%22 font-family=%22Arial%22 font-size=%2216%22 fill=%22%232e7d32%22%3ETechno%3C/text%3E%3C/svg%3E\'}" ' +
-                   'alt="Techno" class="carrier-img" />';
-        },
-
-        /**
-         * Identify carrier using exact method IDs
-         */
-        identifyCarrier: function (methodId) {
-            if (this.isYalidine(methodId)) {
-                return 'yalidine';
-            }
-            return 'store-pickup';
-        },
-
-        /**
-         * Estimate delivery time - French only
-         */
-        estimateDeliveryTime: function (carrier, methodId) {
-            if (carrier === 'yalidine') {
-                if (methodId === 24) return 'Retrait en agence - 2-3 jours';
-                if (methodId === 29) return 'Livraison à domicile gratuite - 3-5 jours';
-                return 'Livraison à domicile - 3-5 jours';
-            }
-            return 'Retrait en magasin - Disponible immédiatement';
+            return classes;
         }
     });
 });

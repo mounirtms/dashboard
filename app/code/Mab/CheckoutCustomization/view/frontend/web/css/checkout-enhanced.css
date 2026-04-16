@@ -848,9 +848,26 @@
         font-size: 18px;
     }
 }
-    .shipping-cards-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
+
+/* ========================================
+   FORCED VISIBILITY - Ensure cards render
+   ======================================== */
+.shipping-methods-cards-wrapper {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+}
+
+.shipping-cards-grid {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: grid !important;
+}
+
+.shipping-card {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
 }
 
 /* Hide original shipping table */

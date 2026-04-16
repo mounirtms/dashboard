@@ -56,29 +56,9 @@ define([
 
             if ((!$countrySelect.length || $countrySelect.val() === 'DZ') && wilayaId) {
                 $(this).trigger('wilaya:changed', [wilayaId]);
+                $(document).trigger('wilaya:changed', [wilayaId]);
             }
         });
-    }
-
-    /**
-     * Add wilaya-highlight class to region field when DZ is selected
-     */
-    function setupWilayaHighlight() {
-        $(document).on('change', 'select[name="country_id"]', function () {
-            var $regionField = $('div[name="shippingAddress.region_id"]');
-            if ($(this).val() === 'DZ') {
-                $regionField.addClass('wilaya-highlight');
-            } else {
-                $regionField.removeClass('wilaya-highlight');
-            }
-        });
-
-        // Initial highlight
-        setTimeout(function () {
-            if ($('select[name="country_id"]').val() === 'DZ') {
-                $('div[name="shippingAddress.region_id"]').addClass('wilaya-highlight');
-            }
-        }, 1500);
     }
 
     return function () {
@@ -89,7 +69,6 @@ define([
 
         $(document).ready(function () {
             bindWilayaChangeEvent();
-            setupWilayaHighlight();
 
             // Fallback: force region visible via DOM if KO didn't work
             setTimeout(function () {
