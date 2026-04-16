@@ -1,21 +1,30 @@
+/**
+ * RequireJS configuration for Mab_CheckoutCustomization enhancements
+ */
 var config = {
-    map: {
-        '*': {
-            'wilayaCommuneFilter': 'Mab_CheckoutCustomization/js/wilaya-commune-filter',
-            'checkoutRegionFix': 'Mab_CheckoutCustomization/js/checkout-region-fix',
-            'checkoutDefaultRegion': 'Mab_CheckoutCustomization/js/checkout-default-region',
-            'shippingMethodCards': 'Mab_CheckoutCustomization/js/view/shipping-method-cards',
-            'giftCardCart': 'Mab_CheckoutCustomization/js/view/gift-card-cart'
-        }
-    },
     config: {
         mixins: {
-            'Magento_Directory/js/region-updater': {
-                'Mab_CheckoutCustomization/js/region-updater-mixin': true
+            'Magento_Ui/js/form/element/abstract': {
+                'Mab_CheckoutCustomization/js/mixin/validation-enhanced-mixin': true
             },
-            'Magento_Checkout/js/view/shipping': {
-                'Mab_CheckoutCustomization/js/mixin/shipping-cards-mixin': true
+            'Magento_Checkout/js/view/form/element/email': {
+                'Mab_CheckoutCustomization/js/mixin/validation-enhanced-mixin': true
             }
+        }
+    },
+    map: {
+        '*': {
+            'checkoutAnalytics': 'Mab_CheckoutCustomization/js/checkout-analytics',
+            'imageLoader': 'Mab_CheckoutCustomization/js/image-loader',
+            'shippingMethodCardsEnhanced': 'Mab_CheckoutCustomization/js/view/shipping-method-cards-enhanced'
+        }
+    },
+    shim: {
+        'Mab_CheckoutCustomization/js/checkout-analytics': {
+            deps: ['jquery', 'Magento_Checkout/js/model/quote']
+        },
+        'Mab_CheckoutCustomization/js/image-loader': {
+            deps: ['jquery']
         }
     }
 };
