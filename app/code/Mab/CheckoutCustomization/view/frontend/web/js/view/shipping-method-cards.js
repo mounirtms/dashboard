@@ -203,25 +203,38 @@ define([
                 var deliveryTime = self.estimateDeliveryTime(carrier, methodId, methodName);
                 var isChecked = $radio.is(':checked');
 
-                html += '<div class="shipping-card ' + (isFree ? 'free-shipping' : '') + (isChecked ? ' selected' : '') + '" data-method-code="' + methodCode + '">' +
+                // Build improved card HTML with better structure
+                html += '<div class="shipping-card ' + (isFree ? 'free-shipping ' : '') + (isChecked ? 'selected' : '') + '" data-method-code="' + methodCode + '">' +
                     '<input type="radio" name="shipping-method-card" id="card-' + methodCode + '" value="' + methodCode + '" ' + (isChecked ? 'checked' : '') + ' class="shipping-radio" />' +
-                    '<div class="card-content">' +
-                        '<div class="card-left">' +
-                            '<div class="carrier-logo">' + carrierLogo + '</div>' +
-                            '<div class="method-info">' +
-                                '<h4 class="method-name">' + methodName + '</h4>' +
-                                '<div class="delivery-time">' +
-                                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="clock-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
-                                    '<span>' + deliveryTime + '</span>' +
-                                '</div>' +
+                    
+                    '<!-- Check Indicator -->' +
+                    '<div class="check-indicator">' +
+                        '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color: #ffffff;">' +
+                            '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>' +
+                        '</svg>' +
+                    '</div>' +
+                    
+                    '<!-- Card Header: Logo + Method Name -->' +
+                    '<div class="card-header">' +
+                        '<div class="carrier-logo">' + carrierLogo + '</div>' +
+                        '<div class="method-info">' +
+                            '<h4 class="method-name">' + methodName + '</h4>' +
+                            '<div class="delivery-time">' +
+                                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="clock-icon">' +
+                                    '<circle cx="12" cy="12" r="10"/>' +
+                                    '<polyline points="12 6 12 12 16 14"/>' +
+                                '</svg>' +
+                                '<span>' + deliveryTime + '</span>' +
                             '</div>' +
                         '</div>' +
-                        '<div class="card-right">' +
-                            (isFree ? '<span class="free-badge">🎁 Gratuit</span>' : '<span class="price">' + formattedPrice + '</span>') +
-                        '</div>' +
                     '</div>' +
-                    '<div class="check-indicator">' +
-                        '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' +
+                    
+                    '<!-- Card Footer: Price -->' +
+                    '<div class="card-footer">' +
+                        (isFree ? 
+                            '<span class="free-badge">🎁 Gratuit</span>' : 
+                            '<span class="price">' + formattedPrice + '</span>'
+                        ) +
                     '</div>' +
                 '</div>';
             });
@@ -294,21 +307,25 @@ define([
         },
 
         /**
-         * Get carrier logo HTML
+         * Get carrier logo HTML with improved fallback
          */
         getCarrierLogo: function (carrier) {
             var baseUrl = window.BASE_URL || '';
 
             if (carrier === 'yalidine') {
-                // Try primary yalidine logo, fallback to JPG
+                // Yalidine logo with multiple fallbacks
                 return '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/yalidine.png" ' +
-                       'onerror="this.onerror=null; this.src=\'' + baseUrl + 'pub/media/mageplaza/tablerate/y/a/yalidine-logo.jpg\';" ' +
+                       'onerror="this.onerror=null; ' +
+                       'this.src=\'' + baseUrl + 'pub/media/mageplaza/tablerate/y/a/yalidine-logo.jpg\'; ' +
+                       'if(this.error){this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 50%22%3E%3Ctext x=%2210%22 y=%2230%22 font-family=%22Arial%22 font-size=%2218%22 fill=%22%234caf50%22%3EYalidine%3C/text%3E%3C/svg%3E\'}" ' +
                        'alt="Yalidine" class="carrier-img" />';
             }
 
-            // Techno store pickup
+            // Techno store pickup with SVG fallback
             return '<img src="' + baseUrl + 'pub/media/mageplaza/tablerate/techno.png" ' +
-                   'onerror="this.onerror=null; this.src=\'' + baseUrl + 'pub/media/logo/default/logo_techno.png\';" ' +
+                   'onerror="this.onerror=null; ' +
+                   'this.src=\'' + baseUrl + 'pub/media/logo/default/logo_techno.png\'; ' +
+                   'if(this.error){this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 50%22%3E%3Ctext x=%2210%22 y=%2230%22 font-family=%22Arial%22 font-size=%2216%22 fill=%22%232e7d32%22%3ETechno%3C/text%3E%3C/svg%3E\'}" ' +
                    'alt="Techno" class="carrier-img" />';
         },
 
