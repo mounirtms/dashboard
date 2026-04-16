@@ -25,7 +25,7 @@
                                                 <item name="shippingAddress" xsi:type="array">
                                                     <item name="children" xsi:type="array">
                                                         <item name="shipping-method-cards" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards</item>
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards-dynamic</item>
                                                             <item name="sortOrder" xsi:type="string">1</item>
                                                             <item name="displayArea" xsi:type="string">before-shipping-method-form</item>
                                                         </item>
