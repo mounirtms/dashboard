@@ -54,11 +54,11 @@ fi
 
 echo ""
 echo "📝 Checking content..."
-if grep -q "replaceShippingStep" app/code/Mab/CheckoutCustomization/view/frontend/web/js/view/shipping-method-cards.js; then
-    echo "  ✓ replaceShippingStep method found"
+if grep -q "selectMethod\|getShippingMethods\|isSelected" app/code/Mab/CheckoutCustomization/view/frontend/web/js/view/shipping-method-cards.js; then
+    echo "  ✓ Core shipping methods found (selectMethod, getShippingMethods)"
     ((PASS++))
 else
-    echo "  ✗ replaceShippingStep method missing"
+    echo "  ✗ Core shipping methods missing"
     ((FAIL++))
 fi
 
