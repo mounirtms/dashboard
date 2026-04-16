@@ -11,8 +11,9 @@ define([
     'Magento_Checkout/js/model/shipping-service',
     'Magento_Checkout/js/action/select-shipping-method',
     'Magento_Checkout/js/checkout-data',
-    'mage/translate'
-], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, checkoutData, $t) {
+    'mage/translate',
+    'Mab_CheckoutCustomization/js/performance-optimizer-advanced'
+], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, checkoutData, $t, PerformanceOptimizer) {
     'use strict';
 
     return Component.extend({
@@ -130,6 +131,18 @@ define([
          */
         processShippingRates: function (rates) {
             var self = this;
+            var currentRegion = this.currentRegion();
+            
+            // Check cache first
+            var cached = PerformanceOptimizer.getCachedRates(currentRegion);
+            if (cached) {
+                console.log('⚡ [Shipping Cards] Using cached rates for:', currentRegion);
+                self.shippingMethods(cached);
+                return;
+            }
+            
+            // Measure performance
+            var startTime = performance.now();
             var methods = [];
             
             console.log('🔄 [Shipping Cards] Processing', rates.length, 'rates...');
@@ -163,6 +176,14 @@ define([
             });
             
             self.shippingMethods(methods);
+            
+            // Cache the processed methods
+            if (currentRegion) {
+                PerformanceOptimizer.cacheRates(currentRegion, methods);
+            }
+            
+            var duration = performance.now() - startTime;
+            console.log('⏱️ [Shipping Cards] Processing took:', duration.toFixed(2) + 'ms');
             console.log('✅ [Shipping Cards] Total methods set:', methods.length);
             
             // Log method details
