@@ -1,10 +1,8 @@
 /**
  * Mab_CheckoutCustomization - Enhanced Checkout Styles
  * Modern, fast, maintainable styles for checkout page
+ * Note: Form fields styles are in form-fields-unified.css (loaded separately)
  */
-
-/* Import Unified Form Field Design System */
-@import url('form-fields-unified.css');
 
 /* ========================================
    1. CHECKOUT BUTTONS - Enhanced styles
