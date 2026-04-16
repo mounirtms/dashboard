@@ -1,7 +1,7 @@
 <!-- ko if: isVisible() -->
 <div class="mab-giftcard-container" data-bind="css: {'customer-logged-in': isCustomerLoggedIn()}">
     <div class="mab-giftcard-header">
-        <h3 class="mab-giftcard-title">🎁 Carte Cadeau</h3>
+        <h3 class="mab-giftcard-title">🎁 Techno Bon Cadeau</h3>
     </div>
 
     <!-- ko foreach: getRegion('messages') -->
@@ -18,7 +18,8 @@
                     class="mab-giftcard-remove" 
                     data-bind="text: $parent.removeText || $t('Retirer'), 
                                click: $parent.removeSelected.bind($parent, $data), 
-                               attr: {title: $parent.removeText || $t('Retirer')}"></button>
+                               attr: {title: $parent.removeText || $t('Retirer ce bon cadeau'), 'aria-label': $parent.removeText || $t('Retirer ce bon cadeau')}">
+            </button>
         </div>
         <!-- /ko -->
         <!-- /ko -->
@@ -30,25 +31,33 @@
             <div class="mab-giftcard-input-group">
                 <div class="mab-giftcard-datalist-wrapper" data-bind="afterRender: setContainer.bind($data, $element), css: {'-active': isShowDatalist}">
                     <label class="mab-giftcard-label">
-                        <span class="mab-giftcard-label-text">Code de la carte cadeau</span>
+                        <span class="mab-giftcard-label-text">Code du bon cadeau</span>
                         <input type="text" 
                                class="mab-giftcard-input"
                                data-bind="
                                    click: onDatalistClick.bind($data, $element), 
                                    event: {keyup: apply.bind($data)}, 
                                    value: cardCode, 
-                                   attr: {placeholder: placeholderText || $t('Ex: XXXX-XXXX-XXXX')}"
+                                   attr: {
+                                       placeholder: placeholderText || $t('Ex: TECHNO-XXXX-XXXX'),
+                                       'aria-label': $t('Entrez votre code bon cadeau'),
+                                       'aria-describedby': 'giftcard-help'
+                                   }"
                                maxlength="50">
                     </label>
                     
                     <!-- Datalist dropdown -->
-                    <ul class="mab-giftcard-datalist" data-bind="visible: isShowDatalist() && (options().length > 0 || datalistMessage())">
+                    <ul class="mab-giftcard-datalist" 
+                        data-bind="visible: isShowDatalist() && (options().length > 0 || datalistMessage())"
+                        role="listbox"
+                        aria-label="Codes bons cadeaux disponibles">
                         <!-- ko foreach: options  -->
                         <li class="mab-giftcard-datalist-item" 
+                            role="option"
                             data-bind="text: value, click: $parent.onOptionClick.bind($parent, value)"></li>
                         <!-- /ko -->
                         <!-- ko if: datalistMessage() -->
-                        <li class="mab-giftcard-datalist-message" data-bind="text: datalistMessage"></li>
+                        <li class="mab-giftcard-datalist-message" role="status" data-bind="text: datalistMessage"></li>
                         <!-- /ko -->
                     </ul>
                 </div>
@@ -56,211 +65,28 @@
                 <div class="mab-giftcard-actions">
                     <button type="button" 
                             class="mab-giftcard-btn mab-giftcard-btn-primary" 
-                            data-bind="click: apply.bind($data), 
-                                       text: applyText || $t('Appliquer'),
-                                       attr: {value: applyText || $t('Appliquer')}">
+                            data-bind="
+                                click: apply.bind($data), 
+                                text: applyText || $t('Appliquer le code'),
+                                attr: {
+                                    value: applyText || $t('Appliquer le code'),
+                                    'aria-label': $t('Appliquer le code bon cadeau')
+                                }">
                     </button>
                     
                     <button type="button" 
                             class="mab-giftcard-btn mab-giftcard-btn-secondary" 
-                            data-bind="click: check.bind($data), 
-                                       text: checkText || $t('Vérifier le statut')">
+                            data-bind="
+                                click: check.bind($data), 
+                                text: checkText || $t('Vérifier le solde'),
+                                attr: {'aria-label': $t('Vérifier le solde du bon cadeau')}">
                     </button>
                 </div>
             </div>
+            <p id="giftcard-help" style="font-size: 12px; color: #666; margin: 8px 0 0 0;">
+                Entrez votre code bon cadeau Techno pour l'appliquer à votre commande.
+            </p>
         </form>
     </div>
 </div>
-
-<style>
-.mab-giftcard-container {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-.mab-giftcard-header {
-    border-bottom: 1px solid #e5e5e5;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-}
-
-.mab-giftcard-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-}
-
-/* Applied gift cards */
-.mab-giftcard-applied-list {
-    margin-bottom: 16px;
-}
-
-.mab-giftcard-applied-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f8f8f8;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-}
-
-.mab-giftcard-code {
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    letter-spacing: 1px;
-}
-
-.mab-giftcard-remove {
-    background: transparent;
-    border: 1px solid #d32f2f;
-    color: #d32f2f;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.mab-giftcard-remove:hover {
-    background: #d32f2f;
-    color: #fff;
-}
-
-/* Form */
-.mab-giftcard-form-container {
-    margin-top: 16px;
-}
-
-.mab-giftcard-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.mab-giftcard-datalist-wrapper {
-    position: relative;
-    flex: 1;
-}
-
-.mab-giftcard-label {
-    display: block;
-}
-
-.mab-giftcard-label-text {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #555;
-    margin-bottom: 6px;
-}
-
-.mab-giftcard-input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 1px;
-    transition: border-color 0.2s;
-}
-
-.mab-giftcard-input:focus {
-    outline: none;
-    border-color: #4caf50;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-}
-
-.mab-giftcard-datalist {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 100;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.mab-giftcard-datalist-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background 0.2s;
-}
-
-.mab-giftcard-datalist-item:hover {
-    background: #f5f5f5;
-}
-
-.mab-giftcard-datalist-message {
-    padding: 12px;
-    color: #666;
-    font-size: 13px;
-    text-align: center;
-}
-
-/* Action buttons */
-.mab-giftcard-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.mab-giftcard-btn {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.mab-giftcard-btn-primary {
-    background: #4caf50;
-    color: #fff;
-}
-
-.mab-giftcard-btn-primary:hover {
-    background: #45a049;
-}
-
-.mab-giftcard-btn-secondary {
-    background: #fff;
-    color: #555;
-    border: 1px solid #ccc;
-}
-
-.mab-giftcard-btn-secondary:hover {
-    background: #f5f5f5;
-    border-color: #999;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .mab-giftcard-actions {
-        flex-direction: column;
-    }
-    
-    .mab-giftcard-btn {
-        width: 100%;
-    }
-}
-</style>
 <!-- /ko -->

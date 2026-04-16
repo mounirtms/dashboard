@@ -8,6 +8,8 @@
         <css src="Mab_CheckoutCustomization::css/form-fields-unified.css"/>
         <!-- Load enhanced shipping cards CSS -->
         <css src="Mab_CheckoutCustomization::css/shipping-cards-enhanced.css"/>
+        <!-- Load gift card minimal CSS -->
+        <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
         <!-- Load checkout enhanced CSS -->
         <css src="Mab_CheckoutCustomization::css/checkout-enhanced.css"/>
     </head>

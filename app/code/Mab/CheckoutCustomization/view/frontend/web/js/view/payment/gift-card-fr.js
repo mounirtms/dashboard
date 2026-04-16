@@ -12,16 +12,16 @@ define([
     return Component.extend({
         defaults: {
             template: 'Mab_CheckoutCustomization/payment/gift-card-fr',
-            emptyFieldText: $t('Entrez le code de la carte cadeau'),
-            wrongCodeText: $t('Code de carte cadeau incorrect.'),
-            noCodesText: $t('Vous n\'avez aucun code de carte cadeau actif ajouté à votre compte client.'),
-            guestCodesText: $t('Veuillez vous connecter ou vous inscrire en tant que client pour ajouter des codes de carte cadeau à votre compte client et les afficher ici.'),
-            successText: $t('Carte cadeau appliquée avec succès'),
+            emptyFieldText: $t('Entrez votre code bon cadeau'),
+            wrongCodeText: $t('Code bon cadeau incorrect. Veuillez vérifier et réessayer.'),
+            noCodesText: $t('Vous n\'avez aucun bon cadeau actif dans votre compte.'),
+            guestCodesText: $t('Veuillez vous connecter pour utiliser vos bons cadeaux.'),
+            successText: $t('✅ Bon cadeau appliqué avec succès !'),
             removeText: $t('Retirer'),
-            applyText: $t('Appliquer'),
-            checkText: $t('Vérifier le statut'),
-            placeholderText: $t('Ex: XXXX-XXXX-XXXX'),
-            titleText: $t('🎁 Carte Cadeau'),
+            applyText: $t('Appliquer le code'),
+            checkText: $t('Vérifier le solde'),
+            placeholderText: $t('Ex: TECHNO-XXXX-XXXX'),
+            titleText: $t('🎁 Techno Bon Cadeau'),
             addCodeText: $t('Ajouter un code'),
             requireLogin: true
         },
@@ -52,10 +52,10 @@ define([
             this._super();
             
             // Update messages to French
-            this.emptyFieldText = $t('Entrez le code de la carte cadeau');
-            this.wrongCodeText = $t('Code de carte cadeau incorrect.');
-            this.noCodesText = $t('Vous n\'avez aucun code de carte cadeau actif ajouté à votre compte client.');
-            this.guestCodesText = $t('Veuillez vous connecter ou vous inscrire en tant que client pour ajouter des codes de carte cadeau à votre compte client et les afficher ici.');
+            this.emptyFieldText = $t('Entrez votre code bon cadeau');
+            this.wrongCodeText = $t('Code bon cadeau incorrect. Veuillez vérifier et réessayer.');
+            this.noCodesText = $t('Vous n\'avez aucun bon cadeau actif dans votre compte.');
+            this.guestCodesText = $t('Veuillez vous connecter pour utiliser vos bons cadeaux.');
             
             return this;
         },
@@ -64,8 +64,10 @@ define([
          * Override removeDone to show French message
          */
         removeDone: function (code) {
-            var message = $t('La carte cadeau %1 a été retirée.').replace('%1', code);
+            var message = $t('Le bon cadeau %1 a été retiré avec succès.').replace('%1', code);
             this._super(code);
         }
+    });
+});
     });
 });
