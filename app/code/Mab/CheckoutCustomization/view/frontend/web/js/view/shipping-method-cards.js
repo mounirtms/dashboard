@@ -31,7 +31,7 @@ define([
             // Observable arrays and properties
             self.shippingMethods = ko.observableArray([]);
             self.selectedMethod = ko.observable(null);
-            self.isVisible = ko.observable(false);
+            self.isVisible = ko.observable(true); // Always visible
             self.currentRegion = ko.observable(null);
             self.isLoading = ko.observable(false);
             
@@ -70,16 +70,34 @@ define([
             }
             
             var initialAddress = quote.shippingAddress();
+            console.log('Initial address on init:', initialAddress);
             if (initialAddress && (initialAddress.regionId || initialAddress.region)) {
                 var regionName = initialAddress.region || 'Region ' + initialAddress.regionId;
+                console.log('Initial region set:', regionName);
                 self.currentRegion(regionName);
                 self.isVisible(true);
             }
             
             var currentMethod = quote.shippingMethod();
             if (currentMethod) {
+                console.log('Initial method:', currentMethod);
                 self.selectedMethod(currentMethod.carrier_code + '_' + currentMethod.method_code);
             }
+            
+            // Force visibility after short delay to ensure DOM is ready
+            setTimeout(function() {
+                console.log('Force visibility timeout triggered');
+                self.isVisible(true);
+                var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                if (wrapper) {
+                    wrapper.style.display = 'block';
+                    wrapper.style.visibility = 'visible';
+                    wrapper.style.opacity = '1';
+                    console.log('Wrapper made visible via DOM manipulation');
+                } else {
+                    console.warn('Wrapper element not found!');
+                }
+            }, 500);
             
             return self;
         },
