@@ -20,7 +20,14 @@ define([
 
     return Component.extend({
         defaults: {
-            template: 'Mab_CheckoutCustomization/shipping-method-cards'
+            template: 'Mab_CheckoutCustomization/shipping-method-cards',
+            // Cache DOM elements
+            $stepContent: null,
+            $shippingTable: null,
+            $cardsWrapper: null,
+            // Debounce timers
+            renderTimer: null,
+            updateTimer: null
         },
 
         /**
@@ -30,16 +37,22 @@ define([
             this._super();
             var self = this;
 
-            // Watch for shipping methods changes
+            // Watch for shipping methods changes with debounce
             quote.shippingMethod.subscribe(function (method) {
                 if (method) {
-                    self.updateSelectedCard(method.carrier_code + '_' + method.method_code);
+                    clearTimeout(self.updateTimer);
+                    self.updateTimer = setTimeout(function() {
+                        self.updateSelectedCard(method.carrier_code + '_' + method.method_code);
+                    }, 100); // Debounce updates
                 }
             });
 
             // Replace entire shipping step with our cards after page load
+            // Use requestAnimationFrame for better performance
             setTimeout(function () {
-                self.replaceShippingStep();
+                window.requestAnimationFrame(function() {
+                    self.replaceShippingStep();
+                });
             }, 800);
 
             return this;
@@ -217,22 +230,38 @@ define([
         },
 
         /**
-         * Bind click handlers to cards
+         * Bind click handlers to cards (with event delegation)
          */
         bindCardHandlers: function () {
             var self = this;
-
-            $('.shipping-card').on('click', function (e) {
+            
+            // Use event delegation for better performance
+            var $container = $('#shipping-method-cards-container');
+            
+            // Remove previous handlers to prevent duplicates
+            $container.off('click', '.shipping-card');
+            
+            $container.on('click', '.shipping-card', function (e) {
                 var $card = $(this);
                 var methodCode = $card.data('method-code');
+                
+                // Early return if already selected
+                if ($card.hasClass('selected')) {
+                    return;
+                }
+                
                 var $radio = $card.find('.shipping-radio');
 
                 if (!$(e.target).is('input[type="radio"]')) {
-                    $radio.prop('checked', true).trigger('change');
+                    $radio.prop('checked', true);
                 }
 
-                // Update original hidden radio
-                var $originalRadio = $('table.table-checkout-shipping-method input[value="' + methodCode + '"]');
+                // Cache original radio selector
+                if (!self.$shippingTable) {
+                    self.$shippingTable = $('table.table-checkout-shipping-method');
+                }
+                
+                var $originalRadio = self.$shippingTable.find('input[value="' + methodCode + '"]');
                 if ($originalRadio.length) {
                     $originalRadio.prop('checked', true).trigger('click');
                 }
@@ -250,11 +279,18 @@ define([
         },
 
         /**
-         * Update selected card when method changes
+         * Update selected card when method changes (optimized)
          */
         updateSelectedCard: function (methodCode) {
-            $('.shipping-card').removeClass('selected');
-            $('.shipping-card[data-method-code="' + methodCode + '"]').addClass('selected');
+            // Cache cards container
+            if (!this.$cardsWrapper) {
+                this.$cardsWrapper = $('.shipping-methods-cards-wrapper');
+            }
+            
+            // Use find() on cached container instead of global selector
+            var $cards = this.$cardsWrapper.find('.shipping-card');
+            $cards.removeClass('selected');
+            $cards.filter('[data-method-code="' + methodCode + '"]').addClass('selected');
         },
 
         /**

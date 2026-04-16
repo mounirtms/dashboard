@@ -2,6 +2,7 @@
  * Mab_CheckoutCustomization - Shipping Component Mixin
  * Integrates shipping method cards with default Magento checkout shipping
  * Responds to region/wilaya changes and updates shipping methods dynamically
+ * OPTIMIZED: Debouncing, caching, requestAnimationFrame
  */
 define([
     'jquery',
@@ -10,7 +11,26 @@ define([
 ], function ($, ko, quote) {
     'use strict';
 
+    // Debounce utility function
+    function debounce(func, wait) {
+        var timeout;
+        return function executedFunction() {
+            var context = this;
+            var args = arguments;
+            var later = function() {
+                timeout = null;
+                func.apply(context, args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     var mixin = {
+        // Cache initialization state
+        _initTimer: null,
+        _regionTimer: null,
+        
         /**
          * Initialize mixin
          */
@@ -18,46 +38,56 @@ define([
             this._super();
             var self = this;
 
-            // Watch for rates loading completion
+            // Watch for rates loading completion (debounced)
+            var debouncedInit = debounce(function() {
+                self.initializeShippingCards();
+            }, 250);
+            
             this.isLoading.subscribe(function (isLoading) {
                 if (!isLoading && self.rates() && self.rates().length > 0) {
-                    // Short delay to ensure DOM is ready
-                    setTimeout(function () {
-                        self.initializeShippingCards();
-                    }, 300);
+                    // Use requestAnimationFrame for better performance
+                    window.requestAnimationFrame(debouncedInit);
                 }
             });
 
-            // Watch for address changes (region/wilaya selection)
+            // Watch for address changes (region/wilaya selection) - OPTIMIZED
             if (quote.shippingAddress) {
-                quote.shippingAddress.subscribe(function (address) {
+                var handleRegionChange = debounce(function (address) {
                     if (address && address.regionId) {
                         console.log('🗺️ Region changed to:', address.regionId, address.region);
-                        // Reset initialization flag to allow re-render
+                        // Reset initialization flag
                         window.shippingCardsInitialized = false;
-                        // Wait for new rates, then re-render cards
-                        setTimeout(function () {
+                        
+                        // Wait for new rates, then re-render
+                        clearTimeout(self._regionTimer);
+                        self._regionTimer = setTimeout(function () {
                             if (self.rates() && self.rates().length > 0 && !self.isLoading()) {
                                 console.log('♻️ Re-initializing shipping cards for new region');
-                                self.initializeShippingCards();
+                                window.requestAnimationFrame(function() {
+                                    self.initializeShippingCards();
+                                });
                             }
-                        }, 1000);
+                        }, 800); // Reduced from 1000ms
                     }
-                });
+                }, 300); // Debounce region changes
+                
+                quote.shippingAddress.subscribe(handleRegionChange);
             }
 
-            // Watch rates observable directly for any changes
+            // Watch rates observable directly for any changes - OPTIMIZED
             if (this.rates) {
-                this.rates.subscribe(function (newRates) {
+                var handleRatesChange = debounce(function (newRates) {
                     if (newRates && newRates.length > 0) {
                         console.log('📦 New shipping rates available:', newRates.length);
                         // Reset and re-render
                         window.shippingCardsInitialized = false;
-                        setTimeout(function () {
+                        window.requestAnimationFrame(function() {
                             self.initializeShippingCards();
-                        }, 200);
+                        });
                     }
-                });
+                }, 150); // Debounce rate changes
+                
+                this.rates.subscribe(handleRatesChange);
             }
 
             return this;

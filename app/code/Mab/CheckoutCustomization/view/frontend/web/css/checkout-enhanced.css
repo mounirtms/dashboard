@@ -585,24 +585,29 @@
     margin-bottom: 16px;
 }
 
-/* Individual Shipping Card */
+/* Individual Shipping Card - OPTIMIZED */
 .shipping-card {
     background: #ffffff;
     border: 2px solid #e8ecef;
     border-radius: 12px;
     padding: 20px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .shipping-card:hover {
     border-color: #4caf50;
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.15);
-    transform: translateY(-4px);
+    transform: translateY(-4px) translateZ(0);
 }
 
 .shipping-card.selected {
@@ -735,7 +740,7 @@
     box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 }
 
-/* Check Indicator */
+/* Check Indicator - OPTIMIZED */
 .shipping-card .check-indicator {
     position: absolute;
     top: 12px;
@@ -748,13 +753,16 @@
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transform: scale(0);
-    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform: scale(0) translateZ(0);
+    transition: opacity 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    will-change: opacity, transform;
+    backface-visibility: hidden;
 }
 
 .shipping-card.selected .check-indicator {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
 }
 
 .shipping-card .check-indicator svg {
