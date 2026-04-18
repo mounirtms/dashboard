@@ -14,10 +14,6 @@ define([
     'use strict';
 
     return Component.extend({
-        defaults: {
-            template: 'Mab_CheckoutCustomization/algerian-states-selector'
-        },
-
         /**
          * Initialize component
          */
