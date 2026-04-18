@@ -54,24 +54,41 @@ define([
                 console.log('📦 [Shipping Cards] Number of rates:', rates.length);
                 
                 if (rates && rates.length > 0) {
-                    self.processShippingRates(rates);
-                    self.isVisible(true);
-                    self.isLoading(false);
-                    self.errorMessage('');
-                    
-                    // Force visibility on wrapper
-                    setTimeout(function() {
-                        var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
-                        if (wrapper) {
-                            wrapper.style.display = 'block';
-                            wrapper.style.visibility = 'visible';
-                            wrapper.style.opacity = '1';
-                            console.log('✅ [Shipping Cards] Wrapper forced visible');
+                    // Check if rates are valid
+                    var hasValidRates = false;
+                    rates.forEach(function(rate) {
+                        if (rate.method_code && rate.method_code !== null && rate.method_code !== 'null' && rate.available !== false) {
+                            hasValidRates = true;
                         }
-                    }, 100);
+                    });
+                    
+                    if (hasValidRates) {
+                        self.processShippingRates(rates);
+                        self.isLoading(false);
+                        
+                        // Force visibility on wrapper
+                        setTimeout(function() {
+                            var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                            if (wrapper) {
+                                wrapper.style.display = 'block';
+                                wrapper.style.visibility = 'visible';
+                                wrapper.style.opacity = '1';
+                                console.log('✅ [Shipping Cards] Wrapper forced visible');
+                            }
+                        }, 100);
+                    } else {
+                        console.error('❌ [Shipping Cards] No valid rates - all have null method_code or available:false');
+                        console.log('🔍 [Shipping Cards] Raw rates:', JSON.stringify(rates, null, 2));
+                        self.shippingMethods([]);
+                        self.isVisible(false);
+                        self.isLoading(false);
+                        self.errorMessage('Configuration de livraison requise. Veuillez vérifier les tarifs dans l\'administration.');
+                    }
                 } else {
                     console.warn('⚠️ [Shipping Cards] No rates available');
                     self.shippingMethods([]);
+                    self.isVisible(false);
+                    self.isLoading(false);
                     self.errorMessage($t('Aucune méthode de livraison disponible pour cette région'));
                 }
             });
@@ -161,8 +178,28 @@ define([
                     carrier: rate.carrier_code,
                     method: rate.method_code,
                     title: rate.method_title || rate.carrier_title,
-                    amount: rate.amount
+                    amount: rate.amount,
+                    available: rate.available,
+                    error: rate.error_message
                 });
+                
+                // Skip if method_code is null or rate is not available
+                if (!rate.method_code || rate.method_code === null || rate.method_code === 'null') {
+                    console.warn('⚠️ [Shipping Cards] Skipping invalid rate - method_code is null/missing');
+                    console.log('   Debug info:', {
+                        carrier: rate.carrier_code,
+                        available: rate.available,
+                        error: rate.error_message,
+                        fullRate: rate
+                    });
+                    return; // Skip this iteration
+                }
+                
+                // Skip if explicitly marked as unavailable
+                if (rate.available === false) {
+                    console.warn('⚠️ [Shipping Cards] Skipping unavailable rate:', rate.carrier_code);
+                    return;
+                }
                 
                 var method = {
                     method_code: rate.carrier_code + '_' + rate.method_code,
@@ -184,7 +221,25 @@ define([
                 console.log('✅ [Shipping Cards] Method created:', method.method_code);
             });
             
+            // Check if we have any valid methods
+            if (methods.length === 0) {
+                console.error('❌ [Shipping Cards] No valid shipping methods found!');
+                console.log('📊 [Shipping Cards] Original rates received:', rates.length);
+                console.log('🔍 [Shipping Cards] Check Mageplaza Table Rate configuration in Admin');
+                console.log('💡 [Shipping Cards] Possible causes:');
+                console.log('   1. No rates configured for selected wilaya/region');
+                console.log('   2. method_code is null in API response');
+                console.log('   3. All rates marked as available: false');
+                console.log('   4. Table Rate shipping method disabled');
+                
+                self.isVisible(false);
+                self.errorMessage('Aucune méthode de livraison disponible pour cette région. Veuillez contacter le support.');
+                return;
+            }
+            
             self.shippingMethods(methods);
+            self.isVisible(true);
+            self.errorMessage('');
             
             // Cache the processed methods
             if (currentRegion) {
