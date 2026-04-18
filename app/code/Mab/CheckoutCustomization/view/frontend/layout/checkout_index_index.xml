@@ -10,6 +10,7 @@
     <head>
         <!-- Critical CSS for checkout -->
         <css src="Mab_CheckoutCustomization::css/checkout-complete.css"/>
+        <css src="Mab_CheckoutCustomization::css/checkout-enhancements.css"/>
         
         <!-- Resource Hints for Performance -->
         <!-- Preload critical JSON data -->
