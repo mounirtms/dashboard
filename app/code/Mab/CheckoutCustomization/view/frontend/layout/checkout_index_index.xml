@@ -8,7 +8,15 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
+        <!-- Critical CSS for checkout -->
         <css src="Mab_CheckoutCustomization::css/checkout-complete.css"/>
+        
+        <!-- Resource Hints for Performance -->
+        <!-- Preload critical JSON data -->
+        <link src="Mab_CheckoutCustomization::data/algerian-states.json" src_type="url" rel="preload" as="fetch" crossorigin="anonymous"/>
+        
+        <!-- DNS Prefetch for external resources (if any) -->
+        <!-- <link src="https://fonts.googleapis.com" src_type="url" rel="dns-prefetch"/> -->
     </head>
     <body>
         <referenceBlock name="checkout.root">
