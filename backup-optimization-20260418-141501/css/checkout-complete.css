@@ -1,0 +1,728 @@
+/**
+ * Mab_CheckoutCustomization - Complete Checkout Styles
+ * Comprehensive styles for checkout page including field ordering,
+ * shipping cards, gift card, and all customizations
+ * 
+ * NOTE: All styles consolidated in this file to avoid MIME-type issues with @import
+ */
+
+/* ========================================
+   FIELD ORDERING & LAYOUT FIXES
+   ======================================== */
+
+/* Hide country field completely - not needed for Algeria-only store */
+.checkout-index-index .field[name="shippingAddress.country_id"],
+.checkout-index-index .field[name="billingAddress.country_id"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Region (Wilaya) and City (Commune) - Side by side half-width layout */
+.checkout-index-index .field[name="shippingAddress.region_id"],
+.checkout-index-index .field[name="billingAddress.region_id"] {
+    display: inline-block !important;
+    width: calc(50% - 8px) !important;
+    margin-right: 16px !important;
+    vertical-align: top !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] select,
+.checkout-index-index .field[name="billingAddress.region_id"] select {
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 48px !important;
+    padding: 12px 45px 12px 14px !important;
+    background-color: #ffffff !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L8 8L15 1" stroke="%234caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 16px 10px !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] select:focus,
+.checkout-index-index .field[name="billingAddress.region_id"] select:focus {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1) !important;
+    outline: none !important;
+}
+
+/* Ensure region dropdown displays selected value properly */
+.checkout-index-index .field[name="shippingAddress.region_id"] select option,
+.checkout-index-index .field[name="billingAddress.region_id"] select option {
+    color: #2c3e50 !important;
+    padding: 8px !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.region_id"] select option:checked,
+.checkout-index-index .field[name="billingAddress.region_id"] select option:checked {
+    background-color: #4caf50 !important;
+    color: #ffffff !important;
+}
+
+/* Override any Knockout bindings that might hide the select */
+.checkout-index-index select[name="region_id"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+}
+
+/* Ensure the region field label is visible */
+.checkout-index-index .field[name="shippingAddress.region_id"] label,
+.checkout-index-index .field[name="billingAddress.region_id"] label {
+    display: block !important;
+    visibility: visible !important;
+    margin-bottom: 8px !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.city"],
+.checkout-index-index .field[name="billingAddress.city"] {
+    display: inline-block !important;
+    width: calc(50% - 8px) !important;
+    margin-right: 0 !important;
+    vertical-align: top !important;
+}
+
+/* Style commune/city select to match wilaya */
+.checkout-index-index .field[name="shippingAddress.city"] select,
+.checkout-index-index .field[name="billingAddress.city"] select,
+.checkout-index-index .field[name="shippingAddress.city"] .algerian-commune-select,
+.checkout-index-index .field[name="billingAddress.city"] .algerian-commune-select {
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 48px !important;
+    padding: 12px 45px 12px 14px !important;
+    background-color: #ffffff !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L8 8L15 1" stroke="%234caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 16px 10px !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.city"] select:focus,
+.checkout-index-index .field[name="billingAddress.city"] select:focus,
+.algerian-commune-select:focus {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1) !important;
+    outline: none !important;
+}
+
+/* Ensure city/commune field label is visible */
+.checkout-index-index .field[name="shippingAddress.city"] label,
+.checkout-index-index .field[name="billingAddress.city"] label {
+    display: block !important;
+    visibility: visible !important;
+    margin-bottom: 8px !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
+/* Force region/city to appear before street address */
+.checkout-index-index .field[name="shippingAddress.region_id"] {
+    order: 1 !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.city"] {
+    order: 2 !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.street.0"] {
+    order: 3 !important;
+    clear: both !important;
+    width: 100% !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.telephone"] {
+    order: 4 !important;
+}
+
+/* Apply flexbox to fieldset for proper ordering */
+.checkout-index-index .fieldset.address {
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+/* Ensure all address fields participate in flex layout */
+.checkout-index-index .fieldset.address > .field {
+    flex: 0 0 100%;
+}
+
+/* Responsive: Stack fields on mobile */
+@media (max-width: 768px) {
+    .checkout-index-index .field[name="shippingAddress.region_id"],
+    .checkout-index-index .field[name="billingAddress.region_id"],
+    .checkout-index-index .field[name="shippingAddress.city"],
+    .checkout-index-index .field[name="billingAddress.city"] {
+        display: block !important;
+        width: 100% !important;
+        margin-right: 0 !important;
+    }
+}
+
+/* ========================================
+   SHIPPING METHODS VISIBILITY FIX
+   ======================================== */
+
+/* Hide default Magento shipping method table - use custom cards instead */
+.checkout-shipping-method,
+.table-checkout-shipping-method,
+#checkout-shipping-method-load,
+#opc-shipping_method,
+.methods-shipping {
+    display: none !important;
+}
+
+/* Shipping methods cards wrapper - visible by default, let component control visibility */
+.shipping-methods-cards-wrapper {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    min-height: 200px;
+    margin-top: 24px;
+}
+
+/* Force visibility when Magento provides shipping rates */
+.shipping-methods-cards-wrapper[data-bind],
+.shipping-methods-cards-wrapper[data-region-selected="true"],
+.shipping-methods-cards-wrapper.visible {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Override any attempts to hide the wrapper */
+.shipping-methods-cards-wrapper[style*="display: none"] {
+    display: block !important;
+}
+
+.shipping-methods-cards-wrapper[style*="visibility: hidden"] {
+    visibility: visible !important;
+}
+
+/* Add unavailable state styling */
+.shipping-card.unavailable {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+.shipping-card.unavailable .method-name {
+    text-decoration: line-through;
+    color: #999 !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   LOADING MASK WITH TECHNO LOGO
+   ======================================== */
+
+/* Custom loading mask overlay */
+.checkout-index-index .loading-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+/* Techno Logo Container */
+.checkout-index-index .loading-mask .loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Techno Logo */
+.checkout-index-index .loading-mask .techno-logo {
+    width: 120px;
+    height: 120px;
+    background-image: url('https://dev.technostationery.com/media/mageplaza/tablerate/techno.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Animated spinner ring around logo */
+.checkout-index-index .loading-mask .spinner-ring {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.checkout-index-index .loading-mask .spinner-ring:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #4caf50;
+    border-radius: 50%;
+    animation: spin 1.5s linear infinite;
+}
+
+.checkout-index-index .loading-mask .techno-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Loading text */
+.checkout-index-index .loading-mask .loading-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4caf50;
+    margin-top: 16px;
+    text-align: center;
+}
+
+/* Loading progress bar */
+.checkout-index-index .loading-mask .progress-bar {
+    width: 200px;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.checkout-index-index .loading-mask .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
+    border-radius: 2px;
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% {
+        width: 0%;
+    }
+    50% {
+        width: 70%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   FIX: ENSURE SHIPPING CARDS RENDER ON REGION CHANGE
+   ======================================== */
+
+/* Prevent shipping step from collapsing */
+.checkout-index-index #checkout-step-shipping {
+    min-height: 400px;
+    transition: min-height 0.3s ease;
+}
+
+/* Shipping method list should always be visible structure */
+.checkout-index-index .table-checkout-shipping-method {
+    position: relative;
+}
+
+/* Hide default Magento shipping method table but keep structure */
+.checkout-index-index .table-checkout-shipping-method tbody {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Show our custom shipping cards instead */
+.checkout-index-index .shipping-methods-cards-wrapper {
+    position: relative;
+    z-index: 10;
+}
+
+/* ========================================
+   ADDITIONAL PERFORMANCE & ACCESSIBILITY
+   ======================================== */
+
+/* Smooth transitions for field changes */
+.checkout-index-index .field {
+    transition: order 0.3s ease, opacity 0.3s ease;
+}
+
+/* Focus visible for keyboard navigation */
+.checkout-index-index .shipping-card:focus-visible {
+    outline: 3px solid #4caf50;
+    outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .checkout-index-index .loading-mask *,
+    .checkout-index-index .shipping-methods-cards-wrapper {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Print styles - hide loading and non-selected methods */
+@media print {
+    .checkout-index-index .loading-mask {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   CHECKOUT NAVIGATION BUTTONS FIX
+   ======================================== */
+
+/* Ensure Next/Continue button is always visible after shipping method selection */
+.checkout-index-index .opc-wrapper .step-content button.button.action.continue.primary,
+.checkout-index-index .opc-wrapper .actions-toolbar .primary button.action.primary,
+.checkout-index-index #shipping-method-buttons-container button,
+.checkout-index-index .checkout-shipping-method .actions-toolbar button {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure action toolbar is visible */
+.checkout-index-index .opc-wrapper .actions-toolbar,
+.checkout-index-index .checkout-shipping-method .actions-toolbar {
+    display: block !important;
+    visibility: visible !important;
+    margin-top: 20px !important;
+}
+
+/* Style the continue button properly */
+.checkout-index-index button.action.continue.primary,
+.checkout-index-index button.action.primary.checkout {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 14px 32px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    min-width: 200px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.checkout-index-index button.action.continue.primary:hover,
+.checkout-index-index button.action.primary.checkout:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%) !important;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+.checkout-index-index button.action.continue.primary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.2) !important;
+}
+
+/* Disabled state */
+.checkout-index-index button.action.continue.primary:disabled,
+.checkout-index-index button.action.primary.checkout:disabled {
+    background: #cccccc !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+/* ========================================
+   ALGERIAN STATES & COMMUNES STYLING
+   ======================================== */
+
+/* Wilaya/Region Select */
+.algerian-wilaya-select {
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L8 8L15 1" stroke="%234caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 16px 10px !important;
+    padding-right: 45px !important;
+}
+
+/* Commune Select */
+.algerian-commune-select {
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L8 8L15 1" stroke="%234caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 16px 10px !important;
+    padding-right: 45px !important;
+}
+
+.algerian-commune-select:disabled {
+    background-color: #f5f5f5 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+/* Delivery Info Card - Compact Design */
+.algerian-delivery-info {
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.delivery-info-card {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f5f5f5 100%);
+    border-left: 4px solid #4caf50;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.delivery-info-card .info-row {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px 4px 0;
+    margin-right: 12px;
+}
+
+.delivery-info-card .info-row:last-child {
+    margin-right: 0;
+}
+
+.delivery-info-card .info-label {
+    font-weight: 500;
+    color: #666;
+    font-size: 12px;
+    margin-right: 6px;
+}
+
+.delivery-info-card .info-value {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 13px;
+}
+
+/* Zone-specific colors */
+.delivery-info-card .info-value.zone-1 {
+    color: #4caf50;
+}
+
+.delivery-info-card .info-value.zone-2 {
+    color: #2196f3;
+}
+
+.delivery-info-card .info-value.zone-3 {
+    color: #ff9800;
+}
+
+.delivery-info-card .info-value.zone-4 {
+    color: #f44336;
+}
+
+/* Compact stop desk indicator */
+.delivery-info-card .info-row.highlight {
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 3px;
+    padding: 4px 8px;
+}
+
+.delivery-info-card .info-icon {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.delivery-info-card .info-text {
+    color: #388e3c;
+    font-weight: 600;
+    font-size: 12px;
+}
+    color: #f44336;
+}
+
+/* Highlight row (stop desk) */
+.delivery-info-card .info-row.highlight {
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 4px -12px;
+}
+
+.delivery-info-card .info-icon {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+.delivery-info-card .info-text {
+    color: #388e3c;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Deliverability Warning */
+.algerian-deliverability-warning {
+    background: #fff3e0;
+    border: 2px solid #ff9800;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideDown 0.3s ease;
+}
+
+.algerian-deliverability-warning .warning-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading state for selects */
+.algerian-wilaya-select.loading,
+.algerian-commune-select.loading {
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="7" stroke="%234caf50" stroke-width="2" fill="none" stroke-dasharray="40" stroke-dashoffset="40"><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="1s" repeatCount="indefinite"/></circle></svg>') !important;
+    background-size: 20px 20px !important;
+}
+
+/* Enhanced options with emoji indicators */
+.algerian-commune-select option {
+    padding: 8px;
+    line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .delivery-info-card {
+        padding: 12px;
+    }
+    
+    .delivery-info-card .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .delivery-info-card .info-label,
+    .delivery-info-card .info-value {
+        font-size: 13px;
+    }
+}
+
+/* Dark mode support (if enabled) */
+@media (prefers-color-scheme: dark) {
+    .delivery-info-card {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2c3e50 100%);
+        border-color: #3498db;
+    }
+    
+    .delivery-info-card .info-label {
+        color: #5dade2;
+    }
+    
+    .delivery-info-card .info-value {
+        color: #ecf0f1;
+    }
+    
+    .algerian-deliverability-warning {
+        background: #3e2723;
+        border-color: #ff6f00;
+        color: #ffcc80;
+    }
+}
+
+/* Print styles */
+@media print {
+    .algerian-delivery-info,
+    .algerian-deliverability-warning {
+        border: 1px solid #000;
+        background: #fff;
+    }
+}
+
+/* Accessibility: High contrast mode */
+@media (prefers-contrast: high) {
+    .delivery-info-card {
+        border-width: 3px;
+    }
+    
+    .delivery-info-card .info-label,
+    .delivery-info-card .info-value {
+        font-weight: 700;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .algerian-deliverability-warning {
+        animation: none;
+    }
+}
