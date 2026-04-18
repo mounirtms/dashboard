@@ -1,12 +1,21 @@
-# ⚡ QUICK FIX - Shipping Cards Not Displaying
+# ⚡ QUICK FIX - Checkout Issues (Shipping Cards + Grand Total)
 
-## The Problem
-Shipping method cards don't appear after selecting wilaya on checkout page.
+## The Problems
+1. **Shipping cards don't appear** after selecting wilaya on checkout page
+2. **Grand total error**: "Cannot read properties of null (reading 'value')"
 
-## The Fix (Already Applied)
+## The Fixes (Already Applied)
+
+### Fix 1: Shipping Cards
 Changed layout XML to point to correct component:
 - **File:** `app/code/Mab/CheckoutCustomization/view/frontend/layout/checkout_index_index.xml`
 - **Line 28:** Changed from `shipping-method-cards-working` → `shipping-method-cards`
+
+### Fix 2: Grand Total Error
+Updated grand total component and template for Amasty compatibility:
+- **File:** Same layout XML file (line 57)
+- **Component:** Changed to `grand-total-safe` (null-safe component)
+- **Template:** Added safe null checks with fallback display
 
 ---
 
@@ -39,7 +48,8 @@ echo "✅ Done! Now test at: https://dev.technostationery.com/checkout"
 1. Open checkout page
 2. Press F12 → Console tab
 3. Select a wilaya (e.g., Alger)
-4. Look for these logs:
+4. Navigate through checkout steps
+5. Look for these logs:
 
 **SUCCESS:**
 ```
@@ -48,11 +58,14 @@ echo "✅ Done! Now test at: https://dev.technostationery.com/checkout"
 ✅ [Shipping Cards] Total methods set: 3
 🔍 [Shipping Cards] Cards rendered: 3
 ```
+- NO "Cannot read properties of null" errors
+- NO "Failed to load grand-total template" errors
 
 **FAILURE:**
 ```
 ❌ [Shipping Cards] No valid rates
 Template not found: ...shipping-method-cards-working
+Cannot read properties of null (reading 'value')
 ```
 
 ---
