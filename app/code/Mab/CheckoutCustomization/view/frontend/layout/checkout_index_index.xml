@@ -24,6 +24,15 @@
                                             <item name="children" xsi:type="array">
                                                 <item name="shippingAddress" xsi:type="array">
                                                     <item name="children" xsi:type="array">
+                                                        <!-- Algerian States Integration -->
+                                                        <item name="algerian-states" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/algerian-states-checkout</item>
+                                                            <item name="sortOrder" xsi:type="string">-200</item>
+                                                            <item name="config" xsi:type="array">
+                                                                <item name="autoLoad" xsi:type="boolean">true</item>
+                                                            </item>
+                                                        </item>
+                                                        <!-- Shipping Method Cards -->
                                                         <item name="shipping-method-cards" xsi:type="array">
                                                             <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards</item>
                                                             <item name="sortOrder" xsi:type="string">-100</item>
