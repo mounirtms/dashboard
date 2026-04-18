@@ -121,6 +121,40 @@ define([
             // Process current address immediately (handles initial load)
             handleAddressChange(quote.shippingAddress());
             
+            console.log('✅ [Algerian States] Selectors initialized');
+        },
+
+        /**
+         * Create commune selector
+         */
+        createCommuneSelector: function($cityField) {
+            var self = this;
+            
+            console.log('🏘️ [Algerian States] Creating commune selector');
+            
+            // Check if commune selector already exists
+            var $existingSelect = $cityField.find('select[name="commune"]');
+            if ($existingSelect.length > 0) {
+                console.log('✅ [Algerian States] Commune selector already exists');
+                self.$communeSelect = $existingSelect;
+                return;
+            }
+            
+            // Find the city input
+            var $input = $cityField.find('input[name="city"]');
+            if ($input.length === 0) {
+                console.warn('⚠️ [Algerian States] City input not found');
+                return;
+            }
+            
+            // Create select element
+            var $select = $('<select>', {
+                name: 'commune',
+                class: 'select admin__control-select algerian-commune-select',
+                id: 'algerian-commune-select',
+                disabled: true
+            });
+            
             // Add placeholder option
             $select.append($('<option>', {
                 value: '',

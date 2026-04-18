@@ -89,8 +89,26 @@ class ShippingMethodConverter
             return $result;
         }
 
+        // CRITICAL FIX: Check if method_code is valid before loading
+        $methodCode = $result->getMethodCode();
+        if (!$methodCode || $methodCode === null || $methodCode === '') {
+            $this->logger->warning('Mageplaza TableRate: Skipping rate with null method_code', [
+                'carrier' => $result->getCarrierCode(),
+                'title' => $result->getCarrierTitle()
+            ]);
+            return $result;
+        }
+
         /** @var Method $method */
-        $method = $this->methodFactory->create()->load($result->getMethodCode());
+        $method = $this->methodFactory->create()->load($methodCode);
+
+        // Verify method loaded successfully
+        if (!$method || !$method->getId()) {
+            $this->logger->warning('Mageplaza TableRate: Could not load method', [
+                'method_code' => $methodCode
+            ]);
+            return $result;
+        }
 
         $attributes = $result->getExtensionAttributes();
 
