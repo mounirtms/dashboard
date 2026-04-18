@@ -230,6 +230,31 @@ define([
             
             // Update delivery info
             this.updateDeliveryInfo(wilayaId, null);
+            
+            // CRITICAL: Trigger Magento shipping rate estimation
+            // Update quote shipping address with the selected region
+            var address = quote.shippingAddress();
+            if (address) {
+                // Update region_id in the address
+                address.regionId = parseInt(wilayaId);
+                address.region = wilaya.name;
+                address.regionCode = wilayaId.toString().padStart(2, '0'); // Format: "01", "02", etc.
+                
+                // Trigger address update to recalculate shipping
+                quote.shippingAddress(address);
+                
+                console.log('🚚 [Algerian States] Updated quote address for shipping calculation:', {
+                    regionId: address.regionId,
+                    region: address.region,
+                    regionCode: address.regionCode
+                });
+                
+                // Force estimate shipping rates
+                require(['Magento_Checkout/js/action/select-shipping-address'], function(selectShippingAddress) {
+                    selectShippingAddress(address);
+                    console.log('✅ [Algerian States] Triggered shipping rate estimation');
+                });
+            }
         },
 
         /**
