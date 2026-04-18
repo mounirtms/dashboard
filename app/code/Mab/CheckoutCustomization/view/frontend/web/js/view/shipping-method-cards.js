@@ -383,10 +383,13 @@ define([
             // Set as selected
             self.selectedMethod(method.method_code);
             
+            // Extract the actual method code (e.g., "16", "24", "2" from "mptablerate_16")
+            var actualMethodCode = method.method_code.split('_')[1] || method.method_code;
+            
             // Create Magento shipping method object
             var shippingMethod = {
                 carrier_code: method.carrier_code,
-                method_code: method.method_id,
+                method_code: actualMethodCode,
                 carrier_title: method.carrier_title,
                 method_title: method.method_title,
                 amount: method.amount,
@@ -398,11 +401,12 @@ define([
             };
             
             console.log('📝 [Shipping Cards] Calling selectShippingMethodAction with:', shippingMethod);
+            console.log('📝 [Shipping Cards] Full method code:', method.carrier_code + '_' + actualMethodCode);
             
             // Select in Magento
             try {
                 selectShippingMethodAction(shippingMethod);
-                checkoutData.setSelectedShippingRate(method.carrier_code + '_' + method.method_id);
+                checkoutData.setSelectedShippingRate(method.carrier_code + '_' + actualMethodCode);
                 
                 console.log('✅ [Shipping Cards] Method selected successfully');
                 console.log('✅ [Shipping Cards] Quote should now have shipping method');
