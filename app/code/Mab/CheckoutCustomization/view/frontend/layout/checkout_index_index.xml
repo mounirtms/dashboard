@@ -8,16 +8,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <!-- Critical CSS for checkout -->
         <css src="Mab_CheckoutCustomization::css/checkout-complete.css"/>
-        <css src="Mab_CheckoutCustomization::css/checkout-enhancements.css"/>
-        
-        <!-- Resource Hints for Performance -->
-        <!-- Preload critical JSON data -->
-        <link src="Mab_CheckoutCustomization::data/algerian-states.json" src_type="url" rel="preload" as="fetch" crossorigin="anonymous"/>
-        
-        <!-- DNS Prefetch for external resources (if any) -->
-        <!-- <link src="https://fonts.googleapis.com" src_type="url" rel="dns-prefetch"/> -->
     </head>
     <body>
         <referenceBlock name="checkout.root">
@@ -33,17 +24,8 @@
                                             <item name="children" xsi:type="array">
                                                 <item name="shippingAddress" xsi:type="array">
                                                     <item name="children" xsi:type="array">
-                                                        <!-- Algerian States Integration -->
-                                                        <item name="algerian-states" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/algerian-states-checkout</item>
-                                                            <item name="sortOrder" xsi:type="string">-200</item>
-                                                            <item name="config" xsi:type="array">
-                                                                <item name="autoLoad" xsi:type="boolean">true</item>
-                                                            </item>
-                                                        </item>
-                                                        <!-- Shipping Method Cards -->
                                                         <item name="shipping-method-cards" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards</item>
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards-working</item>
                                                             <item name="sortOrder" xsi:type="string">-100</item>
                                                             <item name="displayArea" xsi:type="string">before-shipping-method-form</item>
                                                             <item name="config" xsi:type="array">
@@ -70,9 +52,9 @@
                                                                 </item>
                                                             </item>
                                                         </item>
-                                                        <!-- Grand Total with safe getValue -->
+                                                        <!-- Fix: Override grand-total template -->
                                                         <item name="grand-total" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/checkout/summary/grand-total-safe</item>
+                                                            <item name="component" xsi:type="string">Magento_Tax/js/view/checkout/summary/grand-total</item>
                                                             <item name="config" xsi:type="array">
                                                                 <item name="template" xsi:type="string">Mab_CheckoutCustomization/checkout/cart/totals/grand-total</item>
                                                                 <item name="title" xsi:type="string" translate="true">Order Total</item>
