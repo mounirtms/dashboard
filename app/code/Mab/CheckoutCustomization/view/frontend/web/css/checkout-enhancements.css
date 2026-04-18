@@ -549,7 +549,7 @@ select[name="city"]:focus {
     ============================================ */
 
 /* Container */
-.block.gift-card.compact {
+.mab-giftcard-container.compact {
     margin-bottom: 12px;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
@@ -558,7 +558,7 @@ select[name="city"]:focus {
 }
 
 /* Header */
-.block.gift-card.compact .mab-giftcard-header {
+.mab-giftcard-container.compact .mab-giftcard-header {
     background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
     padding: 8px 12px;
     border-bottom: 1px solid #e0e0e0;
@@ -566,11 +566,11 @@ select[name="city"]:focus {
     transition: background 0.2s ease;
 }
 
-.block.gift-card.compact .mab-giftcard-header:hover {
+.mab-giftcard-container.compact .mab-giftcard-header:hover {
     background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
 }
 
-.block.gift-card.compact .mab-giftcard-title {
+.mab-giftcard-container.compact .mab-giftcard-title {
     margin: 0;
     font-size: 13px;
     font-weight: 600;
@@ -581,7 +581,7 @@ select[name="city"]:focus {
 }
 
 /* Form container */
-.block.gift-card.compact .mab-giftcard-form-container {
+.mab-giftcard-container.compact .mab-giftcard-form-container {
     padding: 10px 12px;
     background: #fafafa;
 }
@@ -786,7 +786,7 @@ select[name="city"]:focus {
         gap: 4px;
     }
     
-    .block.gift-card.compact .mab-giftcard-title {
+    .mab-giftcard-container.compact .mab-giftcard-title {
         font-size: 12px;
     }
     
