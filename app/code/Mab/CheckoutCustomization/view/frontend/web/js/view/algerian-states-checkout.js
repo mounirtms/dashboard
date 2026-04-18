@@ -14,8 +14,9 @@ define([
     'Mab_CheckoutCustomization/js/utils/security-helper',
     'Mab_CheckoutCustomization/js/utils/error-handler',
     'Mab_CheckoutCustomization/js/utils/performance-monitor',
+    'Mab_CheckoutCustomization/js/utils/region-id-mapper',
     'mage/translate'
-], function ($, ko, Component, quote, algerianStates, SecurityHelper, ErrorHandler, PerfMonitor, $t) {
+], function ($, ko, Component, quote, algerianStates, SecurityHelper, ErrorHandler, PerfMonitor, RegionMapper, $t) {
     'use strict';
 
     return Component.extend({
@@ -235,8 +236,15 @@ define([
             // Update quote shipping address with the selected region
             var address = quote.shippingAddress();
             if (address) {
-                // Update region_id in the address
-                address.regionId = parseInt(wilayaId);
+                // Convert custom ID (1-58) to Magento ID (859-900+)
+                var magentoRegionId = RegionMapper.toMagentoId(wilayaId);
+                if (!magentoRegionId) {
+                    console.error('❌ [Algerian States] Failed to map region ID:', wilayaId);
+                    return;
+                }
+                
+                // Update region_id in the address with Magento ID
+                address.regionId = magentoRegionId;
                 address.region = wilaya.name;
                 address.regionCode = wilayaId.toString().padStart(2, '0'); // Format: "01", "02", etc.
                 
@@ -244,7 +252,8 @@ define([
                 quote.shippingAddress(address);
                 
                 console.log('🚚 [Algerian States] Updated quote address for shipping calculation:', {
-                    regionId: address.regionId,
+                    customId: wilayaId,
+                    magentoRegionId: magentoRegionId,
                     region: address.region,
                     regionCode: address.regionCode
                 });
