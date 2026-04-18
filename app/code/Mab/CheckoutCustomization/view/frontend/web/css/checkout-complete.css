@@ -6,6 +6,9 @@
  * NOTE: All styles consolidated in this file to avoid MIME-type issues with @import
  */
 
+/* Import Algerian States styles */
+@import 'algerian-states.css';
+
 /* ========================================
    FIELD ORDERING & LAYOUT FIXES
    ======================================== */
