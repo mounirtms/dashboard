@@ -151,6 +151,15 @@
    SHIPPING METHODS VISIBILITY FIX
    ======================================== */
 
+/* Hide default Magento shipping method table - use custom cards instead */
+.checkout-shipping-method,
+.table-checkout-shipping-method,
+#checkout-shipping-method-load,
+#opc-shipping_method,
+.methods-shipping {
+    display: none !important;
+}
+
 /* Ensure shipping methods container is always visible */
 .shipping-methods-cards-wrapper {
     display: block !important;
@@ -176,6 +185,18 @@
 .shipping-methods-cards-wrapper[data-region-selected="true"] {
     display: block !important;
     animation: fadeIn 0.4s ease;
+}
+
+/* Add unavailable state styling */
+.shipping-card.unavailable {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+.shipping-card.unavailable .method-name {
+    text-decoration: line-through;
+    color: #999 !important;
 }
 
 @keyframes fadeIn {
@@ -372,4 +393,64 @@
     .checkout-index-index .loading-mask {
         display: none !important;
     }
+}
+
+/* ========================================
+   CHECKOUT NAVIGATION BUTTONS FIX
+   ======================================== */
+
+/* Ensure Next/Continue button is always visible after shipping method selection */
+.checkout-index-index .opc-wrapper .step-content button.button.action.continue.primary,
+.checkout-index-index .opc-wrapper .actions-toolbar .primary button.action.primary,
+.checkout-index-index #shipping-method-buttons-container button,
+.checkout-index-index .checkout-shipping-method .actions-toolbar button {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure action toolbar is visible */
+.checkout-index-index .opc-wrapper .actions-toolbar,
+.checkout-index-index .checkout-shipping-method .actions-toolbar {
+    display: block !important;
+    visibility: visible !important;
+    margin-top: 20px !important;
+}
+
+/* Style the continue button properly */
+.checkout-index-index button.action.continue.primary,
+.checkout-index-index button.action.primary.checkout {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 14px 32px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    min-width: 200px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.checkout-index-index button.action.continue.primary:hover,
+.checkout-index-index button.action.primary.checkout:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%) !important;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+.checkout-index-index button.action.continue.primary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.2) !important;
+}
+
+/* Disabled state */
+.checkout-index-index button.action.continue.primary:disabled,
+.checkout-index-index button.action.primary.checkout:disabled {
+    background: #cccccc !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
 }
