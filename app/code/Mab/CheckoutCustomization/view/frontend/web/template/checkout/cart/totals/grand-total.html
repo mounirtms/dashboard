@@ -1,8 +1,11 @@
-<!-- Grand Total Template -->
+<!--
+/**
+ * Grand Total Template - Fixed for Gift Card Compatibility
+ * Prevents null value errors from Amasty Gift Card mixin
+ */
+-->
 <tr class="grand totals">
-    <th class="mark" scope="row" colspan="1">
-        <strong data-bind="i18n: title"></strong>
-    </th>
+    <th class="mark" scope="row" data-bind="i18n: title"></th>
     <td class="amount">
         <strong>
             <span class="price" data-bind="text: getValue()"></span>
