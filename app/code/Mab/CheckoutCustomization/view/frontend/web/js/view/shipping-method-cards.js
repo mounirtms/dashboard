@@ -43,9 +43,20 @@ define([
             // Debug: Check if wrapper exists
             setTimeout(function() {
                 var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
-                console.log('🔍 [Shipping Cards] Wrapper element:', wrapper);
-                console.log('🔍 [Shipping Cards] Wrapper display:', wrapper ? window.getComputedStyle(wrapper).display : 'NOT FOUND');
-                console.log('🔍 [Shipping Cards] Wrapper visibility:', wrapper ? window.getComputedStyle(wrapper).visibility : 'NOT FOUND');
+                if (wrapper) {
+                    var styles = window.getComputedStyle(wrapper);
+                    console.log('🔍 [Shipping Cards] Wrapper element found:', wrapper);
+                    console.log('🔍 [Shipping Cards] Wrapper styles:', {
+                        display: styles.display,
+                        visibility: styles.visibility,
+                        opacity: styles.opacity,
+                        position: styles.position,
+                        height: styles.height
+                    });
+                } else {
+                    console.error('❌ [Shipping Cards] Wrapper element NOT FOUND in DOM!');
+                    console.log('   Expected selector: .shipping-methods-cards-wrapper');
+                }
             }, 500);
             
             // Subscribe to shipping rates from Magento/Mageplaza
@@ -73,7 +84,15 @@ define([
                                 wrapper.style.display = 'block';
                                 wrapper.style.visibility = 'visible';
                                 wrapper.style.opacity = '1';
-                                console.log('✅ [Shipping Cards] Wrapper forced visible');
+                                console.log('✅ [Shipping Cards] Wrapper forced visible:', wrapper);
+                                console.log('   Element classes:', wrapper.className);
+                                console.log('   Parent element:', wrapper.parentElement);
+                                
+                                // Check if cards are rendered inside
+                                var cardsInside = wrapper.querySelectorAll('.shipping-card');
+                                console.log('   Cards inside wrapper:', cardsInside.length);
+                            } else {
+                                console.error('❌ [Shipping Cards] Cannot force visibility - wrapper not found!');
                             }
                         }, 100);
                     } else {
@@ -265,8 +284,33 @@ define([
             
             // Log method details
             methods.forEach(function(method, idx) {
-                console.log('   ' + (idx + 1) + '. ' + method.method_title + ' - ' + method.price_formatted);
+                console.log('   ' + (idx + 1) + '. ' + method.method_title + ' - ' + method.price_formatted + ' (' + method.method_code + ')');
             });
+            
+            // Verify DOM update after a short delay
+            setTimeout(function() {
+                var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                var cards = wrapper ? wrapper.querySelectorAll('.shipping-card') : [];
+                console.log('🔍 [Shipping Cards] DOM Verification:');
+                console.log('   Wrapper exists:', !!wrapper);
+                console.log('   Cards rendered:', cards.length);
+                
+                if (cards.length !== methods.length) {
+                    console.warn('⚠️ [Shipping Cards] Mismatch! Observable has ' + methods.length + ' methods but DOM shows ' + cards.length + ' cards');
+                }
+                
+                // Log each card element
+                cards.forEach(function(card, i) {
+                    var methodCode = card.getAttribute('data-method-code');
+                    var title = card.querySelector('.method-title, .method-name');
+                    console.log('   Card ' + (i + 1) + ':', {
+                        element: card,
+                        methodCode: methodCode,
+                        title: title ? title.textContent.trim() : 'N/A',
+                        visible: window.getComputedStyle(card).display !== 'none'
+                    });
+                });
+            }, 300);
         },
 
         /**

@@ -262,6 +262,12 @@
     line-height: 1.4;
 }
 
+/* Improve contrast for selected state */
+.shipping-card.selected .method-description {
+    color: #2C3E50;
+    font-weight: 500;
+}
+
 /* Delivery Time */
 .shipping-card .delivery-time {
     display: flex;
@@ -273,6 +279,16 @@
 
 .shipping-card .delivery-time .clock-icon {
     color: #7F8C8D;
+}
+
+/* Improve contrast for selected state delivery time */
+.shipping-card.selected .delivery-time {
+    color: #2C3E50;
+    font-weight: 500;
+}
+
+.shipping-card.selected .delivery-time .clock-icon {
+    color: #4CAF50;
 }
 
 /* Price Badge */
