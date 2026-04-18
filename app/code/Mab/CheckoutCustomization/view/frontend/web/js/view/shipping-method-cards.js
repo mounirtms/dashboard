@@ -30,14 +30,23 @@ define([
             self._super();
             
             console.log('🚀 [Shipping Cards] Component initializing...');
+            console.log('🚀 [Shipping Cards] Debug Mode:', self.debugMode !== undefined ? self.debugMode : 'default');
             
             // Observable properties
             self.shippingMethods = ko.observableArray([]);
             self.selectedMethod = ko.observable(null);
-            self.isVisible = ko.observable(false);
+            self.isVisible = ko.observable(true); // Start visible so we can see what's happening
             self.isLoading = ko.observable(false);
             self.currentRegion = ko.observable('');
             self.errorMessage = ko.observable('');
+            
+            // Debug: Check if wrapper exists
+            setTimeout(function() {
+                var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+                console.log('🔍 [Shipping Cards] Wrapper element:', wrapper);
+                console.log('🔍 [Shipping Cards] Wrapper display:', wrapper ? window.getComputedStyle(wrapper).display : 'NOT FOUND');
+                console.log('🔍 [Shipping Cards] Wrapper visibility:', wrapper ? window.getComputedStyle(wrapper).visibility : 'NOT FOUND');
+            }, 500);
             
             // Subscribe to shipping rates from Magento/Mageplaza
             shippingService.getShippingRates().subscribe(function (rates) {

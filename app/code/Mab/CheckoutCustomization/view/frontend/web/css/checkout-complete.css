@@ -198,29 +198,32 @@
     display: none !important;
 }
 
-/* Shipping methods cards wrapper - show after region selection */
+/* Shipping methods cards wrapper - visible by default, let component control visibility */
 .shipping-methods-cards-wrapper {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    transition: opacity 0.3s ease;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.4s ease, transform 0.4s ease;
     min-height: 200px;
     margin-top: 24px;
 }
 
-/* Show shipping cards when region is selected */
+/* Force visibility when Magento provides shipping rates */
+.shipping-methods-cards-wrapper[data-bind],
 .shipping-methods-cards-wrapper[data-region-selected="true"],
 .shipping-methods-cards-wrapper.visible {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    animation: fadeIn 0.4s ease;
 }
 
-/* Override any inline styles trying to hide when region is selected */
-.shipping-methods-cards-wrapper[data-region-selected="true"][style*="display: none"],
-.shipping-methods-cards-wrapper.visible[style*="display: none"] {
+/* Override any attempts to hide the wrapper */
+.shipping-methods-cards-wrapper[style*="display: none"] {
     display: block !important;
+}
+
+.shipping-methods-cards-wrapper[style*="visibility: hidden"] {
+    visibility: visible !important;
 }
 
 /* Add unavailable state styling */

@@ -349,20 +349,8 @@ define([
             
             $container.append($card);
             
-            // Trigger shipping cards visibility after region selection
-            this.showShippingCards();
-        },
-        
-        /**
-         * Show shipping cards after region is selected
-         */
-        showShippingCards: function() {
-            var $wrapper = $('.shipping-methods-cards-wrapper');
-            if ($wrapper.length > 0) {
-                $wrapper.attr('data-region-selected', 'true');
-                $wrapper.addClass('visible');
-                SecurityHelper.log('info', '🚚 [Algerian States] Shipping cards triggered');
-            }
+            // Shipping cards component handles its own visibility based on rates
+            SecurityHelper.log('info', '🚚 [Algerian States] Region selected, waiting for shipping rates');
         },
 
         /**
