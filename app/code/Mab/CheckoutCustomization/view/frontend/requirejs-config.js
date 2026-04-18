@@ -10,9 +10,18 @@ var config = {
             'Magento_Checkout/js/view/form/element/email': {
                 'Mab_CheckoutCustomization/js/mixin/validation-enhanced-mixin': true
             },
-            // Mixin for Magento's directoryRegionUpdater jQuery widget
+            // Mixin for Magento's directoryRegionUpdater jQuery widget (non-checkout pages)
             'Magento_Directory/js/region-updater': {
                 'Mab_CheckoutCustomization/js/region-updater-mixin': true
+            },
+            // Mixin for Checkout's regionUpdater jQuery widget
+            'Magento_Checkout/js/region-updater': {
+                'Mab_CheckoutCustomization/js/region-updater-mixin': true
+            },
+            // Apply shipping cards mixin to the shipping step component
+            'Magento_Checkout/js/view/shipping': {
+                'Mab_CheckoutCustomization/js/mixin/shipping-visibility-mixin': true,
+                'Mab_CheckoutCustomization/js/mixin/shipping-cards-injector-mixin': true
             }
         }
     },

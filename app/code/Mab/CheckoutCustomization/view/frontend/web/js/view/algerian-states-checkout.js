@@ -40,6 +40,7 @@ define([
                 self.deliveryInfo = ko.observable(null);
                 self.isInitialized = ko.observable(false);
                 self.hasError = ko.observable(false);
+                self.selectorsInitialized = false;
             
                 // Log statistics
                 var stats = algerianStates.getStats();
@@ -66,11 +67,16 @@ define([
          */
         initializeSelectors: function() {
             var self = this;
-            
+
+            // Prevent multiple initializations
+            if (self.selectorsInitialized) {
+                return;
+            }
+
             console.log('🔧 [Algerian States] Setting up selectors...');
-            
-            // Find region/wilaya select
-            var $regionSelect = $('select[name="region_id"]');
+
+            // Find region/wilaya select (checkout shipping address field name)
+            var $regionSelect = $('select[name="shippingAddress[region_id]"], select[name="region_id"]').first();
             if ($regionSelect.length === 0) {
                 console.warn('⚠️ [Algerian States] Region select not found, retrying...');
                 setTimeout(function() {
@@ -78,27 +84,37 @@ define([
                 }, 500);
                 return;
             }
-            
+
             console.log('✅ [Algerian States] Found region select. Current value:', $regionSelect.val());
-            
-            // NOTE: Region options MUST be populated by region-updater-mixin with Magento IDs (859-916).
-            // We NEVER populate the region dropdown here to avoid overriding with custom IDs.
-            
-            // Find or create commune select
-            var $cityField = $('.field[name="shippingAddress.city"]');
-            if ($cityField.length > 0) {
-                this.createCommuneSelector($cityField);
+
+            // Region options are populated by region-updater-mixin with Magento IDs (859-916).
+            // We never populate here to avoid overriding with custom IDs.
+
+            // Find the city input (shippingAddress[city]) to replace with commune select
+            var $cityInput = $('input[name="shippingAddress[city]"], input[name="city"]').first();
+            if ($cityInput.length > 0) {
+                // If already replaced by a select named 'commune', capture it
+                if ($cityInput.attr('name') === 'commune' || $cityInput.is('select')) {
+                    self.$communeSelect = $cityInput;
+                } else {
+                    self.createCommuneSelector($cityInput);
+                }
+            } else {
+                // Fallback: try to find an existing commune select
+                var $communeSelect = $('select[name="commune"]').first();
+                if ($communeSelect.length) {
+                    self.$communeSelect = $communeSelect;
+                }
             }
-            
+
             // Set up event handlers
             this.setupEventHandlers($regionSelect);
-            
+
             // Handle address changes (including initial load)
-            var self = this;
             var handleAddressChange = function(address) {
                 if (address && address.regionId) {
                     console.log('📍 [Algerian States] Address changed:', address.regionId);
-                    
+
                     // Convert custom region ID to Magento ID if needed
                     if (RegionMapper.isCustomId(address.regionId)) {
                         var magentoId = RegionMapper.toMagentoId(address.regionId);
@@ -110,43 +126,30 @@ define([
                             console.warn('⚠️ [Algerian States] Could not convert regionId:', address.regionId);
                         }
                     }
-                    
+
                     // Update UI (wilaya selection, communes, delivery info)
                     self.updateFromAddress(address);
                 }
             };
-            
+
             quote.shippingAddress.subscribe(handleAddressChange);
-            
+
             // Process current address immediately (handles initial load)
             handleAddressChange(quote.shippingAddress());
-            
+
+            self.selectorsInitialized = true;
             console.log('✅ [Algerian States] Selectors initialized');
         },
 
         /**
-         * Create commune selector
+         * Create commune selector by replacing the city input with a select
+         * @param {jQuery} $cityInput - The city input element to replace
          */
-        createCommuneSelector: function($cityField) {
+        createCommuneSelector: function($cityInput) {
             var self = this;
-            
-            console.log('🏘️ [Algerian States] Creating commune selector');
-            
-            // Check if commune selector already exists
-            var $existingSelect = $cityField.find('select[name="commune"]');
-            if ($existingSelect.length > 0) {
-                console.log('✅ [Algerian States] Commune selector already exists');
-                self.$communeSelect = $existingSelect;
-                return;
-            }
-            
-            // Find the city input
-            var $input = $cityField.find('input[name="city"]');
-            if ($input.length === 0) {
-                console.warn('⚠️ [Algerian States] City input not found');
-                return;
-            }
-            
+
+            console.log('🏘️ [Algerian States] Creating commune selector from input:', $cityInput.attr('name'));
+
             // Create select element
             var $select = $('<select>', {
                 name: 'commune',
@@ -154,18 +157,18 @@ define([
                 id: 'algerian-commune-select',
                 disabled: true
             });
-            
+
             // Add placeholder option
             $select.append($('<option>', {
                 value: '',
                 text: $t('Sélectionnez d\'abord une wilaya')
             }));
-            
-            // Replace input with select
-            $input.replaceWith($select);
-            
+
+            // Replace the input with the select
+            $cityInput.replaceWith($select);
+
             self.$communeSelect = $select;
-            
+
             console.log('✅ [Algerian States] Commune selector created');
         },
 
