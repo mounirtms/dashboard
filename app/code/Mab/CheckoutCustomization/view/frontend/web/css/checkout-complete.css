@@ -2,14 +2,9 @@
  * Mab_CheckoutCustomization - Complete Checkout Styles
  * Comprehensive styles for checkout page including field ordering,
  * shipping cards, gift card, and all customizations
+ * 
+ * NOTE: All styles consolidated in this file to avoid MIME-type issues with @import
  */
-
-/* Import base form field styles */
-@import 'form-fields-unified.css';
-@import 'checkout-enhanced.css';
-@import 'gift-card-minimal.css';
-@import 'shipping-cards-enhanced.css';
-@import 'progressive-enhancement.css';
 
 /* ========================================
    FIELD ORDERING & LAYOUT FIXES
