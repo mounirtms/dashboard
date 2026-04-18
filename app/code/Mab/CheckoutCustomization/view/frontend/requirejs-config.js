@@ -17,11 +17,6 @@ var config = {
             // Mixin for Checkout's regionUpdater jQuery widget
             'Magento_Checkout/js/region-updater': {
                 'Mab_CheckoutCustomization/js/region-updater-mixin': true
-            },
-            // Apply shipping cards mixin to the shipping step component
-            'Magento_Checkout/js/view/shipping': {
-                'Mab_CheckoutCustomization/js/mixin/shipping-visibility-mixin': true,
-                'Mab_CheckoutCustomization/js/mixin/shipping-cards-injector-mixin': true
             }
         }
     },

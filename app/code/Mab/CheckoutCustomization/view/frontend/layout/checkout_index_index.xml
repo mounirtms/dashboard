@@ -30,10 +30,6 @@
                                     <item name="children" xsi:type="array">
                                         <!-- Shipping Step -->
                                         <item name="shipping-step" xsi:type="array">
-                                            <item name="component" xsi:type="string">Magento_Checkout/js/view/shipping</item>
-                                            <item name="config" xsi:type="array">
-                                                <item name="template" xsi:type="string">Mab_CheckoutCustomization/shipping</item>
-                                            </item>
                                             <item name="children" xsi:type="array">
                                                 <item name="shippingAddress" xsi:type="array">
                                                     <item name="children" xsi:type="array">
@@ -45,14 +41,11 @@
                                                                 <item name="autoLoad" xsi:type="boolean">true</item>
                                                             </item>
                                                         </item>
-                                                    </item>
-                                                </item>
-                                                <!-- Shipping Method Cards: direct child of shipping-step to render in before-shipping-method-form region -->
-                                                <item name="before-shipping-method-form" xsi:type="array">
-                                                    <item name="children" xsi:type="array">
+                                                        <!-- Shipping Method Cards -->
                                                         <item name="shipping-method-cards" xsi:type="array">
                                                             <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards</item>
-                                                            <item name="sortOrder" xsi:type="string">10</item>
+                                                            <item name="sortOrder" xsi:type="string">-100</item>
+                                                            <item name="displayArea" xsi:type="string">before-shipping-method-form</item>
                                                             <item name="config" xsi:type="array">
                                                                 <item name="debugMode" xsi:type="boolean">true</item>
                                                             </item>
