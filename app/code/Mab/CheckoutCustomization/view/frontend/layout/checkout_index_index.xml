@@ -45,16 +45,16 @@
                                                                 <item name="autoLoad" xsi:type="boolean">true</item>
                                                             </item>
                                                         </item>
-                                                        <!-- Shipping Method Cards: will be rendered via before-shipping-method-form region -->
-                                                        <item name="before-shipping-method-form" xsi:type="array">
-                                                            <item name="children" xsi:type="array">
-                                                                <item name="shipping-method-cards" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards</item>
-                                                                    <item name="sortOrder" xsi:type="string">10</item>
-                                                                    <item name="config" xsi:type="array">
-                                                                        <item name="debugMode" xsi:type="boolean">true</item>
-                                                                    </item>
-                                                                </item>
+                                                    </item>
+                                                </item>
+                                                <!-- Shipping Method Cards: direct child of shipping-step to render in before-shipping-method-form region -->
+                                                <item name="before-shipping-method-form" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="shipping-method-cards" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards</item>
+                                                            <item name="sortOrder" xsi:type="string">10</item>
+                                                            <item name="config" xsi:type="array">
+                                                                <item name="debugMode" xsi:type="boolean">true</item>
                                                             </item>
                                                         </item>
                                                     </item>
