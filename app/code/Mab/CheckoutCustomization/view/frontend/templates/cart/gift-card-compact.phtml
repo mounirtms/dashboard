@@ -1,0 +1,437 @@
+<!-- 
+/**
+ * Mab_CheckoutCustomization - Ultra Compact Gift Card Block
+ * Clean, minimal design with inline layout
+ * 
+ * @var $block \Magento\Framework\View\Element\Template
+ * @var $escaper \Magento\Framework\Escaper
+ */
+-->
+<?php
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+$escaper = $block->getData('escaper');
+if (!$escaper) {
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $escaper = $objectManager->get(Escaper::class);
+}
+
+// Check if customer is logged in
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+$isLoggedIn = $customerSession->isLoggedIn();
+
+// Don't render if not logged in
+if (!$isLoggedIn) {
+    return '';
+}
+
+$blockId = 'block-gift-card-' . uniqid();
+?>
+
+<div class="block gift-card compact" id="<?= $escaper->escapeHtmlAttr($blockId) ?>">
+    <div class="title" data-role="title">
+        <strong id="<?= $escaper->escapeHtmlAttr($blockId) ?>-heading" role="heading" aria-level="2">
+            <span class="gift-emoji">🎁</span>
+            <?= $escaper->escapeHtml(__('Carte Cadeau')) ?>
+        </strong>
+    </div>
+    
+    <div class="content" data-role="content" style="display: none;">
+        <form class="form-gift-card compact" id="gift-card-form" method="post" action="/amgcard/cart/apply">
+            <div class="fieldset gift-card">
+                <!-- Single row: Input + Apply + Check -->
+                <div class="gift-card-row">
+                    <div class="gift-card-input-wrapper">
+                        <input type="text" 
+                               class="input-text gift-card-input" 
+                               id="gift_card_code" 
+                               name="am_giftcard_code" 
+                               value="" 
+                               placeholder="<?= $escaper->escapeHtmlAttr(__('Code carte cadeau')) ?>"
+                               maxlength="50"
+                               autocomplete="off"
+                               required />
+                    </div>
+                    <div class="gift-card-actions">
+                        <button class="action apply" type="button" id="apply-gift-card-btn">
+                            <span><?= $escaper->escapeHtml(__('Appliquer')) ?></span>
+                        </button>
+                        <button class="action check" type="button" id="check-gift-card-btn">
+                            <span><?= $escaper->escapeHtml(__('Solde')) ?></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Compact Balance Display -->
+                <div class="gift-card-balance" id="gift-card-balance" style="display:none;">
+                    <span class="balance-label"><?= $escaper->escapeHtml(__('Solde:')) ?></span>
+                    <span class="balance-amount" id="balance-amount">0,00 DZD</span>
+                    <span class="balance-status" id="balance-status">(<?= $escaper->escapeHtml(__('Actif')) ?>)</span>
+                </div>
+                
+                <!-- Messages -->
+                <div class="messages" id="gift-card-messages" style="display:none;">
+                    <div class="message message-error error" id="gift-card-error" style="display:none;">
+                        <div id="gift-card-error-text"></div>
+                    </div>
+                    <div class="message message-success success" id="gift-card-success" style="display:none;">
+                        <div id="gift-card-success-text"></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Compact Gift Card Block - Minimal & Clean */
+.block.gift-card.compact {
+    margin-bottom: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.block.gift-card.compact .title {
+    background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #e0e0e0;
+    transition: background 0.2s ease;
+}
+
+.block.gift-card.compact .title:hover {
+    background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+}
+
+.block.gift-card.compact .title strong {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.block.gift-card.compact .gift-emoji {
+    font-size: 14px;
+}
+
+.block.gift-card.compact .content {
+    padding: 10px 12px;
+    background: #fafafa;
+}
+
+/* Single row layout */
+.gift-card-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.gift-card-input-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.gift-card-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gift-card-input:focus {
+    border-color: #4caf50;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.gift-card-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.gift-card-actions .action {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.gift-card-actions .action.apply {
+    background: #4caf50;
+    color: #fff;
+}
+
+.gift-card-actions .action.apply:hover:not(:disabled) {
+    background: #43a047;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.gift-card-actions .action.check {
+    background: #fff;
+    border: 1px solid #bbb;
+    color: #555;
+}
+
+.gift-card-actions .action.check:hover:not(:disabled) {
+    background: #f5f5f5;
+    border-color: #999;
+}
+
+.gift-card-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Balance - inline compact */
+.gift-card-balance {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f1 100%);
+    border: 1px solid #c8e6c9;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-top: 8px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.gift-card-balance .balance-label {
+    color: #555;
+    font-weight: 500;
+}
+
+.gift-card-balance .balance-amount {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1b5e20;
+}
+
+.gift-card-balance .balance-status {
+    font-size: 11px;
+    color: #666;
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Messages - compact */
+.gift-card .messages {
+    margin-top: 8px;
+}
+
+.gift-card .message {
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.gift-card .message-error {
+    background: #ffebee;
+    border: 1px solid #ef5350;
+    color: #c62828;
+}
+
+.gift-card .message-success {
+    background: #e8f5e9;
+    border: 1px solid #66bb6a;
+    color: #2e7d32;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .gift-card-row {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .gift-card-actions {
+        justify-content: stretch;
+    }
+    
+    .gift-card-actions .action {
+        flex: 1;
+        padding: 8px 10px;
+    }
+    
+    .gift-card-balance {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+</style>
+
+<script>
+require([
+    'jquery',
+    'jquery/ui',
+    'mage/collapsible'
+], function($) {
+    'use strict';
+    
+    $(document).ready(function() {
+        var $block = $('#<?= $escaper->escapeJs($blockId) ?>');
+        var $form = $('#gift-card-form');
+        var $input = $('#gift_card_code');
+        var $applyBtn = $('#apply-gift-card-btn');
+        var $checkBtn = $('#check-gift-card-btn');
+        var $balanceDiv = $('#gift-card-balance');
+        var $balanceAmount = $('#balance-amount');
+        var $statusValue = $('#balance-status');
+        var $errorMsg = $('#gift-card-error');
+        var $errorText = $('#gift-card-error-text');
+        var $successMsg = $('#gift-card-success');
+        var $successText = $('#gift-card-success-text');
+        
+        // Initialize collapsible
+        $block.collapsible({
+            active: false,
+            collapsible: true,
+            openedState: 'active',
+            closedState: '',
+            animate: 200
+        });
+        
+        // Validation
+        function validateCode(code) {
+            code = code.trim();
+            if (code.length < 4) {
+                return { 
+                    valid: false, 
+                    message: '<?= $escaper->escapeJs(__('Le code doit contenir au moins 4 caractères')) ?>' 
+                };
+            }
+            return { valid: true };
+        }
+        
+        // Show message
+        function showMessage(type, message, duration) {
+            $errorMsg.hide();
+            $successMsg.hide();
+            
+            if (type === 'error') {
+                $errorText.text(message);
+                $errorMsg.show();
+            } else if (type === 'success') {
+                $successText.text(message);
+                $successMsg.show();
+            }
+            
+            $('#gift-card-messages').show();
+            
+            if (duration) {
+                setTimeout(function() {
+                    $errorMsg.hide();
+                    $successMsg.hide();
+                    $('#gift-card-messages').hide();
+                }, duration);
+            }
+        }
+        
+        // Check balance
+        $checkBtn.on('click', function() {
+            var code = $input.val();
+            var validation = validateCode(code);
+            
+            if (!validation.valid) {
+                showMessage('error', validation.message, 5000);
+                return;
+            }
+            
+            $checkBtn.prop('disabled', true);
+            $checkBtn.find('span').text('<?= $escaper->escapeJs(__('Vérification...')) ?>');
+            
+            $.ajax({
+                url: '/amgcard/cart/check',
+                type: 'POST',
+                dataType: 'json',
+                data: { amgiftcard: code },
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    try {
+                        var data = typeof response === 'string' ? JSON.parse(response) : response;
+                        
+                        if (data && data.current_value) {
+                            $balanceAmount.text(data.current_value);
+                            
+                            // Set status
+                            var status = data.status || 1;
+                            if (status == 1) {
+                                $statusValue.text('<?= $escaper->escapeJs(__('Actif')) ?>');
+                                $statusValue.css('color', '#2e7d32');
+                            } else {
+                                $statusValue.text('<?= $escaper->escapeJs(__('Expiré')) ?>');
+                                $statusValue.css('color', '#d32f2f');
+                            }
+                            
+                            $balanceDiv.show();
+                            showMessage('success', '<?= $escaper->escapeJs(__('Carte cadeau valide')) ?>', 5000);
+                        } else {
+                            $balanceDiv.hide();
+                            showMessage('error', '<?= $escaper->escapeJs(__('Code invalide ou solde épuisé')) ?>', 5000);
+                        }
+                    } catch (e) {
+                        $balanceDiv.hide();
+                        showMessage('error', '<?= $escaper->escapeJs(__('Erreur lors de la vérification')) ?>', 5000);
+                    }
+                },
+                error: function() {
+                    $balanceDiv.hide();
+                    showMessage('error', '<?= $escaper->escapeJs(__('Code invalide')) ?>', 5000);
+                },
+                complete: function() {
+                    $checkBtn.prop('disabled', false);
+                    $checkBtn.find('span').text('<?= $escaper->escapeJs(__('Solde')) ?>');
+                }
+            });
+        });
+        
+        // Apply gift card
+        $applyBtn.on('click', function() {
+            var code = $input.val();
+            var validation = validateCode(code);
+            
+            if (!validation.valid) {
+                showMessage('error', validation.message, 5000);
+                return;
+            }
+            
+            $applyBtn.prop('disabled', true);
+            $applyBtn.find('span').text('<?= $escaper->escapeJs(__('Application...')) ?>');
+            
+            // Submit form
+            $form.submit();
+        });
+        
+        // Enter key support
+        $input.on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                $applyBtn.click();
+            }
+        });
+    });
+});
+</script>
