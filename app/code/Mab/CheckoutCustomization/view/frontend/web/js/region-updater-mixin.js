@@ -74,8 +74,8 @@ define([
                 // Add each wilaya as an option (value = Magento region_id)
                 $.each(regionsEntries, $.proxy(function (key, value) {
                     regionData = value[1];
-                    regionId = value[0]; // Magento DB region ID (859-916)
-                    this._renderSelectOption(regionList, regionId, regionData);
+                    regionId = value[0]; // The region ID is the key (e.g., 859-916)
+                    this._renderSelectOption(regionList, regionId.toString(), regionData);
                 }, this));
 
                 // Placeholder

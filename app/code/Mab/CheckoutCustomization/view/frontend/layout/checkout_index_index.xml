@@ -25,7 +25,7 @@
                                                 <item name="shippingAddress" xsi:type="array">
                                                     <item name="children" xsi:type="array">
                                                         <item name="shipping-method-cards" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards-working</item>
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards</item>
                                                             <item name="sortOrder" xsi:type="string">-100</item>
                                                             <item name="displayArea" xsi:type="string">before-shipping-method-form</item>
                                                             <item name="config" xsi:type="array">
@@ -52,9 +52,9 @@
                                                                 </item>
                                                             </item>
                                                         </item>
-                                                        <!-- Fix: Override grand-total template -->
+                                                        <!-- Fix: Override grand-total template with safe component -->
                                                         <item name="grand-total" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Magento_Tax/js/view/checkout/summary/grand-total</item>
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/checkout/summary/grand-total-safe</item>
                                                             <item name="config" xsi:type="array">
                                                                 <item name="template" xsi:type="string">Mab_CheckoutCustomization/checkout/cart/totals/grand-total</item>
                                                                 <item name="title" xsi:type="string" translate="true">Order Total</item>

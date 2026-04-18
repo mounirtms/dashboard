@@ -2,13 +2,19 @@
 /**
  * Grand Total Template - Fixed for Gift Card Compatibility
  * Prevents null value errors from Amasty Gift Card mixin
+ * Compatible with Magento_Tax/js/view/checkout/summary/grand-total
  */
 -->
 <tr class="grand totals">
-    <th class="mark" scope="row" data-bind="i18n: title"></th>
+    <th class="mark" scope="row" colspan="1" data-bind="i18n: title"></th>
     <td class="amount">
         <strong>
-            <span class="price" data-bind="text: getValue()"></span>
+            <!-- ko if: getValue() -->
+            <span class="price" data-bind="text: getValue().value"></span>
+            <!-- /ko -->
+            <!-- ko ifnot: getValue() -->
+            <span class="price">0,00 DZD</span>
+            <!-- /ko -->
         </strong>
     </td>
 </tr>
