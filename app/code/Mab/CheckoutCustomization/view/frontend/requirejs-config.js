@@ -9,6 +9,10 @@ var config = {
             },
             'Magento_Checkout/js/view/form/element/email': {
                 'Mab_CheckoutCustomization/js/mixin/validation-enhanced-mixin': true
+            },
+            // Mixin for Magento's directoryRegionUpdater jQuery widget
+            'Magento_Directory/js/region-updater': {
+                'Mab_CheckoutCustomization/js/region-updater-mixin': true
             }
         }
     },

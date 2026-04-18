@@ -79,10 +79,10 @@ define([
                 return;
             }
             
-            console.log('✅ [Algerian States] Found region select');
+            console.log('✅ [Algerian States] Found region select. Current value:', $regionSelect.val());
             
-            // Populate wilayas
-            this.populateWilayas($regionSelect);
+            // NOTE: Region options MUST be populated by region-updater-mixin with Magento IDs (859-916).
+            // We NEVER populate the region dropdown here to avoid overriding with custom IDs.
             
             // Find or create commune select
             var $cityField = $('.field[name="shippingAddress.city"]');
@@ -93,58 +93,33 @@ define([
             // Set up event handlers
             this.setupEventHandlers($regionSelect);
             
-            // Subscribe to quote address changes
-            quote.shippingAddress.subscribe(function(address) {
+            // Handle address changes (including initial load)
+            var self = this;
+            var handleAddressChange = function(address) {
                 if (address && address.regionId) {
-                    console.log('📍 [Algerian States] Address updated:', address.regionId);
+                    console.log('📍 [Algerian States] Address changed:', address.regionId);
+                    
+                    // Convert custom region ID to Magento ID if needed
+                    if (RegionMapper.isCustomId(address.regionId)) {
+                        var magentoId = RegionMapper.toMagentoId(address.regionId);
+                        if (magentoId) {
+                            console.log('🔁 [Algerian States] Converting custom regionId', address.regionId, '→ Magento', magentoId);
+                            address.regionId = magentoId;
+                            quote.shippingAddress(address);
+                        } else {
+                            console.warn('⚠️ [Algerian States] Could not convert regionId:', address.regionId);
+                        }
+                    }
+                    
+                    // Update UI (wilaya selection, communes, delivery info)
                     self.updateFromAddress(address);
                 }
-            });
-        },
-
-        /**
-         * Populate wilayas dropdown
-         */
-        populateWilayas: function($select) {
-            console.log('📝 [Algerian States] Populating wilayas...');
+            };
             
-            var currentValue = $select.val();
-            algerianStates.populateWilayasSelect($select, currentValue);
+            quote.shippingAddress.subscribe(handleAddressChange);
             
-            // Add custom styling
-            $select.addClass('algerian-wilaya-select');
-        },
-
-        /**
-         * Create commune selector
-         */
-        createCommuneSelector: function($cityField) {
-            var self = this;
-            
-            console.log('📝 [Algerian States] Creating commune selector...');
-            
-            // Check if select already exists
-            var $existingSelect = $cityField.find('select[name="city"]');
-            if ($existingSelect.length > 0) {
-                self.$communeSelect = $existingSelect;
-                return;
-            }
-            
-            // Replace input with select
-            var $input = $cityField.find('input[name="city"]');
-            if ($input.length === 0) {
-                console.warn('⚠️ [Algerian States] City input not found');
-                return;
-            }
-            
-            var currentValue = $input.val();
-            
-            // Create select element
-            var $select = $('<select>', {
-                name: 'city',
-                class: 'algerian-commune-select input-text',
-                disabled: true
-            });
+            // Process current address immediately (handles initial load)
+            handleAddressChange(quote.shippingAddress());
             
             // Add placeholder option
             $select.append($('<option>', {
@@ -196,20 +171,40 @@ define([
          */
         onWilayaChange: function(wilayaId) {
             var self = this;
+            var originalId = parseInt(wilayaId, 10);
+            var customId, magentoRegionId, wilaya;
             
-            self.selectedWilaya(wilayaId);
+            // Determine custom and Magento IDs
+            if (RegionMapper.isMagentoId(originalId)) {
+                customId = RegionMapper.toCustomId(originalId);
+                magentoRegionId = originalId;
+            } else if (RegionMapper.isCustomId(originalId)) {
+                customId = originalId;
+                magentoRegionId = RegionMapper.toMagentoId(customId);
+            } else {
+                console.error('❌ [Algerian States] Invalid region ID:', wilayaId);
+                return;
+            }
             
-            // Get wilaya info
-            var wilaya = algerianStates.getWilayaById(wilayaId);
+            if (!customId) {
+                console.error('❌ [Algerian States] Cannot convert region ID:', wilayaId);
+                return;
+            }
+            
+            // Store as custom ID internally
+            self.selectedWilaya(customId);
+            
+            // Get wilaya data
+            wilaya = algerianStates.getWilayaById(customId);
             if (!wilaya) {
-                console.error('❌ [Algerian States] Wilaya not found:', wilayaId);
+                console.error('❌ [Algerian States] Wilaya not found for ID:', customId);
                 return;
             }
             
             console.log('📍 [Algerian States] Selected wilaya:', wilaya.name, '(Zone', wilaya.zone + ')');
             
             // Check deliverability
-            if (!algerianStates.isDeliverable(wilayaId)) {
+            if (!algerianStates.isDeliverable(customId)) {
                 console.warn('⚠️ [Algerian States] Wilaya not deliverable:', wilaya.name);
                 this.showDeliverabilityWarning(wilaya.name);
                 return;
@@ -217,10 +212,10 @@ define([
             
             // Populate communes
             if (self.$communeSelect) {
-                algerianStates.populateCommunesSelect(self.$communeSelect, wilayaId);
+                algerianStates.populateCommunesSelect(self.$communeSelect, customId);
                 
                 // Get communes for this wilaya
-                var communes = algerianStates.getCommunesByWilaya(wilayaId, true);
+                var communes = algerianStates.getCommunesByWilaya(customId, true);
                 self.availableCommunes(communes);
                 
                 // Update placeholder
@@ -230,35 +225,31 @@ define([
             }
             
             // Update delivery info
-            this.updateDeliveryInfo(wilayaId, null);
+            this.updateDeliveryInfo(customId, null);
             
-            // CRITICAL: Trigger Magento shipping rate estimation
-            // Update quote shipping address with the selected region
+            // Update quote shipping address with Magento region ID
             var address = quote.shippingAddress();
             if (address) {
-                // Convert custom ID (1-58) to Magento ID (859-900+)
-                var magentoRegionId = RegionMapper.toMagentoId(wilayaId);
                 if (!magentoRegionId) {
-                    console.error('❌ [Algerian States] Failed to map region ID:', wilayaId);
+                    console.error('❌ [Algerian States] Failed to get Magento region ID for custom:', customId);
                     return;
                 }
                 
-                // Update region_id in the address with Magento ID
                 address.regionId = magentoRegionId;
                 address.region = wilaya.name;
-                address.regionCode = wilayaId.toString().padStart(2, '0'); // Format: "01", "02", etc.
+                address.regionCode = customId.toString().padStart(2, '0');
                 
-                // Trigger address update to recalculate shipping
+                // Update the quote
                 quote.shippingAddress(address);
                 
                 console.log('🚚 [Algerian States] Updated quote address for shipping calculation:', {
-                    customId: wilayaId,
+                    customId: customId,
                     magentoRegionId: magentoRegionId,
                     region: address.region,
                     regionCode: address.regionCode
                 });
                 
-                // Force estimate shipping rates
+                // Trigger shipping rate estimation
                 require(['Magento_Checkout/js/action/select-shipping-address'], function(selectShippingAddress) {
                     selectShippingAddress(address);
                     console.log('✅ [Algerian States] Triggered shipping rate estimation');
@@ -421,19 +412,27 @@ define([
          */
         updateFromAddress: function(address) {
             if (address.regionId) {
-                this.selectedWilaya(address.regionId);
+                var customId = RegionMapper.isMagentoId(address.regionId)
+                    ? RegionMapper.toCustomId(address.regionId)
+                    : (RegionMapper.isCustomId(address.regionId) ? address.regionId : null);
                 
-                if (this.$communeSelect && address.city) {
-                    // Try to find commune by name
-                    var communes = algerianStates.getCommunesByWilaya(address.regionId, true);
-                    var commune = communes.find(function(c) {
-                        return c.name.toLowerCase() === address.city.toLowerCase();
-                    });
+                if (customId) {
+                    this.selectedWilaya(customId);
                     
-                    if (commune) {
-                        this.selectedCommune(commune.id);
-                        this.$communeSelect.val(commune.id);
+                    if (this.$communeSelect && address.city) {
+                        // Try to find commune by name
+                        var communes = algerianStates.getCommunesByWilaya(customId, true);
+                        var commune = communes.find(function(c) {
+                            return c.name.toLowerCase() === address.city.toLowerCase();
+                        });
+                        
+                        if (commune) {
+                            this.selectedCommune(commune.id);
+                            this.$communeSelect.val(commune.id);
+                        }
                     }
+                } else {
+                    console.warn('⚠️ [Algerian States] Could not map address regionId to custom ID:', address.regionId);
                 }
             }
         },

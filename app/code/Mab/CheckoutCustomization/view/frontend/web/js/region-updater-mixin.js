@@ -35,6 +35,7 @@ define([
              * - Add French placeholder text
              */
             _updateRegion: function (country) {
+                console.log('🔧 [Region Updater Mixin] _updateRegion called for country:', country);
                 var regionList = $(this.options.regionListId),
                     regionInput = $(this.options.regionInputId),
                     postcode = $(this.options.postcodeId),
