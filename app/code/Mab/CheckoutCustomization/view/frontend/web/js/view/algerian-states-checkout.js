@@ -308,7 +308,7 @@ define([
         },
 
         /**
-         * Display delivery information
+         * Display delivery information - Compact inline layout
          */
         displayDeliveryInfo: function(info) {
             // Find or create info container
@@ -320,34 +320,49 @@ define([
                 }).insertAfter('.field[name="shippingAddress.city"]');
             }
             
-            // Build HTML using safe methods
+            // Build compact HTML using safe methods
             $container.empty();
             
             var $card = SecurityHelper.createSafeElement('div', {class: 'delivery-info-card'});
             
-            // Zone row
-            var $zoneRow = SecurityHelper.createSafeElement('div', {class: 'info-row'});
-            $zoneRow.append(SecurityHelper.createSafeElement('span', {class: 'info-label'}, 'Zone de livraison:'));
-            $zoneRow.append(SecurityHelper.createSafeElement('span', {class: 'info-value zone-' + info.zone}, info.zoneName));
+            // Compact inline layout - Zone info
+            var $zoneRow = SecurityHelper.createSafeElement('span', {class: 'info-row'});
+            $zoneRow.append(SecurityHelper.createSafeElement('span', {class: 'info-label'}, 'Zone:'));
+            $zoneRow.append(SecurityHelper.createSafeElement('span', {class: 'info-value zone-' + info.zone}, 'Zone ' + info.zone));
             $card.append($zoneRow);
             
-            // Delivery days row
+            // Delivery days inline
             if (info.commune && info.deliveryDays) {
-                var $deliveryRow = SecurityHelper.createSafeElement('div', {class: 'info-row'});
-                $deliveryRow.append(SecurityHelper.createSafeElement('span', {class: 'info-label'}, 'Délai de livraison:'));
-                $deliveryRow.append(SecurityHelper.createSafeElement('span', {class: 'info-value'}, info.deliveryDays + ' jour(s)'));
+                var $deliveryRow = SecurityHelper.createSafeElement('span', {class: 'info-row'});
+                $deliveryRow.append(SecurityHelper.createSafeElement('span', {class: 'info-label'}, 'Délai:'));
+                $deliveryRow.append(SecurityHelper.createSafeElement('span', {class: 'info-value'}, info.deliveryDays + 'j'));
                 $card.append($deliveryRow);
             }
             
-            // Stop desk row
+            // Stop desk inline (if available)
             if (info.stopDesk) {
-                var $stopDeskRow = SecurityHelper.createSafeElement('div', {class: 'info-row highlight'});
+                var $stopDeskRow = SecurityHelper.createSafeElement('span', {class: 'info-row highlight'});
                 $stopDeskRow.append(SecurityHelper.createSafeElement('span', {class: 'info-icon'}, '📍'));
-                $stopDeskRow.append(SecurityHelper.createSafeElement('span', {class: 'info-text'}, 'Point relais disponible'));
+                $stopDeskRow.append(SecurityHelper.createSafeElement('span', {class: 'info-text'}, 'Point relais'));
                 $card.append($stopDeskRow);
             }
             
             $container.append($card);
+            
+            // Trigger shipping cards visibility after region selection
+            this.showShippingCards();
+        },
+        
+        /**
+         * Show shipping cards after region is selected
+         */
+        showShippingCards: function() {
+            var $wrapper = $('.shipping-methods-cards-wrapper');
+            if ($wrapper.length > 0) {
+                $wrapper.attr('data-region-selected', 'true');
+                $wrapper.addClass('visible');
+                SecurityHelper.log('info', '🚚 [Algerian States] Shipping cards triggered');
+            }
         },
 
         /**

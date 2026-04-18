@@ -100,6 +100,49 @@
     vertical-align: top !important;
 }
 
+/* Style commune/city select to match wilaya */
+.checkout-index-index .field[name="shippingAddress.city"] select,
+.checkout-index-index .field[name="billingAddress.city"] select,
+.checkout-index-index .field[name="shippingAddress.city"] .algerian-commune-select,
+.checkout-index-index .field[name="billingAddress.city"] .algerian-commune-select {
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 48px !important;
+    padding: 12px 45px 12px 14px !important;
+    background-color: #ffffff !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L8 8L15 1" stroke="%234caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 16px 10px !important;
+}
+
+.checkout-index-index .field[name="shippingAddress.city"] select:focus,
+.checkout-index-index .field[name="billingAddress.city"] select:focus,
+.algerian-commune-select:focus {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1) !important;
+    outline: none !important;
+}
+
+/* Ensure city/commune field label is visible */
+.checkout-index-index .field[name="shippingAddress.city"] label,
+.checkout-index-index .field[name="billingAddress.city"] label {
+    display: block !important;
+    visibility: visible !important;
+    margin-bottom: 8px !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
 /* Force region/city to appear before street address */
 .checkout-index-index .field[name="shippingAddress.region_id"] {
     order: 1 !important;
@@ -155,31 +198,29 @@
     display: none !important;
 }
 
-/* Ensure shipping methods container is always visible */
+/* Shipping methods cards wrapper - show after region selection */
 .shipping-methods-cards-wrapper {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
     transition: opacity 0.3s ease;
     min-height: 200px;
-}
-
-/* Override any knockout binding that might hide it */
-.shipping-methods-cards-wrapper[style*="display: none"],
-.shipping-methods-cards-wrapper[style*="visibility: hidden"] {
-    display: block !important;
-    visibility: visible !important;
-}
-
-/* Hide wrapper only when explicitly marked as hidden */
-.shipping-methods-cards-wrapper[data-region-selected="false"] {
-    display: none !important;
+    margin-top: 24px;
 }
 
 /* Show shipping cards when region is selected */
-.shipping-methods-cards-wrapper[data-region-selected="true"] {
+.shipping-methods-cards-wrapper[data-region-selected="true"],
+.shipping-methods-cards-wrapper.visible {
     display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     animation: fadeIn 0.4s ease;
+}
+
+/* Override any inline styles trying to hide when region is selected */
+.shipping-methods-cards-wrapper[data-region-selected="true"][style*="display: none"],
+.shipping-methods-cards-wrapper.visible[style*="display: none"] {
+    display: block !important;
 }
 
 /* Add unavailable state styling */
@@ -478,42 +519,43 @@
     opacity: 0.6 !important;
 }
 
-/* Delivery Info Card */
+/* Delivery Info Card - Compact Design */
 .algerian-delivery-info {
-    margin-top: 16px;
-    margin-bottom: 16px;
+    margin-top: 12px;
+    margin-bottom: 12px;
 }
 
 .delivery-info-card {
-    background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
-    border: 2px solid #2196f3;
-    border-radius: 8px;
-    padding: 16px;
-    margin-top: 12px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #f5f5f5 100%);
+    border-left: 4px solid #4caf50;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    font-size: 13px;
 }
 
 .delivery-info-card .info-row {
-    display: flex;
-    justify-content: space-between;
+    display: inline-flex;
     align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+    padding: 4px 8px 4px 0;
+    margin-right: 12px;
 }
 
 .delivery-info-card .info-row:last-child {
-    border-bottom: none;
+    margin-right: 0;
 }
 
 .delivery-info-card .info-label {
-    font-weight: 600;
-    color: #1976d2;
-    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    font-size: 12px;
+    margin-right: 6px;
 }
 
 .delivery-info-card .info-value {
-    font-weight: 700;
+    font-weight: 600;
     color: #2c3e50;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 /* Zone-specific colors */
@@ -530,6 +572,26 @@
 }
 
 .delivery-info-card .info-value.zone-4 {
+    color: #f44336;
+}
+
+/* Compact stop desk indicator */
+.delivery-info-card .info-row.highlight {
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 3px;
+    padding: 4px 8px;
+}
+
+.delivery-info-card .info-icon {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.delivery-info-card .info-text {
+    color: #388e3c;
+    font-weight: 600;
+    font-size: 12px;
+}
     color: #f44336;
 }
 
