@@ -1,12 +1,9 @@
 <!-- ko if: isVisible() -->
-<div class="mab-giftcard-container" data-bind="css: {'customer-logged-in': isCustomerLoggedIn()}">
+<div class="mab-giftcard-container compact" data-bind="css: {'customer-logged-in': isCustomerLoggedIn()}">
+    <!-- Header -->
     <div class="mab-giftcard-header">
-        <h3 class="mab-giftcard-title">🎁 Techno Bon Cadeau</h3>
+        <h3 class="mab-giftcard-title" data-bind="text: titleText"></h3>
     </div>
-
-    <!-- ko foreach: getRegion('messages') -->
-        <!-- ko template: getTemplate() --><!-- /ko -->
-    <!--/ko-->
 
     <!-- Applied gift cards list -->
     <div class="mab-giftcard-applied-list" data-bind="visible: applyCodes().length > 0">
@@ -16,76 +13,63 @@
             <span class="mab-giftcard-code" data-bind="text: $data"></span>
             <button type="button" 
                     class="mab-giftcard-remove" 
-                    data-bind="text: $parent.removeText || $t('Retirer'), 
-                               click: $parent.removeSelected.bind($parent, $data), 
-                               attr: {title: $parent.removeText || $t('Retirer ce bon cadeau'), 'aria-label': $parent.removeText || $t('Retirer ce bon cadeau')}">
+                    data-bind="
+                        text: $parent.removeText,
+                        click: $parent.removeSelected.bind($parent, $data),
+                        attr: {title: $parent.removeText}">
             </button>
         </div>
         <!-- /ko -->
         <!-- /ko -->
     </div>
 
-    <!-- Gift card form -->
+    <!-- Gift card form - single row layout -->
     <div class="mab-giftcard-form-container">
         <form action="#" class="mab-giftcard-form" onsubmit="event.preventDefault()">
-            <div class="mab-giftcard-input-group">
-                <div class="mab-giftcard-datalist-wrapper" data-bind="afterRender: setContainer.bind($data, $element), css: {'-active': isShowDatalist}">
-                    <label class="mab-giftcard-label">
-                        <span class="mab-giftcard-label-text">Code du bon cadeau</span>
-                        <input type="text" 
-                               class="mab-giftcard-input"
-                               data-bind="
-                                   click: onDatalistClick.bind($data, $element), 
-                                   event: {keyup: apply.bind($data)}, 
-                                   value: cardCode, 
-                                   attr: {
-                                       placeholder: placeholderText || $t('Ex: TECHNO-XXXX-XXXX'),
-                                       'aria-label': $t('Entrez votre code bon cadeau'),
-                                       'aria-describedby': 'giftcard-help'
-                                   }"
-                               maxlength="50">
-                    </label>
-                    
-                    <!-- Datalist dropdown -->
-                    <ul class="mab-giftcard-datalist" 
-                        data-bind="visible: isShowDatalist() && (options().length > 0 || datalistMessage())"
-                        role="listbox"
-                        aria-label="Codes bons cadeaux disponibles">
-                        <!-- ko foreach: options  -->
-                        <li class="mab-giftcard-datalist-item" 
-                            role="option"
-                            data-bind="text: value, click: $parent.onOptionClick.bind($parent, value)"></li>
-                        <!-- /ko -->
-                        <!-- ko if: datalistMessage() -->
-                        <li class="mab-giftcard-datalist-message" role="status" data-bind="text: datalistMessage"></li>
-                        <!-- /ko -->
-                    </ul>
+            <div class="mab-giftcard-row">
+                <div class="mab-giftcard-input-wrapper">
+                    <input type="text" 
+                           class="mab-giftcard-input"
+                           data-bind="
+                               event: {keyup: apply.bind($data)}, 
+                               value: cardCode, 
+                               attr: {
+                                   placeholder: placeholderText,
+                                   'aria-label': placeholderText
+                               }"
+                           maxlength="50"
+                           autocomplete="off" />
                 </div>
-
                 <div class="mab-giftcard-actions">
                     <button type="button" 
                             class="mab-giftcard-btn mab-giftcard-btn-primary" 
                             data-bind="
                                 click: apply.bind($data), 
-                                text: applyText || $t('Appliquer le code'),
-                                attr: {
-                                    value: applyText || $t('Appliquer le code'),
-                                    'aria-label': $t('Appliquer le code bon cadeau')
-                                }">
+                                text: applyText,
+                                attr: {'aria-label': applyText}">
                     </button>
-                    
                     <button type="button" 
                             class="mab-giftcard-btn mab-giftcard-btn-secondary" 
                             data-bind="
                                 click: check.bind($data), 
-                                text: checkText || $t('Vérifier le solde'),
-                                attr: {'aria-label': $t('Vérifier le solde du bon cadeau')}">
+                                text: checkText,
+                                attr: {'aria-label': checkText}">
                     </button>
                 </div>
             </div>
-            <p id="giftcard-help" style="font-size: 12px; color: #666; margin: 8px 0 0 0;">
-                Entrez votre code bon cadeau Techno pour l'appliquer à votre commande.
-            </p>
+            
+            <!-- Compact balance -->
+            <div class="mab-giftcard-balance" data-bind="visible: balanceVisible">
+                <span class="mab-giftcard-balance-label">Solde:</span>
+                <span class="mab-giftcard-balance-amount" data-bind="text: balanceAmount"></span>
+                <span class="mab-giftcard-balance-status" data-bind="text: balanceStatus"></span>
+            </div>
+            
+            <!-- Messages -->
+            <div class="mab-giftcard-messages-wrapper" data-bind="visible: errorMessage() || successMessage()">
+                <div class="mab-giftcard-message error" data-bind="visible: errorMessage, text: errorMessage"></div>
+                <div class="mab-giftcard-message success" data-bind="visible: successMessage, text: successMessage"></div>
+            </div>
         </form>
     </div>
 </div>

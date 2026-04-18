@@ -1,5 +1,6 @@
 /**
  * French version of Amasty Gift Card for logged-in customers only
+ * Extended with balance display observables
  */
 define([
     'Amasty_GiftCardAccount/js/view/payment/gift-card',
@@ -24,6 +25,25 @@ define([
             titleText: $t('🎁 Techno Bon Cadeau'),
             addCodeText: $t('Ajouter un code'),
             requireLogin: true
+        },
+
+        /**
+         * Additional observables for balance display
+         */
+        initObservable: function () {
+            this._super()
+                .observe([
+                    'balanceVisible',
+                    'balanceAmount',
+                    'balanceStatus'
+                ]);
+            
+            // Initialize
+            this.balanceVisible(false);
+            this.balanceAmount('');
+            this.balanceStatus('');
+            
+            return this;
         },
 
         /**
@@ -60,7 +80,49 @@ define([
             return this;
         },
 
-/**
+        /**
+         * Override check method to display balance
+         */
+        check: function () {
+            var self = this;
+            if (!this.validate()) {
+                return;
+            }
+
+            this.loader.start();
+            giftCodeActions.check(this.cardCode())
+                .done((response) => {
+                    if (!response.length || !!response.error) {
+                        messageContainer.addErrorMessage({
+                            'message': response.message ?? this.wrongCodeText
+                        });
+                        self.balanceVisible(false);
+                        return;
+                    }
+
+                    this.checkedCards([JSON.parse(response)]);
+                    
+                    // Parse balance from response
+                    try {
+                        var data = typeof response === 'string' ? JSON.parse(response) : response;
+                        if (data && data.current_value) {
+                            self.balanceAmount(data.current_value);
+                            var status = data.status || 1;
+                            self.balanceStatus(status == 1 ? $t('Actif') : $t('Expiré'));
+                            self.balanceVisible(true);
+                        } else {
+                            self.balanceVisible(false);
+                        }
+                    } catch (e) {
+                        self.balanceVisible(false);
+                    }
+                })
+                .always(() => {
+                    this.loader.stop();
+                });
+        },
+
+        /**
          * Override removeDone to show French message
          */
         removeDone: function (code) {
