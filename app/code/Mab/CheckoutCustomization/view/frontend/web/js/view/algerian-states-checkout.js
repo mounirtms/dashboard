@@ -2,6 +2,8 @@
  * Algerian States Checkout Integration
  * Integrates Algerian wilayas and communes with Magento checkout
  * Provides dependent dropdowns and dynamic address handling
+ * 
+ * Version: 2.0.0 (Enhanced with security and error handling)
  */
 define([
     'jquery',
@@ -9,8 +11,11 @@ define([
     'uiComponent',
     'Magento_Checkout/js/model/quote',
     'Mab_CheckoutCustomization/js/algerian-states-loader',
+    'Mab_CheckoutCustomization/js/utils/security-helper',
+    'Mab_CheckoutCustomization/js/utils/error-handler',
+    'Mab_CheckoutCustomization/js/utils/performance-monitor',
     'mage/translate'
-], function ($, ko, Component, quote, algerianStates, $t) {
+], function ($, ko, Component, quote, algerianStates, SecurityHelper, ErrorHandler, PerfMonitor, $t) {
     'use strict';
 
     return Component.extend({
@@ -22,22 +27,35 @@ define([
             
             self._super();
             
-            console.log('🇩🇿 [Algerian States Integration] Initializing...');
+            PerfMonitor.start('algerian-states-init');
             
-            // Observable properties
-            self.selectedWilaya = ko.observable(null);
-            self.selectedCommune = ko.observable(null);
-            self.availableCommunes = ko.observableArray([]);
-            self.deliveryInfo = ko.observable(null);
+            try {
+                SecurityHelper.log('info', '🇩🇿 [Algerian States Integration] Initializing...');
+                
+                // Observable properties
+                self.selectedWilaya = ko.observable(null);
+                self.selectedCommune = ko.observable(null);
+                self.availableCommunes = ko.observableArray([]);
+                self.deliveryInfo = ko.observable(null);
+                self.isInitialized = ko.observable(false);
+                self.hasError = ko.observable(false);
             
-            // Log statistics
-            var stats = algerianStates.getStats();
-            console.log('📊 [Algerian States] Statistics:', stats);
-            
-            // Wait for DOM ready
-            $(document).ready(function() {
-                self.initializeSelectors();
-            });
+                // Log statistics
+                var stats = algerianStates.getStats();
+                SecurityHelper.log('info', '📊 [Algerian States] Statistics:', stats);
+                
+                // Wait for DOM ready
+                $(document).ready(function() {
+                    self.initializeSelectors();
+                });
+                
+                PerfMonitor.end('algerian-states-init');
+                self.isInitialized(true);
+                
+            } catch (error) {
+                ErrorHandler.handleError('algerian-states', 'initialize', error);
+                self.hasError(true);
+            }
             
             return self;
         },
@@ -302,30 +320,34 @@ define([
                 }).insertAfter('.field[name="shippingAddress.city"]');
             }
             
-            // Build HTML
-            var html = '<div class="delivery-info-card">';
-            html += '<div class="info-row">';
-            html += '<span class="info-label">Zone de livraison:</span>';
-            html += '<span class="info-value zone-' + info.zone + '">' + info.zoneName + '</span>';
-            html += '</div>';
+            // Build HTML using safe methods
+            $container.empty();
             
+            var $card = SecurityHelper.createSafeElement('div', {class: 'delivery-info-card'});
+            
+            // Zone row
+            var $zoneRow = SecurityHelper.createSafeElement('div', {class: 'info-row'});
+            $zoneRow.append(SecurityHelper.createSafeElement('span', {class: 'info-label'}, 'Zone de livraison:'));
+            $zoneRow.append(SecurityHelper.createSafeElement('span', {class: 'info-value zone-' + info.zone}, info.zoneName));
+            $card.append($zoneRow);
+            
+            // Delivery days row
             if (info.commune && info.deliveryDays) {
-                html += '<div class="info-row">';
-                html += '<span class="info-label">Délai de livraison:</span>';
-                html += '<span class="info-value">' + info.deliveryDays + ' jour(s)</span>';
-                html += '</div>';
+                var $deliveryRow = SecurityHelper.createSafeElement('div', {class: 'info-row'});
+                $deliveryRow.append(SecurityHelper.createSafeElement('span', {class: 'info-label'}, 'Délai de livraison:'));
+                $deliveryRow.append(SecurityHelper.createSafeElement('span', {class: 'info-value'}, info.deliveryDays + ' jour(s)'));
+                $card.append($deliveryRow);
             }
             
+            // Stop desk row
             if (info.stopDesk) {
-                html += '<div class="info-row highlight">';
-                html += '<span class="info-icon">📍</span>';
-                html += '<span class="info-text">Point relais disponible</span>';
-                html += '</div>';
+                var $stopDeskRow = SecurityHelper.createSafeElement('div', {class: 'info-row highlight'});
+                $stopDeskRow.append(SecurityHelper.createSafeElement('span', {class: 'info-icon'}, '📍'));
+                $stopDeskRow.append(SecurityHelper.createSafeElement('span', {class: 'info-text'}, 'Point relais disponible'));
+                $card.append($stopDeskRow);
             }
             
-            html += '</div>';
-            
-            $container.html(html);
+            $container.append($card);
         },
 
         /**
@@ -344,7 +366,13 @@ define([
                 }).insertAfter('.field[name="shippingAddress.city"]');
             }
             
-            $warning.html('<span class="warning-icon">⚠️</span> ' + message).show();
+            // Use safe element creation
+            $warning.empty();
+            $warning.append(
+                SecurityHelper.createSafeElement('span', {class: 'warning-icon'}, '⚠️')
+            ).append(
+                SecurityHelper.createSafeElement('span', {}, message)
+            ).show();
             
             setTimeout(function() {
                 $warning.fadeOut();
