@@ -1,0 +1,374 @@
+/**
+ * ULTIMATE FIX - Shipping, Gift Card & Navigation
+ * Final comprehensive solution for all checkout issues
+ */
+
+/* ============================================
+   SHIPPING METHODS - FORCE VISIBILITY
+   ============================================ */
+
+/* Force shipping cards wrapper to be visible */
+.shipping-methods-cards-wrapper,
+.opc-wrapper .shipping-methods-cards-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 24px 0 !important;
+}
+
+/* Ensure shipping step content is visible */
+#checkout-step-shipping .step-content {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Force shipping cards grid to display */
+.shipping-cards-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+}
+
+/* ============================================
+   NEXT BUTTON - COMPREHENSIVE FIX
+   ============================================ */
+
+/* Force ALL button containers visible */
+.opc-wrapper .step-content .actions-toolbar,
+#shipping-method-buttons-container,
+.checkout-shipping-method .actions-toolbar,
+.opc-wrapper .form-shipping-address .actions-toolbar,
+button-container[name="shippingAddress.shipping-address-fieldset.next_button_region"],
+.step-content > .actions-toolbar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    margin-top: 24px !important;
+}
+
+/* Force ALL Next/Continue buttons visible */
+.opc-wrapper .step-content button.action.continue,
+.opc-wrapper .step-content button.action.primary,
+#shipping-method-buttons-container button,
+.button.action.continue.primary,
+button[type="submit"].action.continue.primary,
+.actions-toolbar .primary button {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure button has proper styling */
+.opc-wrapper button.action.continue.primary,
+.opc-wrapper button.action.primary {
+    background: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+    color: white !important;
+    padding: 12px 32px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+}
+
+.opc-wrapper button.action.continue.primary:hover,
+.opc-wrapper button.action.primary:hover {
+    background: #45a049 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+}
+
+/* ============================================
+   PLACE ORDER BUTTON - PAYMENT STEP
+   ============================================ */
+
+/* Ensure place order button is visible */
+#checkout-payment-method-load .actions-toolbar,
+.payment-method .actions-toolbar,
+.checkout-billing-address .actions-toolbar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 24px !important;
+}
+
+button.action.primary.checkout,
+.action.primary.checkout {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+    color: white !important;
+    padding: 14px 40px !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    width: 100% !important;
+    cursor: pointer !important;
+}
+
+/* ============================================
+   GIFT CARD - BEAUTIFUL PROFESSIONAL DESIGN
+   ============================================ */
+
+/* Container - Clean & Compact */
+.cart-summary .block.gift-card {
+    margin: 16px 0 0 0 !important;
+    padding: 0 !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.cart-summary .block.gift-card:hover {
+    border-color: #FF9800 !important;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15) !important;
+}
+
+/* Title - Modern with Emoji */
+.cart-summary .block.gift-card .title {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%) !important;
+    color: white !important;
+    padding: 12px 16px !important;
+    margin: 0 !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-transform: none !important;
+    letter-spacing: 0.3px !important;
+    transition: background 0.3s ease !important;
+}
+
+.cart-summary .block.gift-card .title:hover {
+    background: linear-gradient(135deg, #FB8C00 0%, #EF6C00 100%) !important;
+}
+
+.cart-summary .block.gift-card .title strong {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+}
+
+.cart-summary .block.gift-card .title strong::before {
+    content: "🎁" !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+}
+
+/* Content Area - Clean Spacing */
+.cart-summary .block.gift-card .content {
+    padding: 16px !important;
+    background: #fafafa !important;
+}
+
+/* Guest Hint - Friendly Message */
+.cart-summary .block.gift-card .gift-card-hint {
+    padding: 10px 12px !important;
+    margin-bottom: 14px !important;
+    background: #fff3e0 !important;
+    border: 1px solid #FFB74D !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    color: #E65100 !important;
+}
+
+/* Form Fields - Clean & Modern */
+.cart-summary .block.gift-card .field {
+    margin-bottom: 12px !important;
+}
+
+.cart-summary .block.gift-card .label {
+    margin-bottom: 6px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    display: block !important;
+}
+
+.cart-summary .block.gift-card .input-text {
+    width: 100% !important;
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    background: white !important;
+    transition: border-color 0.3s ease !important;
+}
+
+.cart-summary .block.gift-card .input-text:focus {
+    border-color: #FF9800 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1) !important;
+}
+
+/* Action Buttons - Modern Design */
+.cart-summary .block.gift-card .actions-toolbar {
+    display: flex !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+}
+
+.cart-summary .block.gift-card button {
+    flex: 1 !important;
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+    text-transform: none !important;
+}
+
+.cart-summary .block.gift-card button.action.primary {
+    background: #FF9800 !important;
+    color: white !important;
+}
+
+.cart-summary .block.gift-card button.action.primary:hover {
+    background: #F57C00 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(245, 124, 0, 0.3) !important;
+}
+
+.cart-summary .block.gift-card button.action.secondary {
+    background: white !important;
+    color: #FF9800 !important;
+    border: 2px solid #FF9800 !important;
+}
+
+.cart-summary .block.gift-card button.action.secondary:hover {
+    background: #FFF3E0 !important;
+    border-color: #F57C00 !important;
+}
+
+/* Balance Display - Attractive */
+.cart-summary .block.gift-card .gift-card-balance {
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+    background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%) !important;
+    border: 1px solid #4CAF50 !important;
+    border-radius: 6px !important;
+}
+
+.cart-summary .block.gift-card .balance-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 4px 0 !important;
+    font-size: 14px !important;
+}
+
+.cart-summary .block.gift-card .balance-label {
+    color: #555 !important;
+    font-weight: 500 !important;
+}
+
+.cart-summary .block.gift-card .balance-amount {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #2E7D32 !important;
+}
+
+.cart-summary .block.gift-card .balance-status {
+    padding: 4px 0 !important;
+    font-size: 13px !important;
+    color: #2E7D32 !important;
+}
+
+/* Success/Error Messages */
+.cart-summary .block.gift-card .message {
+    padding: 10px 12px !important;
+    margin-top: 10px !important;
+    font-size: 13px !important;
+    border-radius: 4px !important;
+}
+
+.cart-summary .block.gift-card .message.success {
+    background: #E8F5E9 !important;
+    border: 1px solid #4CAF50 !important;
+    color: #2E7D32 !important;
+}
+
+.cart-summary .block.gift-card .message.error {
+    background: #FFEBEE !important;
+    border: 1px solid #F44336 !important;
+    color: #C62828 !important;
+}
+
+/* Applied Cards List */
+.cart-summary .block.gift-card .applied-cards-list {
+    margin-top: 12px !important;
+}
+
+.cart-summary .block.gift-card .applied-card-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 10px 12px !important;
+    background: white !important;
+    border: 1px solid #4CAF50 !important;
+    border-radius: 4px !important;
+    margin-bottom: 8px !important;
+}
+
+.cart-summary .block.gift-card .applied-card-code {
+    font-weight: 600 !important;
+    color: #2E7D32 !important;
+}
+
+.cart-summary .block.gift-card .applied-card-amount {
+    font-weight: 700 !important;
+    color: #2E7D32 !important;
+}
+
+/* Match Discount Block Style */
+.cart-summary .block.discount .title strong::before {
+    content: "🏷️ " !important;
+    font-size: 16px !important;
+}
+
+/* ============================================
+   REMOVE DUPLICATE TOTALS
+   ============================================ */
+
+/* Hide any duplicate grand total rows */
+.cart-totals .grand.totals ~ .grand,
+.cart-totals .grand ~ .grand.totals,
+.cart-totals tr.grand.totals:not(:first-of-type) {
+    display: none !important;
+}
+
+/* Hide tax rows if Algeria store (no tax) */
+.cart-totals .totals.tax,
+.cart-totals tr.totals.tax {
+    display: none !important;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .cart-summary .block.gift-card .actions-toolbar {
+        flex-direction: column !important;
+    }
+    
+    .cart-summary .block.gift-card button {
+        width: 100% !important;
+    }
+}
