@@ -6,7 +6,7 @@
     <!-- Loading State -->
     <!-- ko if: isLoading -->
     <div class="shipping-cards-loading">
-        <div class="loading-spinner"></div>
+        <img class="custom-spinner" src="https://dev.technostationery.com/app/spinner.gif" alt="Chargement..." width="32" height="32">
         <p data-bind="text: 'Chargement des méthodes de livraison...'"></p>
     </div>
     <!-- /ko -->
@@ -128,19 +128,11 @@
     padding: 40px 20px;
 }
 
-.loading-spinner {
-    width: 40px;
-    height: 40px;
+.custom-spinner {
+    display: block;
     margin: 0 auto 16px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #4CAF50;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    width: 24px;
+    height: 24px;
 }
 
 .shipping-cards-loading p {
@@ -394,8 +386,7 @@
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
     .shipping-card,
-    .check-indicator,
-    .loading-spinner {
+    .check-indicator {
         animation: none;
         transition: none;
     }
