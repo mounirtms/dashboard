@@ -9,11 +9,11 @@ define([
     'Magento_Checkout/js/model/quote',
     'Magento_Checkout/js/model/shipping-service',
     'Magento_Checkout/js/action/select-shipping-method',
+    'Magento_Checkout/js/action/set-shipping-information',
     'Magento_Checkout/js/checkout-data',
     'Magento_Checkout/js/model/step-navigator',
-    'Magento_Checkout/js/action/set-shipping-information',
     'mage/translate'
-], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, checkoutData, stepNavigator, setShippingInformationAction, $t) {
+], function ($, ko, Component, quote, shippingService, selectShippingMethodAction, setShippingInformationAction, checkoutData, stepNavigator, $t) {
     'use strict';
 
     return Component.extend({
@@ -260,11 +260,8 @@ define([
                 quote.shippingMethod.valueHasMutated();
                 console.log('✅ [HOTFIX Shipping] Quote updated');
                 
-                // ULTRA-AGGRESSIVE button forcing
-                self.forceNextButtonDisplay();
-                
-                // Validate to enable button
-                self.validateShippingInformation();
+                // Auto-advance to payment step
+                self.proceedToPayment();
                 
                 // Trigger events
                 $(document).trigger('shipping-method-selected', [shippingMethod]);
@@ -272,6 +269,42 @@ define([
             }, 100);
             
             console.log('✅ [HOTFIX Shipping] Method selected successfully');
+        },
+
+        /**
+         * Proceed to payment step after shipping method selection
+         */
+        proceedToPayment: function() {
+            var self = this;
+            
+            console.log('🚀 [HOTFIX Shipping] Proceeding to payment step...');
+            
+            // Check if shipping method is selected
+            var method = quote.shippingMethod();
+            if (!method || !method.carrier_code || !method.method_code) {
+                console.warn('⚠️ [HOTFIX Shipping] No shipping method selected, cannot proceed');
+                return;
+            }
+            
+            // Call setShippingInformation to advance to next step
+            var deferred = setShippingInformationAction();
+            
+            if (deferred) {
+                deferred.done(function() {
+                    console.log('✅ [HOTFIX Shipping] Successfully moved to payment step');
+                }).fail(function() {
+                    console.warn('⚠️ [HOTFIX Shipping] Failed to move to payment step, trying alternative method');
+                    // Fallback: manually navigate to next step
+                    var steps = stepNavigator.steps();
+                    for (var i = 0; i < steps.length; i++) {
+                        if (steps[i].isVisible && !steps[i].isComplete()) {
+                            stepNavigator.navigateTo(steps[i]);
+                            console.log('✅ [HOTFIX Shipping] Navigated to step:', steps[i].code);
+                            break;
+                        }
+                    }
+                });
+            }
         },
 
         /**
