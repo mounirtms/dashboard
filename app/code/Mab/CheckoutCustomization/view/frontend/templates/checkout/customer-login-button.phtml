@@ -1,0 +1,174 @@
+<?php
+/**
+ * Customer Login Button Template for Checkout Page (TOP SECTION)
+ * Shows login button for guest users at the top of checkout page
+ *
+ * @var $block \Magento\Framework\View\Element\Template
+ */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$customerSession = $objectManager->get(\Magento\Customer\Model\Session::class);
+?>
+
+<?php if (!$customerSession->isLoggedIn()): ?>
+<div class="checkout-login-banner">
+    <div class="login-banner-content">
+        <div class="login-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="19" stroke="#4CAF50" stroke-width="2"/>
+                <circle cx="20" cy="15" r="5" fill="#4CAF50"/>
+                <path d="M10 30C10 25 14 22 20 22C26 22 30 25 30 30" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="login-message">
+            <h3><?= $block->escapeHtml(__('Compte Client')) ?></h3>
+            <p><?= $block->escapeHtml(__('Connectez-vous pour accéder aux cartes cadeaux et à votre historique de commandes')) ?></p>
+        </div>
+        <div class="login-actions">
+            <button type="button" 
+                    class="action primary checkout-login-btn"
+                    data-trigger="authentication">
+                <span><?= $block->escapeHtml(__('Se connecter')) ?></span>
+            </button>
+            <a href="<?= $block->escapeUrl($block->getUrl('customer/account/create')) ?>" 
+               class="action secondary create-btn">
+                <span><?= $block->escapeHtml(__('Créer un compte')) ?></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Checkout Login Banner - Top of Page */
+.checkout-login-banner {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    margin: 0 0 24px 0;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+}
+
+.login-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.login-icon {
+    flex-shrink: 0;
+}
+
+.login-message {
+    flex: 1;
+}
+
+.login-message h3 {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.login-message p {
+    margin: 0;
+    font-size: 14px;
+    color: #5a6c7d;
+    line-height: 1.4;
+}
+
+.login-actions {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* Primary Login Button */
+.checkout-login-banner .checkout-login-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    white-space: nowrap;
+}
+
+.checkout-login-banner .checkout-login-btn:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Secondary Create Account Button */
+.checkout-login-banner .create-btn {
+    background: #ffffff;
+    color: #4caf50;
+    border: 2px solid #4caf50;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.checkout-login-banner .create-btn:hover {
+    background: #4caf50;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-banner-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .login-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .checkout-login-banner .checkout-login-btn,
+    .checkout-login-banner .create-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .checkout-login-banner {
+        padding: 16px;
+        margin: 0 0 16px 0;
+    }
+    
+    .login-banner-content {
+        gap: 12px;
+    }
+    
+    .login-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .login-message h3 {
+        font-size: 16px;
+    }
+    
+    .login-message p {
+        font-size: 13px;
+    }
+}
+</style>
+<?php endif; ?>
