@@ -1,9 +1,7 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <css src="Mab_CheckoutCustomization::css/techno-loader.css"/>
-        <css src="Mab_CheckoutCustomization::css/sm-market-optimized.css"/>
-        <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
+        <css src="Mab_CheckoutCustomization::css/production-optimized.css"/>
     </head>
     <body>
         <!-- Initialize checkoutConfig for cart page (before any cart content) -->
