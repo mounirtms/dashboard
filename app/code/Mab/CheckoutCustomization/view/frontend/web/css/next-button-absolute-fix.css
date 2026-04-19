@@ -1,0 +1,259 @@
+/**
+ * NEXT BUTTON ABSOLUTE FIX
+ * Forces the shipping step Next button to display after method selection
+ * Uses brute force CSS and JavaScript manipulation
+ */
+
+/* ============================================
+   MAGENTO DEFAULT SHIPPING METHOD FORM - HIDE IT
+   ============================================ */
+
+/* Hide the default Magento shipping methods table/list */
+#checkout-shipping-method-load,
+.table-checkout-shipping-method,
+#co-shipping-method-form,
+.checkout-shipping-method .step-content > form {
+    display: none !important;
+}
+
+/* ============================================
+   SHIPPING STEP - FORCE VISIBILITY
+   ============================================ */
+
+/* Ensure shipping step is active and visible */
+#checkout-step-shipping,
+#checkout-step-shipping.step-content,
+.checkout-shipping-step,
+.opc-wrapper .shipping-step {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Force our custom shipping cards to show */
+.shipping-methods-cards-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 24px 0 !important;
+}
+
+/* ============================================
+   NEXT BUTTON - NUCLEAR OPTION
+   ============================================ */
+
+/* FORCE ALL POSSIBLE BUTTON CONTAINER VARIATIONS */
+.opc-wrapper .actions-toolbar,
+.opc-wrapper .step-content .actions-toolbar,
+.opc-wrapper .form-shipping-address .actions-toolbar,
+#shipping-method-buttons-container,
+.checkout-shipping-method .actions-toolbar,
+.shipping-address-items .actions-toolbar,
+#opc-shipping_method .actions-toolbar,
+.opc-wrapper [name="shippingAddress"] .actions-toolbar,
+.opc-wrapper div[name="shippingAddress.shipping-address-fieldset"] .actions-toolbar,
+button-container[name="shippingAddress.shipping-address-fieldset.next_button_region"],
+.step-content > .actions-toolbar,
+.table-checkout-shipping-method + .actions-toolbar {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 50px !important;
+    overflow: visible !important;
+    margin: 24px 0 16px 0 !important;
+    padding: 0 !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* FORCE PRIMARY BUTTON CONTAINER */
+.opc-wrapper .actions-toolbar .primary,
+.actions-toolbar .primary,
+.actions-toolbar > .primary {
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* FORCE ALL NEXT/CONTINUE BUTTON VARIATIONS */
+.opc-wrapper button.action.continue,
+.opc-wrapper button.action.primary,
+.opc-wrapper .step-content button.action.continue,
+.opc-wrapper .step-content button.action.primary,
+button.action.continue.primary,
+button[type="submit"].action.continue,
+button[type="submit"].action.primary,
+.actions-toolbar button.action.continue,
+.actions-toolbar button.action.primary,
+.actions-toolbar .primary button,
+button[data-role="opc-continue"],
+.checkout-shipping-method button.continue,
+.step-content button.action.primary.continue,
+[data-bind*="continue"] button,
+#shipping-method-buttons-container button {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 14px 32px !important;
+    z-index: 11 !important;
+}
+
+/* Enhanced Next Button Styling */
+.opc-wrapper button.action.continue.primary,
+.opc-wrapper button.action.primary.continue,
+button.action.continue.primary,
+button[type="submit"].action.continue.primary {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+    border: 2px solid #4CAF50 !important;
+    color: white !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3) !important;
+}
+
+.opc-wrapper button.action.continue.primary:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4) !important;
+}
+
+.opc-wrapper button.action.continue.primary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3) !important;
+}
+
+/* Force button to not be hidden by Knockout */
+[data-bind*="visible: false"] button.action.continue,
+[style*="display: none"] button.action.continue,
+[style*="visibility: hidden"] button.action.continue {
+    display: inline-block !important;
+    visibility: visible !important;
+}
+
+/* Remove any disabled/hidden classes */
+button.action.continue.disabled,
+button.action.continue:disabled {
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+}
+
+/* Override Knockout bindings that try to hide */
+.actions-toolbar[data-bind*="visible"],
+.actions-toolbar[style*="display: none"],
+.actions-toolbar[style*="visibility: hidden"] {
+    display: flex !important;
+    visibility: visible !important;
+}
+
+/* ============================================
+   SHIPPING METHOD SELECTION STATE
+   ============================================ */
+
+/* When a shipping method is selected, ensure button is ready */
+.shipping-card.selected ~ * button.action.continue,
+body.shipping-method-selected button.action.continue {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* ============================================
+   PAYMENT STEP - PLACE ORDER BUTTON
+   ============================================ */
+
+#checkout-payment-method-load .actions-toolbar,
+.payment-method .actions-toolbar,
+.checkout-billing-address .actions-toolbar,
+#payment .actions-toolbar {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 24px !important;
+}
+
+button.action.primary.checkout,
+.action.primary.checkout {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+    border-color: #4CAF50 !important;
+    color: white !important;
+    padding: 16px 40px !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    width: 100% !important;
+}
+
+/* ============================================
+   DEBUGGING - VISUAL INDICATORS
+   ============================================ */
+
+/* Add a border to button containers for debugging */
+.debug-mode .actions-toolbar {
+    border: 2px dashed #FF5722 !important;
+    background: rgba(255, 87, 34, 0.1) !important;
+}
+
+.debug-mode button.action.continue {
+    border: 3px solid #2196F3 !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .opc-wrapper button.action.continue.primary {
+        padding: 12px 24px !important;
+        font-size: 15px !important;
+    }
+}
+
+/* ============================================
+   GIFT CARD TOTALS IN CHECKOUT SIDEBAR
+   ============================================ */
+
+/* Ensure gift card discount shows properly in sidebar */
+.opc-block-summary .table-totals .amgiftcard {
+    display: table-row !important;
+    visibility: visible !important;
+}
+
+.opc-block-summary .table-totals .amgiftcard .mark,
+.opc-block-summary .table-totals .amgiftcard .amount {
+    display: table-cell !important;
+    padding: 6px 0 !important;
+}
+
+.opc-block-summary .table-totals .amgiftcard .mark {
+    color: #FF9800 !important;
+    font-weight: 600 !important;
+}
+
+.opc-block-summary .table-totals .amgiftcard .amount {
+    color: #F57C00 !important;
+    font-weight: 700 !important;
+}
+
+/* Add gift card icon */
+.opc-block-summary .table-totals .amgiftcard .mark::before {
+    content: "🎁 " !important;
+    margin-right: 4px !important;
+}
