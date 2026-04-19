@@ -7,9 +7,11 @@
 <?php if (!$disabled): ?>
 <div class="block discount"
      id="block-discount"
-     data-mage-init='{"collapsible":{"active": true, "openedState": "active", "saveState": false}}'>
+     data-mage-init='{"collapsible":{"active": false, "openedState": "active", "saveState": false}}'>
     <div class="title" data-role="title">
-        <strong id="block-discount-heading" role="heading" aria-level="2"><?= $block->escapeHtml(__('Appliquer un Code de Réduction')) ?></strong>
+        <strong id="block-discount-heading" role="heading" aria-level="2">
+            <span class="coupon-emoji">🏷️</span><?= $block->escapeHtml(__('Code Promo')) ?>
+        </strong>
     </div>
     <div class="content" data-role="content" aria-labelledby="block-discount-heading">
         <form id="discount-coupon-form"
@@ -45,15 +47,15 @@
                     <?php if (!$hasCouponCode): ?>
                     <div class="primary">
                         <button class="action apply primary" type="button"
-                                value="<?= $block->escapeHtmlAttr(__('Appliquer le Code de Réduction')) ?>">
-                            <span><?= $block->escapeHtml(__('Appliquer le Code de Réduction')) ?></span>
+                                value="<?= $block->escapeHtmlAttr(__('Appliquer')) ?>">
+                            <span><?= $block->escapeHtml(__('Appliquer')) ?></span>
                         </button>
                     </div>
                     <?php else: ?>
                         <div class="primary">
                             <button  type="button" class="action cancel primary"
-                                     value="<?= $block->escapeHtmlAttr(__('Annuler le bon de réduction')) ?>">
-                                <span><?= $block->escapeHtml(__('Annuler le bon de réduction')) ?></span>
+                                     value="<?= $block->escapeHtmlAttr(__('Supprimer')) ?>">
+                                <span><?= $block->escapeHtml(__('Supprimer')) ?></span>
                             </button>
                         </div>
                     <?php endif; ?>

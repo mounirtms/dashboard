@@ -2,6 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Mab_CheckoutCustomization::css/cart-checkout-compact.css"/>
+        <css src="Mab_CheckoutCustomization::css/ultra-compact-cart.css"/>
     </head>
     <body>
         <!-- Initialize checkoutConfig for cart page (before any cart content) -->
@@ -15,11 +16,43 @@
         <!-- Remove shipping estimation from cart sidebar -->
         <referenceBlock name="checkout.cart.shipping" remove="true"/>
         
-        <!-- Remove or hide Amasty banner in cart summary (optional) -->
-        <!-- <referenceBlock name="ambanners.below_total" remove="true"/> -->
+        <!-- Remove duplicate tax totals - only show subtotal and grand total -->
+        <referenceBlock name="checkout.cart.totals">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="block-totals" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <!-- Disable tax row -->
+                                <item name="tax" xsi:type="array">
+                                    <item name="config" xsi:type="array">
+                                        <item name="componentDisabled" xsi:type="boolean">true</item>
+                                    </item>
+                                </item>
+                                <!-- Grand total - single label only -->
+                                <item name="grand-total" xsi:type="array">
+                                    <item name="config" xsi:type="array">
+                                        <item name="exclTaxLabel" xsi:type="string" translate="true">Total</item>
+                                        <item name="inclTaxLabel" xsi:type="string" translate="true">Total</item>
+                                        <item name="title" xsi:type="string" translate="true">Total</item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
         
         <!-- Remove default Amasty Gift Card block -->
         <referenceBlock name="checkout.cart.giftcard" remove="true"/>
+        
+        <!-- Override coupon template with our compact version -->
+        <referenceBlock name="checkout.cart.coupon">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mab_CheckoutCustomization::cart/coupon.phtml</argument>
+            </action>
+        </referenceBlock>
         
         <!-- Add compact login banner for guests -->
         <referenceContainer name="content">

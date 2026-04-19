@@ -169,208 +169,30 @@ require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
 </div>
 
 <style>
-/* Gift Card Block - Compact & Clean */
-.block.gift-card {
-    margin-bottom: 12px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-}
-
-.block.gift-card .title {
-    background: #333;
-    color: white;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 3px 3px 0 0;
-    transition: background 0.2s;
-}
-
-.block.gift-card .title:hover {
-    background: #444;
-}
-
-.block.gift-card .title strong {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.block.gift-card .gift-emoji {
-    font-size: 16px;
-}
-
-.block.gift-card .content {
-    padding: 12px;
-    background: #fafafa;
-    border-radius: 0 0 3px 3px;
-}
-
-.block.gift-card .gift-card-hint {
-    background: #f5f5f5;
-    border: 1px solid #e0e0e0;
-    border-left: 2px solid #666;
-    padding: 6px 10px;
-    margin-bottom: 10px;
-    font-size: 12px;
-    color: #555;
-    line-height: 1.3;
-}
-
-.block.gift-card .field {
-    margin-bottom: 8px;
-}
-
-.block.gift-card .label {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 4px;
-    display: block;
-    font-size: 13px;
-}
-
-.block.gift-card .input-text {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    font-size: 13px;
-    transition: border-color 0.2s;
-}
-
-.block.gift-card .input-text:focus {
-    border-color: #4caf50;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-}
-
-.block.gift-card .actions-toolbar {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.block.gift-card button {
-    width: 100%;
-    padding: 9px 14px;
-    border: none;
-    border-radius: 3px;
-    font-weight: 600;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.block.gift-card button.apply {
-    background: #4caf50;
-    color: white;
-}
-
-.block.gift-card button.apply:hover:not(:disabled) {
-    background: #43a047;
-}
-
-.block.gift-card button.check {
-    background: #fff;
-    border: 1px solid #999;
-    color: #333;
-}
-
-.block.gift-card button.check:hover:not(:disabled) {
-    background: #f5f5f5;
-    border-color: #666;
-}
-
-.block.gift-card button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.block.gift-card .gift-card-balance {
-    background: #f1f8f1;
-    border: 1px solid #c8e6c9;
-    padding: 10px 12px;
-    border-radius: 3px;
-    margin-bottom: 10px;
-}
-
-.block.gift-card .balance-row,
-.block.gift-card .balance-status {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 0;
-}
-
-.block.gift-card .balance-label,
-.block.gift-card .status-label {
-    font-weight: 600;
-    color: #2e7d32;
-    font-size: 12px;
-}
-
-.block.gift-card .balance-amount {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1b5e20;
-}
-
-.block.gift-card .status-value {
-    font-size: 12px;
-    font-weight: 600;
-    color: #2e7d32;
-    background: #e8f5e9;
-    padding: 3px 8px;
-    border-radius: 2px;
-}
-
-.block.gift-card .message {
-    padding: 8px 10px;
-    border-radius: 3px;
-    margin-top: 8px;
-    font-size: 12px;
-    line-height: 1.3;
-}
-
-.block.gift-card .message-error {
-    background: #ffebee;
-    border: 1px solid #ef5350;
-    color: #c62828;
-}
-
-.block.gift-card .message-success {
-    background: #e8f5e9;
-    border: 1px solid #66bb6a;
-    color: #2e7d32;
-}
-
 /* Guest hint compact */
 .block.gift-card.guest-hint .guest-hint-box {
     text-align: center;
-    padding: 16px 12px;
+    padding: 12px;
 }
 
 .block.gift-card.guest-hint .lock-icon {
-    margin: 0 auto 8px auto;
+    margin: 0 auto 6px auto;
     display: block;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
 }
 
 .block.gift-card.guest-hint h4 {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #2c3e50;
-    margin: 0 0 4px 0;
+    margin: 0 0 3px 0;
 }
 
 .block.gift-card.guest-hint p {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
-    line-height: 1.4;
+    line-height: 1.3;
     margin: 0;
 }
 
