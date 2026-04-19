@@ -1,0 +1,29 @@
+<?php
+/**
+ * Compact Customer Login Banner for Checkout
+ * Shows for guest users only
+ */
+/** @var \Magento\Framework\View\Element\Template $block */
+$customerSession = $block->getData('customer_session') 
+    ?: \Magento\Framework\App\ObjectManager::getInstance()
+        ->get(\Magento\Customer\Model\Session::class);
+?>
+
+<?php if (!$customerSession->isLoggedIn()): ?>
+<div class="checkout-customer-login-banner mab-customer-login-banner">
+    <div class="banner-content">
+        <h3 class="banner-title"><?= __('Compte Client') ?></h3>
+        <p class="banner-text"><?= __('Connectez-vous pour une commande plus rapide') ?></p>
+    </div>
+    <div class="banner-actions">
+        <a href="<?= $block->escapeUrl($block->getUrl('customer/account/login', ['referer' => base64_encode($block->getUrl('*/*/*', ['_current' => true]))])) ?>" 
+           class="btn-login">
+            <?= __('Se connecter') ?>
+        </a>
+        <a href="<?= $block->escapeUrl($block->getUrl('customer/account/create')) ?>" 
+           class="btn-register">
+            <?= __('Créer un compte') ?>
+        </a>
+    </div>
+</div>
+<?php endif; ?>

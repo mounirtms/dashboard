@@ -2,7 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Mab_CheckoutCustomization::css/techno-loader.css"/>
-        <css src="Mab_CheckoutCustomization::css/critical-fixes.css"/>
+        <css src="Mab_CheckoutCustomization::css/sm-market-optimized.css"/>
         <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
     </head>
     <body>
@@ -23,7 +23,13 @@
         <!-- Remove default Amasty Gift Card block -->
         <referenceBlock name="checkout.cart.giftcard" remove="true"/>
         
-        <!-- Login button removed - guests can checkout with email only -->
+        <!-- Add compact login banner for guests -->
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="mab.cart.customer.login"
+                   template="Mab_CheckoutCustomization::cart/customer-login-banner.phtml"
+                   after="mab.cart.checkout.config"/>
+        </referenceContainer>
         
         <!-- Add our optimized gift card block with guest hint -->
         <referenceContainer name="cart.summary">
