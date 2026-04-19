@@ -1,0 +1,254 @@
+/**
+ * EMERGENCY CHECKOUT REPAIR CSS
+ * Fixes critical display issues with checkout flow
+ * April 19, 2026
+ */
+
+/* ============================================
+   FORCE SHIPPING METHOD BUTTONS TO DISPLAY
+   ============================================ */
+#shipping-method-buttons-container,
+.opc-wrapper .step-content .actions-toolbar,
+.checkout-shipping-method .actions-toolbar,
+.checkout-shipping-address .actions-toolbar,
+.shipping-address-item .actions-toolbar,
+button.action.continue.primary,
+button.button.action.continue.primary {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Force Next/Suivant button visible */
+.step-content .actions-toolbar .primary,
+.step-content .actions-toolbar button.button.action.continue,
+.step-content .actions-toolbar button.action.continue {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    margin-top: 20px !important;
+    background: #28a745 !important;
+    color: white !important;
+    border: none !important;
+    padding: 15px 30px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    transition: background 0.3s ease !important;
+}
+
+.step-content .actions-toolbar .primary:hover,
+.step-content .actions-toolbar button.button.action.continue:hover,
+.step-content .actions-toolbar button.action.continue:hover {
+    background: #218838 !important;
+}
+
+/* ============================================
+   FIX GRAND TOTAL DISPLAY ISSUES
+   ============================================ */
+.opc-block-summary .table-totals tr.grand.totals {
+    display: table-row !important;
+    visibility: visible !important;
+}
+
+.opc-block-summary .table-totals .mark,
+.opc-block-summary .table-totals .amount {
+    display: table-cell !important;
+    visibility: visible !important;
+}
+
+/* Hide duplicate grand totals if they exist */
+.opc-block-summary .table-totals tr.grand.totals ~ tr.grand.totals {
+    display: none !important;
+}
+
+/* ============================================
+   FIX AMASTY GIFT CARD TOTALS DISPLAY
+   ============================================ */
+.opc-block-summary .table-totals .amgiftcard {
+    display: table-row !important;
+    visibility: visible !important;
+}
+
+.opc-block-summary .table-totals .amgiftcard .mark,
+.opc-block-summary .table-totals .amgiftcard .amount {
+    display: table-cell !important;
+}
+
+/* Remove any problematic knockout bindings display */
+[data-bind*="grand-total"] {
+    display: table-row !important;
+}
+
+/* ============================================
+   HIDE CHECKOUT PAYMENT GIFT CARD FORM
+   ============================================ */
+.payment-method-content .payment-method-gift-card,
+.checkout-payment-method .amgiftcard-form,
+.checkout-payment-method [data-bind*="amgift-card"],
+#amgift-card-form {
+    display: none !important;
+}
+
+/* ============================================
+   SHIPPING CARDS ENHANCEMENT
+   ============================================ */
+.shipping-methods-cards-wrapper {
+    margin: 24px 0;
+    clear: both;
+}
+
+.shipping-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.shipping-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+}
+
+.shipping-card:hover {
+    border-color: #ff6b35;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+    transform: translateY(-2px);
+}
+
+.shipping-card.selected {
+    border-color: #ff6b35;
+    background: #fff5f2;
+    box-shadow: 0 6px 16px rgba(255, 107, 53, 0.25);
+}
+
+.shipping-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.check-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #e0e0e0;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.shipping-card.selected .check-indicator {
+    background: #ff6b35;
+    border-color: #ff6b35;
+}
+
+.shipping-card.selected .check-indicator::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+@media (max-width: 767px) {
+    .shipping-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .step-content .actions-toolbar .primary,
+    .step-content .actions-toolbar button.button.action.continue {
+        font-size: 14px !important;
+        padding: 12px 20px !important;
+    }
+}
+
+/* ============================================
+   LOADING AND ERROR STATES
+   ============================================ */
+.shipping-cards-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.shipping-cards-error {
+    background: #fee;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    padding: 16px;
+    margin: 16px 0;
+    color: #c33;
+}
+
+/* ============================================
+   KNOCKOUT TEMPLATE FIXES
+   ============================================ */
+/* Ensure knockout templates don't break layout */
+[data-bind] {
+    min-height: 0 !important;
+}
+
+/* Fix for missing template errors */
+.grand-total-placeholder {
+    display: table-row !important;
+}
+
+/* ============================================
+   Z-INDEX MANAGEMENT
+   ============================================ */
+.shipping-methods-cards-wrapper {
+    z-index: 1;
+    position: relative;
+}
+
+.step-content .actions-toolbar {
+    z-index: 2;
+    position: relative;
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+.shipping-card:focus-within {
+    outline: 2px solid #ff6b35;
+    outline-offset: 2px;
+}
+
+button.action.continue:focus {
+    outline: 2px solid #28a745;
+    outline-offset: 2px;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+    .shipping-cards-grid {
+        display: block !important;
+    }
+    
+    .shipping-card {
+        page-break-inside: avoid;
+    }
+}

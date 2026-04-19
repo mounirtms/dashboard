@@ -12,6 +12,7 @@
         <css src="Mab_CheckoutCustomization::css/critical-hotfix.css"/>
         <css src="Mab_CheckoutCustomization::css/next-button-absolute-fix.css"/>
         <css src="Mab_CheckoutCustomization::css/checkout-complete-flow.css"/>
+        <css src="Mab_CheckoutCustomization::css/checkout-emergency-repair.css"/>
     </head>
     <body>
         <!-- Add compact login banner for guests -->
@@ -53,17 +54,41 @@
                                                 </item>
                                             </item>
                                         </item>
-                                        <!-- Payment Step - Remove Amasty Gift Card Components -->
+                                        <!-- Payment/Billing Step - REMOVE Amasty Gift Card from checkout -->
                                         <item name="billing-step" xsi:type="array">
                                             <item name="children" xsi:type="array">
                                                 <item name="payment" xsi:type="array">
                                                     <item name="children" xsi:type="array">
-                                                        <!-- Remove Amasty gift card from payment step -->
-                                                        <!-- Users should apply gift cards from cart page only -->
                                                         <item name="afterMethods" xsi:type="array">
                                                             <item name="children" xsi:type="array">
-                                                                <item name="amgift-card" xsi:type="boolean">false</item>
-                                                                <item name="checked-gift-card-renderer" xsi:type="boolean">false</item>
+                                                                <!-- Remove Amasty gift card input form -->
+                                                                <item name="amgift-card" xsi:type="array">
+                                                                    <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                </item>
+                                                                <!-- Remove checked gift card renderer -->
+                                                                <item name="checked-gift-card-renderer" xsi:type="array">
+                                                                    <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                                <!-- Sidebar - Keep gift card totals display only -->
+                                <item name="sidebar" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="summary" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="totals" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <!-- Keep Amasty gift card total display in sidebar -->
+                                                        <item name="amgiftcard" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/cart/totals/giftcard</item>
+                                                            <item name="config" xsi:type="array">
+                                                                <item name="title" xsi:type="string" translate="true">Carte Cadeau</item>
                                                             </item>
                                                         </item>
                                                     </item>

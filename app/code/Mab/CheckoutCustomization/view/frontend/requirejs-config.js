@@ -21,6 +21,11 @@ var config = {
             },
             // Override Amasty grand-total mixin with safe version
             'Magento_Checkout/js/view/summary/abstract-total': {
+                'Amasty_GiftCardAccount/js/mixins/grand-total-mixin': false,
+                'Mab_CheckoutCustomization/js/mixin/safe-grand-total-mixin': true
+            },
+            'Magento_Tax/js/view/checkout/summary/grand-total': {
+                'Amasty_GiftCardAccount/js/mixins/grand-total-mixin': false,
                 'Mab_CheckoutCustomization/js/mixin/safe-grand-total-mixin': true
             },
             // Fix shipping step validation to work with custom cards
