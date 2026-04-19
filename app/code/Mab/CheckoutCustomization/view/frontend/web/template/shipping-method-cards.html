@@ -26,16 +26,10 @@
     <div class="shipping-cards-grid" data-bind="foreach: getShippingMethods()">
         <div class="shipping-card" 
              data-bind="css: $parent.getCardClasses($data), 
-                        click: $parent.selectMethod.bind($parent, $data),
+                        click: function(data, event) { return $parent.selectMethod(data, event); },
                         attr: {'data-method-code': method_code}">
             
-            <!-- Radio Button (hidden, for accessibility) -->
-            <input type="radio" 
-                   class="shipping-radio" 
-                   name="shipping_method"
-                   data-bind="checked: $parent.selectedMethod, 
-                              value: method_code,
-                              attr: {id: 'shipping_method_' + method_code}">
+            <!-- Radio Button removed to prevent infinite loop -->
             
             <!-- Card Content -->
             <div class="card-content">

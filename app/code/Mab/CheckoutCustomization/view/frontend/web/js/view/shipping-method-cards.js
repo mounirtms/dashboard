@@ -71,14 +71,12 @@ define([
                 }
             });
 
-            // Subscribe to selected shipping method
+            // Subscribe to selected shipping method (without triggering validation loop)
             quote.shippingMethod.subscribe(function (method) {
                 if (method) {
                     var methodCode = method.carrier_code + '_' + method.method_code;
+                    // Only update UI, don't trigger validation here
                     self.selectedMethod(methodCode);
-
-                    // CRITICAL: Trigger step navigator to re-evaluate
-                    self.validateAndProceed();
                 }
             });
 
@@ -140,19 +138,24 @@ define([
         },
 
         /**
-         * Select shipping method - CRITICAL FIX
+         * Select shipping method - SIMPLIFIED FIX
          */
-        selectMethod: function (method) {
+        selectMethod: function (method, event) {
             var self = this;
 
             if (!method.available) {
-                return;
+                return false;
             }
 
-            // Set as selected
+            // Prevent event bubbling
+            if (event && event.stopPropagation) {
+                event.stopPropagation();
+            }
+
+            // Update UI selection
             self.selectedMethod(method.method_code);
 
-            // Extract method code
+            // Extract method code parts
             var actualMethodCode = method.method_code.split('_')[1] || method.method_code;
 
             // Create Magento shipping method object
@@ -171,54 +174,29 @@ define([
 
             // Select in Magento
             try {
-                selectShippingMethodAction(shippingMethod);
+                console.log('[Shipping Cards] Selecting method:', method.method_code);
+                
+                // Save to checkout data first
                 checkoutData.setSelectedShippingRate(method.carrier_code + '_' + actualMethodCode);
-
-                // CRITICAL: Force quote to update
-                quote.shippingMethod.valueHasMutated();
-
-                // CRITICAL: Trigger validation after a short delay
+                
+                // Then trigger Magento's selection action
+                selectShippingMethodAction(shippingMethod);
+                
+                console.log('[Shipping Cards] Method selected successfully');
+                
+                // Force quote update to trigger validation
                 setTimeout(function() {
-                    self.validateAndProceed();
-                }, 100);
+                    quote.shippingMethod.valueHasMutated();
+                }, 50);
 
             } catch (error) {
                 console.error('[Shipping Cards] Error selecting method:', error);
             }
+            
+            return false;
         },
 
-        /**
-         * Validate shipping selection and enable Next button
-         * This is the KEY fix for the missing Next button issue
-         */
-        validateAndProceed: function() {
-            var self = this;
 
-            // Check if we have a valid shipping method
-            var currentMethod = quote.shippingMethod();
-
-            if (currentMethod && currentMethod.carrier_code && currentMethod.method_code) {
-                // Method is selected - now trigger step validation
-
-                // Method 1: Try to navigate to next step if all validations pass
-                if (typeof stepNavigator !== 'undefined' && stepNavigator.navigateToNextStep) {
-                    // Don't auto-navigate, just ensure button is enabled
-                    // The button should become enabled automatically when quote is valid
-                }
-
-                // Method 2: Trigger change event on quote to force UI update
-                quote.shippingAddress.valueHasMutated();
-                quote.shippingMethod.valueHasMutated();
-
-                // Method 3: Dispatch custom event for any listeners
-                window.dispatchEvent(new CustomEvent('checkout:shippingMethodSelected', {
-                    detail: {
-                        carrier: currentMethod.carrier_code,
-                        method: currentMethod.method_code
-                    }
-                }));
-            }
-        },
 
         /**
          * Format price
