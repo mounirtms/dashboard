@@ -1,0 +1,564 @@
+/**
+ * Ultra-Compact Cart Design - Extreme Space Reduction
+ * Fixes: excessive gaps, large fonts, bulky spacing
+ * Target: Professional, dense, efficient layout
+ */
+
+/* ============================================
+   HIDE LOGIN BANNERS ON BOTH PAGES
+   ============================================ */
+
+/* Hide customer login banner on cart page */
+.checkout-cart-index .mab-customer-login-banner,
+.checkout-cart-index [name="mab.cart.customer.login"] {
+    display: none !important;
+}
+
+/* Hide customer login banner on checkout page */
+.checkout-index-index .checkout-customer-login-banner,
+.checkout-index-index [name="checkout.customer.login.banner"] {
+    display: none !important;
+}
+
+/* Hide any "Se connecter" buttons */
+button[title="Se connecter"],
+.action.login,
+.customer-login-button {
+    display: none !important;
+}
+
+/* ============================================
+   CART PAGE - ULTRA COMPACT LAYOUT
+   ============================================ */
+
+/* Reduce page margins */
+.checkout-cart-index .page-main {
+    padding: 12px 16px !important;
+}
+
+/* Cart container - tighter spacing */
+.cart-container {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Form cart - remove excessive margins */
+.form-cart {
+    margin: 0 !important;
+}
+
+/* Cart table - compact spacing */
+.cart.table-wrapper {
+    margin: 0 0 16px 0 !important;
+}
+
+.cart.table-wrapper .cart.item {
+    padding: 10px 0 !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.cart.table-wrapper .cart.item:first-child {
+    padding-top: 0 !important;
+}
+
+/* Product info - compact */
+.product-item-details {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.product-item-name {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    margin: 0 0 6px 0 !important;
+    font-weight: 600 !important;
+}
+
+.product-item-name a {
+    font-size: 13px !important;
+}
+
+/* Product image - smaller */
+.product-item-photo {
+    width: 60px !important;
+    padding-right: 12px !important;
+}
+
+/* Price columns - compact fonts */
+.cart.item .col.price,
+.cart.item .col.subtotal,
+.cart.item .col.qty {
+    font-size: 13px !important;
+    padding: 4px 8px !important;
+}
+
+.cart.item .price-excluding-tax .price,
+.cart.item .price-including-tax .price {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+/* Quantity field - compact */
+.cart.item .field.qty {
+    margin: 0 !important;
+}
+
+.cart.item .input-text.qty {
+    width: 50px !important;
+    height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 13px !important;
+    text-align: center !important;
+}
+
+/* Action buttons - smaller */
+.cart.item .actions-toolbar {
+    margin-top: 6px !important;
+}
+
+.cart.item .action.action-edit,
+.cart.item .action.action-delete {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+    margin-right: 6px !important;
+}
+
+/* Update cart button - compact */
+.cart.actions {
+    margin: 12px 0 !important;
+    padding: 0 !important;
+}
+
+.action.update {
+    font-size: 12px !important;
+    padding: 8px 16px !important;
+}
+
+/* ============================================
+   CART SUMMARY - ULTRA COMPACT
+   ============================================ */
+
+.cart-summary {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    padding: 0 !important;
+    margin: 0 0 0 16px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Title - very compact */
+.cart-summary .summary.title {
+    background: #f8f9fa !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Content area - minimal padding */
+.cart-summary .block-content {
+    padding: 14px !important;
+}
+
+/* Totals table - compact */
+.cart-totals {
+    margin: 0 !important;
+}
+
+.cart-totals .table.totals {
+    margin: 0 !important;
+}
+
+.cart-totals .totals tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.cart-totals .totals th,
+.cart-totals .totals td {
+    padding: 8px 0 !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+}
+
+.cart-totals .totals th {
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+}
+
+.cart-totals .totals td {
+    font-weight: 600 !important;
+    color: #374151 !important;
+}
+
+/* Subtotal - slightly larger */
+.cart-totals .totals .sub th,
+.cart-totals .totals .sub td {
+    font-size: 13px !important;
+    padding: 10px 0 !important;
+}
+
+/* Grand total - compact but prominent */
+.cart-totals .grand.totals {
+    background: #f9fafb !important;
+    border-top: 2px solid #e5e7eb !important;
+    margin-top: 6px !important;
+}
+
+.cart-totals .grand.totals th,
+.cart-totals .grand.totals td {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    padding: 12px 0 !important;
+}
+
+.cart-totals .grand.totals .amount {
+    color: #4caf50 !important;
+    font-size: 16px !important;
+}
+
+/* Discount/Coupon - ultra compact */
+.cart-summary .block.discount {
+    margin: 10px 0 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important;
+}
+
+.cart-summary .block.discount .title {
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+    background: #fafbfc !important;
+}
+
+.cart-summary .block.discount .title strong {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+.cart-summary .block.discount .content {
+    padding: 10px 12px !important;
+}
+
+.cart-summary .block.discount .field {
+    margin-bottom: 8px !important;
+}
+
+.cart-summary .block.discount .label {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+}
+
+.cart-summary .block.discount .input-text {
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+}
+
+.cart-summary .block.discount button.action {
+    padding: 7px 14px !important;
+    font-size: 12px !important;
+}
+
+/* Gift card - ultra compact */
+.cart-summary .block.gift-card,
+.cart-summary .amgcard-block {
+    margin: 10px 0 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important;
+}
+
+.cart-summary .block.gift-card .title,
+.cart-summary .amgcard-block .title {
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+    background: #fafbfc !important;
+}
+
+.cart-summary .block.gift-card .content,
+.cart-summary .amgcard-block .content {
+    padding: 10px 12px !important;
+}
+
+/* Checkout button - compact */
+.cart-summary .action.primary.checkout {
+    padding: 12px 18px !important;
+    font-size: 13px !important;
+    margin-top: 14px !important;
+}
+
+/* ============================================
+   CHECKOUT PAGE - REMOVE LOGIN BANNERS
+   ============================================ */
+
+/* Remove checkout login banner completely */
+.checkout-index-index .opc-wrapper {
+    padding-top: 0 !important;
+}
+
+.checkout-index-index .checkout-customer-login-banner {
+    display: none !important;
+}
+
+/* Checkout container - compact */
+.checkout-index-index .opc-wrapper {
+    padding: 16px !important;
+}
+
+/* Checkout steps - tighter */
+.opc-wrapper .step-title {
+    font-size: 15px !important;
+    padding: 10px 0 !important;
+    margin: 0 0 12px 0 !important;
+}
+
+.opc-wrapper .step-content {
+    padding: 0 !important;
+    margin: 0 0 16px 0 !important;
+}
+
+/* Form fields - compact */
+.opc-wrapper .field {
+    margin-bottom: 12px !important;
+}
+
+.opc-wrapper .field .label {
+    font-size: 12px !important;
+    margin-bottom: 4px !important;
+}
+
+.opc-wrapper .field .control input,
+.opc-wrapper .field .control select {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    height: auto !important;
+    min-height: 36px !important;
+}
+
+/* Checkout sidebar - ultra compact */
+.checkout-index-index .opc-sidebar {
+    padding: 0 !important;
+}
+
+.checkout-index-index .opc-block-summary {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.checkout-index-index .opc-block-summary .title {
+    font-size: 13px !important;
+    padding: 8px 14px !important;
+    margin: 0 !important;
+}
+
+.checkout-index-index .opc-block-summary .items {
+    padding: 10px 14px !important;
+}
+
+.checkout-index-index .opc-block-summary .product {
+    padding: 8px 0 !important;
+    margin: 0 !important;
+}
+
+.checkout-index-index .opc-block-summary .product-item-name {
+    font-size: 12px !important;
+    margin: 0 0 4px 0 !important;
+}
+
+.checkout-index-index .opc-block-summary .price {
+    font-size: 13px !important;
+}
+
+/* Checkout totals - compact */
+.checkout-index-index .table-totals tr th,
+.checkout-index-index .table-totals tr td {
+    padding: 7px 0 !important;
+    font-size: 12px !important;
+}
+
+.checkout-index-index .table-totals .grand.totals th,
+.checkout-index-index .table-totals .grand.totals td {
+    font-size: 14px !important;
+    padding: 10px 0 !important;
+}
+
+.checkout-index-index .table-totals .grand.totals .amount {
+    font-size: 15px !important;
+}
+
+/* ============================================
+   SHIPPING METHODS - COMPACT
+   ============================================ */
+
+.checkout-shipping-method {
+    margin: 12px 0 !important;
+}
+
+.checkout-shipping-method .step-title {
+    font-size: 14px !important;
+    margin-bottom: 10px !important;
+}
+
+.table-checkout-shipping-method {
+    margin: 0 !important;
+}
+
+.table-checkout-shipping-method tbody tr {
+    padding: 8px 0 !important;
+}
+
+.table-checkout-shipping-method .col-method,
+.table-checkout-shipping-method .col-price,
+.table-checkout-shipping-method .col-carrier {
+    padding: 8px !important;
+    font-size: 12px !important;
+}
+
+/* ============================================
+   PAYMENT METHODS - COMPACT
+   ============================================ */
+
+.checkout-payment-method {
+    margin: 12px 0 !important;
+}
+
+.checkout-payment-method .step-title {
+    font-size: 14px !important;
+    margin-bottom: 10px !important;
+}
+
+.checkout-payment-method .payment-method {
+    padding: 8px 12px !important;
+    margin: 6px 0 !important;
+}
+
+.checkout-payment-method .payment-method-title {
+    font-size: 13px !important;
+}
+
+.checkout-payment-method .payment-method-content {
+    padding: 10px 0 !important;
+}
+
+/* Place order button - compact */
+.checkout-index-index .action.primary.checkout {
+    padding: 12px 24px !important;
+    font-size: 14px !important;
+    margin-top: 14px !important;
+}
+
+/* ============================================
+   RESPONSIVE - MAINTAIN COMPACTNESS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .checkout-cart-index .page-main {
+        padding: 10px 12px !important;
+    }
+    
+    .cart-summary {
+        margin: 16px 0 0 0 !important;
+    }
+    
+    .cart-summary .summary.title {
+        font-size: 12px !important;
+        padding: 7px 12px !important;
+    }
+    
+    .cart-totals .grand.totals th,
+    .cart-totals .grand.totals td {
+        font-size: 13px !important;
+    }
+    
+    .cart-totals .grand.totals .amount {
+        font-size: 15px !important;
+    }
+    
+    .checkout-index-index .opc-wrapper {
+        padding: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-item-name {
+        font-size: 12px !important;
+    }
+    
+    .cart.item .price-excluding-tax .price {
+        font-size: 13px !important;
+    }
+    
+    .cart-summary .summary.title {
+        font-size: 11px !important;
+    }
+    
+    .cart-totals .totals th,
+    .cart-totals .totals td {
+        font-size: 11px !important;
+        padding: 6px 0 !important;
+    }
+}
+
+/* ============================================
+   COLUMN HEADERS - COMPACT
+   ============================================ */
+
+.cart.table-wrapper .cart thead tr th {
+    padding: 8px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: #6b7280 !important;
+    border-bottom: 2px solid #e5e7eb !important;
+}
+
+/* ============================================
+   CART EMPTY STATE - COMPACT
+   ============================================ */
+
+.cart-empty {
+    padding: 20px !important;
+    text-align: center !important;
+}
+
+.cart-empty p {
+    font-size: 14px !important;
+    margin: 10px 0 !important;
+}
+
+/* ============================================
+   PERFORMANCE & ACCESSIBILITY
+   ============================================ */
+
+.cart-summary,
+.checkout-index-index .opc-sidebar {
+    will-change: auto;
+    contain: layout style;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   PRINT OPTIMIZATION
+   ============================================ */
+
+@media print {
+    .cart-summary .block.discount,
+    .cart-summary .block.gift-card,
+    .cart.actions,
+    .checkout-methods-items {
+        display: none !important;
+    }
+}

@@ -5,6 +5,7 @@
         <css src="Mab_CheckoutCustomization::css/cart-layout-professional.css"/>
         <css src="Mab_CheckoutCustomization::css/cart-summary-optimized.css"/>
         <css src="Mab_CheckoutCustomization::css/cart-summary-compact.css"/>
+        <css src="Mab_CheckoutCustomization::css/ultra-compact-cart.css"/>
         <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
     </head>
     <body>
@@ -25,23 +26,7 @@
         <!-- Remove default Amasty Gift Card block -->
         <referenceBlock name="checkout.cart.giftcard" remove="true"/>
         
-        <!-- Add login/register button for guest users at TOP of page (before cart content) -->
-        <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Template"
-                   name="mab.cart.customer.login"
-                   template="Mab_CheckoutCustomization::cart/customer-login-button.phtml"
-                   after="mab.cart.checkout.config">
-                <arguments>
-                    <argument name="jsLayout" xsi:type="array">
-                        <item name="components" xsi:type="array">
-                            <item name="customer-login" xsi:type="array">
-                                <item name="component" xsi:type="string">Magento_Customer/js/view/authentication-popup</item>
-                            </item>
-                        </item>
-                    </argument>
-                </arguments>
-            </block>
-        </referenceContainer>
+        <!-- Login button removed - guests can checkout with email only -->
         
         <!-- Add our optimized gift card block with guest hint -->
         <referenceContainer name="cart.summary">

@@ -15,18 +15,12 @@
         <css src="Mab_CheckoutCustomization::css/checkout-payment-optimize.css"/>
         <css src="Mab_CheckoutCustomization::css/cart-summary-optimized.css"/>
         <css src="Mab_CheckoutCustomization::css/cart-summary-compact.css"/>
+        <css src="Mab_CheckoutCustomization::css/ultra-compact-cart.css"/>
         <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
     </head>
     <body>
-        <!-- Add Customer Login Banner for guests -->
-        <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Template"
-                   name="checkout.customer.login.banner"
-                   template="Mab_CheckoutCustomization::checkout/customer-login-button.phtml"
-                   before="checkout"/>
-        </referenceContainer>
+        <!-- Login button removed - guests can checkout with email only -->
         
-
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
