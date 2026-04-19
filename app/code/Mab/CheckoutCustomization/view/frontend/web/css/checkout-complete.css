@@ -189,13 +189,21 @@
    SHIPPING METHODS VISIBILITY FIX
    ======================================== */
 
-/* Hide default Magento shipping method table - use custom cards instead */
-.checkout-shipping-method,
-.table-checkout-shipping-method,
-#checkout-shipping-method-load,
-#opc-shipping_method,
-.methods-shipping {
+/* Hide ONLY the default Magento shipping method TABLE - keep section visible for cards */
+.table-checkout-shipping-method {
     display: none !important;
+}
+
+/* Keep shipping method section visible */
+.checkout-shipping-method,
+#opc-shipping_method {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Keep shipping form structure visible */
+#co-shipping-method-form {
+    display: block !important;
 }
 
 /* Shipping methods cards wrapper - visible by default, let component control visibility */
