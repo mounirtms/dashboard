@@ -2,10 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Mab_CheckoutCustomization::css/techno-loader.css"/>
-        <css src="Mab_CheckoutCustomization::css/cart-layout-professional.css"/>
-        <css src="Mab_CheckoutCustomization::css/cart-summary-optimized.css"/>
-        <css src="Mab_CheckoutCustomization::css/cart-summary-compact.css"/>
-        <css src="Mab_CheckoutCustomization::css/ultra-compact-cart.css"/>
+        <css src="Mab_CheckoutCustomization::css/balanced-professional-cart.css"/>
         <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
     </head>
     <body>
