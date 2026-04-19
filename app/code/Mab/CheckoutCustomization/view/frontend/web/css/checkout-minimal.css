@@ -1,0 +1,40 @@
+/**
+ * CHECKOUT - MINIMAL CRITICAL FIXES ONLY
+ * Date: April 19, 2026
+ * Performance: Ultra-lean, no unnecessary styles
+ */
+
+/* Fix: Step wizard basic visibility */
+.opc-progress-bar {
+    display: flex !important;
+}
+
+/* Fix: Next button must be visible */
+.opc-wrapper .step-content .actions-toolbar .primary button.action {
+    display: inline-block !important;
+    visibility: visible !important;
+}
+
+/* Fix: Hide duplicate loading masks */
+.checkout-container > .loading-mask {
+    display: none !important;
+}
+
+/* Mobile responsive: Stack on small screens */
+@media (max-width: 767px) {
+    .opc-wrapper {
+        display: block !important;
+    }
+    
+    button.action.primary {
+        width: 100% !important;
+    }
+    
+    /* Prevent iOS zoom */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select {
+        font-size: 16px !important;
+    }
+}

@@ -2,24 +2,16 @@
 <!--
 /**
  * Mab CheckoutCustomization
- * Customize checkout with shipping cards and French gift card
+ * MINIMAL - Only essential fixes, maximum performance
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <!-- PERFORMANCE: Only load ONE consolidated CSS file -->
-        <css src="Mab_CheckoutCustomization::css/checkout-optimized-final.css"/>
+        <!-- MINIMAL CSS - Only critical fixes -->
+        <css src="Mab_CheckoutCustomization::css/checkout-minimal.css"/>
     </head>
     <body>
-        <!-- Add compact login banner for guests -->
-        <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Template"
-                   name="checkout.customer.login.banner"
-                   template="Mab_CheckoutCustomization::checkout/customer-login-banner.phtml"
-                   before="checkout.root"/>
-        </referenceContainer>
-        
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
@@ -28,38 +20,15 @@
                             <item name="children" xsi:type="array">
                                 <item name="steps" xsi:type="array">
                                     <item name="children" xsi:type="array">
-                                        <!-- Shipping Step -->
-                                        <item name="shipping-step" xsi:type="array">
-                                            <item name="children" xsi:type="array">
-                                                <item name="shippingAddress" xsi:type="array">
-                                                    <item name="children" xsi:type="array">
-                                                        <item name="shipping-method-cards" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/shipping-method-cards-hotfix</item>
-                                                            <item name="sortOrder" xsi:type="string">-100</item>
-                                                            <item name="displayArea" xsi:type="string">before-shipping-method-form</item>
-                                                            <item name="config" xsi:type="array">
-                                                                <item name="debugMode" xsi:type="boolean">false</item>
-                                                            </item>
-                                                        </item>
-                                                        <!-- Checkout Flow Manager removed - causing stepNavigator errors -->
-                                                        <!-- Performance Enhancements Component removed - causing initContainer errors -->
-                                                    </item>
-                                                </item>
-                                            </item>
-                                        </item>
-                                        <!-- Payment/Billing Step - REMOVE Amasty Gift Card from checkout -->
+                                        <!-- Payment/Billing Step - Disable Amasty Gift Card input form only -->
                                         <item name="billing-step" xsi:type="array">
                                             <item name="children" xsi:type="array">
                                                 <item name="payment" xsi:type="array">
                                                     <item name="children" xsi:type="array">
                                                         <item name="afterMethods" xsi:type="array">
                                                             <item name="children" xsi:type="array">
-                                                                <!-- Remove Amasty gift card input form -->
+                                                                <!-- Disable Amasty gift card input form only -->
                                                                 <item name="amgift-card" xsi:type="array">
-                                                                    <item name="componentDisabled" xsi:type="boolean">true</item>
-                                                                </item>
-                                                                <!-- Remove checked gift card renderer -->
-                                                                <item name="checked-gift-card-renderer" xsi:type="array">
                                                                     <item name="componentDisabled" xsi:type="boolean">true</item>
                                                                 </item>
                                                             </item>
@@ -70,14 +39,13 @@
                                         </item>
                                     </item>
                                 </item>
-                                <!-- Sidebar - Keep gift card totals display only -->
+                                <!-- Sidebar - Keep gift card totals display -->
                                 <item name="sidebar" xsi:type="array">
                                     <item name="children" xsi:type="array">
                                         <item name="summary" xsi:type="array">
                                             <item name="children" xsi:type="array">
                                                 <item name="totals" xsi:type="array">
                                                     <item name="children" xsi:type="array">
-                                                        <!-- Keep Amasty gift card total display in sidebar -->
                                                         <item name="amgiftcard" xsi:type="array">
                                                             <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/cart/totals/giftcard</item>
                                                             <item name="config" xsi:type="array">
