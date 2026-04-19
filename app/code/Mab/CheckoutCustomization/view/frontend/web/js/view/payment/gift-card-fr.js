@@ -4,10 +4,12 @@
  */
 define([
     'Amasty_GiftCardAccount/js/view/payment/gift-card',
+    'Amasty_GiftCardAccount/js/action/gift-code',
+    'Magento_Ui/js/model/messageList',
     'Magento_Customer/js/model/customer',
     'mage/translate',
     'ko'
-], function (Component, customer, $t, ko) {
+], function (Component, giftCodeActions, messageContainer, customer, $t, ko) {
     'use strict';
 
     return Component.extend({

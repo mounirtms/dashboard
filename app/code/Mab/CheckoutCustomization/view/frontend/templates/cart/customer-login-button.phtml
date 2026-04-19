@@ -1,6 +1,6 @@
 /**
- * Customer Login Button Template for Cart Page
- * Shows login button for guest users
+ * Customer Login Button Template for Cart Page (TOP SECTION)
+ * Shows login button for guest users at the top of cart page
  *
  * @var $block \Magento\Framework\View\Element\Template
  */
@@ -11,88 +11,83 @@ $customerSession = $objectManager->get(\Magento\Customer\Model\Session::class);
 ?>
 
 <?php if (!$customerSession->isLoggedIn()): ?>
-<div class="block block-customer-login">
-    <div class="block-title">
-        <strong>
-            <span class="user-icon">👤</span>
-            <?= $block->escapeHtml(__('Compte Client')) ?>
-        </strong>
-    </div>
-    <div class="block-content">
-        <p class="login-hint">
-            <?= $block->escapeHtml(__('Connectez-vous pour accéder aux cartes cadeaux et à votre historique de commandes')) ?>
-        </p>
-        <div class="actions-toolbar">
-            <div class="primary">
-                <button type="button" 
-                        class="action primary checkout-login-btn"
-                        data-trigger-authentication="true"
-                        data-action="toggle-nav">
-                    <span><?= $block->escapeHtml(__('Se connecter')) ?></span>
-                </button>
-            </div>
-            <div class="secondary">
-                <a href="<?= $block->escapeUrl($block->getUrl('customer/account/create')) ?>" 
-                   class="action create">
-                    <span><?= $block->escapeHtml(__('Créer un compte')) ?></span>
-                </a>
-            </div>
+<div class="cart-login-banner">
+    <div class="login-banner-content">
+        <div class="login-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="19" stroke="#4CAF50" stroke-width="2"/>
+                <circle cx="20" cy="15" r="5" fill="#4CAF50"/>
+                <path d="M10 30C10 25 14 22 20 22C26 22 30 25 30 30" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="login-message">
+            <h3><?= $block->escapeHtml(__('Compte Client')) ?></h3>
+            <p><?= $block->escapeHtml(__('Connectez-vous pour accéder aux cartes cadeaux et à votre historique de commandes')) ?></p>
+        </div>
+        <div class="login-actions">
+            <button type="button" 
+                    class="action primary login-btn"
+                    data-trigger-authentication="true"
+                    data-action="toggle-nav">
+                <span><?= $block->escapeHtml(__('Se connecter')) ?></span>
+            </button>
+            <a href="<?= $block->escapeUrl($block->getUrl('customer/account/create')) ?>" 
+               class="action secondary create-btn">
+                <span><?= $block->escapeHtml(__('Créer un compte')) ?></span>
+            </a>
         </div>
     </div>
 </div>
 
 <style>
-/* Customer Login Block */
-.block.block-customer-login {
-    background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
-    border: 1px solid #4caf50;
+/* Cart Login Banner - Top of Page */
+.cart-login-banner {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+    border: 2px solid #4caf50;
     border-radius: 8px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 3px rgba(76, 175, 80, 0.1);
+    margin: 0 0 24px 0;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
 }
 
-.block.block-customer-login .block-title {
-    padding: 12px 16px;
-    background: rgba(76, 175, 80, 0.05);
-    border-bottom: 1px solid #e0e0e0;
-    border-radius: 8px 8px 0 0;
-}
-
-.block.block-customer-login .block-title strong {
-    font-size: 14px;
-    font-weight: 600;
-    color: #2c3e50;
+.login-banner-content {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.user-icon {
+.login-icon {
+    flex-shrink: 0;
+}
+
+.login-message {
+    flex: 1;
+}
+
+.login-message h3 {
+    margin: 0 0 6px 0;
     font-size: 18px;
-    line-height: 1;
+    font-weight: 600;
+    color: #2c3e50;
 }
 
-.block.block-customer-login .block-content {
-    padding: 16px;
-}
-
-.login-hint {
-    font-size: 12px;
-    color: #6c757d;
-    margin-bottom: 16px;
+.login-message p {
+    margin: 0;
+    font-size: 14px;
+    color: #5a6c7d;
     line-height: 1.4;
 }
 
-/* Actions Toolbar */
-.block.block-customer-login .actions-toolbar {
+.login-actions {
     display: flex;
     gap: 12px;
-    flex-direction: column;
+    flex-shrink: 0;
 }
 
-/* Primary Button - Se connecter */
-.block.block-customer-login .checkout-login-btn {
-    width: 100%;
+/* Primary Login Button */
+.cart-login-banner .login-btn {
     background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
     color: #ffffff;
     border: none;
@@ -104,42 +99,77 @@ $customerSession = $objectManager->get(\Magento\Customer\Model\Session::class);
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    white-space: nowrap;
 }
 
-.block.block-customer-login .checkout-login-btn:hover {
+.cart-login-banner .login-btn:hover {
     background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
     box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
     transform: translateY(-2px);
 }
 
-/* Secondary Link - Créer un compte */
-.block.block-customer-login .action.create {
-    display: inline-block;
-    width: 100%;
-    text-align: center;
+/* Secondary Create Account Button */
+.cart-login-banner .create-btn {
+    background: #ffffff;
     color: #4caf50;
-    font-size: 13px;
+    border: 2px solid #4caf50;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
     font-weight: 600;
     text-decoration: none;
-    padding: 10px;
-    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
-.block.block-customer-login .action.create:hover {
-    color: #45a049;
-    text-decoration: underline;
+.cart-login-banner .create-btn:hover {
+    background: #4caf50;
+    color: #ffffff;
+    transform: translateY(-2px);
 }
 
-/* Responsive */
-@media (min-width: 768px) {
-    .block.block-customer-login .actions-toolbar {
-        flex-direction: row;
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-banner-content {
+        flex-direction: column;
+        text-align: center;
     }
     
-    .block.block-customer-login .checkout-login-btn,
-    .block.block-customer-login .action.create {
-        width: auto;
-        flex: 1;
+    .login-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .cart-login-banner .login-btn,
+    .cart-login-banner .create-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .cart-login-banner {
+        padding: 16px;
+        margin: 0 0 16px 0;
+    }
+    
+    .login-banner-content {
+        gap: 12px;
+    }
+    
+    .login-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .login-message h3 {
+        font-size: 16px;
+    }
+    
+    .login-message p {
+        font-size: 13px;
     }
 }
 </style>
@@ -150,7 +180,7 @@ require(['jquery', 'Magento_Customer/js/view/authentication-popup'], function($,
     
     $(document).ready(function() {
         // Initialize authentication popup
-        $('.checkout-login-btn[data-trigger-authentication]').on('click', function() {
+        $('.login-btn[data-trigger-authentication]').on('click', function() {
             authPopup().showModal();
         });
     });

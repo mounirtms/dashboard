@@ -18,12 +18,12 @@
         <!-- Remove default Amasty Gift Card block -->
         <referenceBlock name="checkout.cart.giftcard" remove="true"/>
         
-        <!-- Add login/register button for guest users (before coupon) -->
-        <referenceContainer name="cart.summary">
+        <!-- Add login/register button for guest users at TOP of page (before cart content) -->
+        <referenceContainer name="content">
             <block class="Magento\Framework\View\Element\Template"
                    name="mab.cart.customer.login"
                    template="Mab_CheckoutCustomization::cart/customer-login-button.phtml"
-                   before="checkout.cart.coupon">
+                   after="mab.cart.checkout.config">
                 <arguments>
                     <argument name="jsLayout" xsi:type="array">
                         <item name="components" xsi:type="array">
@@ -36,7 +36,7 @@
             </block>
         </referenceContainer>
         
-        <!-- Add our optimized gift card block (only for logged-in customers) -->
+        <!-- Add our optimized gift card block with guest hint -->
         <referenceContainer name="cart.summary">
             <block class="Magento\Framework\View\Element\Template"
                    name="mab.cart.giftcard.simple"

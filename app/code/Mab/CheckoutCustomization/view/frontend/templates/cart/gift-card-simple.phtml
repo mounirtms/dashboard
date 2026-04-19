@@ -23,14 +23,72 @@ $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 $customerSession = $objectManager->get('Magento\Customer\Model\Session');
 $isLoggedIn = $customerSession->isLoggedIn();
 
-// Don't render if not logged in
-if (!$isLoggedIn) {
-    return '';
-}
-
 $blockId = 'block-gift-card-' . uniqid();
 ?>
 
+<?php if (!$isLoggedIn): ?>
+<!-- Guest User - Show Hint -->
+<div class="block gift-card guest-hint" id="<?= $escaper->escapeHtmlAttr($blockId) ?>">
+    <div class="title" data-role="title">
+        <strong id="<?= $escaper->escapeHtmlAttr($blockId) ?>-heading" role="heading" aria-level="2">
+            <span class="gift-emoji">🎁</span>
+            <?= $escaper->escapeHtml(__('Carte Cadeau')) ?>
+        </strong>
+    </div>
+    <div class="content guest-only-message" data-role="content" style="display: none;">
+        <div class="guest-hint-box">
+            <svg class="lock-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="6" y="14" width="20" height="14" rx="2" stroke="#666" stroke-width="2"/>
+                <path d="M10 14V10C10 6.68629 12.6863 4 16 4C19.3137 4 22 6.68629 22 10V14" stroke="#666" stroke-width="2"/>
+                <circle cx="16" cy="21" r="2" fill="#666"/>
+            </svg>
+            <h4><?= $escaper->escapeHtml(__('Réservé aux clients connectés')) ?></h4>
+            <p><?= $escaper->escapeHtml(__('Les cartes cadeaux sont disponibles uniquement pour les comptes clients. Veuillez vous connecter pour utiliser votre carte cadeau.')) ?></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.block.gift-card.guest-hint .guest-hint-box {
+    text-align: center;
+    padding: 24px 16px;
+}
+
+.block.gift-card.guest-hint .lock-icon {
+    margin: 0 auto 12px auto;
+    display: block;
+}
+
+.block.gift-card.guest-hint h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 8px 0;
+}
+
+.block.gift-card.guest-hint p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
+</style>
+
+<script>
+require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
+    'use strict';
+    $(document).ready(function() {
+        $('#<?= $escaper->escapeJs($blockId) ?>').collapsible({
+            active: false,
+            collapsible: true,
+            animate: 200
+        });
+    });
+});
+</script>
+
+<?php else: ?>
+<!-- Logged In User - Show Full Gift Card Functionality -->
 <div class="block gift-card" id="<?= $escaper->escapeHtmlAttr($blockId) ?>">
     <div class="title" data-role="title">
         <strong id="<?= $escaper->escapeHtmlAttr($blockId) ?>-heading" role="heading" aria-level="2">
@@ -450,3 +508,4 @@ require([
     });
 });
 </script>
+<?php endif; ?>
