@@ -44,11 +44,19 @@ var config = {
         }
     },
     paths: {
-        // Add jQuery UI widget factory dependency
+        // jQuery UI dependencies - complete set to avoid compat fallback
         'jquery/ui': 'jquery/jquery-ui',
-        // Ensure accordion is available
+        'jquery-ui-modules/widget': 'jquery/ui-modules/widget',
         'jquery-ui-modules/accordion': 'jquery/ui-modules/widgets/accordion',
-        'jquery-ui-modules/widget': 'jquery/ui-modules/widget'
+        'jquery-ui-modules/menu': 'jquery/ui-modules/widgets/menu',
+        'jquery-ui-modules/slider': 'jquery/ui-modules/widgets/slider',
+        'jquery-ui-modules/datepicker': 'jquery/ui-modules/widgets/datepicker',
+        'jquery-ui-modules/draggable': 'jquery/ui-modules/widgets/draggable',
+        'jquery-ui-modules/droppable': 'jquery/ui-modules/widgets/droppable',
+        'jquery-ui-modules/sortable': 'jquery/ui-modules/widgets/sortable',
+        'jquery-ui-modules/resizable': 'jquery/ui-modules/widgets/resizable',
+        'jquery-ui-modules/dialog': 'jquery/ui-modules/widgets/dialog',
+        'jquery-ui-modules/tabs': 'jquery/ui-modules/widgets/tabs'
     },
     shim: {
         'Mab_CheckoutCustomization/js/checkout-analytics': {
@@ -57,16 +65,50 @@ var config = {
         'Mab_CheckoutCustomization/js/image-loader': {
             deps: ['jquery']
         },
-        // Ensure jQuery UI dependencies are loaded
+        // jQuery UI core dependency
         'jquery/ui': {
             deps: ['jquery']
         },
+        // jQuery UI widget factory
+        'jquery-ui-modules/widget': {
+            deps: ['jquery']
+        },
+        // All jQuery UI widgets depend on widget factory
         'jquery-ui-modules/accordion': {
+            deps: ['jquery', 'jquery-ui-modules/widget']
+        },
+        'jquery-ui-modules/menu': {
+            deps: ['jquery', 'jquery-ui-modules/widget']
+        },
+        'jquery-ui-modules/slider': {
+            deps: ['jquery', 'jquery-ui-modules/widget']
+        },
+        'jquery-ui-modules/datepicker': {
+            deps: ['jquery', 'jquery-ui-modules/widget']
+        },
+        'jquery-ui-modules/draggable': {
+            deps: ['jquery', 'jquery-ui-modules/widget']
+        },
+        'jquery-ui-modules/droppable': {
+            deps: ['jquery', 'jquery-ui-modules/widget', 'jquery-ui-modules/draggable']
+        },
+        'jquery-ui-modules/sortable': {
+            deps: ['jquery', 'jquery-ui-modules/widget']
+        },
+        'jquery-ui-modules/resizable': {
+            deps: ['jquery', 'jquery-ui-modules/widget']
+        },
+        'jquery-ui-modules/dialog': {
+            deps: ['jquery', 'jquery-ui-modules/widget']
+        },
+        'jquery-ui-modules/tabs': {
             deps: ['jquery', 'jquery-ui-modules/widget']
         }
     },
     deps: [
-        // Preload jQuery UI to avoid compat fallback
-        'jquery/ui'
+        // Preload jQuery and jQuery UI to avoid compat fallback
+        'jquery',
+        'jquery/ui',
+        'jquery-ui-modules/widget'
     ]
 };

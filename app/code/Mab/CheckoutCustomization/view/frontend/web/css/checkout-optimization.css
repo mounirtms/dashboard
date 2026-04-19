@@ -1,0 +1,559 @@
+/**
+ * CHECKOUT OPTIMIZATION & CLEANUP CSS
+ * Fixes: jQuery UI, cluttered layout, step wizard, payment blocks
+ * Date: April 19, 2026
+ */
+
+/* ============================================
+   STEP WIZARD / STEPPER ENHANCEMENTS
+   ============================================ */
+.opc-progress-bar {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.opc-progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 0;
+}
+
+.opc-progress-bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+}
+
+.opc-progress-bar-item._active .opc-progress-bar-item-title,
+.opc-progress-bar-item._complete .opc-progress-bar-item-title {
+    font-weight: 600;
+    color: #ff6b35;
+}
+
+.opc-progress-bar-item-indicator {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.opc-progress-bar-item._active .opc-progress-bar-item-indicator {
+    border-color: #ff6b35;
+    background: #ff6b35;
+    color: white;
+    transform: scale(1.1);
+}
+
+.opc-progress-bar-item._complete .opc-progress-bar-item-indicator {
+    border-color: #28a745;
+    background: #28a745;
+    color: white;
+}
+
+.opc-progress-bar-item._complete .opc-progress-bar-item-indicator::after {
+    content: '✓';
+    font-size: 18px;
+}
+
+.opc-progress-bar-item-title {
+    font-size: 13px;
+    color: #666;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* ============================================
+   CHECKOUT LAYOUT CLEANUP - REDUCE CLUTTER
+   ============================================ */
+.checkout-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Make checkout two-column layout cleaner */
+.opc-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.opc-wrapper .step-content {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.opc-sidebar {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+.opc-block-summary {
+    background: white !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+/* ============================================
+   HIDE UNNECESSARY ELEMENTS - DECLUTTER
+   ============================================ */
+/* Hide duplicate or unnecessary messages */
+.checkout-index-index .page.messages {
+    display: none !important;
+}
+
+/* Hide checkout agreements in flow (show before place order only) */
+.checkout-agreements:not(.payment-method .checkout-agreements) {
+    display: none !important;
+}
+
+/* Hide breadcrumbs in checkout */
+.checkout-index-index .breadcrumbs {
+    display: none !important;
+}
+
+/* Clean up header in checkout */
+.checkout-index-index .page-header {
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+/* ============================================
+   PAYMENT METHOD BLOCKS OPTIMIZATION
+   ============================================ */
+.payment-methods {
+    margin-top: 20px;
+}
+
+.payment-method {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-method:hover {
+    border-color: #ff6b35;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+}
+
+.payment-method._active {
+    border-color: #ff6b35;
+    background: #fff5f2;
+}
+
+.payment-method .payment-method-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.payment-method input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.payment-method .payment-method-content {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+    display: none;
+}
+
+.payment-method._active .payment-method-content {
+    display: block;
+}
+
+/* ============================================
+   SHIPPING ADDRESS FORM CLEANUP
+   ============================================ */
+.form-shipping-address {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.form-shipping-address .field {
+    margin-bottom: 0 !important;
+}
+
+.form-shipping-address .field.name,
+.form-shipping-address .field.postcode,
+.form-shipping-address .field.city,
+.form-shipping-address .field.country {
+    grid-column: span 1;
+}
+
+.form-shipping-address .field.street,
+.form-shipping-address .field.telephone,
+.form-shipping-address .field.region {
+    grid-column: span 2;
+}
+
+/* ============================================
+   FORM FIELDS ENHANCEMENT
+   ============================================ */
+.field .control input,
+.field .control select,
+.field .control textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.field .control input:focus,
+.field .control select:focus,
+.field .control textarea:focus {
+    border-color: #ff6b35;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.field .label {
+    font-weight: 500;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.field.required .label::after {
+    content: ' *';
+    color: #d32f2f;
+}
+
+/* ============================================
+   BUTTONS CONSISTENCY
+   ============================================ */
+button.action.primary,
+.action.primary {
+    background: #ff6b35 !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 24px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+button.action.primary:hover,
+.action.primary:hover {
+    background: #ff5722 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
+}
+
+button.action.primary:active,
+.action.primary:active {
+    transform: translateY(0);
+}
+
+button.action.secondary,
+.action.secondary {
+    background: white !important;
+    color: #ff6b35 !important;
+    border: 2px solid #ff6b35 !important;
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+}
+
+button.action.secondary:hover,
+.action.secondary:hover {
+    background: #fff5f2 !important;
+}
+
+/* ============================================
+   ORDER SUMMARY SIDEBAR
+   ============================================ */
+.opc-block-summary .items-in-cart {
+    margin-bottom: 20px;
+}
+
+.opc-block-summary .product-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.opc-block-summary .product-item:last-child {
+    border-bottom: none;
+}
+
+.opc-block-summary .product-image-container {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.opc-block-summary .product-item-details {
+    flex: 1;
+}
+
+.opc-block-summary .product-item-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.opc-block-summary .details-qty {
+    font-size: 13px;
+    color: #666;
+}
+
+.opc-block-summary .price {
+    font-weight: 600;
+    color: #ff6b35;
+    white-space: nowrap;
+}
+
+/* Totals table */
+.opc-block-summary .table-totals {
+    width: 100%;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.opc-block-summary .table-totals tr {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.opc-block-summary .table-totals th,
+.opc-block-summary .table-totals td {
+    padding: 10px 0;
+}
+
+.opc-block-summary .table-totals .mark {
+    font-weight: 500;
+    color: #666;
+}
+
+.opc-block-summary .table-totals .amount {
+    text-align: right;
+    font-weight: 600;
+}
+
+.opc-block-summary .table-totals .grand.totals {
+    border-top: 2px solid #e0e0e0;
+    font-size: 16px;
+}
+
+.opc-block-summary .table-totals .grand.totals .mark,
+.opc-block-summary .table-totals .grand.totals .amount {
+    font-weight: 700;
+    color: #ff6b35;
+}
+
+/* ============================================
+   RESPONSIVE OPTIMIZATIONS
+   ============================================ */
+@media (max-width: 1024px) {
+    .opc-wrapper {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .opc-sidebar {
+        position: static;
+        order: -1;
+    }
+    
+    .form-shipping-address {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-shipping-address .field {
+        grid-column: span 1 !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .checkout-container {
+        padding: 10px;
+    }
+    
+    .opc-wrapper .step-content {
+        padding: 16px;
+    }
+    
+    .opc-block-summary {
+        padding: 16px !important;
+    }
+    
+    .opc-progress-bar {
+        padding: 15px 0;
+    }
+    
+    .opc-progress-bar-item-indicator {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    .opc-progress-bar-item-title {
+        font-size: 11px;
+    }
+    
+    button.action.primary {
+        width: 100%;
+        padding: 14px 20px !important;
+    }
+}
+
+/* ============================================
+   LOADING & TRANSITION STATES
+   ============================================ */
+.loading-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-mask .loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #ff6b35;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Smooth transitions between steps */
+.opc-wrapper .step-content {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0,0,0,0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+*:focus {
+    outline: 2px solid #ff6b35;
+    outline-offset: 2px;
+}
+
+/* Skip links for screen readers */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #ff6b35;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 10000;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+    .opc-progress-bar,
+    .opc-sidebar,
+    .actions-toolbar,
+    .page-header,
+    .page-footer {
+        display: none !important;
+    }
+    
+    .opc-wrapper {
+        display: block;
+    }
+    
+    .opc-wrapper .step-content {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+}
+
+/* ============================================
+   REDUCE MOTION FOR ACCESSIBILITY
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
