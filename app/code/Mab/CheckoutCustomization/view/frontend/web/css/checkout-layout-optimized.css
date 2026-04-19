@@ -1,0 +1,358 @@
+/**
+ * Checkout Layout Optimizations
+ * Clean, professional checkout experience
+ */
+
+/* ======================================
+   CHECKOUT MAIN CONTAINER
+   ====================================== */
+
+.checkout-index-index .opc-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ======================================
+   CHECKOUT STEPS - CLEAN DESIGN
+   ====================================== */
+
+.checkout-index-index .opc .step-title {
+    background: #2c3e50;
+    color: #ffffff;
+    padding: 16px 24px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 8px 8px 0 0;
+    margin: 0 0 -1px 0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.checkout-index-index .opc .step-title:hover {
+    background: #34495e;
+}
+
+.checkout-index-index .opc .step-content {
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 0 0 8px 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+/* ======================================
+   SHIPPING ADDRESS FORM
+   ====================================== */
+
+.checkout-index-index .fieldset.address {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.checkout-index-index .fieldset.address .field:nth-child(1) {
+    grid-column: 1 / -1; /* Full width */
+}
+
+.checkout-index-index .field {
+    margin-bottom: 0;
+}
+
+.checkout-index-index .field .label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.checkout-index-index .field .control input,
+.checkout-index-index .field .control select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.checkout-index-index .field .control input:focus,
+.checkout-index-index .field .control select:focus {
+    border-color: #4caf50;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+/* ======================================
+   SHIPPING METHODS - CLEAN CARDS
+   ====================================== */
+
+.checkout-index-index .shipping-methods-cards-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.checkout-index-index .shipping-card {
+    background: #ffffff;
+    border: 2px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checkout-index-index .shipping-card:hover {
+    border-color: #4caf50;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+}
+
+.checkout-index-index .shipping-card.selected {
+    border-color: #4caf50;
+    background: linear-gradient(135deg, #f1f8f4 0%, #ffffff 100%);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+/* ======================================
+   PAYMENT METHODS - PROFESSIONAL
+   ====================================== */
+
+.checkout-index-index .payment-methods {
+    padding: 0;
+}
+
+.checkout-index-index .payment-method {
+    background: #ffffff;
+    border: 2px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+}
+
+.checkout-index-index .payment-method._active {
+    border-color: #4caf50;
+    background: #f1f8f4;
+}
+
+.checkout-index-index .payment-method-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.checkout-index-index .payment-method-title label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    cursor: pointer;
+    flex: 1;
+}
+
+.checkout-index-index .payment-method-content {
+    padding-top: 16px;
+    margin-top: 16px;
+    border-top: 1px solid #e8e8e8;
+}
+
+/* ======================================
+   PLACE ORDER BUTTON - PROMINENT
+   ====================================== */
+
+.checkout-index-index .actions-toolbar {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px solid #e8e8e8;
+}
+
+.checkout-index-index .action.primary.checkout {
+    width: 100%;
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 18px 32px;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.checkout-index-index .action.primary.checkout:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+    transform: translateY(-2px);
+}
+
+.checkout-index-index .action.primary.checkout:disabled {
+    background: #9e9e9e;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ======================================
+   CHECKOUT SIDEBAR - CART SUMMARY
+   ====================================== */
+
+.checkout-index-index .opc-sidebar {
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 0;
+    position: sticky;
+    top: 20px;
+}
+
+.checkout-index-index .opc-sidebar .opc-block-summary {
+    padding: 0;
+}
+
+.checkout-index-index .opc-sidebar .title {
+    background: #2c3e50;
+    color: #ffffff;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 0;
+    border-radius: 8px 8px 0 0;
+}
+
+.checkout-index-index .opc-sidebar .table-totals {
+    padding: 16px 20px;
+}
+
+/* ======================================
+   ORDER SUMMARY - SIMPLIFIED
+   ====================================== */
+
+.checkout-index-index .minicart-items {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 16px 20px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.checkout-index-index .minicart-items .product-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.checkout-index-index .minicart-items .product-item:last-child {
+    border-bottom: none;
+}
+
+.checkout-index-index .product-item-photo {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+}
+
+.checkout-index-index .product-item-details {
+    flex: 1;
+}
+
+.checkout-index-index .product-item-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.checkout-index-index .product-item-qty {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.checkout-index-index .product-item .price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #4caf50;
+}
+
+/* ======================================
+   RESPONSIVE DESIGN
+   ====================================== */
+
+@media (max-width: 768px) {
+    .checkout-index-index .opc-wrapper {
+        padding: 12px;
+    }
+    
+    .checkout-index-index .fieldset.address {
+        grid-template-columns: 1fr;
+    }
+    
+    .checkout-index-index .opc-sidebar {
+        position: static;
+        margin-top: 20px;
+    }
+    
+    .checkout-index-index .action.primary.checkout {
+        padding: 16px 24px;
+        font-size: 16px;
+    }
+}
+
+/* ======================================
+   LOADING STATES
+   ====================================== */
+
+.checkout-index-index .loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.checkout-index-index .loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #4caf50;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* ======================================
+   ACCESSIBILITY
+   ====================================== */
+
+.checkout-index-index .action.primary.checkout:focus-visible {
+    outline: 3px solid #4caf50;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .checkout-index-index .action.primary.checkout,
+    .checkout-index-index .shipping-card,
+    .checkout-index-index .payment-method {
+        transition: none;
+    }
+    
+    .checkout-index-index .action.primary.checkout:hover {
+        transform: none;
+    }
+}

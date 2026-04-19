@@ -1,0 +1,41 @@
+<?php
+/**
+ * Techno Logo Loader Template
+ * Reusable loading indicator component
+ *
+ * @var $block \Magento\Framework\View\Element\Template
+ * @var $escaper \Magento\Framework\Escaper
+ */
+$escaper = $block->getData('escaper') ?: \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Framework\Escaper::class);
+
+// Configuration
+$logoUrl = $block->getData('logo_url') ?: 'https://dev.technostationery.com/media/mageplaza/tablerate/techno.png';
+$loadingText = $block->getData('loading_text') ?: __('Chargement en cours...');
+$subText = $block->getData('sub_text') ?: __('Veuillez patienter');
+$showText = $block->getData('show_text') !== false;
+$compact = $block->getData('compact') === true;
+?>
+
+<?php if ($compact): ?>
+    <span class="techno-loader-compact" role="status" aria-label="<?= $escaper->escapeHtmlAttr($loadingText) ?>"></span>
+<?php else: ?>
+    <div class="techno-loader-wrapper" role="status" aria-live="polite">
+        <div class="techno-loader">
+            <img 
+                src="<?= $escaper->escapeUrl($logoUrl) ?>" 
+                alt="<?= $escaper->escapeHtmlAttr(__('Techno Logo')) ?>"
+                class="techno-loader-logo"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div class="techno-loader-logo-fallback" style="display: none;">T</div>
+            <div class="techno-loader-spinner"></div>
+            <div class="techno-loader-spinner-secondary"></div>
+        </div>
+        <?php if ($showText): ?>
+            <div class="techno-loader-text"><?= $escaper->escapeHtml($loadingText) ?></div>
+            <?php if ($subText): ?>
+                <div class="techno-loader-subtext"><?= $escaper->escapeHtml($subText) ?></div>
+            <?php endif; ?>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
