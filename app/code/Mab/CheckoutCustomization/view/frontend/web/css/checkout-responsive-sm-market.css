@@ -1,19 +1,20 @@
 /**
- * CHECKOUT RESPONSIVE DESIGN - FIXED VERSION
+ * CHECKOUT RESPONSIVE - PERFORMANCE OPTIMIZED
  * Date: April 19, 2026
  * Theme: Sm/market
- * CRITICAL FIX: Properly scoped media queries to prevent desktop from looking tiny
+ * CRITICAL: DO NOT override theme container widths, respect theme defaults
  */
 
 /* ============================================
-   BASE THEME INTEGRATION - APPLIES TO ALL SIZES
+   BASE THEME INTEGRATION ONLY
+   Let theme control container widths
    ============================================ */
 .checkout-index-index {
     font-family: inherit;
     line-height: 1.666666667;
 }
 
-/* Integrate with Sm/market button styles */
+/* Theme button styles */
 .checkout-index-index button.action.primary,
 .checkout-index-index .action.primary {
     background: #ff6b35 !important;
@@ -31,7 +32,7 @@
     box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
 }
 
-/* Integrate form elements with theme */
+/* Theme form elements */
 .checkout-index-index .field .control input,
 .checkout-index-index .field .control select,
 .checkout-index-index .field .control textarea {
@@ -52,514 +53,44 @@
 }
 
 /* ============================================
-   DESKTOP-FIRST BASE STYLES (DEFAULT)
-   These apply to desktop and get overridden by mobile
+   MOBILE RESPONSIVE ONLY (DO NOT TOUCH DESKTOP)
+   Desktop uses theme defaults
    ============================================ */
 
-/* Default desktop layout */
-.checkout-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 40px 30px;
-}
-
-.opc-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 40px;
-}
-
-.opc-wrapper .step-content {
-    background: white;
-    padding: 30px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-}
-
-.opc-sidebar {
-    width: 100%;
-    position: sticky;
-    top: 20px;
-    height: fit-content;
-}
-
-/* Desktop form grid */
-.form-shipping-address {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-
-.form-shipping-address .field.street,
-.form-shipping-address .field.region,
-.form-shipping-address .field.telephone {
-    grid-column: span 2;
-}
-
-/* Desktop buttons */
-button.action.primary,
-button.action.secondary {
-    width: auto;
-    min-width: 200px;
-    padding: 12px 24px !important;
-    font-size: 14px !important;
-}
-
-/* ============================================
-   STEP WIZARD - DESKTOP DEFAULT
-   ============================================ */
-.opc-progress-bar {
-    display: flex !important;
-    justify-content: space-between;
-    padding: 20px 5px;
-    margin-bottom: 30px;
-    position: relative;
-}
-
-.opc-progress-bar::before {
-    content: '';
-    position: absolute;
-    top: 42px;
-    left: 20px;
-    right: 20px;
-    height: 2px;
-    background: #e0e0e0;
-    z-index: 0;
-}
-
-.opc-progress-bar-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    z-index: 1;
-    flex: 1;
-}
-
-.opc-progress-bar-item-indicator {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: white;
-    border: 2px solid #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
-}
-
-.opc-progress-bar-item._active .opc-progress-bar-item-indicator {
-    border-color: #ff6b35;
-    background: #ff6b35;
-    color: white;
-    transform: scale(1.05);
-}
-
-.opc-progress-bar-item._complete .opc-progress-bar-item-indicator {
-    border-color: #28a745;
-    background: #28a745;
-    color: white;
-}
-
-.opc-progress-bar-item._complete .opc-progress-bar-item-indicator::after {
-    content: '✓';
-    font-size: 18px;
-}
-
-.opc-progress-bar-item-title {
-    font-size: 14px;
-    text-align: center;
-    color: #666;
-    line-height: 1.2;
-}
-
-.opc-progress-bar-item._active .opc-progress-bar-item-title {
-    color: #ff6b35;
-    font-weight: 600;
-}
-
-/* ============================================
-   SHIPPING & PAYMENT METHODS - DESKTOP
-   ============================================ */
-.shipping-method-card,
-.payment-method {
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 12px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.shipping-method-card:hover,
-.payment-method:hover {
-    border-color: #ff6b35;
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
-}
-
-.shipping-method-card._active,
-.payment-method._active {
-    border-color: #ff6b35;
-    background: #fff8f5;
-}
-
-/* ============================================
-   ORDER SUMMARY SIDEBAR - DESKTOP
-   ============================================ */
-.opc-block-summary {
-    background: white !important;
-    padding: 20px !important;
-    border-radius: 6px !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
-}
-
-.opc-block-summary .title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-.opc-block-summary .product-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.opc-block-summary .product-image-container {
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid #e0e0e0;
-}
-
-.opc-block-summary .price {
-    font-weight: 600;
-    color: #ff6b35;
-    font-size: 14px;
-}
-
-/* ============================================
-   TABLET / SMALL DESKTOP (1024px - 1279px)
-   ============================================ */
-@media (max-width: 1279px) and (min-width: 1024px) {
-    .checkout-container {
-        max-width: 1200px;
-        padding: 30px 20px;
-    }
-    
+/* MOBILE ONLY: < 768px */
+@media (max-width: 767px) {
+    /* Single column on mobile */
     .opc-wrapper {
-        grid-template-columns: 1fr 380px;
-        gap: 30px;
-    }
-    
-    .opc-wrapper .step-content {
-        padding: 24px;
-    }
-    
-    button.action.primary,
-    button.action.secondary {
-        min-width: 180px;
-    }
-}
-
-/* ============================================
-   TABLETS LANDSCAPE (768px - 1023px)
-   ============================================ */
-@media (max-width: 1023px) and (min-width: 768px) {
-    .checkout-container {
-        padding: 20px;
-        max-width: 100%;
-    }
-    
-    .opc-wrapper {
-        grid-template-columns: 1fr 350px;
-        gap: 20px;
-    }
-    
-    .opc-wrapper .step-content {
-        padding: 20px;
-    }
-    
-    .opc-progress-bar-item-indicator {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-    }
-    
-    .opc-progress-bar-item-title {
-        font-size: 12px;
-    }
-    
-    button.action.primary,
-    button.action.secondary {
-        min-width: 160px;
-    }
-}
-
-/* ============================================
-   TABLETS PORTRAIT (576px - 767px)
-   ============================================ */
-@media (max-width: 767px) and (min-width: 576px) {
-    .checkout-container {
-        padding: 15px;
-    }
-    
-    /* Switch to single column */
-    .opc-wrapper {
-        display: block;
-        grid-template-columns: none;
-    }
-    
-    .opc-sidebar {
-        position: static;
-        margin-top: 20px;
-    }
-    
-    .opc-wrapper .step-content {
-        padding: 20px;
-    }
-    
-    .opc-block-summary {
-        padding: 20px !important;
-    }
-    
-    /* Two-column form */
-    .form-shipping-address {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-    
-    .form-shipping-address .field.street,
-    .form-shipping-address .field.telephone,
-    .form-shipping-address .field.region {
-        grid-column: span 2;
-    }
-    
-    /* Inline buttons */
-    button.action.primary,
-    button.action.secondary {
-        width: auto;
-        min-width: 180px;
-    }
-    
-    .actions-toolbar {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-    }
-    
-    .actions-toolbar .primary,
-    .actions-toolbar .secondary {
-        margin: 0;
-    }
-}
-
-/* ============================================
-   MOBILE PHONES (375px - 575px)
-   ============================================ */
-@media (max-width: 575px) and (min-width: 375px) {
-    .checkout-container {
-        padding: 10px;
-    }
-    
-    /* Single column layout */
-    .opc-wrapper {
-        display: block;
+        display: block !important;
     }
     
     .opc-sidebar {
         width: 100%;
-        position: static;
         margin-top: 20px;
+    }
+    
+    .checkout-container {
+        padding: 10px;
     }
     
     .opc-wrapper .step-content {
         padding: 16px;
     }
     
-    /* Full-width form fields */
-    .form-shipping-address {
-        display: block;
-    }
-    
+    /* Stack form fields */
     .form-shipping-address .field {
-        margin-bottom: 12px;
+        width: 100% !important;
+        float: none !important;
     }
     
-    /* Prevent iOS zoom */
-    .form-shipping-address .field .control input,
-    .form-shipping-address .field .control select {
-        font-size: 16px !important;
-    }
-    
-    /* Full-width buttons */
+    /* Full-width buttons on mobile */
     button.action.primary,
     button.action.secondary {
         width: 100% !important;
         margin-bottom: 10px;
     }
     
-    /* Compact progress bar */
-    .opc-progress-bar {
-        padding: 12px 5px;
-    }
-    
-    .opc-progress-bar-item-indicator {
-        width: 36px;
-        height: 36px;
-        font-size: 14px;
-    }
-    
-    .opc-progress-bar-item-title {
-        font-size: 11px;
-    }
-    
-    /* Compact order summary */
-    .opc-block-summary .product-item {
-        font-size: 13px;
-    }
-    
-    .opc-block-summary .product-image-container {
-        width: 50px;
-        height: 50px;
-    }
-}
-
-/* ============================================
-   SMALL PHONES (< 375px)
-   ============================================ */
-@media (max-width: 374px) {
-    .checkout-container {
-        padding: 8px;
-    }
-    
-    .opc-wrapper .step-content {
-        padding: 15px;
-    }
-    
-    .opc-progress-bar-item-title {
-        font-size: 10px;
-    }
-    
-    .opc-progress-bar-item-indicator {
-        width: 32px;
-        height: 32px;
-        font-size: 12px;
-    }
-    
-    button.action.primary {
-        padding: 12px 16px !important;
-        font-size: 14px !important;
-    }
-    
-    .opc-block-summary .product-image-container {
-        width: 45px;
-        height: 45px;
-    }
-}
-
-/* ============================================
-   TOUCH-FRIENDLY ENHANCEMENTS
-   ============================================ */
-@media (max-width: 767px) {
-    /* Ensure minimum touch targets */
-    button,
-    input[type="radio"],
-    input[type="checkbox"],
-    select {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    .shipping-method-card,
-    .payment-method {
-        min-height: 60px;
-    }
-    
-    /* Touch feedback */
-    button:active,
-    .shipping-method-card:active,
-    .payment-method:active {
-        transform: scale(0.98);
-    }
-}
-
-/* ============================================
-   LANDSCAPE ORIENTATION (MOBILE)
-   ============================================ */
-@media (max-width: 767px) and (orientation: landscape) {
-    .opc-progress-bar {
-        padding: 10px 5px;
-    }
-    
-    .opc-progress-bar-item-indicator {
-        width: 30px;
-        height: 30px;
-        font-size: 12px;
-    }
-    
-    .opc-progress-bar-item-title {
-        font-size: 10px;
-    }
-    
-    .opc-wrapper .step-content {
-        padding: 12px;
-    }
-}
-
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-/* ============================================
-   PRINT STYLES
-   ============================================ */
-@media print {
-    .opc-progress-bar,
-    .opc-sidebar,
-    .actions-toolbar,
-    .page-header,
-    .page-footer {
-        display: none !important;
-    }
-    
-    .opc-wrapper {
-        display: block !important;
-        grid-template-columns: none !important;
-    }
-    
-    .opc-wrapper .step-content {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-        page-break-inside: avoid;
-    }
-}
-
-/* ============================================
-   BROWSER-SPECIFIC FIXES
-   ============================================ */
-
-/* iOS Safari */
-@supports (-webkit-touch-callout: none) {
+    /* Prevent iOS zoom */
     input[type="text"],
     input[type="email"],
     input[type="tel"],
@@ -568,15 +99,64 @@ button.action.secondary {
         font-size: 16px !important;
     }
     
-    .opc-sidebar {
-        position: -webkit-sticky;
-        position: sticky;
+    /* Compact progress bar */
+    .opc-progress-bar {
+        padding: 12px 5px;
+    }
+    
+    .opc-progress-bar-item-indicator {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 14px !important;
+    }
+    
+    .opc-progress-bar-item-title {
+        font-size: 11px;
+    }
+    
+    /* Touch-friendly */
+    button,
+    input[type="radio"],
+    input[type="checkbox"],
+    select {
+        min-height: 44px;
     }
 }
 
-/* Firefox */
-@-moz-document url-prefix() {
-    select {
-        padding-right: 30px !important;
+/* TABLET: 768px - 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    /* Two-column form on tablet */
+    .form-shipping-address {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .form-shipping-address .field.street,
+    .form-shipping-address .field.region,
+    .form-shipping-address .field.telephone {
+        grid-column: span 2;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   PRINT
+   ============================================ */
+@media print {
+    .opc-progress-bar,
+    .actions-toolbar,
+    .page-header,
+    .page-footer {
+        display: none !important;
     }
 }

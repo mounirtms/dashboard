@@ -316,11 +316,14 @@
     animation: pulse 2s ease-in-out infinite;
 }
 
-/* Animated spinner ring around logo */
+/* Animated spinner ring around logo - replaced with custom spinner */
 .checkout-index-index .loading-mask .spinner-ring {
     position: relative;
-    width: 160px;
-    height: 160px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .checkout-index-index .loading-mask .spinner-ring:before {
@@ -330,10 +333,11 @@
     left: 0;
     width: 100%;
     height: 100%;
-    border: 4px solid #e0e0e0;
-    border-top: 4px solid #4caf50;
-    border-radius: 50%;
-    animation: spin 1.5s linear infinite;
+    background-image: url('https://dev.technostationery.com/app/spinner.gif');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: pulse 2s ease-in-out infinite;
 }
 
 .checkout-index-index .loading-mask .techno-logo {

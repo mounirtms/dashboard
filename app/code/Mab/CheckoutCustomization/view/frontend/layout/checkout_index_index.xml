@@ -8,13 +8,8 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <css src="Mab_CheckoutCustomization::css/production-optimized.css"/>
-        <css src="Mab_CheckoutCustomization::css/critical-hotfix.css"/>
-        <css src="Mab_CheckoutCustomization::css/next-button-absolute-fix.css"/>
-        <css src="Mab_CheckoutCustomization::css/checkout-complete-flow.css"/>
-        <css src="Mab_CheckoutCustomization::css/checkout-emergency-repair.css"/>
-        <css src="Mab_CheckoutCustomization::css/checkout-optimization.css"/>
-        <css src="Mab_CheckoutCustomization::css/checkout-responsive-sm-market.css"/>
+        <!-- PERFORMANCE: Only load ONE consolidated CSS file -->
+        <css src="Mab_CheckoutCustomization::css/checkout-optimized-final.css"/>
     </head>
     <body>
         <!-- Add compact login banner for guests -->
@@ -43,7 +38,7 @@
                                                             <item name="sortOrder" xsi:type="string">-100</item>
                                                             <item name="displayArea" xsi:type="string">before-shipping-method-form</item>
                                                             <item name="config" xsi:type="array">
-                                                                <item name="debugMode" xsi:type="boolean">true</item>
+                                                                <item name="debugMode" xsi:type="boolean">false</item>
                                                             </item>
                                                         </item>
                                                         <!-- Checkout Flow Manager removed - causing stepNavigator errors -->

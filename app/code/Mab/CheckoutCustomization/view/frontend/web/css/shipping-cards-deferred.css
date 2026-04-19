@@ -157,12 +157,8 @@
     width: 20px;
     height: 20px;
     margin: -10px 0 0 -10px;
-    border: 2px solid #4CAF50;
-    border-radius: 50%;
-    border-top-color: transparent;
-    animation: spinner 0.6s linear infinite;
-}
-
-@keyframes spinner {
-    to { transform: rotate(360deg); }
+    background-image: url('https://dev.technostationery.com/app/spinner.gif');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
