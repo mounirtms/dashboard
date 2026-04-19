@@ -10,7 +10,8 @@
     <head>
         <css src="Mab_CheckoutCustomization::css/techno-loader.css"/>
         <css src="Mab_CheckoutCustomization::css/checkout-wizard-steps.css"/>
-        <css src="Mab_CheckoutCustomization::css/balanced-professional-cart.css"/>
+        <css src="Mab_CheckoutCustomization::css/checkout-complete.css"/>
+        <css src="Mab_CheckoutCustomization::css/critical-fixes.css"/>
         <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
     </head>
     <body>
