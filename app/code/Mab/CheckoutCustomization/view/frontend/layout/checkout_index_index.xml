@@ -47,6 +47,12 @@
                                                             </item>
                                                         </item>
                                                         <!-- Checkout Flow Manager removed - causing stepNavigator errors -->
+                                                        <!-- Performance Enhancements Component -->
+                                                        <item name="performance-enhancements" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/performance-enhancements</item>
+                                                            <item name="sortOrder" xsi:type="string">1000</item>
+                                                            <item name="displayArea" xsi:type="string">additional-fieldsets</item>
+                                                        </item>
                                                     </item>
                                                 </item>
                                             </item>
