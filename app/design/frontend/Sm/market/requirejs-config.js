@@ -3,7 +3,7 @@ var config = {
         '*': {
             'bootstrap.bundle.min': 'js/bootstrap/bootstrap.bundle.min',
             'slick': 'js/slick',
-			'flipdown': 'js/flipdown' 
+			'flipdown': 'js/flipdown'
         }
     },
     shim: {
@@ -14,5 +14,9 @@ var config = {
     deps: [
         "js/bootstrap/bootstrap.bundle.min",
         "js/theme-js"
-    ]
+    ],
+    paths: {
+        // Ensure jQuery UI widgets are properly resolved to avoid compat fallback
+        'jquery/ui-modules/widget': 'jquery/jquery-ui'
+    }
 };

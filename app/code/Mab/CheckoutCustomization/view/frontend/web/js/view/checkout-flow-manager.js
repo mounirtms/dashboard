@@ -32,10 +32,13 @@ define([
                 self.ensureStepButtonsVisible();
             });
             
-            // Monitor active step
-            stepNavigator.next.subscribe(function () {
-                console.log('➡️ [Checkout Flow] Moving to next step');
-                self.ensureStepButtonsVisible();
+            // Monitor active step via observable hash
+            ko.computed(function() {
+                var activeStep = stepNavigator.getActiveItem();
+                if (activeStep) {
+                    console.log('➡️ [Checkout Flow] Active step changed:', activeStep.code);
+                    self.ensureStepButtonsVisible();
+                }
             });
             
             // Monitor shipping method selection

@@ -122,9 +122,14 @@ define([
             console.log('🔄 [HOTFIX Shipping] Processing', rates.length, 'rates...');
             
             $.each(rates, function (index, rate) {
-                if (!rate.carrier_code || !rate.method_code) {
-                    console.warn('⚠️ [HOTFIX Shipping] Skipping invalid rate:', rate);
-                    return true;
+                // Skip rates with missing carrier_code OR method_code
+                if (!rate || !rate.carrier_code || !rate.method_code) {
+                    console.warn('⚠️ [HOTFIX Shipping] Skipping invalid rate (missing carrier or method):', {
+                        carrier_code: rate ? rate.carrier_code : null,
+                        method_code: rate ? rate.method_code : null,
+                        carrier_title: rate ? rate.carrier_title : 'N/A'
+                    });
+                    return true; // continue
                 }
                 
                 var method = {
