@@ -2,6 +2,8 @@
  * Custom checkout modifications
  * Fallback CSS to hide any remaining discount elements
  * Primary hiding is handled by component replacement
+ * Date: April 19, 2026
+ * Enhanced with mobile-first responsive design for Sm/market theme
  */
 
 // Fallback CSS - only needed if component replacement fails
@@ -51,5 +53,417 @@
 [class*="gift-card"] {
     .checkout-index-index & {
         display: block !important;
+    }
+}
+
+/* ============================================
+   MOBILE-FIRST RESPONSIVE ENHANCEMENTS
+   Sm/market theme integration
+   ============================================ */
+
+// Mobile-first base styles
+.checkout-index-index {
+    // Ensure smooth scrolling on mobile
+    -webkit-overflow-scrolling: touch;
+    
+    // Optimize for mobile performance
+    .opc-wrapper {
+        will-change: transform;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+    
+    // Touch-friendly form elements
+    input,
+    select,
+    textarea {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: @button__border-radius;
+        
+        &:focus {
+            outline-color: @primary__color;
+            outline-width: 2px;
+            outline-offset: 2px;
+        }
+    }
+    
+    // Optimize button tap targets for mobile
+    button.action.primary,
+    .action.primary {
+        min-height: 44px;
+        min-width: 120px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(255, 107, 53, 0.2);
+        
+        &:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
+    }
+    
+    // Responsive tables for order summary
+    .table-totals {
+        width: 100%;
+        font-size: 14px;
+        
+        .mark {
+            padding-right: 10px;
+        }
+        
+        .amount {
+            text-align: right;
+            white-space: nowrap;
+        }
+    }
+    
+    // Mobile-optimized shipping methods
+    .table-checkout-shipping-method {
+        width: 100%;
+        
+        td {
+            padding: 10px 5px;
+        }
+        
+        .col-method {
+            width: 30px;
+        }
+        
+        .col-price {
+            text-align: right;
+            white-space: nowrap;
+        }
+    }
+    
+    // Mobile-friendly payment methods
+    .payment-method {
+        margin-bottom: 15px;
+        
+        .payment-method-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            
+            label {
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                width: 100%;
+            }
+        }
+        
+        input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+    }
+    
+    // Optimize loader for mobile
+    .loading-mask {
+        .loader {
+            width: 40px;
+            height: 40px;
+        }
+    }
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+// Extra small devices (phones, less than 576px)
+.media-width(@extremum, @break) when (@extremum = 'max') and (@break = @screen__xs) {
+    .checkout-index-index {
+        // Full-width layout on small phones
+        .checkout-container {
+            padding: 10px !important;
+        }
+        
+        .opc-wrapper .step-content {
+            padding: 15px !important;
+        }
+        
+        // Stack form fields vertically
+        .form-shipping-address {
+            .field {
+                width: 100% !important;
+                float: none !important;
+            }
+        }
+        
+        // Full-width buttons
+        button.action {
+            width: 100% !important;
+            margin-bottom: 10px;
+        }
+        
+        // Compact progress bar
+        .opc-progress-bar {
+            padding: 10px 5px !important;
+            
+            &-item-indicator {
+                width: 34px !important;
+                height: 34px !important;
+                font-size: 13px !important;
+            }
+            
+            &-item-title {
+                font-size: 11px !important;
+            }
+        }
+        
+        // Compact order summary
+        .opc-block-summary {
+            .product-item {
+                font-size: 13px;
+            }
+            
+            .product-image-container {
+                width: 45px;
+                height: 45px;
+            }
+        }
+    }
+}
+
+// Small devices (tablets, 576px and up to 768px)
+.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__s) {
+    .checkout-index-index {
+        .form-shipping-address {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            
+            .field.street,
+            .field.region,
+            .field.telephone {
+                grid-column: span 2;
+            }
+        }
+        
+        .actions-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            
+            button.action {
+                width: auto !important;
+                min-width: 180px;
+            }
+        }
+    }
+}
+
+// Medium devices (tablets landscape, 768px and up to 1024px)
+.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__m) {
+    .checkout-index-index {
+        .opc-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        
+        .opc-sidebar {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        
+        .form-shipping-address {
+            gap: 16px;
+        }
+    }
+}
+
+// Large devices (desktops, 1024px and up)
+.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__l) {
+    .checkout-index-index {
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .opc-wrapper {
+            grid-template-columns: 1fr 380px;
+            gap: 30px;
+        }
+        
+        .form-shipping-address {
+            gap: 20px;
+        }
+        
+        .opc-wrapper .step-content {
+            padding: 24px;
+        }
+    }
+}
+
+// Extra large devices (large desktops, 1280px and up)
+.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__xl) {
+    .checkout-index-index {
+        .checkout-container {
+            max-width: 1400px;
+            padding: 40px 30px;
+        }
+        
+        .opc-wrapper {
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+        }
+        
+        .opc-wrapper .step-content {
+            padding: 30px;
+        }
+        
+        .opc-progress-bar-item-indicator {
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+        }
+    }
+}
+
+/* ============================================
+   ORIENTATION-SPECIFIC ADJUSTMENTS
+   ============================================ */
+
+// Landscape mode on mobile devices
+@media (max-width: @screen__s) and (orientation: landscape) {
+    .checkout-index-index {
+        .opc-progress-bar {
+            padding: 8px 5px !important;
+            
+            &-item-indicator {
+                width: 30px !important;
+                height: 30px !important;
+                font-size: 12px !important;
+            }
+            
+            &-item-title {
+                font-size: 10px !important;
+            }
+        }
+        
+        .opc-wrapper .step-content {
+            padding: 12px !important;
+        }
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================ */
+
+// Focus indicators for keyboard navigation
+.checkout-index-index {
+    *:focus {
+        outline: 2px solid @primary__color;
+        outline-offset: 2px;
+    }
+    
+    // Skip link for accessibility
+    .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: @primary__color;
+        color: #fff;
+        padding: 8px;
+        text-decoration: none;
+        z-index: 100;
+        
+        &:focus {
+            top: 0;
+        }
+    }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+    .checkout-index-index {
+        border: 2px solid currentColor;
+        
+        .payment-method,
+        .shipping-method-card {
+            border: 2px solid currentColor !important;
+        }
+    }
+}
+
+// Reduced motion for users who prefer it
+@media (prefers-reduced-motion: reduce) {
+    .checkout-index-index {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/* ============================================
+   BROWSER-SPECIFIC OPTIMIZATIONS
+   ============================================ */
+
+// iOS Safari specific
+@supports (-webkit-touch-callout: none) {
+    .checkout-index-index {
+        input,
+        select,
+        textarea {
+            font-size: 16px !important; // Prevent zoom on focus
+        }
+        
+        .opc-sidebar {
+            position: -webkit-sticky;
+            position: sticky;
+        }
+    }
+}
+
+// Android Chrome optimizations
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+    .checkout-index-index {
+        // Hardware acceleration
+        .opc-wrapper,
+        .opc-sidebar {
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .checkout-index-index {
+        .opc-progress-bar,
+        .actions-toolbar,
+        .page-header,
+        .page-footer {
+            display: none !important;
+        }
+        
+        .opc-wrapper {
+            display: block !important;
+            grid-template-columns: none !important;
+        }
+        
+        .opc-wrapper .step-content {
+            box-shadow: none !important;
+            border: 1px solid #000 !important;
+            page-break-inside: avoid;
+        }
     }
 }
