@@ -9,6 +9,8 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="Mab_CheckoutCustomization::css/checkout-complete.css"/>
+        <css src="Mab_CheckoutCustomization::css/checkout-performance.css"/>
+        <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
     </head>
     <body>
         <referenceBlock name="checkout.root">

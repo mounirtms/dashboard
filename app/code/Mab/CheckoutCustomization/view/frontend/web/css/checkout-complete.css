@@ -192,13 +192,33 @@
 /* Hide ONLY the default Magento shipping method TABLE - keep section visible for cards */
 .table-checkout-shipping-method {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
 }
 
-/* Keep shipping method section visible */
+/* Keep shipping method section and containers visible */
 .checkout-shipping-method,
 #opc-shipping_method {
     display: block !important;
     visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Shipping step container should NOT be hidden */
+#checkout-step-shipping_method {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Override any .shipping-table-hidden class */
+.shipping-table-hidden {
+    /* Only hide if it's specifically the table */
+}
+
+.shipping-table-hidden.table-checkout-shipping-method {
+    display: none !important;
 }
 
 /* Keep shipping form structure visible */

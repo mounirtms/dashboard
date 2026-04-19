@@ -1,470 +1,310 @@
 /**
- * Techno Gift Card Voucher Styles
- * Minimal, clean, professional design matching Sm/market theme
- * Version: 2.0
+ * Amasty Gift Card - Compact & Optimized Styling
+ * Matches cart summary block design exactly
  */
 
-/* =========================================
-   GIFT CARD CONTAINER
-   ========================================= */
-
-.mab-giftcard-container {
+/* Gift Card Block - Matches Cart Summary */
+.block.gift-card {
     background: #ffffff;
-    border: 2px solid #e8ecef;
-    border-radius: 12px;
-    padding: 24px;
-    margin: 24px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.mab-giftcard-container:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+/* Title - Compact and Consistent */
+.block.gift-card .title {
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e8e8e8;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-radius: 8px 8px 0 0;
+    user-select: none;
 }
 
-/* =========================================
-   HEADER SECTION
-   ========================================= */
+.block.gift-card .title:hover {
+    background: #f1f3f5;
+}
 
-.mab-giftcard-header {
+.block.gift-card .title strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
     display: flex;
     align-items: center;
-    gap: 12px;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 16px;
-    margin-bottom: 20px;
+    gap: 6px;
+    line-height: 1.4;
 }
 
-.mab-giftcard-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
+/* Gift Emoji - Smaller */
+.gift-emoji {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Content - Minimal Padding */
+.block.gift-card .content {
+    padding: 14px;
+}
+
+/* Hint Text - Minimal */
+.gift-card-hint {
+    font-size: 11px;
+    color: #6c757d;
+    margin-bottom: 10px;
     line-height: 1.3;
-    letter-spacing: -0.3px;
 }
 
-/* =========================================
-   APPLIED GIFT CARDS LIST
-   ========================================= */
-
-.mab-giftcard-applied-list {
-    margin-bottom: 20px;
+/* Form - Compact */
+.form-gift-card .fieldset.gift-card {
+    margin: 0;
+    padding: 0;
+    border: none;
 }
 
-.mab-giftcard-applied-item {
+/* Field - Minimal Spacing */
+.form-gift-card .field {
+    margin-bottom: 10px;
+}
+
+.form-gift-card .field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+    display: block;
+}
+
+/* Input - Matches Cart Summary Exactly */
+.form-gift-card .input-text {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #2c3e50;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-gift-card .input-text:focus {
+    border-color: #4caf50;
+    outline: 0;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.08);
+}
+
+.form-gift-card .input-text::placeholder {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+/* Action Buttons - Compact */
+.form-gift-card .actions-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.form-gift-card .actions-toolbar .primary,
+.form-gift-card .actions-toolbar .secondary {
+    flex: 1;
+}
+
+/* Buttons - Compact & Modern */
+.form-gift-card button.action {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: none;
+}
+
+/* Primary Button - Techno Green */
+.form-gift-card button.action.primary {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.form-gift-card button.action.primary:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    transform: translateY(-1px);
+}
+
+.form-gift-card button.action.primary:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Secondary Button - Light */
+.form-gift-card button.action.secondary {
+    background: #ffffff;
+    color: #495057;
+    border: 1px solid #ced4da;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.form-gift-card button.action.secondary:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+}
+
+/* Balance Display - Compact */
+.gift-card-balance {
+    margin-top: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+}
+
+.gift-card-balance .balance-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #f8fdf9 0%, #ffffff 100%);
-    border: 2px solid #e8f5e9;
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
-    transition: all 0.3s ease;
-}
-
-.mab-giftcard-applied-item:hover {
-    border-color: #c8e6c9;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
-}
-
-.mab-giftcard-code {
-    font-family: 'SF Mono', 'Courier New', monospace;
-    font-size: 15px;
-    font-weight: 600;
-    color: #2e7d32;
-    letter-spacing: 1.5px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.mab-giftcard-code::before {
-    content: '🎁';
-    font-size: 18px;
-}
-
-.mab-giftcard-remove {
-    background: transparent;
-    border: 1.5px solid #e0e0e0;
-    color: #666;
-    padding: 6px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    letter-spacing: 0.3px;
-}
-
-.mab-giftcard-remove:hover {
-    background: #fff3f3;
-    border-color: #e57373;
-    color: #d32f2f;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);
-}
-
-.mab-giftcard-remove:active {
-    transform: translateY(0);
-}
-
-/* =========================================
-   FORM SECTION
-   ========================================= */
-
-.mab-giftcard-form-container {
-    margin-top: 20px;
-}
-
-.mab-giftcard-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.mab-giftcard-datalist-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.mab-giftcard-label {
-    display: block;
-    width: 100%;
-}
-
-.mab-giftcard-label-text {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
     margin-bottom: 8px;
-    letter-spacing: 0.2px;
-}
-
-.mab-giftcard-input {
-    width: 100%;
-    padding: 14px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 15px;
-    font-family: 'SF Mono', 'Courier New', monospace;
-    letter-spacing: 1.2px;
-    color: #333;
-    background: #ffffff;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-sizing: border-box;
-}
-
-.mab-giftcard-input::placeholder {
-    color: #999;
-    letter-spacing: 0.5px;
-}
-
-.mab-giftcard-input:focus {
-    outline: none;
-    border-color: #4caf50;
-    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
-    background: #fafafa;
-}
-
-.mab-giftcard-input:hover:not(:focus) {
-    border-color: #b0b0b0;
-}
-
-/* =========================================
-   DATALIST DROPDOWN
-   ========================================= */
-
-.mab-giftcard-datalist {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    max-height: 240px;
-    overflow-y: auto;
-    z-index: 1000;
-    margin: 0;
-    padding: 8px 0;
-    list-style: none;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.mab-giftcard-datalist-item {
-    padding: 12px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: 'SF Mono', 'Courier New', monospace;
-    letter-spacing: 0.8px;
-    color: #333;
-    transition: all 0.2s ease;
-}
-
-.mab-giftcard-datalist-item:hover {
-    background: linear-gradient(135deg, #f8fdf9 0%, #f5f5f5 100%);
-    color: #2e7d32;
-}
-
-.mab-giftcard-datalist-message {
-    padding: 16px;
-    color: #666;
     font-size: 13px;
-    text-align: center;
-    line-height: 1.5;
 }
 
-/* =========================================
-   ACTION BUTTONS - SM/MARKET MINIMAL STYLE
-   ========================================= */
-
-.mab-giftcard-actions {
-    display: flex;
-    gap: 12px;
+.gift-card-balance .balance-label {
+    color: #6c757d;
+    font-weight: 500;
 }
 
-.mab-giftcard-btn {
-    flex: 1;
-    padding: 14px 24px;
-    border: none;
-    border-radius: 10px;
+.gift-card-balance .balance-amount {
+    color: #4caf50;
+    font-weight: 700;
     font-size: 14px;
+}
+
+.gift-card-balance .balance-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #dee2e6;
+}
+
+.gift-card-balance .status-label {
+    color: #6c757d;
+}
+
+.gift-card-balance .status-value {
+    color: #28a745;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    letter-spacing: 0.3px;
-    position: relative;
-    overflow: hidden;
 }
 
-/* Primary Button - Minimal Green */
-.mab-giftcard-btn-primary {
-    background: linear-gradient(135deg, #4caf50 0%, #43a047 100%);
-    color: #ffffff;
-    border: 2px solid transparent;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.25);
+/* Messages - Compact */
+.form-gift-card .messages {
+    margin-top: 12px;
 }
 
-.mab-giftcard-btn-primary:hover {
-    background: linear-gradient(135deg, #43a047 0%, #388e3c 100%);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.35);
-    transform: translateY(-2px);
+.form-gift-card .message {
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
 }
 
-.mab-giftcard-btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+.form-gift-card .message-error {
+    background: #fff3f3;
+    border: 1px solid #ffcdd2;
+    color: #c62828;
 }
 
-/* Secondary Button - Minimal Outline */
-.mab-giftcard-btn-secondary {
-    background: #ffffff;
-    color: #555;
-    border: 2px solid #e0e0e0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.mab-giftcard-btn-secondary:hover {
-    background: #f8f8f8;
-    border-color: #4caf50;
+.form-gift-card .message-success {
+    background: #f1f8f4;
+    border: 1px solid #c8e6c9;
     color: #2e7d32;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
-    transform: translateY(-2px);
 }
 
-.mab-giftcard-btn-secondary:active {
-    transform: translateY(0);
+/* Responsive - Even More Compact on Mobile */
+@media (max-width: 767px) {
+    .block.gift-card .title {
+        padding: 10px 12px;
+    }
+    
+    .block.gift-card .title strong {
+        font-size: 13px;
+    }
+    
+    .block.gift-card .content {
+        padding: 12px;
+    }
+    
+    .gift-card-hint {
+        font-size: 11px;
+    }
+    
+    .form-gift-card .input-text {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+    
+    .form-gift-card button.action {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .form-gift-card .actions-toolbar {
+        flex-direction: column;
+    }
 }
 
-/* Button Loading State */
-.mab-giftcard-btn[disabled] {
+/* Collapsed State */
+.block.gift-card:not(.active) .content {
+    display: none;
+}
+
+/* Loading State */
+.form-gift-card.loading {
     opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
+    pointer-events: none;
 }
 
-.mab-giftcard-btn::after {
+.form-gift-card.loading::after {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 0;
-    height: 0;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #4caf50;
+    border-top-color: transparent;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+    animation: spin 0.8s linear infinite;
 }
 
-.mab-giftcard-btn:active::after {
-    width: 300px;
-    height: 300px;
-    transition: width 0s, height 0s;
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
-/* =========================================
-   MESSAGES
-   ========================================= */
-
-.mab-giftcard-container .message {
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    line-height: 1.5;
+/* Performance Optimizations */
+.block.gift-card * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-.mab-giftcard-container .message.success {
-    background: #e8f5e9;
-    border-left: 4px solid #4caf50;
-    color: #2e7d32;
+.form-gift-card button.action,
+.block.gift-card .title {
+    will-change: transform;
 }
 
-.mab-giftcard-container .message.error {
-    background: #ffebee;
-    border-left: 4px solid #f44336;
-    color: #c62828;
-}
-
-.mab-giftcard-container .message.info {
-    background: #e3f2fd;
-    border-left: 4px solid #2196f3;
-    color: #1565c0;
-}
-
-/* =========================================
-   RESPONSIVE DESIGN
-   ========================================= */
-
-@media (max-width: 768px) {
-    .mab-giftcard-container {
-        padding: 20px;
-        margin: 20px 0;
-    }
-
-    .mab-giftcard-title {
-        font-size: 18px;
-    }
-
-    .mab-giftcard-actions {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .mab-giftcard-btn {
-        width: 100%;
-        padding: 12px 20px;
-    }
-
-    .mab-giftcard-applied-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .mab-giftcard-remove {
-        width: 100%;
-        text-align: center;
-    }
-
-    .mab-giftcard-input {
-        font-size: 14px;
-        padding: 12px 14px;
-    }
-}
-
-@media (max-width: 480px) {
-    .mab-giftcard-container {
-        padding: 16px;
-        margin: 16px 0;
-        border-radius: 10px;
-    }
-
-    .mab-giftcard-header {
-        padding-bottom: 12px;
-        margin-bottom: 16px;
-    }
-
-    .mab-giftcard-title {
-        font-size: 16px;
-    }
-
-    .mab-giftcard-code {
-        font-size: 13px;
-        letter-spacing: 1px;
-    }
-
-    .mab-giftcard-btn {
-        font-size: 13px;
-        padding: 11px 16px;
-    }
-}
-
-/* =========================================
-   ACCESSIBILITY
-   ========================================= */
-
-.mab-giftcard-btn:focus-visible {
-    outline: 3px solid #4caf50;
-    outline-offset: 2px;
-}
-
-.mab-giftcard-input:focus-visible {
-    outline: 3px solid #4caf50;
-    outline-offset: 2px;
-}
-
-.mab-giftcard-remove:focus-visible {
-    outline: 2px solid #d32f2f;
-    outline-offset: 2px;
-}
-
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-    .mab-giftcard-container {
-        border-width: 3px;
-    }
-
-    .mab-giftcard-btn-primary {
-        border: 3px solid #2e7d32;
-    }
-
-    .mab-giftcard-btn-secondary {
-        border-width: 3px;
-    }
-}
-
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-    .mab-giftcard-container,
-    .mab-giftcard-btn,
-    .mab-giftcard-input,
-    .mab-giftcard-remove,
-    .mab-giftcard-applied-item {
-        transition: none;
-    }
-
-    .mab-giftcard-btn:hover,
-    .mab-giftcard-btn-secondary:hover {
-        transform: none;
-    }
-}
-
-/* =========================================
-   PRINT STYLES
-   ========================================= */
-
+/* Print Styles */
 @media print {
-    .mab-giftcard-container {
-        border: 2px solid #000;
-        box-shadow: none;
+    .block.gift-card {
         page-break-inside: avoid;
-    }
-
-    .mab-giftcard-actions {
-        display: none;
     }
 }
