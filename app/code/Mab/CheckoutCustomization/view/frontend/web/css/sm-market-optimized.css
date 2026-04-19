@@ -499,6 +499,19 @@ body.customer-logged-in .checkout-customer-login-banner {
     box-shadow: 0 3px 6px rgba(76, 175, 80, 0.3);
 }
 
+/* Payment step - place order button */
+.checkout-index-index .payment-method .actions-toolbar {
+    display: block !important;
+    margin-top: 20px;
+}
+
+.checkout-index-index .payment-method .action.primary.checkout,
+.checkout-index-index #payment-buttons-container button {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 /* ============================================
    GIFT CARD - FIXES & STYLING
    ============================================ */
