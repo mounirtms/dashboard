@@ -14,6 +14,7 @@
         <css src="Mab_CheckoutCustomization::css/checkout-complete-flow.css"/>
         <css src="Mab_CheckoutCustomization::css/checkout-emergency-repair.css"/>
         <css src="Mab_CheckoutCustomization::css/checkout-optimization.css"/>
+        <css src="Mab_CheckoutCustomization::css/checkout-responsive-sm-market.css"/>
     </head>
     <body>
         <!-- Add compact login banner for guests -->

@@ -1,0 +1,883 @@
+/**
+ * CHECKOUT RESPONSIVE DESIGN - SM/MARKET THEME
+ * Optimized for mobile, tablet, and desktop
+ * Date: April 19, 2026
+ * Theme: Sm/market
+ */
+
+/* ============================================
+   BASE THEME INTEGRATION WITH SM/MARKET
+   ============================================ */
+.checkout-index-index {
+    font-family: inherit;
+    line-height: 1.666666667;
+}
+
+/* Integrate with Sm/market button styles */
+.checkout-index-index button.action.primary,
+.checkout-index-index .action.primary {
+    background: #ff6b35 !important;
+    border: none !important;
+    border-radius: 2px !important;
+    padding: 9px 20px !important;
+    color: #fff !important;
+    font-weight: normal !important;
+    transition: all 0.3s ease !important;
+}
+
+.checkout-index-index button.action.primary:hover,
+.checkout-index-index .action.primary:hover {
+    background: #ff5722 !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
+}
+
+/* Integrate form elements with theme */
+.checkout-index-index .field .control input,
+.checkout-index-index .field .control select,
+.checkout-index-index .field .control textarea {
+    color: #666;
+    height: 32px;
+    border: 1px solid #e5e5e5;
+    border-radius: 2px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.checkout-index-index .field .control input:focus,
+.checkout-index-index .field .control select:focus,
+.checkout-index-index .field .control textarea:focus {
+    border: 1px solid #66afe9;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(102, 175, 233, 0.6);
+    outline: none;
+}
+
+/* ============================================
+   MOBILE-FIRST RESPONSIVE LAYOUT
+   ============================================ */
+
+/* Base mobile styles (320px and up) */
+.checkout-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.opc-wrapper {
+    display: block;
+    width: 100%;
+}
+
+.opc-wrapper .step-content {
+    background: white;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.opc-sidebar {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* ============================================
+   STEP WIZARD - MOBILE OPTIMIZED
+   ============================================ */
+.opc-progress-bar {
+    display: flex !important;
+    justify-content: space-between;
+    padding: 15px 5px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.opc-progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 35px;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 0;
+}
+
+.opc-progress-bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-width: 80px;
+}
+
+.opc-progress-bar-item-indicator {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 6px;
+    transition: all 0.3s ease;
+}
+
+.opc-progress-bar-item._active .opc-progress-bar-item-indicator {
+    border-color: #ff6b35;
+    background: #ff6b35;
+    color: white;
+    transform: scale(1.05);
+}
+
+.opc-progress-bar-item._complete .opc-progress-bar-item-indicator {
+    border-color: #28a745;
+    background: #28a745;
+    color: white;
+}
+
+.opc-progress-bar-item._complete .opc-progress-bar-item-indicator::after {
+    content: '✓';
+    font-size: 16px;
+}
+
+.opc-progress-bar-item-title {
+    font-size: 11px;
+    color: #666;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.opc-progress-bar-item._active .opc-progress-bar-item-title,
+.opc-progress-bar-item._complete .opc-progress-bar-item-title {
+    font-weight: 600;
+    color: #ff6b35;
+}
+
+/* ============================================
+   SHIPPING ADDRESS FORM - MOBILE
+   ============================================ */
+.form-shipping-address {
+    display: block;
+    width: 100%;
+}
+
+.form-shipping-address .field {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.form-shipping-address .field .label {
+    font-weight: 500;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-shipping-address .field.required .label::after {
+    content: ' *';
+    color: #d32f2f;
+}
+
+.form-shipping-address .field .control {
+    width: 100%;
+}
+
+.form-shipping-address .field .control input,
+.form-shipping-address .field .control select {
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Better select styling for mobile */
+.form-shipping-address select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 32px !important;
+}
+
+/* ============================================
+   SHIPPING METHODS - MOBILE CARDS
+   ============================================ */
+.shipping-method-cards-container {
+    margin: 20px 0;
+}
+
+.shipping-method-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.shipping-method-card:active {
+    transform: scale(0.98);
+}
+
+.shipping-method-card.selected {
+    border-color: #ff6b35;
+    background: #fff5f2;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.15);
+}
+
+.shipping-method-card input[type="radio"] {
+    margin-top: 4px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.shipping-method-card-content {
+    flex: 1;
+}
+
+.shipping-method-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.shipping-method-card-price {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ff6b35;
+    margin-bottom: 4px;
+}
+
+.shipping-method-card-description {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.shipping-method-card .carrier-logo {
+    max-width: 60px;
+    max-height: 30px;
+    object-fit: contain;
+}
+
+/* ============================================
+   PAYMENT METHODS - MOBILE
+   ============================================ */
+.payment-methods {
+    margin-top: 20px;
+}
+
+.payment-method {
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.payment-method._active {
+    border-color: #ff6b35;
+    background: #fff5f2;
+}
+
+.payment-method .payment-method-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.payment-method input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.payment-method .payment-method-content {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+    display: none;
+}
+
+.payment-method._active .payment-method-content {
+    display: block;
+}
+
+/* ============================================
+   ORDER SUMMARY SIDEBAR - MOBILE
+   ============================================ */
+.opc-block-summary {
+    background: white !important;
+    padding: 15px !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
+}
+
+.opc-block-summary .title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.opc-block-summary .product-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.opc-block-summary .product-item:last-child {
+    border-bottom: none;
+}
+
+.opc-block-summary .product-image-container {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.opc-block-summary .product-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.opc-block-summary .product-item-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.opc-block-summary .product-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.opc-block-summary .details-qty {
+    font-size: 12px;
+    color: #666;
+}
+
+.opc-block-summary .price {
+    font-weight: 600;
+    color: #ff6b35;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+/* Totals table */
+.opc-block-summary .table-totals {
+    width: 100%;
+    margin-top: 15px;
+    font-size: 13px;
+}
+
+.opc-block-summary .table-totals tr {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.opc-block-summary .table-totals th,
+.opc-block-summary .table-totals td {
+    padding: 8px 0;
+}
+
+.opc-block-summary .table-totals .mark {
+    font-weight: 500;
+    color: #666;
+}
+
+.opc-block-summary .table-totals .amount {
+    text-align: right;
+    font-weight: 600;
+}
+
+.opc-block-summary .table-totals .grand.totals {
+    border-top: 2px solid #e0e0e0;
+    font-size: 15px;
+}
+
+.opc-block-summary .table-totals .grand.totals .mark,
+.opc-block-summary .table-totals .grand.totals .amount {
+    font-weight: 700;
+    color: #ff6b35;
+}
+
+/* ============================================
+   BUTTONS - MOBILE OPTIMIZED
+   ============================================ */
+.actions-toolbar {
+    margin-top: 20px;
+}
+
+button.action.primary,
+.action.primary {
+    width: 100%;
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+    text-align: center;
+    display: block;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(255, 107, 53, 0.3);
+}
+
+button.action.secondary,
+.action.secondary {
+    width: 100%;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Touch-friendly button spacing */
+.actions-toolbar .primary {
+    margin-bottom: 10px;
+}
+
+/* ============================================
+   AMASTY GIFT CARD - MOBILE
+   ============================================ */
+.opc-block-summary .amgift-card-section {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.amgift-card-section .field {
+    margin-bottom: 10px;
+}
+
+.amgift-card-section input {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.amgift-card-section button {
+    width: 100%;
+}
+
+/* Hide gift card from payment step on mobile */
+.checkout-payment-method .amgift-card {
+    display: none !important;
+}
+
+/* ============================================
+   LOADING STATES - MOBILE
+   ============================================ */
+.loading-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-mask .loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #ff6b35;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Small phones (up to 374px) */
+@media (max-width: 374px) {
+    .checkout-container {
+        padding: 8px;
+    }
+    
+    .opc-progress-bar-item-title {
+        font-size: 10px;
+    }
+    
+    .opc-progress-bar-item-indicator {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    button.action.primary {
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* Standard phones (375px - 575px) */
+@media (min-width: 375px) and (max-width: 575px) {
+    .checkout-container {
+        padding: 10px;
+    }
+    
+    .opc-wrapper .step-content {
+        padding: 16px;
+    }
+    
+    .form-shipping-address .field .control input,
+    .form-shipping-address .field .control select {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+/* Tablets portrait (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .checkout-container {
+        padding: 15px;
+    }
+    
+    .opc-wrapper .step-content {
+        padding: 20px;
+    }
+    
+    .opc-block-summary {
+        padding: 20px !important;
+    }
+    
+    .form-shipping-address {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .form-shipping-address .field.street,
+    .form-shipping-address .field.telephone,
+    .form-shipping-address .field.region {
+        grid-column: span 2;
+    }
+    
+    button.action.primary,
+    button.action.secondary {
+        width: auto;
+        min-width: 200px;
+    }
+    
+    .actions-toolbar {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    
+    .actions-toolbar .primary,
+    .actions-toolbar .secondary {
+        margin: 0;
+    }
+}
+
+/* Tablets landscape (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .checkout-container {
+        padding: 20px;
+        max-width: 100%;
+    }
+    
+    .opc-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 20px;
+    }
+    
+    .opc-sidebar {
+        margin-top: 0;
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+    
+    .form-shipping-address {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .form-shipping-address .field.street,
+    .form-shipping-address .field.telephone,
+    .form-shipping-address .field.region {
+        grid-column: span 2;
+    }
+    
+    .opc-progress-bar-item-indicator {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .opc-progress-bar-item-title {
+        font-size: 12px;
+    }
+    
+    button.action.primary,
+    button.action.secondary {
+        width: auto;
+        min-width: 180px;
+    }
+}
+
+/* Desktop (1024px - 1279px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .checkout-container {
+        max-width: 1200px;
+        padding: 30px 20px;
+    }
+    
+    .opc-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 30px;
+    }
+    
+    .opc-sidebar {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+    
+    .form-shipping-address {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .opc-wrapper .step-content {
+        padding: 24px;
+    }
+    
+    button.action.primary,
+    button.action.secondary {
+        width: auto;
+        min-width: 200px;
+    }
+}
+
+/* Large desktop (1280px and up) */
+@media (min-width: 1280px) {
+    .checkout-container {
+        max-width: 1400px;
+        padding: 40px 30px;
+    }
+    
+    .opc-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 40px;
+    }
+    
+    .opc-sidebar {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+    
+    .form-shipping-address {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .opc-wrapper .step-content {
+        padding: 30px;
+    }
+    
+    .opc-progress-bar-item-indicator {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+    
+    .opc-progress-bar-item-title {
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   LANDSCAPE ORIENTATION ADJUSTMENTS
+   ============================================ */
+@media (max-width: 767px) and (orientation: landscape) {
+    .opc-progress-bar {
+        padding: 10px 5px;
+    }
+    
+    .opc-progress-bar-item-indicator {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+    
+    .opc-progress-bar-item-title {
+        font-size: 10px;
+    }
+    
+    .opc-wrapper .step-content {
+        padding: 12px;
+    }
+}
+
+/* ============================================
+   HIGH-DPI SCREENS (RETINA)
+   ============================================ */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .opc-progress-bar-item-indicator,
+    .shipping-method-card,
+    .payment-method {
+        border-width: 1.5px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY - MOBILE
+   ============================================ */
+*:focus {
+    outline: 2px solid #ff6b35;
+    outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+    /* Larger touch targets for mobile */
+    button,
+    input[type="radio"],
+    input[type="checkbox"],
+    select {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .shipping-method-card,
+    .payment-method {
+        min-height: 60px;
+    }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   DARK MODE SUPPORT (OPTIONAL)
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    .checkout-index-index {
+        /* Add dark mode styles if needed */
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+    .opc-progress-bar,
+    .opc-sidebar,
+    .actions-toolbar,
+    .page-header,
+    .page-footer,
+    .shipping-method-card input[type="radio"],
+    .payment-method input[type="radio"] {
+        display: none !important;
+    }
+    
+    .opc-wrapper {
+        display: block !important;
+        grid-template-columns: none !important;
+    }
+    
+    .opc-wrapper .step-content {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid;
+    }
+    
+    .shipping-method-card,
+    .payment-method {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+    }
+}
+
+/* ============================================
+   BROWSER-SPECIFIC FIXES
+   ============================================ */
+
+/* iOS Safari fixes */
+@supports (-webkit-touch-callout: none) {
+    /* Fix for iOS input zoom */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+    
+    /* Fix for sticky positioning in iOS */
+    .opc-sidebar {
+        position: -webkit-sticky;
+        position: sticky;
+    }
+}
+
+/* Firefox-specific fixes */
+@-moz-document url-prefix() {
+    select {
+        padding-right: 30px !important;
+    }
+}
+
+/* Edge-specific fixes */
+@supports (-ms-ime-align: auto) {
+    .opc-wrapper {
+        display: -ms-grid;
+    }
+}
