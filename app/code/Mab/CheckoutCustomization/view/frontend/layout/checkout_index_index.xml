@@ -52,14 +52,7 @@
                                                                 </item>
                                                             </item>
                                                         </item>
-                                                        <!-- Fix: Override grand-total template with safe component -->
-                                                        <item name="grand-total" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/checkout/summary/grand-total-safe</item>
-                                                            <item name="config" xsi:type="array">
-                                                                <item name="template" xsi:type="string">Mab_CheckoutCustomization/checkout/cart/totals/grand-total</item>
-                                                                <item name="title" xsi:type="string" translate="true">Order Total</item>
-                                                            </item>
-                                                        </item>
+
                                                     </item>
                                                 </item>
                                             </item>
