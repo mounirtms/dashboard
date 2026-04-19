@@ -1,0 +1,23 @@
+<!-- Safe Grand Total Summary Template for Checkout Sidebar -->
+<!-- ko if: isDisplayed() -->
+<tr class="grand totals">
+    <th class="mark" scope="row">
+        <strong data-bind="i18n: 'Order Total'"></strong>
+    </th>
+    <td class="amount">
+        <strong>
+            <!-- ko if: typeof getValue === 'function' -->
+                <!-- ko if: getValue() !== null && getValue() !== undefined -->
+                    <span class="price" data-bind="text: getValue()"></span>
+                <!-- /ko -->
+                <!-- ko ifnot: getValue() !== null && getValue() !== undefined -->
+                    <span class="price">0.00</span>
+                <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko ifnot: typeof getValue === 'function' -->
+                <span class="price">0.00</span>
+            <!-- /ko -->
+        </strong>
+    </td>
+</tr>
+<!-- /ko -->

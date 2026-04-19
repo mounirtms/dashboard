@@ -14,6 +14,7 @@
         <css src="Mab_CheckoutCustomization::css/checkout-wizard-steps.css"/>
         <css src="Mab_CheckoutCustomization::css/checkout-payment-optimize.css"/>
         <css src="Mab_CheckoutCustomization::css/cart-summary-optimized.css"/>
+        <css src="Mab_CheckoutCustomization::css/cart-summary-compact.css"/>
         <css src="Mab_CheckoutCustomization::css/gift-card-minimal.css"/>
     </head>
     <body>
@@ -68,6 +69,37 @@
                                                             </item>
                                                         </item>
 
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+        
+        <!-- Override grand-total template in checkout sidebar -->
+        <referenceBlock name="checkout.root">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="checkout" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="sidebar" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="summary" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="totals" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="grand-total" xsi:type="array">
+                                                            <item name="config" xsi:type="array">
+                                                                <item name="template" xsi:type="string">Mab_CheckoutCustomization/checkout/summary/grand-total</item>
+                                                            </item>
+                                                        </item>
                                                     </item>
                                                 </item>
                                             </item>

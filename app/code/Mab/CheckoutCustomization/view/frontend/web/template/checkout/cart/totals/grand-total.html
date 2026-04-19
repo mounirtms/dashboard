@@ -1,20 +1,18 @@
-<!--
-/**
- * Grand Total Template - Fixed for Gift Card Compatibility
- * Prevents null value errors from Amasty Gift Card mixin
- * Compatible with Magento_Tax/js/view/checkout/summary/grand-total
- */
--->
+<!-- Safe Grand Total Template with Null Checking -->
+<!-- ko if: isDisplayed() -->
 <tr class="grand totals">
-    <th class="mark" scope="row" colspan="1" data-bind="i18n: title"></th>
+    <th class="mark" scope="row">
+        <strong data-bind="i18n: 'Order Total'"></strong>
+    </th>
     <td class="amount">
         <strong>
-            <!-- ko if: getValue() -->
-            <span class="price" data-bind="text: getValue().value"></span>
+            <!-- ko if: typeof getValue === 'function' && getValue() !== null && getValue() !== undefined -->
+                <span class="price" data-bind="text: getValue()"></span>
             <!-- /ko -->
-            <!-- ko ifnot: getValue() -->
-            <span class="price">0,00 DZD</span>
+            <!-- ko ifnot: typeof getValue === 'function' && getValue() !== null && getValue() !== undefined -->
+                <span class="price" data-bind="text: '0.00'"></span>
             <!-- /ko -->
         </strong>
     </td>
 </tr>
+<!-- /ko -->
