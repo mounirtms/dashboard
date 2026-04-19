@@ -11,6 +11,7 @@
         <css src="Mab_CheckoutCustomization::css/production-optimized.css"/>
         <css src="Mab_CheckoutCustomization::css/critical-hotfix.css"/>
         <css src="Mab_CheckoutCustomization::css/next-button-absolute-fix.css"/>
+        <css src="Mab_CheckoutCustomization::css/checkout-complete-flow.css"/>
     </head>
     <body>
         <!-- Add compact login banner for guests -->
@@ -41,6 +42,12 @@
                                                             <item name="config" xsi:type="array">
                                                                 <item name="debugMode" xsi:type="boolean">true</item>
                                                             </item>
+                                                        </item>
+                                                        <!-- Checkout Flow Manager - Monitors entire flow -->
+                                                        <item name="checkout-flow-manager" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/checkout-flow-manager</item>
+                                                            <item name="sortOrder" xsi:type="string">1000</item>
+                                                            <item name="displayArea" xsi:type="string">additional-fieldsets</item>
                                                         </item>
                                                     </item>
                                                 </item>
