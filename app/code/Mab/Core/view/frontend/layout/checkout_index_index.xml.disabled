@@ -1,8 +1,0 @@
-<!--
-    This file was previously empty or invalid, causing layout XML errors.
-    If you do not need any layout changes from Mab_Core for checkout, leave this as a harmless comment.
-    If you need to add layout updates, add valid XML below.
--->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <!-- No layout updates. Placeholder to avoid XML parse errors. -->
-</page>

@@ -1,9 +1,32 @@
 /**
  * CHECKOUT - PROFESSIONAL & CLEAN  
- * Date: April 19, 2026
- * Respects Sm/market theme layout (1200-1350px width)
- * Professional desktop fields + Mobile responsive
+ * Date: April 20, 2026
+ * Fixed: Full width layout, country field hidden, state dropdown visible
  */
+
+/* ============================================
+   CHECKOUT WRAPPER - FULL WIDTH FIX
+   ============================================ */
+
+/* Remove narrow max-width constraint */
+.checkout-index-index .opc-wrapper {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+}
+
+/* Ensure checkout container uses full width */
+.checkout-index-index .checkout-container {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Fix sidebar summary width */
+.checkout-index-index .opc-sidebar {
+    max-width: 100% !important;
+    width: 100% !important;
+}
 
 /* ============================================
    FORM FIELDS - PROFESSIONAL & VISIBLE
@@ -44,7 +67,7 @@
     padding-right: 35px !important;
 }
 
-/* CRITICAL: State/Region dropdown visibility */
+/* CRITICAL: State/Region dropdown visibility - FIXED */
 .checkout-index-index .field[name="shippingAddress.region_id"],
 .checkout-index-index .field[name="shippingAddress.region"],
 .checkout-index-index .field[name="billingAddressshared.region_id"],
@@ -67,26 +90,34 @@
     opacity: 1 !important;
     height: auto !important;
     min-height: 40px !important;
+    background-color: #fff !important;
+    color: #333 !important;
 }
 
-/* Two-column grid for desktop (inherits theme width) */
-@media (min-width: 768px) {
-    .checkout-index-index .form-shipping-address,
-    .checkout-index-index .payment-method-content .fieldset {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px 20px;
-    }
-    
-    /* Full-width fields */
-    .checkout-index-index .form-shipping-address .field[name="shippingAddress.street.0"],
-    .checkout-index-index .form-shipping-address .field[name="shippingAddress.street.1"],
-    .checkout-index-index .form-shipping-address .field[name="shippingAddress.street.2"],
-    .checkout-index-index .form-shipping-address .field.street,
-    .checkout-index-index .form-shipping-address .field.additional,
-    .checkout-index-index .form-shipping-address .field.note {
-        grid-column: 1 / -1;
-    }
+/* Hide country field visually (but keep it functional for region filtering) */
+.checkout-index-index .field[name="shippingAddress.country_id"],
+.checkout-index-index .field[name="billingAddress.country_id"],
+.checkout-index-index .field.country_id {
+    display: none !important;
+}
+
+/* Two-column grid for desktop - responsive handled by Sm/market theme */
+.checkout-index-index .form-shipping-address,
+.checkout-index-index .payment-method-content .fieldset {
+    display: grid;
+    gap: 15px 20px;
+}
+
+/* Full-width fields - responsive handled by Sm/market theme */
+.checkout-index-index .form-shipping-address .field[name="shippingAddress.street.0"],
+.checkout-index-index .form-shipping-address .field[name="shippingAddress.street.1"],
+.checkout-index-index .form-shipping-address .field[name="shippingAddress.street.2"],
+.checkout-index-index .form-shipping-address .field.street,
+.checkout-index-index .form-shipping-address .field.additional,
+.checkout-index-index .form-shipping-address .field.note,
+.checkout-index-index .form-shipping-address .field[name="shippingAddress.country_id"],
+.checkout-index-index .form-shipping-address .field[name="shippingAddress.region_id"] {
+    grid-column: 1 / -1;
 }
 
 /* ============================================
@@ -423,66 +454,4 @@
     font-size: 14px;
 }
 
-/* ============================================
-   MOBILE RESPONSIVE (<768px)
-   ============================================ */
-@media (max-width: 767px) {
-    /* Stack layout */
-    .checkout-index-index .opc-wrapper {
-        display: block !important;
-    }
-    
-    .checkout-index-index .opc-sidebar {
-        width: 100% !important;
-        margin-top: 20px !important;
-    }
-    
-    /* Single column form */
-    .checkout-index-index .form-shipping-address,
-    .checkout-index-index .payment-method-content .fieldset {
-        display: block !important;
-        grid-template-columns: 1fr !important;
-    }
-    
-    .checkout-index-index .form-shipping-address .field {
-        width: 100% !important;
-        grid-column: 1 !important;
-    }
-    
-    /* Full width buttons */
-    .checkout-index-index button.action.primary,
-    .checkout-index-index button.action.secondary {
-        width: 100% !important;
-        margin-bottom: 10px;
-    }
-    
-    /* Prevent iOS zoom - 16px minimum */
-    .checkout-index-index input[type="text"],
-    .checkout-index-index input[type="email"],
-    .checkout-index-index input[type="tel"],
-    .checkout-index-index input[type="number"],
-    .checkout-index-index select,
-    .checkout-index-index textarea {
-        font-size: 16px !important;
-    }
-    
-    /* Compact spacing */
-    .checkout-index-index .fieldset > .field,
-    .checkout-index-index .form-shipping-address .field {
-        margin-bottom: 12px;
-    }
-}
-
-/* ============================================
-   PRINT STYLES
-   ============================================ */
-@media print {
-    .opc-progress-bar,
-    .actions-toolbar,
-    .page-header,
-    .page-footer,
-    .opc-block-summary .discount-code,
-    .opc-block-summary .amgiftcard {
-        display: none !important;
-    }
-}
+ 

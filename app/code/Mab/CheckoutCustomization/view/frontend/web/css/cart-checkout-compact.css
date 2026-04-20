@@ -825,70 +825,7 @@
    RESPONSIVE - MOBILE
    ============================================ */
 
-@media (max-width: 768px) {
-    .cart-summary {
-        position: static;
-        margin-top: 16px;
-    }
-    
-    .cart-summary .summary.title {
-        padding: 9px 14px !important;
-        font-size: 13px !important;
-    }
-    
-    .cart-summary .block-content {
-        padding: 14px;
-    }
-    
-    .cart-totals .grand.totals th,
-    .cart-totals .grand.totals td {
-        font-size: 16px !important;
-    }
-    
-    .cart-totals .grand.totals .amount {
-        font-size: 18px !important;
-    }
-    
-    .cart-summary .action.primary.checkout {
-        padding: 12px 16px;
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 480px) {
-    .cart-summary .summary.title {
-        font-size: 12px !important;
-        padding: 8px 12px !important;
-    }
-    
-    .cart-totals .totals th,
-    .cart-totals .totals td {
-        font-size: 12px !important;
-        padding: 8px 0 !important;
-    }
-    
-    .cart-totals .grand.totals th,
-    .cart-totals .grand.totals td {
-        font-size: 14px !important;
-        padding: 10px 0 !important;
-    }
-    
-    .cart-totals .grand.totals .amount {
-        font-size: 16px !important;
-    }
-}
-
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
-
-@media (prefers-reduced-motion: reduce) {
-    .cart-summary .action.primary.checkout,
-    .cart-summary .block.discount .title,
-    .shipping-card {
-        transition: none;
-    }
-}
+ 
 
 /* Focus visible for keyboard navigation */
 .cart-summary .action.primary.checkout:focus-visible,
@@ -901,18 +838,4 @@
 /* ============================================
    PRINT STYLES
    ============================================ */
-
-@media print {
-    .cart-summary .block.discount,
-    .cart-summary .block.gift-card,
-    .cart-summary .checkout-methods-items,
-    .checkout-index-index .authentication-wrapper {
-        display: none !important;
-    }
-    
-    .cart-summary,
-    .checkout-index-index .opc-block-summary {
-        box-shadow: none;
-        border: 1px solid #000;
-    }
-}
+ 

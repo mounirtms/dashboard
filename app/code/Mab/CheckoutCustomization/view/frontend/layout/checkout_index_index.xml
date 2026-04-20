@@ -2,31 +2,62 @@
 <!--
 /**
  * Mab CheckoutCustomization
- * MINIMAL - Only essential fixes, maximum performance
+ * OPTIMIZED - Single CSS file for maximum performance
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <css src="Mab_CheckoutCustomization::css/checkout-professional.css"/>
+        <!-- Single optimized checkout CSS -->
+        <css src="Mab_CheckoutCustomization::css/checkout-optimized.css"/>
     </head>
     <body>
+        <!-- Add Customer Login Banner above checkout for guests -->
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="checkout.customer.login.banner"
+                   template="Mab_CheckoutCustomization::checkout/customer-login-button.phtml"
+                   before="checkout"/>
+        </referenceContainer>
+
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
                     <item name="components" xsi:type="array">
                         <item name="checkout" xsi:type="array">
                             <item name="children" xsi:type="array">
+                                <!-- Disable top-level authentication component -->
+                                <item name="authentication" xsi:type="array">
+                                    <item name="config" xsi:type="array">
+                                        <item name="componentDisabled" xsi:type="boolean">true</item>
+                                    </item>
+                                </item>
                                 <item name="steps" xsi:type="array">
                                     <item name="children" xsi:type="array">
-                                        <!-- Payment/Billing Step - Disable Amasty Gift Card input form only -->
+                                        <!-- Shipping Step - Hide authentication button -->
+                                        <item name="shipping-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="shippingAddress" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="customer-email" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="authentication" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
                                         <item name="billing-step" xsi:type="array">
                                             <item name="children" xsi:type="array">
                                                 <item name="payment" xsi:type="array">
                                                     <item name="children" xsi:type="array">
                                                         <item name="afterMethods" xsi:type="array">
                                                             <item name="children" xsi:type="array">
-                                                                <!-- Disable Amasty gift card input form only -->
                                                                 <item name="amgift-card" xsi:type="array">
                                                                     <item name="componentDisabled" xsi:type="boolean">true</item>
                                                                 </item>
@@ -38,7 +69,7 @@
                                         </item>
                                     </item>
                                 </item>
-                                <!-- Sidebar - Keep gift card totals display -->
+                                <!-- Keep gift card totals display in sidebar -->
                                 <item name="sidebar" xsi:type="array">
                                     <item name="children" xsi:type="array">
                                         <item name="summary" xsi:type="array">

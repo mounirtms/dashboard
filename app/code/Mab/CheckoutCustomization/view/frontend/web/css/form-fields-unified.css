@@ -115,11 +115,22 @@
     background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L8 8L15 1" stroke="%232e7d32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>');
 }
 
-/* Specific Region/Wilaya Dropdown */
+/* Specific Region/Wilaya Dropdown - ENSURE VISIBLE */
+.checkout-index-index .field[name="shippingAddress.region_id"],
+.checkout-index-index .field[name="billingAddress.region_id"],
+.checkout-index-index .field[name*="region_id"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .checkout-index-index .field[name="shippingAddress.region_id"] select,
 .checkout-index-index .field[name="billingAddress.region_id"] select,
 .checkout-index-index .field[name*="region_id"] select {
     font-weight: 500;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Commune/City Dropdown */
@@ -127,6 +138,14 @@
 .checkout-index-index .field[name="billingAddress.city"] select,
 .checkout-index-index .field[name*=".city"] select {
     font-weight: 400;
+}
+
+/* Hide Country Field Visually (but keep functional for region filtering) */
+.checkout-index-index .field[name="shippingAddress.country_id"],
+.checkout-index-index .field[name="billingAddress.country_id"],
+.checkout-index-index .field[name*="country_id"],
+.checkout-index-index .field.country_id {
+    display: none !important;
 }
 
 /* ========================================
@@ -228,39 +247,22 @@
    RESPONSIVE DESIGN
    ======================================== */
 
-@media (max-width: 768px) {
-    .checkout-index-index .field input,
-    .checkout-index-index .field select,
-    .checkout-index-index .field textarea {
-        font-size: 16px; /* Prevent zoom on iOS */
-        padding: 14px;
-    }
-    
-    .checkout-index-index .fieldset .field._short {
-        width: 100%;
-        margin-right: 0;
-    }
-    
-    .checkout-index-index .field select {
-        background-position: right 12px center;
-        padding-right: 40px;
-    }
+/* Default form field sizing */
+.checkout-index-index .field input,
+.checkout-index-index .field select,
+.checkout-index-index .field textarea {
+    font-size: 14px;
+    padding: 12px;
 }
 
-@media (max-width: 480px) {
-    .checkout-index-index .field {
-        margin-bottom: 16px;
-    }
-    
-    .checkout-index-index .field .label {
-        font-size: 13px;
-    }
-    
-    .checkout-index-index .field input,
-    .checkout-index-index .field select,
-    .checkout-index-index .field textarea {
-        padding: 12px;
-    }
+.checkout-index-index .fieldset .field._short {
+    width: 100%;
+    margin-right: 0;
+}
+
+.checkout-index-index .field select {
+    background-position: right 12px center;
+    padding-right: 40px;
 }
 
 /* ========================================
@@ -272,22 +274,6 @@
 .checkout-index-index .field textarea:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    .checkout-index-index .field input,
-    .checkout-index-index .field select,
-    .checkout-index-index .field textarea {
-        border-width: 3px;
-    }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    .checkout-index-index .field input,
-    .checkout-index-index .field select,
-    .checkout-index-index .field textarea {
-        transition: none;
-    }
+    border-width: 3px;
+    transition: none;
 }

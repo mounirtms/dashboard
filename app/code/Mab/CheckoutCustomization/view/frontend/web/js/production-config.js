@@ -1,11 +1,30 @@
 /**
  * Production Build Configuration
- * Removes debug code and optimizes for production
+ * Consolidated performance settings for production
  */
 define([], function() {
     'use strict';
 
+    // Performance tuning constants
+    var DEBOUNCE = {
+        REGION_CHANGE: 300,
+        RATES_UPDATE: 150,
+        CARD_UPDATE: 100,
+        FORM_INPUT: 250,
+        RESIZE: 200
+    };
+
+    var ANIMATION = {
+        CARD_RENDER: 800,
+        REGION_RESPONSE: 800,
+        RETRY_INTERVAL: 500,
+        TRANSITION_DURATION: 300
+    };
+
     return {
+        // Expose constants
+        DEBOUNCE: DEBOUNCE,
+        ANIMATION: ANIMATION,
         /**
          * Check if running in production mode
          * @return {boolean}

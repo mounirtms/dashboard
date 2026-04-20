@@ -24,11 +24,10 @@ $customerSession = $objectManager->get(\Magento\Customer\Model\Session::class);
             <p><?= $block->escapeHtml(__('Connectez-vous pour accéder aux cartes cadeaux et à votre historique de commandes')) ?></p>
         </div>
         <div class="login-actions">
-            <button type="button" 
-                    class="action primary checkout-login-btn"
-                    data-trigger="authentication">
+            <a href="<?= $block->escapeUrl($block->getUrl('customer/account/login', ['referer' => base64_encode($block->getUrl('checkout', ['index' => 'index']))])) ?>" 
+               class="action primary checkout-login-btn">
                 <span><?= $block->escapeHtml(__('Se connecter')) ?></span>
-            </button>
+            </a>
             <a href="<?= $block->escapeUrl($block->getUrl('customer/account/create')) ?>" 
                class="action secondary create-btn">
                 <span><?= $block->escapeHtml(__('Créer un compte')) ?></span>
@@ -98,12 +97,18 @@ $customerSession = $objectManager->get(\Magento\Customer\Model\Session::class);
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
     white-space: nowrap;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .checkout-login-banner .checkout-login-btn:hover {
     background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
     box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
     transform: translateY(-2px);
+    color: #ffffff;
+    text-decoration: none;
 }
 
 /* Secondary Create Account Button */

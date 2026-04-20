@@ -39,6 +39,7 @@ var config = {
             'checkoutAnalytics': 'Mab_CheckoutCustomization/js/checkout-analytics',
             'imageLoader': 'Mab_CheckoutCustomization/js/image-loader',
             'shippingMethodCardsEnhanced': 'Mab_CheckoutCustomization/js/view/shipping-method-cards-enhanced',
+            'shippingMethodCards': 'Mab_CheckoutCustomization/js/view/shipping-method-cards-enhanced',
             // Map Amasty gift-code to our implementation
             'Amasty_GiftCardAccount/js/action/gift-code': 'Mab_CheckoutCustomization/js/action/gift-code'
         }

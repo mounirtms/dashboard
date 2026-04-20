@@ -229,37 +229,35 @@
     color: #2e7d32;
 }
 
-/* Responsive - Even More Compact on Mobile */
-@media (max-width: 767px) {
-    .block.gift-card .title {
-        padding: 10px 12px;
-    }
-    
-    .block.gift-card .title strong {
-        font-size: 13px;
-    }
-    
-    .block.gift-card .content {
-        padding: 12px;
-    }
-    
-    .gift-card-hint {
-        font-size: 11px;
-    }
-    
-    .form-gift-card .input-text {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-    
-    .form-gift-card button.action {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
-    
-    .form-gift-card .actions-toolbar {
-        flex-direction: column;
-    }
+/* Default gift card styling */
+.block.gift-card .title {
+    padding: 10px 12px;
+}
+
+.block.gift-card .title strong {
+    font-size: 13px;
+}
+
+.block.gift-card .content {
+    padding: 12px;
+}
+
+.gift-card-hint {
+    font-size: 11px;
+}
+
+.form-gift-card .input-text {
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+.form-gift-card button.action {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.form-gift-card .actions-toolbar {
+    flex-direction: column;
 }
 
 /* Collapsed State */
@@ -300,11 +298,4 @@
 .form-gift-card button.action,
 .block.gift-card .title {
     will-change: transform;
-}
-
-/* Print Styles */
-@media print {
-    .block.gift-card {
-        page-break-inside: avoid;
-    }
 }

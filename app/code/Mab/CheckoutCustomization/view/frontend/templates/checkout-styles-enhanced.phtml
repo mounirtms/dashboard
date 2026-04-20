@@ -137,42 +137,14 @@
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
 }
 
-/* ============ FIELD GROUPS (2 Columns) ============ */
+/* ============ FIELD GROUPS ============ */
 /* NOTE: Magento KO renders name="shippingAddress.fieldname" on wrapper divs */
+/* Responsive two-column layout is handled by Sm/market theme */
 
 .customer-email.fieldset {
     margin-bottom: 25px;
     padding-bottom: 25px;
     border-bottom: 1px solid #e5e5e5;
-}
-
-/* Shipping Address - Two Column Layout */
-#shipping-new-address-form .field[name="shippingAddress.firstname"],
-#shipping-new-address-form .field[name="shippingAddress.lastname"] {
-    width: 48.5%;
-    display: inline-block;
-    vertical-align: top;
-    margin-right: 2%;
-}
-
-#shipping-new-address-form .field[name="shippingAddress.lastname"] {
-    margin-right: 0;
-}
-
-/* City and Region (Wilaya) - Two Column Layout */
-#shipping-new-address-form .field[name="shippingAddress.city"],
-#shipping-new-address-form .field[name="shippingAddress.region_id"] {
-    width: 48.5%;
-    display: inline-block;
-    vertical-align: top;
-}
-
-#shipping-new-address-form .field[name="shippingAddress.city"] {
-    margin-right: 2%;
-}
-
-#shipping-new-address-form .field[name="shippingAddress.region_id"] {
-    margin-right: 0;
 }
 
 /* ============ HIDE FIELDS GLOBALLY ============ */
@@ -525,52 +497,7 @@
 }
 
 /* ============ RESPONSIVE DESIGN ============ */
-@media (max-width: 991px) {
-    .opc-wrapper {
-        display: block;
-    }
-
-    .opc-block-summary {
-        margin-top: 30px;
-    }
-}
-
-@media (max-width: 768px) {
-    .checkout-container {
-        padding: 15px 10px;
-    }
-
-    .opc-wrapper .step-title {
-        font-size: 18px;
-        margin-bottom: 20px;
-    }
-
-    /* Stack all fields on mobile */
-    #shipping-new-address-form .field[name="shippingAddress.firstname"],
-    #shipping-new-address-form .field[name="shippingAddress.lastname"],
-    #shipping-new-address-form .field[name="shippingAddress.telephone"],
-    #shipping-new-address-form .field[name="shippingAddress.city"],
-    #shipping-new-address-form .field[name="shippingAddress.region_id"] {
-        width: 100%;
-        display: block;
-        margin-right: 0;
-    }
-
-    .field .control input,
-    .field .control select {
-        padding: 11px 14px;
-        font-size: 14px;
-    }
-
-    .actions-toolbar .primary .action.primary.checkout {
-        padding: 14px 24px;
-        font-size: 15px;
-    }
-
-    .opc-block-summary {
-        padding: 18px;
-    }
-}
+/* Responsive handling is managed by Sm/market theme via .media-width() mixins */
 
 /* ============ ANIMATIONS ============ */
 @keyframes fadeIn {

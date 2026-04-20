@@ -1,8 +1,8 @@
-<!-- Safe Grand Total Template with Null Checking -->
+<!-- Grand Total Template - French Locale -->
 <!-- ko if: isDisplayed() -->
 <tr class="grand totals">
     <th class="mark" scope="row">
-        <strong data-bind="i18n: 'Order Total'"></strong>
+        <strong data-bind="i18n: 'Total de la commande'"></strong>
     </th>
     <td class="amount">
         <strong>
@@ -10,7 +10,7 @@
                 <span class="price" data-bind="text: getValue()"></span>
             <!-- /ko -->
             <!-- ko ifnot: typeof getValue === 'function' && getValue() !== null && getValue() !== undefined -->
-                <span class="price" data-bind="text: '0.00'"></span>
+                <span class="price" data-bind="text: '0,00 DZD'"></span>
             <!-- /ko -->
         </strong>
     </td>

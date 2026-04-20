@@ -324,13 +324,13 @@ return [
                 ],
                 'js' => [
                     'session_storage_key' => 'collected_errors',
-                    'merge_files' => '1',
+                    'merge_files' => '0',
                     'minify_files' => '1',
                     'enable_js_bundling' => '0',
                     'move_script_to_bottom' => '1'
                 ],
                 'css' => [
-                    'merge_css_files' => '1',
+                    'merge_css_files' => '0',
                     'minify_files' => '1'
                 ],
                 'template' => [

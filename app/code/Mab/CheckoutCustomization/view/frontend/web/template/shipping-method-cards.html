@@ -19,7 +19,7 @@
             <circle cx="10" cy="10" r="9" stroke="#2196F3" stroke-width="2"/>
             <path d="M10 6V10M10 14H10.01" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span class="notice-text" data-bind="text: 'Sélectionnez votre mode de livraison pour la région de ' + getRegionName()"></span>
+        <span class="notice-text" data-bind="text: getShippingNoticeText()"></span>
     </div>
     <!-- /ko -->
 
@@ -29,13 +29,11 @@
                         click: function(data, event) { return $parent.selectMethod(data, event); },
                         attr: {'data-method-code': method_code}">
             
-            <!-- Radio Button removed to prevent infinite loop -->
-            
             <!-- Card Content -->
             <div class="card-content">
                 <!-- Left Section: Logo and Info -->
                 <div class="card-left">
-                    <div class="carrier-logo">
+                    <div class="carrier-logo" data-bind="css: {'selected-logo': $parent.isSelected($data)}">
                         <img class="carrier-img" 
                              data-bind="attr: {src: carrier_logo, alt: method_title}" 
                              onerror="this.style.display='none'">
@@ -43,7 +41,6 @@
                     
                     <div class="method-info">
                         <h4 class="method-name" data-bind="text: method_title"></h4>
-                        <p class="method-description" data-bind="text: description"></p>
                         
                         <div class="delivery-time">
                             <svg class="clock-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -71,14 +68,6 @@
                         <span class="price-amount" data-bind="text: price_formatted"></span>
                     </div>
                     <!-- /ko -->
-
-                    <!-- Selection Indicator -->
-                    <div class="check-indicator" data-bind="visible: $parent.isSelected($data)">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <circle cx="10" cy="10" r="9" fill="#4CAF50"/>
-                            <path d="M6 10L8.5 12.5L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
                 </div>
             </div>
         </div>
@@ -215,15 +204,28 @@
 
 /* Carrier Logo */
 .shipping-card .carrier-logo {
-    width: 64px;
-    height: 64px;
+    width: 72px;
+    height: 72px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #F5F5F5;
-    border-radius: 8px;
-    padding: 8px;
+    border-radius: 12px;
+    padding: 10px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.shipping-card:hover .carrier-logo {
+    background: #E8F5E9;
+    border-color: #4CAF50;
+}
+
+.shipping-card .carrier-logo.selected-logo {
+    background: #E8F5E9;
+    border-color: #4CAF50;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 .shipping-card .carrier-logo .carrier-img {
@@ -241,25 +243,12 @@
     font-size: 16px;
     font-weight: 600;
     color: #2C3E50;
-    margin: 0 0 6px 0;
+    margin: 0 0 4px 0;
     line-height: 1.3;
 }
 
 .shipping-card.selected .method-name {
     color: #4CAF50;
-}
-
-.shipping-card .method-description {
-    font-size: 13px;
-    color: #7F8C8D;
-    margin: 0 0 8px 0;
-    line-height: 1.4;
-}
-
-/* Improve contrast for selected state */
-.shipping-card.selected .method-description {
-    color: #2C3E50;
-    font-weight: 500;
 }
 
 /* Delivery Time */
@@ -321,80 +310,35 @@
     font-weight: 700;
 }
 
-/* Check Indicator */
-.check-indicator {
-    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+/* Default card layout */
+.shipping-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
 }
 
-@keyframes bounceIn {
-    0% {
-        transform: scale(0);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.2);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+.shipping-card {
+    padding: 18px;
 }
 
-/* Responsive Design */
-@media (min-width: 768px) {
-    .shipping-cards-grid {
-        grid-template-columns: 1fr;
-    }
+.shipping-card .carrier-logo {
+    width: 68px;
+    height: 68px;
 }
 
-@media (max-width: 767px) {
-    .shipping-card .card-content {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .shipping-card .card-left {
-        width: 100%;
-    }
-
-    .shipping-card .card-right {
-        width: 100%;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .shipping-card .carrier-logo {
-        width: 48px;
-        height: 48px;
-    }
-
-    .shipping-card .method-name {
-        font-size: 15px;
-    }
-
-    .shipping-notice {
-        padding: 10px 12px;
-    }
-
-    .shipping-notice .notice-text {
-        font-size: 13px;
-    }
+.shipping-card .method-name {
+    font-size: 15px;
 }
 
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-    .shipping-card,
-    .check-indicator {
-        animation: none;
-        transition: none;
-    }
+.shipping-card .delivery-time {
+    font-size: 12px;
 }
 
-/* Print Styles */
-@media print {
-    .shipping-card:not(.selected) {
-        display: none;
-    }
+.shipping-notice {
+    padding: 12px 16px;
+}
+
+.shipping-notice .notice-text {
+    font-size: 14px;
 }
 </style>

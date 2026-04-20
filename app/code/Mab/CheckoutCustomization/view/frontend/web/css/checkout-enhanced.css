@@ -232,33 +232,7 @@
 /* ========================================
    6. RESPONSIVE DESIGN - Mobile optimization
    ======================================== */
-
-@media (max-width: 768px) {
-    .checkout-index-index .button.action.continue.primary,
-    .checkout-index-index .button.action.primary {
-        width: 100%;
-        padding: 16px 20px;
-        font-size: 15px;
-    }
-    
-    .checkout-index-index .button.action.secondary,
-    .checkout-index-index .action.back {
-        width: 100%;
-        padding: 14px 20px;
-        margin-top: 10px;
-    }
-    
-    .checkout-index-index .field .control input,
-    .checkout-index-index .field .control select {
-        font-size: 16px; /* Prevent zoom on iOS */
-    }
-    
-    .checkout-index-index .opc-progress-bar {
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-}
-
+ 
 /* ========================================
    7. FORM FIELDS - Now using unified system
    See: form-fields-unified.css
@@ -300,6 +274,13 @@
 .checkout-index-index .field[name="billingAddress.street.1"],
 .checkout-index-index .field[name="shippingAddress.street.2"],
 .checkout-index-index .field[name="billingAddress.street.2"] {
+    display: none !important;
+}
+
+/* Hide country field visually (but keep functional) */
+.checkout-index-index .field[name="shippingAddress.country_id"],
+.checkout-index-index .field[name="billingAddress.country_id"],
+.checkout-index-index .field.country_id {
     display: none !important;
 }
 
@@ -409,32 +390,14 @@
     color: #2e7d32;
 }
 
-/* ========================================
-   10. PRINT STYLES - Receipt printing
-   ======================================== */
+ 
 
-@media print {
-    .checkout-index-index .button,
-    .checkout-index-index .opc-progress-bar,
-    .checkout-index-index header,
-    .checkout-index-index footer {
-        display: none !important;
-    }
-    
-    .checkout-index-index .opc-block-summary {
-        border: 1px solid #000;
-    }
-}
-
-/* ========================================
-   11. CHECKOUT LAYOUT OPTIMIZATION
-   ======================================== */
-
-/* Main checkout wrapper */
+/* Main checkout wrapper - FULL WIDTH */
 .checkout-index-index .opc-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
 }
 
 /* Shipping step optimization */
@@ -530,14 +493,7 @@
     position: sticky;
     top: 20px;
 }
-
-@media (max-width: 768px) {
-    .checkout-index-index .opc-sidebar {
-        position: relative;
-        top: 0;
-    }
-}
-
+ 
 /* ========================================
    OPTIMIZED SHIPPING METHOD CARDS
    Modern, Clean Design - 2026
@@ -794,84 +750,4 @@
 .shipping-info-notice span {
     flex: 1;
     line-height: 1.5;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .shipping-cards-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .shipping-card {
-        padding: 16px;
-    }
-    
-    .shipping-card .card-content {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .shipping-card .card-right {
-        width: 100%;
-        justify-content: flex-start;
-    }
-    
-    .shipping-card .carrier-logo {
-        width: 80px;
-        height: 45px;
-    }
-    
-    .shipping-methods-cards-wrapper .section-title {
-        font-size: 20px;
-    }
-    
-    .shipping-card .method-name {
-        font-size: 15px;
-    }
-}
-
-@media (max-width: 480px) {
-    .shipping-methods-cards-wrapper {
-        padding: 16px;
-        margin: 16px 0;
-    }
-    
-    .shipping-card {
-        padding: 14px;
-    }
-    
-    .shipping-card .card-left {
-        gap: 12px;
-    }
-    
-    .shipping-card .price {
-        font-size: 18px;
-    }
-}
-
-/* ========================================
-   FORCED VISIBILITY - Ensure cards render
-   ======================================== */
-.shipping-methods-cards-wrapper {
-    visibility: visible !important;
-    opacity: 1 !important;
-    display: block !important;
-}
-
-.shipping-cards-grid {
-    visibility: visible !important;
-    opacity: 1 !important;
-    display: grid !important;
-}
-
-.shipping-card {
-    visibility: visible !important;
-    opacity: 1 !important;
-    display: flex !important;
-}
-
-/* Hide original shipping table */
-.shipping-table-hidden {
-    display: none !important;
-    visibility: hidden !important;
 }

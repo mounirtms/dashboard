@@ -9,7 +9,6 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <css src="css/shipping-methods.css"/>
-        <css src="Mab_CheckoutCustomization::css/checkout-enhanced.css"/>
     </head>
     <body>
         <referenceContainer name="footer-container" remove="false"/>
@@ -35,6 +34,28 @@
                                                 <item name="giftCardAccount" xsi:type="array">
                                                     <item name="config" xsi:type="array">
                                                         <item name="componentDisabled" xsi:type="boolean">false</item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                                <!-- Hide country field in shipping address -->
+                                <item name="steps" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="shipping-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="shippingAddress" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="shipping-address-fieldset" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="country_id" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="visible" xsi:type="boolean">false</item>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
                                                     </item>
                                                 </item>
                                             </item>

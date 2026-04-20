@@ -1,30 +1,113 @@
 /**
- * Ultra-Compact Cart Design - Extreme Space Reduction
- * Fixes: excessive gaps, large fonts, bulky spacing
- * Target: Professional, dense, efficient layout
+ * Ultra-Compact Cart Design - Professional Layout
+ * Includes customer login banners for cart and checkout pages
  */
 
 /* ============================================
-   HIDE LOGIN BANNERS ON BOTH PAGES
+   CUSTOMER LOGIN BANNERS - PROFESSIONAL STYLING
+   Used on both cart and checkout pages
    ============================================ */
 
-/* Hide customer login banner on cart page */
-.checkout-cart-index .mab-customer-login-banner,
-.checkout-cart-index [name="mab.cart.customer.login"] {
-    display: none !important;
+/* Cart and checkout login banner */
+.checkout-cart-index .checkout-login-banner,
+.checkout-index-index .checkout-login-banner {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    margin: 0 0 20px 0 !important;
+    padding: 20px !important;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
 }
 
-/* Hide customer login banner on checkout page */
-.checkout-index-index .checkout-customer-login-banner,
-.checkout-index-index [name="checkout.customer.login.banner"] {
-    display: none !important;
+.checkout-cart-index .login-banner-content,
+.checkout-index-index .login-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-/* Hide any "Se connecter" buttons */
-button[title="Se connecter"],
-.action.login,
-.customer-login-button {
-    display: none !important;
+.checkout-cart-index .login-icon,
+.checkout-index-index .login-icon {
+    flex-shrink: 0;
+}
+
+.checkout-cart-index .login-message,
+.checkout-index-index .login-message {
+    flex: 1;
+}
+
+.checkout-cart-index .login-message h3,
+.checkout-index-index .login-message h3 {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.checkout-cart-index .login-message p,
+.checkout-index-index .login-message p {
+    margin: 0;
+    font-size: 14px;
+    color: #5a6c7d;
+    line-height: 1.4;
+}
+
+.checkout-cart-index .login-actions,
+.checkout-index-index .login-actions {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* Primary Login Button */
+.checkout-cart-index .checkout-login-btn,
+.checkout-index-index .checkout-login-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    white-space: nowrap;
+}
+
+.checkout-cart-index .checkout-login-btn:hover,
+.checkout-index-index .checkout-login-btn:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Secondary Create Account Button */
+.checkout-cart-index .create-btn,
+.checkout-index-index .create-btn {
+    background: #ffffff;
+    color: #4caf50;
+    border: 2px solid #4caf50;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.checkout-cart-index .create-btn:hover,
+.checkout-index-index .create-btn:hover {
+    background: #4caf50;
+    color: #ffffff;
+    transform: translateY(-2px);
 }
 
 /* ============================================
@@ -52,8 +135,9 @@ button[title="Se connecter"],
     margin: 0 0 16px 0 !important;
 }
 
+/* Cart items - professional spacing */
 .cart.table-wrapper .cart.item {
-    padding: 10px 0 !important;
+    padding: 14px 0 !important;
     margin: 0 !important;
     border-bottom: 1px solid #e5e7eb;
 }
@@ -62,77 +146,82 @@ button[title="Se connecter"],
     padding-top: 0 !important;
 }
 
-/* Product info - compact */
+/* Product info - professional defaults */
 .product-item-details {
     padding: 0 !important;
     margin: 0 !important;
 }
 
 .product-item-name {
-    font-size: 13px !important;
-    line-height: 1.4 !important;
-    margin: 0 0 6px 0 !important;
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+    margin: 0 0 8px 0 !important;
     font-weight: 600 !important;
+    color: #111827 !important;
 }
 
 .product-item-name a {
-    font-size: 13px !important;
+    font-size: 15px !important;
+    color: #111827 !important;
 }
 
-/* Product image - smaller */
+/* Product image - professional size */
 .product-item-photo {
-    width: 60px !important;
-    padding-right: 12px !important;
+    width: 80px !important;
+    padding-right: 16px !important;
 }
 
-/* Price columns - compact fonts */
+/* Price columns - professional defaults */
 .cart.item .col.price,
 .cart.item .col.subtotal,
 .cart.item .col.qty {
-    font-size: 13px !important;
-    padding: 4px 8px !important;
+    font-size: 14px !important;
+    padding: 6px 10px !important;
 }
 
 .cart.item .price-excluding-tax .price,
 .cart.item .price-including-tax .price {
-    font-size: 14px !important;
-    font-weight: 700 !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
 }
 
-/* Quantity field - compact */
+/* Quantity field - professional */
 .cart.item .field.qty {
     margin: 0 !important;
 }
 
 .cart.item .input-text.qty {
-    width: 50px !important;
-    height: 32px !important;
-    padding: 4px 8px !important;
-    font-size: 13px !important;
+    width: 60px !important;
+    height: 38px !important;
+    padding: 6px 10px !important;
+    font-size: 14px !important;
     text-align: center !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 4px !important;
 }
 
-/* Action buttons - smaller */
+/* Action buttons - professional */
 .cart.item .actions-toolbar {
-    margin-top: 6px !important;
+    margin-top: 8px !important;
 }
 
 .cart.item .action.action-edit,
 .cart.item .action.action-delete {
-    font-size: 11px !important;
-    padding: 4px 10px !important;
-    margin-right: 6px !important;
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+    margin-right: 8px !important;
 }
 
-/* Update cart button - compact */
+/* Update cart button - professional */
 .cart.actions {
-    margin: 12px 0 !important;
+    margin: 16px 0 !important;
     padding: 0 !important;
 }
 
 .action.update {
-    font-size: 12px !important;
-    padding: 8px 16px !important;
+    font-size: 13px !important;
+    padding: 10px 20px !important;
 }
 
 /* ============================================
@@ -223,26 +312,42 @@ button[title="Se connecter"],
     font-size: 16px !important;
 }
 
-/* Discount/Coupon - ultra compact */
+/* ============================================
+   OPTIMIZE: Code Promo Section - Professional
+   ============================================ */
+
 .cart-summary .block.discount {
-    margin: 10px 0 !important;
+    margin: 12px 0 !important;
     border: 1px solid #e5e7eb !important;
-    border-radius: 4px !important;
+    border-radius: 6px !important;
+    overflow: hidden;
 }
 
 .cart-summary .block.discount .title {
-    padding: 7px 12px !important;
-    font-size: 12px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
     background: #fafbfc !important;
+    min-height: auto !important;
+    line-height: 1.4 !important;
 }
 
 .cart-summary .block.discount .title strong {
-    font-size: 12px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
 }
 
+.cart-summary .block.discount .coupon-emoji {
+    font-size: 14px !important;
+}
+
 .cart-summary .block.discount .content {
-    padding: 10px 12px !important;
+    padding: 12px 14px !important;
+    background: #fafbfc;
+}
+
+.cart-summary .block.discount .fieldset {
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .cart-summary .block.discount .field {
@@ -250,57 +355,43 @@ button[title="Se connecter"],
 }
 
 .cart-summary .block.discount .label {
-    font-size: 11px !important;
-    margin-bottom: 4px !important;
+    font-size: 13px !important;
+    margin-bottom: 5px !important;
+    color: #374151 !important;
+    font-weight: 500 !important;
 }
 
 .cart-summary .block.discount .input-text {
-    padding: 7px 10px !important;
-    font-size: 12px !important;
-}
-
-.cart-summary .block.discount button.action {
-    padding: 7px 14px !important;
-    font-size: 12px !important;
-}
-
-/* Gift card - ultra compact */
-.cart-summary .block.gift-card,
-.cart-summary .amgcard-block {
-    margin: 10px 0 !important;
-    border: 1px solid #e5e7eb !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    height: 36px !important;
+    border: 1px solid #d1d5db !important;
     border-radius: 4px !important;
 }
 
-.cart-summary .block.gift-card .title,
-.cart-summary .amgcard-block .title {
-    padding: 7px 12px !important;
-    font-size: 12px !important;
-    background: #fafbfc !important;
+.cart-summary .block.discount .actions-toolbar {
+    margin-top: 8px !important;
 }
 
-.cart-summary .block.gift-card .content,
-.cart-summary .amgcard-block .content {
-    padding: 10px 12px !important;
+.cart-summary .block.discount .primary {
+    margin: 0 !important;
 }
 
-/* Checkout button - compact */
-.cart-summary .action.primary.checkout {
-    padding: 12px 18px !important;
+.cart-summary .block.discount button.action.apply {
+    padding: 8px 16px !important;
     font-size: 13px !important;
-    margin-top: 14px !important;
+    height: 36px !important;
+    line-height: 1 !important;
 }
 
 /* ============================================
-   CHECKOUT PAGE - REMOVE LOGIN BANNERS
+   CHECKOUT PAGE - COMPACT LAYOUT
    ============================================ */
 
-/* Remove checkout login banner completely */
-.checkout-index-index .opc-wrapper {
-    padding-top: 0 !important;
-}
-
-.checkout-index-index .checkout-customer-login-banner {
+/* Hide the authentication button/wrapper in checkout shipping step */
+.checkout-index-index .authentication-wrapper,
+.checkout-index-index .opc-wrapper .authentication-wrapper,
+.checkout-index-index .shipping-address .authentication-wrapper {
     display: none !important;
 }
 
@@ -452,109 +543,217 @@ button[title="Se connecter"],
 }
 
 /* ============================================
+   FIX: Hide duplicate Total label (excl tax row)
+   Only show one "Total" row with tax included
+   ============================================ */
+
+/* Hide the excl tax row - we only need one Total row */
+.cart-totals .grand.totals.excl,
+.cart-summary .totals .grand.totals.excl {
+    display: none !important;
+}
+
+/* Make the incl row the single total display */
+.cart-totals .grand.totals.incl {
+    background: #f9fafb !important;
+    border-top: 2px solid #e5e7eb !important;
+    border-bottom: none !important;
+}
+
+.cart-totals .grand.totals.incl th,
+.cart-totals .grand.totals.incl td {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    padding: 12px 0 !important;
+}
+
+.cart-totals .grand.totals.incl .amount .price {
+    color: #4caf50 !important;
+    font-size: 17px !important;
+    font-weight: 800 !important;
+}
+
+/* ============================================
+   OPTIMIZE: Code Promo Section - Professional
+   ============================================ */
+
+.cart-summary .block.discount {
+    margin: 12px 0 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    overflow: hidden;
+}
+
+.cart-summary .block.discount .title {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    background: #fafbfc !important;
+    min-height: auto !important;
+    line-height: 1.4 !important;
+}
+
+.cart-summary .block.discount .title strong {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+.cart-summary .block.discount .coupon-emoji {
+    font-size: 14px !important;
+}
+
+.cart-summary .block.discount .content {
+    padding: 12px 14px !important;
+    background: #fafbfc;
+}
+
+.cart-summary .block.discount .fieldset {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.cart-summary .block.discount .field {
+    margin-bottom: 8px !important;
+}
+
+.cart-summary .block.discount .label {
+    font-size: 13px !important;
+    margin-bottom: 5px !important;
+    color: #374151 !important;
+    font-weight: 500 !important;
+}
+
+.cart-summary .block.discount .input-text {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    height: 36px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 4px !important;
+}
+
+.cart-summary .block.discount .actions-toolbar {
+    margin-top: 8px !important;
+}
+
+.cart-summary .block.discount .primary {
+    margin: 0 !important;
+}
+
+.cart-summary .block.discount button.action.apply {
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    height: 36px !important;
+    line-height: 1 !important;
+}
+
+/* ============================================
+   OPTIMIZE: Carte Cadeau Section - Professional
+   ============================================ */
+
+.cart-summary .block.gift-card {
+    margin: 12px 0 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    overflow: hidden;
+}
+
+.cart-summary .block.gift-card .title {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    background: #fafbfc !important;
+    min-height: auto !important;
+    line-height: 1.4 !important;
+}
+
+.cart-summary .block.gift-card .title strong {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+.cart-summary .block.gift-card .gift-emoji,
+.cart-summary .block.gift-card .title .gift-emoji {
+    font-size: 14px !important;
+}
+
+.cart-summary .block.gift-card .content {
+    padding: 12px 14px !important;
+    background: #fafbfc;
+}
+
+/* Guest hint - professional */
+.cart-summary .block.gift-card.guest-hint .guest-hint-box {
+    padding: 12px 14px !important;
+}
+
+.cart-summary .block.gift-card.guest-hint .lock-icon {
+    width: 24px !important;
+    height: 24px !important;
+    margin-bottom: 6px !important;
+}
+
+.cart-summary .block.gift-card.guest-hint h4 {
+    font-size: 13px !important;
+    margin: 0 0 4px 0 !important;
+    line-height: 1.3 !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+}
+
+.cart-summary .block.gift-card.guest-hint p {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    color: #6b7280 !important;
+}
+
+/* ============================================
+   CART SUMMARY - Professional Layout
+   ============================================ */
+
+/* Reduce spacing between summary elements */
+.cart-summary .summary.title {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+}
+
+.cart-summary .block-content {
+    padding: 14px !important;
+}
+
+/* Totals table - professional */
+.cart-totals .table.totals {
+    margin: 0 !important;
+}
+
+.cart-totals .totals tbody tr {
+    border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.cart-totals .totals th,
+.cart-totals .totals td {
+    padding: 8px 0 !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+.cart-totals .totals .sub th,
+.cart-totals .totals .sub td {
+    font-size: 14px !important;
+    padding: 10px 0 !important;
+}
+
+/* Checkout button - professional */
+.cart-summary .checkout-methods-items {
+    margin: 14px 0 0 0 !important;
+    padding: 0 14px 14px 14px !important;
+}
+
+.cart-summary .action.primary.checkout {
+    padding: 12px 24px !important;
+    font-size: 14px !important;
+    margin-top: 0 !important;
+}
+
+/* ============================================
    RESPONSIVE - MAINTAIN COMPACTNESS
    ============================================ */
-
-@media (max-width: 768px) {
-    .checkout-cart-index .page-main {
-        padding: 10px 12px !important;
-    }
-    
-    .cart-summary {
-        margin: 16px 0 0 0 !important;
-    }
-    
-    .cart-summary .summary.title {
-        font-size: 12px !important;
-        padding: 7px 12px !important;
-    }
-    
-    .cart-totals .grand.totals th,
-    .cart-totals .grand.totals td {
-        font-size: 13px !important;
-    }
-    
-    .cart-totals .grand.totals .amount {
-        font-size: 15px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .product-item-name {
-        font-size: 12px !important;
-    }
-    
-    .cart.item .price-excluding-tax .price {
-        font-size: 13px !important;
-    }
-    
-    .cart-summary .summary.title {
-        font-size: 11px !important;
-    }
-    
-    .cart-totals .totals th,
-    .cart-totals .totals td {
-        font-size: 11px !important;
-        padding: 6px 0 !important;
-    }
-}
-
-/* ============================================
-   COLUMN HEADERS - COMPACT
-   ============================================ */
-
-.cart.table-wrapper .cart thead tr th {
-    padding: 8px !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    color: #6b7280 !important;
-    border-bottom: 2px solid #e5e7eb !important;
-}
-
-/* ============================================
-   CART EMPTY STATE - COMPACT
-   ============================================ */
-
-.cart-empty {
-    padding: 20px !important;
-    text-align: center !important;
-}
-
-.cart-empty p {
-    font-size: 14px !important;
-    margin: 10px 0 !important;
-}
-
-/* ============================================
-   PERFORMANCE & ACCESSIBILITY
-   ============================================ */
-
-.cart-summary,
-.checkout-index-index .opc-sidebar {
-    will-change: auto;
-    contain: layout style;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-/* ============================================
-   PRINT OPTIMIZATION
-   ============================================ */
-
-@media print {
-    .cart-summary .block.discount,
-    .cart-summary .block.gift-card,
-    .cart.actions,
-    .checkout-methods-items {
-        display: none !important;
-    }
-}

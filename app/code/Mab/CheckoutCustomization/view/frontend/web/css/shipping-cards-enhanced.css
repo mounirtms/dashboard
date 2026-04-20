@@ -94,84 +94,34 @@
 }
 
 /* =========================================
-   CHECK INDICATOR
+   CARRIER LOGO - SELECTION INDICATOR
    ========================================= */
-
-.shipping-card .check-indicator {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 28px;
-    height: 28px;
-    background: #4caf50;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transform: scale(0);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-}
-
-.shipping-card .check-indicator svg {
-    width: 18px;
-    height: 18px;
-    color: #ffffff;
-}
-
-.shipping-card.selected .check-indicator {
-    opacity: 1;
-    transform: scale(1);
-    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes bounceIn {
-    0% {
-        transform: scale(0);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.2);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* =========================================
-   CARD HEADER (Logo + Method Info)
-   ========================================= */
-
-.shipping-card .card-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
 
 /* Carrier Logo Container */
 .shipping-card .carrier-logo {
-    width: 64px;
-    height: 64px;
-    min-width: 64px;
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #f5f5f5;
     border-radius: 12px;
-    padding: 8px;
+    padding: 10px;
     flex-shrink: 0;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
 }
 
 .shipping-card:hover .carrier-logo {
     background: #e8f5e9;
+    border-color: #4caf50;
 }
 
 .shipping-card.selected .carrier-logo {
     background: #e8f5e9;
+    border-color: #4caf50;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 .shipping-card .carrier-logo img,
@@ -337,132 +287,65 @@
    RESPONSIVE DESIGN
    ========================================= */
 
-/* Tablet (768px - 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .shipping-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-    }
-    
-    .shipping-card {
-        padding: 20px;
-    }
-    
-    .shipping-card .carrier-logo {
-        width: 56px;
-        height: 56px;
-        min-width: 56px;
-    }
+/* Default shipping card layout */
+.shipping-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
 }
 
-/* Mobile (max 768px) */
-@media (max-width: 768px) {
-    .shipping-cards-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-    
-    .shipping-card {
-        padding: 18px;
-        gap: 14px;
-    }
-    
-    .cards-header {
-        padding-bottom: 12px;
-    }
-    
-    .cards-header .section-title {
-        font-size: 20px;
-    }
-    
-    .cards-header .section-subtitle {
-        font-size: 13px;
-    }
-    
-    .shipping-card .card-header {
-        gap: 12px;
-    }
-    
-    .shipping-card .carrier-logo {
-        width: 52px;
-        height: 52px;
-        min-width: 52px;
-    }
-    
-    .shipping-card .method-name {
-        font-size: 15px;
-    }
-    
-    .shipping-card .delivery-time {
-        font-size: 12px;
-    }
-    
-    .shipping-card .card-footer {
-        padding-top: 12px;
-        min-height: 40px;
-    }
-    
-    .shipping-card .price {
-        font-size: 16px;
-        padding: 6px 12px;
-    }
-    
-    .shipping-card .free-badge {
-        font-size: 13px;
-        padding: 8px 14px;
-    }
-    
-    .shipping-card .check-indicator {
-        width: 24px;
-        height: 24px;
-        top: 10px;
-        right: 10px;
-    }
-    
-    .shipping-card .check-indicator svg {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .shipping-info-notice {
-        font-size: 12px;
-        padding: 10px 12px;
-        margin-top: 16px;
-    }
+.shipping-card {
+    padding: 20px;
 }
 
-/* Small Mobile (max 480px) */
-@media (max-width: 480px) {
-    .shipping-card {
-        padding: 16px;
-    }
-    
-    .cards-header .section-title {
-        font-size: 18px;
-    }
-    
-    .shipping-card .carrier-logo {
-        width: 48px;
-        height: 48px;
-        min-width: 48px;
-    }
-    
-    .shipping-card .method-name {
-        font-size: 14px;
-    }
-    
-    .shipping-card .delivery-time {
-        font-size: 11px;
-    }
-    
-    .shipping-card .price {
-        font-size: 15px;
-    }
-    
-    .shipping-card .free-badge {
-        font-size: 12px;
-        padding: 7px 12px;
-    }
+.shipping-card .carrier-logo {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+}
+
+.cards-header {
+    padding-bottom: 12px;
+}
+
+.cards-header .section-title {
+    font-size: 20px;
+}
+
+.cards-header .section-subtitle {
+    font-size: 13px;
+}
+
+.shipping-card .card-header {
+    gap: 12px;
+}
+
+.shipping-card .method-name {
+    font-size: 15px;
+}
+
+.shipping-card .delivery-time {
+    font-size: 12px;
+}
+
+.shipping-card .card-footer {
+    padding-top: 12px;
+    min-height: 40px;
+}
+
+.shipping-card .price {
+    font-size: 16px;
+    padding: 6px 12px;
+}
+
+.shipping-card .free-badge {
+    font-size: 13px;
+    padding: 8px 14px;
+}
+
+.shipping-info-notice {
+    font-size: 12px;
+    padding: 10px 12px;
+    margin-top: 16px;
 }
 
 /* =========================================
@@ -502,49 +385,11 @@
 .shipping-card:focus-visible {
     outline: 3px solid #4caf50;
     outline-offset: 2px;
+    border-width: 3px;
+    transition: none;
+    animation: none;
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    .shipping-card {
-        border-width: 3px;
-    }
-    
-    .shipping-card.selected {
-        border-width: 4px;
-    }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    .shipping-card,
-    .shipping-card:hover,
-    .shipping-card .check-indicator,
-    .shipping-card .carrier-logo,
-    .shipping-card .price,
-    .shipping-card .free-badge {
-        transition: none;
-        animation: none;
-    }
-    
-    .shipping-card:hover {
-        transform: none;
-    }
-}
-
-/* Print styles */
-@media print {
-    .shipping-card {
-        border: 2px solid #000;
-        page-break-inside: avoid;
-    }
-    
-    .shipping-card.selected {
-        background: #f0f0f0;
-    }
-    
-    .shipping-card .check-indicator {
-        opacity: 1 !important;
-        transform: scale(1) !important;
-    }
+.shipping-card:hover {
+    transform: none;
 }
