@@ -1,16 +1,24 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <css src="Mab_CheckoutCustomization::css/cart-checkout-compact.css"/>
-        <css src="Mab_CheckoutCustomization::css/ultra-compact-cart.css"/>
+        <!-- Optimized checkout CSS - single consolidated file -->
+        <css src="Mab_CheckoutCustomization::css/checkout-optimized.css"/>
     </head>
     <body>
-        <!-- Initialize checkoutConfig for cart page (before any cart content) -->
+        <!-- Add customer login banner at the very top of content (same as checkout) -->
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="mab.cart.customer.login"
+                   template="Mab_CheckoutCustomization::checkout/customer-login-button.phtml"
+                   before="-"/>
+        </referenceContainer>
+
+        <!-- Initialize checkoutConfig for cart page (after login banner) -->
         <referenceContainer name="content">
             <block class="Mab\CheckoutCustomization\Block\Cart\CheckoutConfig"
                    name="mab.cart.checkout.config"
                    template="Mab_CheckoutCustomization::cart/checkout-config.phtml"
-                   before="checkout.cart"/>
+                   after="mab.cart.customer.login"/>
         </referenceContainer>
         
         <!-- Remove shipping estimation from cart sidebar -->
@@ -35,6 +43,24 @@
                                         <item name="exclTaxLabel" xsi:type="string" translate="true">Total</item>
                                         <item name="inclTaxLabel" xsi:type="string" translate="true">Total</item>
                                         <item name="title" xsi:type="string" translate="true">Total</item>
+                                        <item name="model" xsi:type="string">totals/grand-total</item>
+                                        <item name="template" xsi:type="string">Mab_CheckoutCustomization/cart/totals/grand-total</item>
+                                    </item>
+                                    <item name="children" xsi:type="array">
+                                        <!-- Disable the excl tax row to avoid duplicate Total labels -->
+                                        <item name="before_grand-total" xsi:type="array">
+                                            <item name="config" xsi:type="array">
+                                                <item name="componentDisabled" xsi:type="boolean">true</item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                                <!-- Gift Card Account Total Row -->
+                                <item name="amgift-card" xsi:type="array">
+                                    <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/cart/totals/gift-card</item>
+                                    <item name="config" xsi:type="array">
+                                        <item name="title" xsi:type="string" translate="true">Carte cadeau</item>
+                                        <item name="component_disabled_if_amount_is_zero" xsi:type="boolean">true</item>
                                     </item>
                                 </item>
                             </item>
@@ -53,14 +79,6 @@
                 <argument name="template" xsi:type="string">Mab_CheckoutCustomization::cart/coupon.phtml</argument>
             </action>
         </referenceBlock>
-        
-        <!-- Add compact login banner for guests -->
-        <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Template"
-                   name="mab.cart.customer.login"
-                   template="Mab_CheckoutCustomization::cart/customer-login-banner.phtml"
-                   after="mab.cart.checkout.config"/>
-        </referenceContainer>
         
         <!-- Add our optimized gift card block with guest hint -->
         <referenceContainer name="cart.summary">

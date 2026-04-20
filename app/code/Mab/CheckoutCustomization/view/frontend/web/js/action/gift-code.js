@@ -42,7 +42,7 @@ define([
          * @returns {Deferred}
          */
         apply: function (giftCode) {
-            var serviceUrl = urlFormatter.build('amgcard/cart/apply');
+            var serviceUrl = urlFormatter.build('mabgiftcard/giftcard/apply');
             
             fullScreenLoader.startLoader();
             

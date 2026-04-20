@@ -2,7 +2,7 @@
 /**
  * Mab_CheckoutCustomization - Optimized Gift Card Block
  * Only visible for logged-in customers
- * Professional design with gift emoji, French locale
+ * French locale
  * 
  * @var $block \Magento\Framework\View\Element\Template
  * @var $escaper \Magento\Framework\Escaper
@@ -31,7 +31,7 @@ $blockId = 'block-gift-card-' . uniqid();
 <div class="block gift-card guest-hint" id="<?= $escaper->escapeHtmlAttr($blockId) ?>">
     <div class="title" data-role="title">
         <strong id="<?= $escaper->escapeHtmlAttr($blockId) ?>-heading" role="heading" aria-level="2">
-            <span class="gift-emoji">🎁</span>
+            <span class="gift-emoji">&#127873;</span>
             <?= $escaper->escapeHtml(__('Carte Cadeau')) ?>
         </strong>
     </div>
@@ -94,7 +94,7 @@ require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
 <div class="block gift-card" id="<?= $escaper->escapeHtmlAttr($blockId) ?>">
     <div class="title" data-role="title">
         <strong id="<?= $escaper->escapeHtmlAttr($blockId) ?>-heading" role="heading" aria-level="2">
-            <span class="gift-emoji">🎁</span>
+            <span class="gift-emoji">&#127873;</span>
             <?= $escaper->escapeHtml(__('Carte Cadeau')) ?>
         </strong>
     </div>
@@ -104,7 +104,7 @@ require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
             <?= $escaper->escapeHtml(__('Entrez votre code de carte cadeau pour l\'appliquer à votre commande')) ?>
         </div>
         
-        <form class="form-gift-card" id="gift-card-form" method="post" action="/amgcard/cart/apply">
+        <form class="form-gift-card" id="gift-card-form" method="post">
             <div class="fieldset gift-card">
                 <!-- Gift Card Code Input -->
                 <div class="field">
@@ -117,7 +117,7 @@ require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
                                id="gift_card_code" 
                                name="giftcard_code" 
                                value="" 
-                               placeholder="<?= $escaper->escapeHtmlAttr(__('Ex: XXXX-XXXX-XXXX')) ?>"
+                               placeholder="<?= $escaper->escapeHtmlAttr(__('Ex: TECHB25000183')) ?>"
                                maxlength="50"
                                autocomplete="off"
                                required />
@@ -169,33 +169,6 @@ require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
 </div>
 
 <style>
-/* Guest hint compact */
-.block.gift-card.guest-hint .guest-hint-box {
-    text-align: center;
-    padding: 12px;
-}
-
-.block.gift-card.guest-hint .lock-icon {
-    margin: 0 auto 6px auto;
-    display: block;
-    width: 20px;
-    height: 20px;
-}
-
-.block.gift-card.guest-hint h4 {
-    font-size: 12px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0 0 3px 0;
-}
-
-.block.gift-card.guest-hint p {
-    font-size: 11px;
-    color: #666;
-    line-height: 1.3;
-    margin: 0;
-}
-
 /* Mobile responsive */
 @media (max-width: 640px) {
     .block.gift-card .actions-toolbar {
@@ -282,7 +255,7 @@ require([
             }
             
             $checkBtn.prop('disabled', true);
-            $checkBtn.find('span').text('<?= $escaper->escapeJs(__('Vérification...')) ?>');
+            $checkBtn.find('span').text('<?= $escaper->escapeJs(__('Vérification en cours...')) ?>');
             $balanceDiv.hide();
             
             $.ajax({
@@ -292,25 +265,14 @@ require([
                 contentType: 'application/json',
                 data: JSON.stringify({ giftcard_code: code }),
                 success: function(response) {
-                    console.log('[Gift Card Check] Raw response:', response);
-                    console.log('[Gift Card Check] Response type:', typeof response);
+                    console.log('[Gift Card Check] Response:', response);
                     
                     try {
-                        // Handle different response formats
                         var data = response;
                         
-                        // If response is a string, parse it
                         if (typeof response === 'string') {
                             data = JSON.parse(response);
                         }
-                        
-                        console.log('[Gift Card Check] Parsed data:', data);
-                        console.log('[Gift Card Check] data.id:', data.id);
-                        console.log('[Gift Card Check] data.status:', data.status);
-                        console.log('[Gift Card Check] data.balance:', data.balance);
-                        
-                        // Amasty response can have HTML-encoded balance like:
-                        // "{\"id\":20915,\"code\":\"\",\"status\":\"Actif\",\"balance\":\"<span class=\\\"price\\\">5\\u202f000,00\\u00a0DZD<\\\/span>\",\"expiredDate\":\"unlimited\",\"usage\":\"Multiple\"}"
                         
                         var balanceHtml = data.balance || '';
                         var status = data.status || '';
@@ -318,27 +280,17 @@ require([
                         var expiredDate = data.expiredDate || '';
                         var usage = data.usage || '';
                         
-                        console.log('[Gift Card Check] Balance HTML:', balanceHtml);
-                        console.log('[Gift Card Check] Status:', status);
-                        console.log('[Gift Card Check] Expired:', expiredDate);
-                        
                         // Extract plain text balance from HTML
                         var balanceText = balanceHtml;
                         if (balanceHtml.indexOf('<') !== -1) {
-                            // Create temporary element to extract text
                             var tempDiv = document.createElement('div');
                             tempDiv.innerHTML = balanceHtml;
                             balanceText = tempDiv.textContent || tempDiv.innerText || '';
                         }
                         
-                        console.log('[Gift Card Check] Balance text:', balanceText);
-                        
-                        // Check if gift card is valid (has id)
                         if (cardId) {
-                            // Valid gift card - display balance and status
                             $balanceAmount.text(balanceText);
                             
-                            // Set status text and color based on response
                             if (status === 'Actif' || status === 'active' || status === '1' || status == 1) {
                                 $statusValue.text('<?= $escaper->escapeJs(__('Actif')) ?>');
                                 $statusValue.css('color', '#2e7d32');
@@ -346,15 +298,13 @@ require([
                                 $statusValue.text('<?= $escaper->escapeJs(__('Expiré')) ?>');
                                 $statusValue.css('color', '#d32f2f');
                             } else {
-                                // Use the status from response directly
                                 $statusValue.text(status);
                                 $statusValue.css('color', '#2e7d32');
                             }
                             
-                            // Show additional info if available
                             var infoText = '';
                             if (expiredDate && expiredDate !== 'unlimited') {
-                                infoText += ' | <?= $escaper->escapeJs(__('Expire:')) ?> ' + expiredDate;
+                                infoText += ' | <?= $escaper->escapeJs(__('Expiration:')) ?> ' + expiredDate;
                             } else if (expiredDate === 'unlimited') {
                                 infoText += ' | <?= $escaper->escapeJs(__('Illimité')) ?>';
                             }
@@ -362,25 +312,21 @@ require([
                                 infoText += ' | ' + usage;
                             }
                             
-                            // Show balance div with success message
                             $balanceDiv.show();
                             showMessage('success', '<?= $escaper->escapeJs(__('Carte cadeau valide - Solde: ')) ?>' + balanceText, 5000);
                         } else {
-                            // Invalid card
                             $balanceDiv.hide();
                             var errorMsg = data.message || data.error || '<?= $escaper->escapeJs(__('Code invalide ou solde épuisé')) ?>';
                             showMessage('error', errorMsg, 5000);
                         }
                     } catch (e) {
-                        console.error('[Gift Card Check] Error parsing response:', e);
-                        console.error('[Gift Card Check] Stack:', e.stack);
+                        console.error('[Gift Card Check] Error:', e);
                         $balanceDiv.hide();
-                        showMessage('error', '<?= $escaper->escapeJs(__('Erreur lors de la vérification du code')) ?>', 5000);
+                        showMessage('error', '<?= $escaper->escapeJs(__('Erreur lors de la vérification')) ?>', 5000);
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('[Gift Card Check] AJAX Error:', status, error);
-                    console.error('[Gift Card Check] Response:', xhr.responseText);
                     
                     var errorMsg = '<?= $escaper->escapeJs(__('Code invalide ou carte expirée')) ?>';
                     
@@ -416,67 +362,42 @@ require([
             $balanceDiv.hide();
             
             $.ajax({
-                url: '/amgcard/cart/apply',
+                url: '/mabgiftcard/giftcard/apply',
                 type: 'POST',
                 dataType: 'json',
                 contentType: 'application/json',
                 data: JSON.stringify({ giftcard_code: code }),
                 success: function(response) {
-                    console.log('[Gift Card Apply] Raw response:', response);
-                    console.log('[Gift Card Apply] Response type:', typeof response);
-                    
-                    try {
-                        var data = response;
-                        if (typeof response === 'string') {
-                            data = JSON.parse(response);
-                        }
-                        
-                        console.log('[Gift Card Apply] Parsed data:', data);
-                        
-                        // Check if application was successful
-                        // Amasty typically returns: {id, status, balance, message} or {success, message}
-                        var cardId = data.id;
-                        var status = data.status || '';
-                        var message = data.message || '';
-                        
-                        // Success if we have an id or explicit success
-                        var isSuccess = cardId || data.success === true || data.error === false;
-                        
-                        if (isSuccess) {
-                            var successMsg = message || '<?= $escaper->escapeJs(__('Carte cadeau appliquée avec succès')) ?>';
-                            showMessage('success', successMsg, 3000);
-                            
-                            // Clear input
-                            $input.val('');
-                            $balanceDiv.hide();
-                            
-                            // Reload page to update cart totals after short delay
-                            setTimeout(function() {
-                                location.reload();
-                            }, 1500);
-                        } else {
-                            var errorMsg = message || data.error || '<?= $escaper->escapeJs(__('Échec de l\'application de la carte cadeau')) ?>';
-                            showMessage('error', errorMsg, 5000);
-                        }
-                    } catch (e) {
-                        console.error('[Gift Card Apply] Error parsing response:', e);
-                        console.error('[Gift Card Apply] Stack:', e.stack);
-                        showMessage('error', '<?= $escaper->escapeJs(__('Erreur lors de l\'application de la carte cadeau')) ?>', 5000);
+                    console.log('[Gift Card Apply] Response:', response);
+
+                    if (response && response.success === true) {
+                        var successMsg = response.message || '<?= $escaper->escapeJs(__('Carte cadeau appliquée avec succès')) ?>';
+                        showMessage('success', successMsg, 3000);
+
+                        $input.val('');
+                        $balanceDiv.hide();
+
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        var errorMsg = response.message || response.error || '<?= $escaper->escapeJs(__('Échec de l\'application de la carte cadeau')) ?>';
+                        showMessage('error', errorMsg, 5000);
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('[Gift Card Apply] AJAX Error:', status, error);
                     console.error('[Gift Card Apply] Response:', xhr.responseText);
-                    
+
                     var errorMsg = '<?= $escaper->escapeJs(__('Échec de l\'application de la carte cadeau')) ?>';
-                    
+
                     try {
                         var response = JSON.parse(xhr.responseText);
                         if (response && response.message) {
                             errorMsg = response.message;
                         }
                     } catch (e) {}
-                    
+
                     showMessage('error', errorMsg, 5000);
                 },
                 complete: function() {
