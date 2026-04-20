@@ -1,0 +1,15 @@
+# Test results and reports
+playwright-report/
+test-results/
+tests/playwright-report/
+tests/playwright-results.json
+
+# Screenshots (keep if needed for debugging)
+tests/screenshots/
+
+# Environment files
+.env.test
+.env.local
+
+# Node modules (if installed locally)
+node_modules/
