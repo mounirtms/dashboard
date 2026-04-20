@@ -1,0 +1,109 @@
+<!--
+/**
+ * Custom Authentication Template
+ * Replaces "Se connecter" button with inline login banner
+ */
+-->
+<div class="authentication-wrapper" data-block="authentication" data-bind="visible: isActive()">
+    <div class="checkout-login-banner-inline"
+         data-bind="mageInit: {
+            'Magento_Ui/js/modal/modal':{
+                'type': 'custom',
+                'modalClass': 'authentication-dropdown',
+                'trigger': '[data-trigger=authentication]',
+                'wrapperClass': 'authentication-wrapper',
+                'parentModalClass': '_has-modal-custom _has-auth-shown',
+                'responsive': true,
+                'responsiveClass': 'custom-slide',
+                'overlayClass': 'dropdown-overlay modal-custom-overlay',
+                'buttons': []
+            }}">
+        <!-- Login Banner - Always Visible -->
+        <div class="login-banner-content">
+            <div class="login-icon">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="19" stroke="#4CAF50" stroke-width="2"/>
+                    <circle cx="20" cy="15" r="5" fill="#4CAF50"/>
+                    <path d="M10 30C10 25 14 22 20 22C26 22 30 25 30 30" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="login-message">
+                <h3 data-bind="i18n: 'Compte Client'"></h3>
+                <p data-bind="i18n: 'Connectez-vous pour accéder aux cartes cadeaux et à votre historique de commandes'"></p>
+            </div>
+            <div class="login-actions">
+                <button type="button" 
+                        class="action primary checkout-login-btn"
+                        data-trigger="authentication">
+                    <span data-bind="i18n: 'Se connecter'"></span>
+                </button>
+                <a data-bind="attr: { href: registerUrl }" 
+                   class="action secondary create-btn">
+                    <span data-bind="i18n: 'Créer un compte'"></span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Hidden Login Form (shown in modal when clicking Se connecter) -->
+        <div class="block-authentication-login"
+             style="display: none">
+            <!-- ko foreach: getRegion('messages') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+            <div class="block-content">
+                <form data-role="login"
+                      data-bind="submit:login"
+                      method="post"
+                      novalidate="novalidate">
+                    <div class="fieldset"
+                         data-bind="attr: {'data-hasrequired': $t('* Required Fields')}">
+                        <div class="field field-email required">
+                            <label class="label" for="login-email">
+                                <span data-bind="i18n: 'Email Address'"></span>
+                            </label>
+                            <div class="control">
+                                <input name="username"
+                                       id="login-email"
+                                       type="email"
+                                       class="input-text"
+                                       data-bind="attr: {autocomplete: autocomplete}"
+                                       data-validate="{required:true, 'validate-email':true}"
+                                />
+                            </div>
+                        </div>
+                        <div class="field field-password required">
+                            <label for="login-password" class="label">
+                                <span data-bind="i18n: 'Password'"></span>
+                            </label>
+                            <div class="control">
+                                <input type="password"
+                                       class="input-text"
+                                       id="login-password"
+                                       name="password"
+                                       data-bind="attr: {autocomplete: autocomplete}"
+                                       data-validate="{required:true}"
+                                       autocomplete="off"/>
+                            </div>
+                        </div>
+                        <!-- ko foreach: getRegion('additional-login-form-fields') -->
+                        <!-- ko template: getTemplate() --><!-- /ko -->
+                        <!-- /ko -->
+                    </div>
+                    <div class="actions-toolbar">
+                        <input name="context" type="hidden" value="checkout" />
+                        <div class="primary">
+                            <button type="submit" class="action action-login">
+                                <span data-bind="i18n: 'Sign In'"></span>
+                            </button>
+                        </div>
+                        <div class="secondary">
+                            <a class="action action-remind" data-bind="attr: { href: forgotPasswordUrl }">
+                                <span data-bind="i18n: 'Forgot Your Password?'"></span>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
