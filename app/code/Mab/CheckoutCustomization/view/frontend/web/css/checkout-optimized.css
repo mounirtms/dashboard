@@ -509,6 +509,23 @@
     outline-offset: 2px;
 }
 
+/* ============================================
+   HIDE DEFAULT MAGENTO SHIPPING RATES LIST
+   Our custom cards component replaces it
+   ============================================ */
+
+/* Hide the default shipping methods form and list */
+.checkout-index-index .checkout-shipping-method .methods-shipping,
+.checkout-index-index .checkout-shipping-method .table-checkout-shipping-method,
+.checkout-index-index #co-shipping-method-form,
+.checkout-index-index .opc-wrapper #opc-shipping_method .step-content {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
+
 /* Hide original Magento shipping table */
 .shipping-table-hidden {
     display: none !important;

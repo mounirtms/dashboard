@@ -130,8 +130,10 @@ define([
         initializeShippingCards: function () {
             console.log('🎨 Attempting to initialize shipping cards...');
             
-            // Always force re-render when called from mixin (wilaya change)
-            // This ensures fresh data is read from the updated table
+            // Hide default Magento shipping rates list
+            $('.checkout-shipping-method .methods-shipping, .checkout-shipping-method .table-checkout-shipping-method, #co-shipping-method-form').hide();
+            
+            // Remove existing cards wrapper
             $('.shipping-methods-cards-wrapper').remove();
             
             console.log('🎨 Initializing shipping cards...');
