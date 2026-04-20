@@ -11,12 +11,15 @@
         <!-- No global CSS - loaded per specific page layout -->
     </head>
     <body>
-        <referenceBlock name="checkout_config_provider">
-            <arguments>
-                <argument name="configProviders" xsi:type="array">
-                    <item name="shipping_method_cards" xsi:type="object">Mab\CheckoutCustomization\Model\ShippingMethodConfigProvider</item>
-                </argument>
-            </arguments>
-        </referenceBlock>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="shipping.config.injector"
+                   template="Mab_CheckoutCustomization::shipping-config.phtml"
+                   after="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Mab\CheckoutCustomization\Block\ShippingConfig</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
     </body>
 </page>

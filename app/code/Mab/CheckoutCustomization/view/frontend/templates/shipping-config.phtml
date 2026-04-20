@@ -1,0 +1,19 @@
+<?php
+/**
+ * Mab_CheckoutCustomization
+ * Shipping method configuration injector
+ *
+ * Injects shipping method configuration into window.checkoutConfig
+ */
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Mab\CheckoutCustomization\Block\ShippingConfig $viewModel */
+$viewModel = $block->getData('viewModel');
+$config = $viewModel->getShippingConfig();
+?>
+<script type="text/x-magento-init">
+{
+    "*": {
+        "Mab_CheckoutCustomization/js/shipping-config-injector": <?= json_encode($config) ?>
+    }
+}
+</script>
