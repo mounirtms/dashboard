@@ -44,5 +44,11 @@
   "devDependencies": {
     "@playwright/test": "^1.40.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.52.3"
+  },
+  "overrides": {
+    "immutable": "4.3.7",
+    "@rollup/rollup-win32-x64-msvc": null
+  }
 }
