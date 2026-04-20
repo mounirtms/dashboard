@@ -1,20 +1,19 @@
 /**
- * Custom checkout modifications
- * Fallback CSS to hide any remaining discount elements
- * Primary hiding is handled by component replacement
- * Date: April 19, 2026
- * Enhanced with mobile-first responsive design for Sm/market theme
+ * Custom checkout styles for Sm/market theme
+ * Clean, optimized checkout layout with proper sizing
+ * Date: April 20, 2026
  */
 
-// Fallback CSS - only needed if component replacement fails
+// ============================================
+// Hide discount elements, keep gift card
+// ============================================
 .checkout-index-index {
-    // Hide any remaining discount blocks as fallback
+    // Hide discount/coupon blocks
     .block.discount,
     #block-discount,
     .discount-coupon,
     .coupon-form:not(.giftcard-form),
-    #discount-coupon-form,
-    [data-bind*="discount"]:not([data-bind*="giftcard"]) {
+    #discount-coupon-form {
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
@@ -33,437 +32,426 @@
     }
 }
 
-// Additional fallback selectors
-.checkout-summary-block {
-    .discount-coupon,
-    .coupon-form:not(.giftcard-form) {
-        display: none !important;
-    }
-}
-
-// Hide any remaining discount-related elements
-[class*="discount"]:not([class*="giftcard"]):not([class*="gift-card"]) {
-    .checkout-index-index & {
-        display: none !important;
-    }
-}
-
-// Ensure gift card elements remain visible
-[class*="giftcard"],
-[class*="gift-card"] {
-    .checkout-index-index & {
-        display: block !important;
-    }
-}
-
-/* ============================================
-   MOBILE-FIRST RESPONSIVE ENHANCEMENTS
-   Sm/market theme integration
-   ============================================ */
-
-// Mobile-first base styles
+// ============================================
+// Main checkout layout - stretch columns
+// ============================================
 .checkout-index-index {
-    // Ensure smooth scrolling on mobile
-    -webkit-overflow-scrolling: touch;
-    
-    // Optimize for mobile performance
+    .checkout-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 20px;
+        margin: 0;
+    }
+
+    // OPC wrapper - full width layout
     .opc-wrapper {
-        will-change: transform;
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-    }
-    
-    // Touch-friendly form elements
-    input,
-    select,
-    textarea {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        border-radius: @button__border-radius;
-        
-        &:focus {
-            outline-color: @primary__color;
-            outline-width: 2px;
-            outline-offset: 2px;
-        }
-    }
-    
-    // Optimize button tap targets for mobile
-    button.action.primary,
-    .action.primary {
-        min-height: 44px;
-        min-width: 120px;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: rgba(255, 107, 53, 0.2);
-        
-        &:active {
-            transform: scale(0.98);
-            transition: transform 0.1s ease;
-        }
-    }
-    
-    // Responsive tables for order summary
-    .table-totals {
         width: 100%;
-        font-size: 14px;
-        
-        .mark {
-            padding-right: 10px;
-        }
-        
-        .amount {
-            text-align: right;
-            white-space: nowrap;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+
+        // Step content - full width
+        .step-content {
+            padding: 20px;
+            width: 100%;
         }
     }
-    
-    // Mobile-optimized shipping methods
-    .table-checkout-shipping-method {
+
+    // Order summary sidebar
+    .opc-sidebar {
         width: 100%;
-        
-        td {
-            padding: 10px 5px;
-        }
-        
-        .col-method {
-            width: 30px;
-        }
-        
-        .col-price {
-            text-align: right;
-            white-space: nowrap;
+        max-width: 100%;
+    }
+
+    .opc-block-summary {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+// ============================================
+// Fix tiny checkout fields - larger sizing
+// ============================================
+.checkout-index-index {
+    // Form fields - larger sizing
+    .form-shipping-address,
+    .billing-address-form,
+    .shipping-address-form {
+        .field {
+            margin-bottom: 15px;
+
+            .label {
+                font-size: 15px;
+                font-weight: 500;
+                margin-bottom: 5px;
+            }
+
+            .control {
+                input,
+                select,
+                textarea {
+                    font-size: 16px !important; // Prevents iOS zoom on focus
+                    padding: 12px 15px;
+                    height: 46px;
+                    line-height: 1.5;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    width: 100%;
+                }
+
+                select {
+                    padding-right: 35px;
+                    background-position: right 12px center;
+                }
+
+                textarea {
+                    height: auto;
+                    min-height: 100px;
+                }
+            }
         }
     }
-    
-    // Mobile-friendly payment methods
+
+    // Address fields grid - stretch to full width
+    .field-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+
+        .field {
+            width: 100%;
+        }
+
+        // Full width for street, city, region
+        .field.street,
+        .field.city,
+        .field.region,
+        .field.country_id {
+            grid-column: 1 / -1;
+        }
+    }
+
+    // Single column fields
+    .field.name,
+    .field.telephone,
+    .field.company {
+        width: 100%;
+    }
+}
+
+// ============================================
+// Payment methods - larger, clearer
+// ============================================
+.checkout-index-index {
     .payment-method {
         margin-bottom: 15px;
-        
+        padding: 15px;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+
         .payment-method-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            
             label {
+                font-size: 16px;
+                font-weight: 500;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 gap: 10px;
-                width: 100%;
+            }
+
+            input[type="radio"] {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
             }
         }
-        
+
+        .payment-method-content {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e5e5;
+        }
+    }
+}
+
+// ============================================
+// Shipping methods table
+// ============================================
+.checkout-index-index {
+    .table-checkout-shipping-method {
+        width: 100%;
+        border-collapse: collapse;
+
+        thead th {
+            padding: 12px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: #f8f8f8;
+            border-bottom: 2px solid #e5e5e5;
+        }
+
+        tbody td {
+            padding: 15px;
+            font-size: 15px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
         input[type="radio"] {
             width: 20px;
             height: 20px;
-            flex-shrink: 0;
+            margin-right: 10px;
+        }
+
+        .col-price {
+            font-weight: 600;
+            font-size: 16px;
+        }
+    }
+}
+
+// ============================================
+// Buttons - proper sizing
+// ============================================
+.checkout-index-index {
+    .actions-toolbar {
+        margin-top: 20px;
+
+        button.action.primary,
+        .action.primary {
+            min-height: 48px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.5;
+            border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button.action.secondary,
+        .action.secondary {
+            min-height: 44px;
+            padding: 10px 25px;
+            font-size: 15px;
         }
     }
-    
-    // Optimize loader for mobile
-    .loading-mask {
-        .loader {
-            width: 40px;
-            height: 40px;
+
+    // Checkout button
+    .checkout-agreements {
+        margin-bottom: 20px;
+
+        .action-checkout {
+            min-height: 52px;
+            padding: 14px 35px;
+            font-size: 17px;
+            font-weight: 600;
+            width: 100%;
         }
     }
 }
 
-/* ============================================
-   RESPONSIVE BREAKPOINTS
-   ============================================ */
+// ============================================
+// Order summary block
+// ============================================
+.checkout-index-index {
+    .opc-block-summary {
+        padding: 20px;
+        background: #f8f8f8;
+        border-radius: 6px;
 
-// Extra small devices (phones, less than 576px)
-.media-width(@extremum, @break) when (@extremum = 'max') and (@break = @screen__xs) {
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .product-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e5e5;
+
+            .product-item-name {
+                font-size: 16px;
+                font-weight: 500;
+            }
+
+            .price {
+                font-size: 16px;
+                font-weight: 600;
+            }
+
+            .qty {
+                font-size: 15px;
+            }
+        }
+
+        .totals {
+            margin-top: 20px;
+            padding-top: 15px;
+
+            td {
+                padding: 10px 0;
+                font-size: 16px;
+            }
+
+            .grand {
+                td {
+                    font-size: 18px;
+                    font-weight: 700;
+                    padding-top: 15px;
+                    border-top: 2px solid #333;
+                }
+            }
+        }
+    }
+}
+
+// ============================================
+// Progress bar
+// ============================================
+.checkout-index-index {
+    .opc-progress-bar {
+        padding: 20px 0;
+        margin-bottom: 20px;
+
+        &-item {
+            &-indicator {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+                line-height: 40px;
+            }
+
+            &-title {
+                font-size: 14px;
+                font-weight: 500;
+                margin-top: 8px;
+            }
+        }
+    }
+}
+
+// ============================================
+// Step titles - proper sizing
+// ============================================
+.checkout-index-index {
+    .opc-wrapper {
+        .step-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e5e5;
+        }
+    }
+}
+
+// ============================================
+// Form fieldsets
+// ============================================
+.checkout-index-index {
+    .fieldset {
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+
+        &-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+    }
+}
+
+// ============================================
+// Sm market theme responsive handling ONLY
+// ============================================
+
+// Small screens - stack layout
+.media-width(@extremum, @break) when (@extremum = 'max') and (@break = @screen__s) {
     .checkout-index-index {
-        // Full-width layout on small phones
         .checkout-container {
-            padding: 10px !important;
+            padding: 15px;
         }
-        
+
         .opc-wrapper .step-content {
-            padding: 15px !important;
+            padding: 15px;
         }
-        
-        // Stack form fields vertically
-        .form-shipping-address {
-            .field {
-                width: 100% !important;
-                float: none !important;
-            }
-        }
-        
-        // Full-width buttons
-        button.action {
-            width: 100% !important;
-            margin-bottom: 10px;
-        }
-        
-        // Compact progress bar
-        .opc-progress-bar {
-            padding: 10px 5px !important;
-            
-            &-item-indicator {
-                width: 34px !important;
-                height: 34px !important;
-                font-size: 13px !important;
-            }
-            
-            &-item-title {
-                font-size: 11px !important;
-            }
-        }
-        
-        // Compact order summary
-        .opc-block-summary {
-            .product-item {
-                font-size: 13px;
-            }
-            
-            .product-image-container {
-                width: 45px;
-                height: 45px;
-            }
-        }
-    }
-}
 
-// Small devices (tablets, 576px and up to 768px)
-.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__s) {
-    .checkout-index-index {
-        .form-shipping-address {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            
-            .field.street,
-            .field.region,
-            .field.telephone {
-                grid-column: span 2;
-            }
+        // Stack field groups to single column
+        .field-group {
+            grid-template-columns: 1fr;
         }
-        
+
+        // Full width buttons on mobile
         .actions-toolbar {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            
-            button.action {
-                width: auto !important;
-                min-width: 180px;
+            button.action.primary,
+            .action.primary {
+                width: 100%;
             }
+        }
+
+        // Compact progress bar
+        .opc-progress-bar-item-indicator {
+            width: 36px;
+            height: 36px;
+            font-size: 14px;
+            line-height: 36px;
+        }
+
+        .opc-progress-bar-item-title {
+            font-size: 12px;
         }
     }
 }
 
-// Medium devices (tablets landscape, 768px and up to 1024px)
+// Medium screens and up - two column layout
 .media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__m) {
     .checkout-index-index {
-        .opc-wrapper {
+        .checkout-container {
             display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 20px;
+            grid-template-columns: 1fr 380px;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        
+
+        .opc-wrapper {
+            grid-column: 1;
+        }
+
         .opc-sidebar {
-            position: -webkit-sticky;
+            grid-column: 2;
             position: sticky;
             top: 20px;
             height: fit-content;
         }
-        
-        .form-shipping-address {
-            gap: 16px;
+
+        // Two column fields on desktop
+        .field.name {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+
+            .field {
+                width: 100%;
+            }
         }
     }
 }
 
-// Large devices (desktops, 1024px and up)
+// Large screens
 .media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__l) {
     .checkout-index-index {
         .checkout-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-        
-        .opc-wrapper {
-            grid-template-columns: 1fr 380px;
-            gap: 30px;
-        }
-        
-        .form-shipping-address {
-            gap: 20px;
-        }
-        
-        .opc-wrapper .step-content {
-            padding: 24px;
-        }
-    }
-}
-
-// Extra large devices (large desktops, 1280px and up)
-.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__xl) {
-    .checkout-index-index {
-        .checkout-container {
-            max-width: 1400px;
-            padding: 40px 30px;
-        }
-        
-        .opc-wrapper {
             grid-template-columns: 1fr 400px;
-            gap: 40px;
-        }
-        
-        .opc-wrapper .step-content {
-            padding: 30px;
-        }
-        
-        .opc-progress-bar-item-indicator {
-            width: 44px;
-            height: 44px;
-            font-size: 18px;
-        }
-    }
-}
-
-/* ============================================
-   ORIENTATION-SPECIFIC ADJUSTMENTS
-   ============================================ */
-
-// Landscape mode on mobile devices
-@media (max-width: @screen__s) and (orientation: landscape) {
-    .checkout-index-index {
-        .opc-progress-bar {
-            padding: 8px 5px !important;
-            
-            &-item-indicator {
-                width: 30px !important;
-                height: 30px !important;
-                font-size: 12px !important;
-            }
-            
-            &-item-title {
-                font-size: 10px !important;
-            }
-        }
-        
-        .opc-wrapper .step-content {
-            padding: 12px !important;
-        }
-    }
-}
-
-/* ============================================
-   ACCESSIBILITY ENHANCEMENTS
-   ============================================ */
-
-// Focus indicators for keyboard navigation
-.checkout-index-index {
-    *:focus {
-        outline: 2px solid @primary__color;
-        outline-offset: 2px;
-    }
-    
-    // Skip link for accessibility
-    .skip-link {
-        position: absolute;
-        top: -40px;
-        left: 0;
-        background: @primary__color;
-        color: #fff;
-        padding: 8px;
-        text-decoration: none;
-        z-index: 100;
-        
-        &:focus {
-            top: 0;
-        }
-    }
-}
-
-// High contrast mode support
-@media (prefers-contrast: high) {
-    .checkout-index-index {
-        border: 2px solid currentColor;
-        
-        .payment-method,
-        .shipping-method-card {
-            border: 2px solid currentColor !important;
-        }
-    }
-}
-
-// Reduced motion for users who prefer it
-@media (prefers-reduced-motion: reduce) {
-    .checkout-index-index {
-        *,
-        *::before,
-        *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-        }
-    }
-}
-
-/* ============================================
-   BROWSER-SPECIFIC OPTIMIZATIONS
-   ============================================ */
-
-// iOS Safari specific
-@supports (-webkit-touch-callout: none) {
-    .checkout-index-index {
-        input,
-        select,
-        textarea {
-            font-size: 16px !important; // Prevent zoom on focus
-        }
-        
-        .opc-sidebar {
-            position: -webkit-sticky;
-            position: sticky;
-        }
-    }
-}
-
-// Android Chrome optimizations
-@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
-    .checkout-index-index {
-        // Hardware acceleration
-        .opc-wrapper,
-        .opc-sidebar {
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-        }
-    }
-}
-
-/* ============================================
-   PRINT STYLES
-   ============================================ */
-
-@media print {
-    .checkout-index-index {
-        .opc-progress-bar,
-        .actions-toolbar,
-        .page-header,
-        .page-footer {
-            display: none !important;
-        }
-        
-        .opc-wrapper {
-            display: block !important;
-            grid-template-columns: none !important;
-        }
-        
-        .opc-wrapper .step-content {
-            box-shadow: none !important;
-            border: 1px solid #000 !important;
-            page-break-inside: avoid;
+            gap: 30px;
+            max-width: 1400px;
         }
     }
 }
