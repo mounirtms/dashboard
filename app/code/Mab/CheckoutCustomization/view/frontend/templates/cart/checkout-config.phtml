@@ -57,6 +57,7 @@ if (!$escaper) {
         
         console.log('Cart checkoutConfig initialized');
     }
+})();
 //]]>
 </script>
 
@@ -71,6 +72,7 @@ if ($giftCardInfo && $giftCardInfo['amount_used'] > 0):
     'use strict';
     // Store gift card info for inline display
     window.mabGiftCardData = <?= /* @noEscape */ json_encode($giftCardInfo) ?>;
+})();
 //]]>
 </script>
 <?php endif; ?>
