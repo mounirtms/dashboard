@@ -482,6 +482,26 @@
 .checkout-index-index .opc-block-summary .table-totals .amount { padding: 8px 10px; text-align: right; font-weight: 600; }
 .checkout-index-index .opc-block-summary .grand.totals { border-top: 2px solid #333; font-size: 16px; font-weight: 700; }
 
+/* Gift Card totals row */
+.checkout-index-index .opc-block-summary .table-totals .totals.amgiftcard,
+.cart-table-items tfoot .totals.amgiftcard {
+    background: #f0fdf4 !important;
+}
+
+.checkout-index-index .opc-block-summary .table-totals .totals.amgiftcard .mark .gift-card.coupon,
+.cart-table-items tfoot .totals.amgiftcard .mark .gift-card.coupon {
+    display: block;
+    font-size: 12px;
+    color: #16a34a;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+.checkout-index-index .opc-block-summary .table-totals .totals.amgiftcard .amount .price,
+.cart-table-items tfoot .totals.amgiftcard .amount .price {
+    color: #16a34a !important;
+}
+
 /* ============================================
    PAYMENT METHODS
    ============================================ */
@@ -502,6 +522,130 @@
 .checkout-index-index .discount-code input { width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 8px; }
 .checkout-index-index .discount-code button { width: 100%; padding: 8px 12px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; }
 .checkout-index-index .discount-code button:hover { background: #45a049; }
+
+/* ============================================
+   GIFT CARD - CHECKOUT PAYMENT SECTION
+   ============================================ */
+
+.checkout-index-index .amgift-code {
+    background: #f8f9fa;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.checkout-index-index .amgift-code .payment-option-title {
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+}
+
+.checkout-index-index .amgift-code .payment-option-title .action-toggle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    display: block;
+    padding: 0;
+}
+
+.checkout-index-index .amgift-code .payment-option-title .action-toggle:after {
+    content: '+';
+    float: right;
+    font-size: 18px;
+    color: #4caf50;
+}
+
+.checkout-index-index .amgift-code._active .payment-option-title .action-toggle:after {
+    content: '\2212';
+}
+
+.checkout-index-index .amgift-code .payment-option-content {
+    padding-top: 12px;
+}
+
+.checkout-index-index .amgift-code .amcard-field-container {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.checkout-index-index .amgift-code .amcard-field-block {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+}
+
+.checkout-index-index .amgift-code .amcard-input-arrow input.amcard-field {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.checkout-index-index .amgift-code .amcard-button {
+    padding: 8px 16px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.checkout-index-index .amgift-code .amcard-button:hover {
+    background: #45a049;
+}
+
+.checkout-index-index .amgift-code .amcard-check {
+    padding: 8px 12px;
+    background: transparent;
+    color: #4caf50;
+    border: 1px solid #4caf50;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.checkout-index-index .amgift-code .amcard-check:hover {
+    background: #4caf50;
+    color: white;
+}
+
+/* Applied gift cards list */
+.checkout-index-index .amcard-codes-list {
+    margin-bottom: 12px;
+}
+
+.checkout-index-index .amcard-codes-list > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: #e8f5e9;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.checkout-index-index .amcard-codes-list .amcard-delete {
+    background: none;
+    border: none;
+    color: #c62828;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+.checkout-index-index .amcard-codes-list .amcard-delete:hover {
+    color: #b71c1c;
+    text-decoration: underline;
+}
 
 /* ============================================
    MESSAGES & ALERTS

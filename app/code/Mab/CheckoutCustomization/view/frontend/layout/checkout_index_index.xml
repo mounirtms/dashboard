@@ -85,8 +85,29 @@
                                                     <item name="children" xsi:type="array">
                                                         <item name="afterMethods" xsi:type="array">
                                                             <item name="children" xsi:type="array">
+                                                                <!-- Gift Card input form in payment section -->
                                                                 <item name="amgift-card" xsi:type="array">
-                                                                    <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                    <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/payment/gift-card</item>
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="isCart" xsi:type="boolean">false</item>
+                                                                    </item>
+                                                                    <item name="children" xsi:type="array">
+                                                                        <item name="errors" xsi:type="array">
+                                                                            <item name="sortOrder" xsi:type="string">1</item>
+                                                                            <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/payment/gift-card-messages</item>
+                                                                            <item name="displayArea" xsi:type="string">messages</item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
+                                                                <!-- Show applied gift cards -->
+                                                                <item name="checked-gift-card-renderer" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/account/codes</item>
+                                                                    <item name="template" xsi:type="string">Amasty_GiftCardAccount/account/codes</item>
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="imports" xsi:type="array">
+                                                                            <item name="cards" xsi:type="string">${ "checkout.steps.billing-step.payment.afterMethods.amgift-card" }:checkedCards</item>
+                                                                        </item>
+                                                                    </item>
                                                                 </item>
                                                             </item>
                                                         </item>
