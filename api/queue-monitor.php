@@ -1,4 +1,11 @@
 <?php
+session_start();
+if (empty($_SESSION['logged_in'])) {
+    header('Content-Type: application/json');
+    header('HTTP/1.1 401 Unauthorized');
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
+}
 /**
  * Queue Monitor API
  * Provides real-time queue status data for the monitoring dashboard

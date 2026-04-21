@@ -1,4 +1,11 @@
 <?php
+session_start();
+if (empty($_SESSION['logged_in'])) {
+    header('Content-Type: application/json');
+    header('HTTP/1.1 401 Unauthorized');
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
+}
 /**
  * System Health Check API
  * Returns current system health metrics
