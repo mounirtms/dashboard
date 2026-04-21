@@ -13,6 +13,10 @@
   # Skip for API endpoints
   RewriteRule ^api/ - [L]
 
+  # Handle /webapp/ subdirectory
+  RewriteRule ^webapp/$ /webapp_public/index.html [L]
+  RewriteRule ^webapp/(.+)$ /webapp_public/$1 [L]
+
   # Skip for existing files and directories
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
