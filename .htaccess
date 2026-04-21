@@ -10,6 +10,10 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # Handle /webapp/ subdirectory FIRST (before file checks)
+  RewriteRule ^webapp/$ /webapp_public/index.html [L]
+  RewriteRule ^webapp/(.+)$ /webapp_public/$1 [L]
+
   # Route /yalidine-api/* to PHP handler (avoids Cloudflare blocking /api/yalidine/*)
   RewriteRule ^yalidine-api(/.*)?$ /api/yalidine/index.php [L,QSA]
 
@@ -21,10 +25,6 @@
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
-
-  # Handle /webapp/ subdirectory
-  RewriteRule ^webapp/$ /webapp_public/index.html [L]
-  RewriteRule ^webapp/(.+)$ /webapp_public/$1 [L]
 
   # All other requests go to index.html (React Router handles routing)
   RewriteRule ^ /index.html [L]
