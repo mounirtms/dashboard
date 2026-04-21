@@ -377,18 +377,32 @@ require([
                         $input.val('');
                         $balanceDiv.hide();
 
-                        // Update cart totals without page reload
-                        if (window.checkoutConfig) {
-                            // Trigger Magento's cart update
-                            require(['Magento_Checkout/js/action/get-totals'], function(getTotalsAction) {
-                                getTotalsAction([]);
-                            });
-                        }
+                        // Reload cart totals via AJAX without full page reload
+                        $.ajax({
+                            url: '/rest/V1/carts/mine',
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function(cartData) {
+                                // Update checkoutConfig with new totals
+                                if (window.checkoutConfig && window.checkoutConfig.totalsData) {
+                                    window.checkoutConfig.totalsData.grand_total = cartData.grand_total;
+                                    window.checkoutConfig.totalsData.base_grand_total = cartData.base_grand_total;
+                                    window.checkoutConfig.totalsData.subtotal = cartData.subtotal;
+                                    window.checkoutConfig.totalsData.base_subtotal = cartData.base_subtotal;
 
-                        // Reload page after a delay to ensure totals are updated
-                        setTimeout(function() {
-                            location.reload();
-                        }, 2000);
+                                    // Reload page to refresh KO totals with updated segments
+                                    setTimeout(function() {
+                                        location.reload();
+                                    }, 800);
+                                }
+                            },
+                            error: function() {
+                                // Fallback to reload if cart fetch fails
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 800);
+                            }
+                        });
                     } else {
                         var errorMsg = response.message || response.error || '<?= $escaper->escapeJs(__('Échec de l\'application de la carte cadeau')) ?>';
                         showMessage('error', errorMsg, 5000);

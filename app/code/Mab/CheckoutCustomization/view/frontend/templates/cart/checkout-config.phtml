@@ -3,6 +3,12 @@
  * Mab_CheckoutCustomization - Cart Configuration Block
  * Provides window.checkoutConfig for cart page components
  */
+/** @var \Mab\CheckoutCustomization\Block\Cart\CheckoutConfig $block */
+$escaper = $block->getData('escaper');
+if (!$escaper) {
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $escaper = $objectManager->get(\Magento\Framework\Escaper::class);
+}
 ?>
 <script type="text/javascript">
 //<![CDATA[
@@ -41,7 +47,8 @@
                 subtotal_with_discount: <?= (float)$block->getQuote()->getSubtotalWithDiscount() ?>,
                 shipping_amount: 0,
                 tax_amount: <?= (float)$block->getQuote()->getShippingAddress()->getTaxAmount() ?>,
-                items_qty: <?= (int)$block->getQuote()->getItemsQty() ?>
+                items_qty: <?= (int)$block->getQuote()->getItemsQty() ?>,
+                total_segments: <?= /* @noEscape */ json_encode($block->getTotalSegments()) ?>
             }
         };
         
@@ -50,6 +57,20 @@
         
         console.log('Cart checkoutConfig initialized');
     }
-})();
 //]]>
 </script>
+
+<?php
+// Render inline gift card totals row (outside KO, server-side)
+$giftCardInfo = $block->getGiftCardInfo();
+if ($giftCardInfo && $giftCardInfo['amount_used'] > 0):
+?>
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+    'use strict';
+    // Store gift card info for inline display
+    window.mabGiftCardData = <?= /* @noEscape */ json_encode($giftCardInfo) ?>;
+//]]>
+</script>
+<?php endif; ?>
