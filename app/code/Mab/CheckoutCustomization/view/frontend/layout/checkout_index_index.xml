@@ -13,11 +13,13 @@
     </head>
     <body>
         <!-- Add Customer Login Banner above checkout for guests -->
+        <!-- Using referenceContainer with before attribute to ensure top positioning -->
         <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Template"
-                   name="checkout.customer.login.banner"
-                   template="Mab_CheckoutCustomization::checkout/customer-login-button.phtml"
-                   before="checkout"/>
+            <container name="checkout.banner.container" htmlTag="div" htmlClass="checkout-banner-container" before="-">
+                <block class="Magento\Framework\View\Element\Template"
+                       name="checkout.customer.login.banner"
+                       template="Mab_CheckoutCustomization::checkout/customer-login-button.phtml"/>
+            </container>
         </referenceContainer>
 
         <referenceBlock name="checkout.root">
@@ -45,6 +47,31 @@
                                                                     <item name="config" xsi:type="array">
                                                                         <item name="componentDisabled" xsi:type="boolean">true</item>
                                                                     </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                        <item name="shipping-address-fieldset" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <!-- Configure street to be a single line -->
+                                                                <item name="street" xsi:type="array">
+                                                                    <item name="children" xsi:type="array">
+                                                                        <item name="0" xsi:type="array">
+                                                                            <item name="sortOrder" xsi:type="string">60</item>
+                                                                        </item>
+                                                                        <item name="1" xsi:type="array">
+                                                                            <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
+                                                                <!-- Remove region text input - keep only dropdown -->
+                                                                <item name="region" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="componentDisabled" xsi:type="boolean">true</item>
+                                                                    </item>
+                                                                </item>
+                                                                <!-- Post after state/wilaya -->
+                                                                <item name="region_id" xsi:type="array">
+                                                                    <item name="sortOrder" xsi:type="string">50</item>
                                                                 </item>
                                                             </item>
                                                         </item>

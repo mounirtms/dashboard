@@ -1,21 +1,23 @@
 <!-- Shipping Method Cards - Dynamic Version -->
-<div class="shipping-methods-cards-wrapper" data-bind="visible: isDisplayReady() && !isLoading()">
+<div class="shipping-methods-cards-wrapper" data-bind="visible: !isLoading() || isDisplayReady()">
     <!-- ko if: isLoading() && !isDisplayReady() -->
     <div class="shipping-loading">
         <div class="loading-spinner"></div>
         <span class="loading-text">Chargement...</span>
     </div>
     <!-- /ko -->
-</div>
 
-<div class="shipping-methods-cards-wrapper" data-bind="visible: isDisplayReady() && hasMethods()">
-    <!-- Notice -->
-    <div class="shipping-notice">
-        <svg class="info-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="9" stroke="#2196F3" stroke-width="2"/>
-            <path d="M10 6V10M10 14H10.01" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span class="notice-text" data-bind="text: getShippingNoticeText()"></span>
+    <!-- ko if: isDisplayReady() && hasMethods() -->
+    <!-- Header -->
+    <div class="cards-header">
+        <h3 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M20 8H4V6H20V8ZM20 10H4V12H20V10ZM20 14H4V16H20V14Z" fill="currentColor"/>
+                <path d="M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3Z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>Mode de livraison</span>
+        </h3>
+        <p class="section-subtitle" data-bind="text: getShippingNoticeText()"></p>
     </div>
 
     <!-- Cards Grid -->
@@ -69,10 +71,21 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Error Message -->
-<div class="shipping-methods-cards-wrapper" data-bind="visible: errorMessage() && !isLoading()">
+    <!-- Delivery Policy Link -->
+    <div class="delivery-policy-link">
+        <a href="/livraison" class="policy-link">
+            <svg class="link-icon" width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2C5.58 2 2 5.58 2 10C2 14.42 5.58 18 10 18C14.42 18 18 14.42 18 10C18 5.58 14.42 2 10 2Z" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M9 9H11V11H9V9Z" fill="currentColor"/>
+                <path d="M9 6H11V7H9V6Z" fill="currentColor"/>
+            </svg>
+            <span>Voir notre politique de livraison</span>
+        </a>
+    </div>
+    <!-- /ko -->
+
+    <!-- ko if: errorMessage() && !isLoading() -->
     <div class="shipping-error-message">
         <svg class="error-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <circle cx="10" cy="10" r="9" stroke="#f44336" stroke-width="2"/>
@@ -80,4 +93,5 @@
         </svg>
         <span class="error-text" data-bind="text: errorMessage"></span>
     </div>
+    <!-- /ko -->
 </div>

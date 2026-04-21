@@ -1,0 +1,445 @@
+{
+  "config": {
+    "configFile": "/home/dev/public_html/playwright.config.js",
+    "rootDir": "/home/dev/public_html/tests/playwright",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": "/home/dev/public_html/tests/playwright/global-setup.js",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 4
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/dev/public_html/tests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/dev/public_html/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/home/dev/public_html/tests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/home/dev/public_html/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "tests/playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "tests/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 4,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "auth/authentication.spec.js",
+      "file": "auth/authentication.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Authentication",
+          "file": "auth/authentication.spec.js",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC701: Successful login with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 70969,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/home/dev/public_html/tests/playwright/auth/authentication.spec.js",
+                            "column": 16,
+                            "line": 16
+                          },
+                          "message": "Error: page.fill: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#email')\u001b[22m\n\n\n  14 |     \n  15 |     // Fill login form\n> 16 |     await page.fill('#email', 'test@example.com');\n     |                ^\n  17 |     await page.fill('#pass', 'Test123456');\n  18 |     await page.click('#send2');\n  19 |     await page.waitForLoadState('networkidle');\n    at /home/dev/public_html/tests/playwright/auth/authentication.spec.js:16:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-20T03:47:45.536Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/dev/public_html/tests/test-results/auth-authentication-Authen-76a69-ogin-with-valid-credentials-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/dev/public_html/tests/test-results/auth-authentication-Authen-76a69-ogin-with-valid-credentials-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dev/public_html/tests/test-results/auth-authentication-Authen-76a69-ogin-with-valid-credentials-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c360b3b21c57a7d57e91-efa2a30cfcdea6d95c1f",
+              "file": "auth/authentication.spec.js",
+              "line": 11,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "cart/gift-card-cart.spec.js",
+      "file": "cart/gift-card-cart.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cart Operations",
+          "file": "cart/gift-card-cart.spec.js",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC101: Add product to cart from product page",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 70759,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/home/dev/public_html/tests/playwright/cart/gift-card-cart.spec.js",
+                            "column": 16,
+                            "line": 16
+                          },
+                          "message": "Error: page.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button#product-addtocart-button')\u001b[22m\n\n\n  14 |     \n  15 |     // Add to cart\n> 16 |     await page.click('button#product-addtocart-button');\n     |                ^\n  17 |     await page.waitForTimeout(2000);\n  18 |     \n  19 |     // Verify success message\n    at /home/dev/public_html/tests/playwright/cart/gift-card-cart.spec.js:16:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-20T03:47:45.689Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/dev/public_html/tests/test-results/cart-gift-card-cart-Cart-O-eda1a-t-to-cart-from-product-page-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/dev/public_html/tests/test-results/cart-gift-card-cart-Cart-O-eda1a-t-to-cart-from-product-page-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dev/public_html/tests/test-results/cart-gift-card-cart-Cart-O-eda1a-t-to-cart-from-product-page-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "8f1e25ea7cf6e6037218-faf40c96eb81d2a4fbfd",
+              "file": "cart/gift-card-cart.spec.js",
+              "line": 11,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "checkout/checkout-flow.spec.js",
+      "file": "checkout/checkout-flow.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Checkout Flow - Complete Process",
+          "file": "checkout/checkout-flow.spec.js",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC001: Guest user can complete checkout with new address",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/dev/public_html/tests/playwright/checkout/checkout-flow.spec.js",
+                        "line": 12,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "timedOut",
+                      "duration": 192604,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/home/dev/public_html/tests/playwright/checkout/checkout-flow.spec.js",
+                            "column": 16,
+                            "line": 17
+                          },
+                          "message": "Error: page.click: Test timeout of 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button#product-addtocart-button')\u001b[22m\n\n\n  15 |     await page.goto('/techno-stylom-pilot-roller-0-5-mm-noir.html');\n  16 |     await page.waitForLoadState('networkidle');\n> 17 |     await page.click('button#product-addtocart-button');\n     |                ^\n  18 |     await page.waitForTimeout(2000);\n  19 |     \n  20 |     // 2. Navigate to checkout\n    at /home/dev/public_html/tests/playwright/checkout/checkout-flow.spec.js:17:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-20T03:47:45.711Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/home/dev/public_html/tests/playwright/checkout/checkout-flow.spec.js",
+                            "line": 12,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/dev/public_html/tests/test-results/checkout-checkout-flow-Che-e14b3-e-checkout-with-new-address-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/dev/public_html/tests/test-results/checkout-checkout-flow-Che-e14b3-e-checkout-with-new-address-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dev/public_html/tests/test-results/checkout-checkout-flow-Che-e14b3-e-checkout-with-new-address-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3c70392262b0ada16515-7a84ca370cc8bbb1d615",
+              "file": "checkout/checkout-flow.spec.js",
+              "line": 11,
+              "column": 3
+            },
+            {
+              "title": "TC006: Shipping method selection and price display",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/dev/public_html/tests/playwright/checkout/checkout-flow.spec.js",
+                        "line": 218,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "timedOut",
+                      "duration": 192675,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/home/dev/public_html/tests/playwright/checkout/checkout-flow.spec.js",
+                            "column": 16,
+                            "line": 222
+                          },
+                          "message": "Error: page.click: Test timeout of 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button#product-addtocart-button')\u001b[22m\n\n\n  220 |     // Add product and go to checkout\n  221 |     await page.goto('/techno-stylom-pilot-roller-0-5-mm-noir.html');\n> 222 |     await page.click('button#product-addtocart-button');\n      |                ^\n  223 |     await page.waitForTimeout(2000);\n  224 |     await page.goto('/checkout/');\n  225 |     await page.waitForLoadState('networkidle');\n    at /home/dev/public_html/tests/playwright/checkout/checkout-flow.spec.js:222:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-20T03:47:45.680Z",
+                      "annotations": [
+                        {
+                          "type": "slow",
+                          "location": {
+                            "file": "/home/dev/public_html/tests/playwright/checkout/checkout-flow.spec.js",
+                            "line": 218,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/dev/public_html/tests/test-results/checkout-checkout-flow-Che-87579-selection-and-price-display-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/dev/public_html/tests/test-results/checkout-checkout-flow-Che-87579-selection-and-price-display-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/dev/public_html/tests/test-results/checkout-checkout-flow-Che-87579-selection-and-price-display-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3c70392262b0ada16515-1fa1551aabe70cdea338",
+              "file": "checkout/checkout-flow.spec.js",
+              "line": 217,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-04-20T03:47:44.558Z",
+    "duration": 194063.584,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

@@ -57,7 +57,7 @@
                                 </item>
                                 <!-- Gift Card Account Total Row -->
                                 <item name="amgift-card" xsi:type="array">
-                                    <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/cart/totals/gift-card</item>
+                                    <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/cart/totals/giftcard</item>
                                     <item name="config" xsi:type="array">
                                         <item name="title" xsi:type="string" translate="true">Carte cadeau</item>
                                         <item name="component_disabled_if_amount_is_zero" xsi:type="boolean">true</item>

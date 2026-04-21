@@ -59,9 +59,8 @@ class ShippingConfig implements ArgumentInterface
                     'noMethodsAvailable' => 'Aucune méthode de livraison disponible',
                     'selectShippingForRegion' => 'Sélectionnez votre mode de livraison pour la région de ',
                     'yourRegion' => 'votre région',
-                    'retraitImmediat' => 'Retrait immédiat',
-                    'delivery2to3Days' => '2-3 jours',
-                    'delivery3to5Days' => '3-5 jours',
+                    'retraitImmediat' => 'Retrait aujourd\'hui possible',
+                    'delivery2to5Days' => '2-5 jours (préavis par téléphone)',
                     'freeShipping' => 'Gratuit',
                 ],
                 'deliveryTypeMapping' => [

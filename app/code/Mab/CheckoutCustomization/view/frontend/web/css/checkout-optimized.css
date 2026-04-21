@@ -16,17 +16,31 @@
     padding: 18px 20px;
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.12);
     animation: fadeInDown 0.3s ease-out;
+    order: -1000;
+    position: relative;
+    z-index: 100;
+}
+
+.checkout-index-index .page-main .checkout-login-banner-top,
+.checkout-index-index .main .checkout-login-banner-top {
+    order: -1000 !important;
+    margin-top: 20px !important;
+}
+
+.checkout-index-index .content > .checkout-login-banner-top:first-child,
+.checkout-index-index .content > .block.checkout-login-banner-top {
+    margin-top: 20px !important;
+    margin-bottom: 24px !important;
+}
+
+.checkout-banner-container {
+    margin-bottom: 24px !important;
+    order: -1000 !important;
 }
 
 @keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .login-banner-inner {
@@ -36,38 +50,11 @@
     max-width: 100%;
 }
 
-.login-banner-inner .login-icon {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.login-banner-inner .login-message {
-    flex: 1;
-    min-width: 0;
-}
-
-.login-banner-inner .login-message h3 {
-    margin: 0 0 4px 0;
-    font-size: 17px;
-    font-weight: 700;
-    color: #1a1a1a;
-    line-height: 1.3;
-}
-
-.login-banner-inner .login-message p {
-    margin: 0;
-    font-size: 13px;
-    color: #5a6c7d;
-    line-height: 1.4;
-}
-
-.login-banner-inner .login-actions {
-    display: flex;
-    gap: 10px;
-    flex-shrink: 0;
-}
+.login-banner-inner .login-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.login-banner-inner .login-message { flex: 1; min-width: 0; }
+.login-banner-inner .login-message h3 { margin: 0 0 4px 0; font-size: 17px; font-weight: 700; color: #1a1a1a; line-height: 1.3; }
+.login-banner-inner .login-message p { margin: 0; font-size: 13px; color: #5a6c7d; line-height: 1.4; }
+.login-banner-inner .login-actions { display: flex; gap: 10px; flex-shrink: 0; }
 
 .login-banner-inner .login-btn {
     background: linear-gradient(135deg, #4caf50 0%, #43a047 100%);
@@ -119,63 +106,35 @@
 }
 
 @media (max-width: 768px) {
-    .login-banner-inner {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .login-banner-inner .login-actions {
-        width: 100%;
-        flex-direction: column;
-    }
-
+    .login-banner-inner { flex-direction: column; text-align: center; }
+    .login-banner-inner .login-actions { width: 100%; flex-direction: column; }
     .login-banner-inner .login-btn,
-    .login-banner-inner .register-btn {
-        width: 100%;
-    }
+    .login-banner-inner .register-btn { width: 100%; }
 }
 
 @media (max-width: 480px) {
-    .checkout-login-banner-top {
-        padding: 14px 16px;
-        margin: 0 0 16px 0;
-    }
-
-    .login-banner-inner .login-icon svg {
-        width: 32px;
-        height: 32px;
-    }
-
-    .login-banner-inner .login-message h3 {
-        font-size: 15px;
-    }
-
-    .login-banner-inner .login-message p {
-        font-size: 12px;
-    }
+    .checkout-login-banner-top { padding: 14px 16px; margin: 0 0 16px 0; }
+    .login-banner-inner .login-icon svg { width: 32px; height: 32px; }
+    .login-banner-inner .login-message h3 { font-size: 15px; }
+    .login-banner-inner .login-message p { font-size: 12px; }
 }
 
 /* ============================================
    CHECKOUT CONTAINER & LAYOUT
    ============================================ */
 
-.checkout-index-index .opc-wrapper {
-    max-width: 100%;
-    padding: 0;
-}
-
-.checkout-index-index .checkout-container {
-    padding: 20px;
-}
+.checkout-index-index .opc-wrapper { max-width: 100%; padding: 0; margin: 0; }
+.checkout-index-index .checkout-container { padding: 16px; }
+.checkout-index-index .opc-wrapper .step { margin-bottom: 16px; }
+.checkout-index-index .opc-wrapper * { will-change: auto; }
+.checkout-index-index .fieldset { margin-bottom: 12px; }
 
 /* ============================================
    FORM FIELDS - CONSISTENT DEFAULTS
    ============================================ */
 
 .checkout-index-index .fieldset > .field,
-.checkout-index-index .fieldset > .fields > .field {
-    margin-bottom: 15px;
-}
+.checkout-index-index .fieldset > .fields > .field { margin-bottom: 12px; }
 
 .checkout-index-index input[type="text"],
 .checkout-index-index input[type="email"],
@@ -185,13 +144,25 @@
 .checkout-index-index textarea {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 10px 12px !important;
+    padding: 8px 10px !important;
     border: 1px solid #e5e5e5 !important;
-    border-radius: 3px !important;
+    border-radius: 4px !important;
     font-size: 14px !important;
     height: auto !important;
-    min-height: 40px !important;
+    min-height: 38px !important;
     box-sizing: border-box !important;
+    transition: border-color 0.15s ease !important;
+}
+
+.checkout-index-index input[type="text"]:focus,
+.checkout-index-index input[type="email"]:focus,
+.checkout-index-index input[type="tel"]:focus,
+.checkout-index-index input[type="number"]:focus,
+.checkout-index-index select:focus,
+.checkout-index-index textarea:focus {
+    border-color: #4caf50 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1) !important;
 }
 
 .checkout-index-index select {
@@ -202,351 +173,270 @@
     padding-right: 35px !important;
 }
 
-/* State/Region dropdown visibility */
+/* State/Region dropdown */
 .checkout-index-index .field.region,
-.checkout-index-index .field[name*="region"] {
-    display: block !important;
-    width: 100% !important;
-}
-
+.checkout-index-index .field[name*="region"] { display: block !important; width: 100% !important; }
 .checkout-index-index .field.region select,
-.checkout-index-index .field[name*="region"] select {
-    display: block !important;
-    width: 100% !important;
-}
+.checkout-index-index .field[name*="region"] select { display: block !important; width: 100% !important; }
 
-/* Two-column form grid - responsive handled by Sm/market theme */
+/* Two-column form grid */
 .checkout-index-index .form-shipping-address,
-.checkout-index-index .payment-method-content .fieldset {
-    display: grid;
-    gap: 15px 20px;
-}
-
-/* Full-width fields - responsive handled by Sm/market theme */
+.checkout-index-index .payment-method-content .fieldset { display: grid; gap: 12px 16px; }
 .checkout-index-index .form-shipping-address .field[name*="street"],
 .checkout-index-index .form-shipping-address .field.street,
-.checkout-index-index .form-shipping-address .field.note {
-    grid-column: 1 / -1;
-}
+.checkout-index-index .form-shipping-address .field.note { grid-column: 1 / -1; }
+.checkout-index-index .field[name*="street"] .field,
+.checkout-index-index .fieldset .field[name*="street"] { margin-bottom: 0; }
+.checkout-index-index .field[name*="street"][name*="1"],
+.checkout-index-index .field.street:nth-child(2) { display: none !important; }
 
 /* ============================================
-   STEP TITLES & HEADERS
+   STEP TITLES
    ============================================ */
 
 .checkout-index-index .opc-wrapper .step-title {
     font-size: 18px;
     font-weight: 600;
     color: #222;
-    padding: 12px 0;
-    margin-bottom: 20px;
+    padding: 10px 0;
+    margin-bottom: 16px;
     border-bottom: 2px solid #e5e5e5;
 }
 
 /* ============================================
-   SHIPPING METHOD CARDS - FINALIZED DESIGN
+   SHIPPING METHOD CARDS - PROFESSIONAL
    ============================================ */
 
-.shipping-methods-cards-wrapper {
-    margin: 20px 0;
-    padding: 0;
+/* Wrapper - maximum specificity */
+.checkout-index-index #checkout-shipping-method-load .shipping-methods-cards-wrapper,
+.checkout-index-index .shipping-methods-cards-wrapper {
+    margin: 24px 0 20px !important;
+    padding: 0 !important;
     display: block !important;
     visibility: visible !important;
+    width: 100% !important;
+    position: relative !important;
+    clear: both !important;
 }
 
 /* Header */
-.cards-header {
-    margin-bottom: 18px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #f0f0f0;
+.checkout-index-index .shipping-methods-cards-wrapper .cards-header,
+.checkout-index-index #checkout-shipping-method-load .cards-header {
+    margin-bottom: 16px !important;
+    padding: 0 0 14px !important;
+    border-bottom: 1px solid #e8e8e8 !important;
+    display: block !important;
 }
 
-.cards-header .section-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 6px 0;
-    line-height: 1.3;
+.checkout-index-index .shipping-methods-cards-wrapper .cards-header .section-title,
+.checkout-index-index #checkout-shipping-method-load .cards-header .section-title {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #1a1a1a !important;
+    margin: 0 0 5px 0 !important;
+    line-height: 1.3 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
-.cards-header .section-subtitle {
-    font-size: 13px;
-    color: #666;
-    margin: 0;
-    line-height: 1.4;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .cards-header .section-title svg,
+.checkout-index-index #checkout-shipping-method-load .cards-header .section-title svg { flex-shrink: 0 !important; opacity: 0.7 !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .cards-header .section-subtitle,
+.checkout-index-index #checkout-shipping-method-load .cards-header .section-subtitle { font-size: 13px !important; color: #6b7280 !important; margin: 0 !important; line-height: 1.4 !important; display: block !important; }
 
-/* Grid */
-.shipping-cards-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-    margin: 0;
-    padding: 0;
+/* Grid - Single column vertical layout */
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-cards-grid,
+.checkout-index-index #checkout-shipping-method-load .shipping-cards-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin: 0 0 16px !important;
+    padding: 0 !important;
     visibility: visible !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-/* Card */
-.shipping-card {
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 18px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    will-change: transform, box-shadow, border-color;
-    backface-visibility: hidden;
-    transform: translateZ(0);
+/* Card - full width */
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card,
+.checkout-index-index #checkout-shipping-method-load .shipping-card {
+    background: #ffffff !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    padding: 16px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 14px !important;
     visibility: visible !important;
     opacity: 1 !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    overflow: visible !important;
 }
 
-.shipping-card:hover {
-    border-color: #4caf50;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.12);
-    transform: translateY(-2px) translateZ(0);
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card:hover,
+.checkout-index-index #checkout-shipping-method-load .shipping-card:hover {
+    border-color: #4caf50 !important;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1) !important;
+    transform: translateY(-1px) !important;
 }
 
-.shipping-card.selected {
-    border-color: #4caf50;
-    background: linear-gradient(135deg, #f1f8f4 0%, #ffffff 100%);
-    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.18);
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected {
+    border-color: #4caf50 !important;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%) !important;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15) !important;
 }
 
 /* Card Header */
-.shipping-card .card-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .card-header,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .card-header { display: flex !important; align-items: center !important; gap: 10px !important; min-height: 40px !important; }
 
 /* Logo */
-.shipping-card .carrier-logo {
-    width: 60px;
-    height: 60px;
-    min-width: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f5f5f5;
-    border-radius: 10px;
-    padding: 8px;
-    transition: all 0.2s ease;
-    border: 2px solid transparent;
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .carrier-logo,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .carrier-logo {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #f9fafb !important;
+    border-radius: 8px !important;
+    padding: 5px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid #e5e7eb !important;
 }
 
-.shipping-card:hover .carrier-logo {
-    background: #e8f5e9;
-    border-color: #81c784;
-}
-
-.shipping-card.selected .carrier-logo {
-    background: #e8f5e9;
-    border-color: #4caf50;
-    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.2);
-}
-
-.shipping-card .carrier-logo img,
-.shipping-card .carrier-logo .carrier-img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    display: block;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card:hover .carrier-logo,
+.checkout-index-index #checkout-shipping-method-load .shipping-card:hover .carrier-logo { background: #f0fdf4 !important; border-color: #86efac !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .carrier-logo,
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .carrier-logo.selected-logo,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .carrier-logo,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .carrier-logo.selected-logo { background: #f0fdf4 !important; border-color: #4caf50 !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .carrier-logo img,
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .carrier-logo .carrier-img,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .carrier-logo img,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .carrier-logo .carrier-img { max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; object-fit: contain !important; display: block !important; }
 
 /* Method Info */
-.shipping-card .method-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.shipping-card .method-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0 0 4px 0;
-    line-height: 1.3;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.shipping-card.selected .method-name {
-    color: #2e7d32;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .method-info,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .method-info { flex: 1 !important; min-width: 0 !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .method-name,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .method-name { font-size: 14px !important; font-weight: 600 !important; color: #1f2937 !important; margin: 0 0 4px 0 !important; line-height: 1.3 !important; overflow: visible !important; text-overflow: clip !important; white-space: normal !important; display: block !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .method-name,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .method-name { color: #16a34a !important; }
 
 /* Delivery Time */
-.shipping-card .delivery-time {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    color: #78909c;
-    line-height: 1.4;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .delivery-time,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .delivery-time { display: flex !important; align-items: center !important; gap: 4px !important; font-size: 11px !important; color: #9ca3af !important; line-height: 1.3 !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .delivery-time svg,
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .delivery-time .clock-icon,
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .delivery-time .phone-icon,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .delivery-time svg,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .delivery-time .clock-icon,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .delivery-time .phone-icon { width: 12px !important; height: 12px !important; flex-shrink: 0 !important; opacity: 0.6 !important; }
 
-.shipping-card .delivery-time svg,
-.shipping-card .delivery-time .clock-icon {
-    width: 13px;
-    height: 13px;
-    flex-shrink: 0;
-    opacity: 0.7;
-}
+/* Phone icon for préavis notifications - amber color */
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .delivery-time .phone-icon,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .delivery-time .phone-icon { color: #d97706 !important; opacity: 0.8 !important; }
 
-.shipping-card.selected .delivery-time {
-    color: #2e7d32;
-    font-weight: 500;
-}
-
-.shipping-card.selected .delivery-time svg,
-.shipping-card.selected .delivery-time .clock-icon {
-    opacity: 1;
-    stroke: #2e7d32;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .delivery-time,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .delivery-time { color: #16a34a !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .delivery-time svg,
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .delivery-time .clock-icon,
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .delivery-time .phone-icon,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .delivery-time svg,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .delivery-time .clock-icon,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .delivery-time .phone-icon { opacity: 1 !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .delivery-time svg,
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .delivery-time .clock-icon,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .delivery-time svg,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .delivery-time .clock-icon { stroke: #16a34a !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .delivery-time .phone-icon,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .delivery-time .phone-icon { stroke: #d97706 !important; }
 
 /* Card Footer */
-.shipping-card .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
-    min-height: 40px;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .card-footer,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .card-footer { display: flex !important; align-items: center !important; justify-content: flex-end !important; padding-top: 0 !important; border-top: none !important; margin-left: auto !important; }
 
 /* Price */
-.shipping-card .price {
-    font-size: 17px;
-    font-weight: 700;
-    color: #1a7f37;
-    padding: 6px 12px;
-    background: #f0fdf4;
-    border-radius: 8px;
-    border: 1px solid #bbf7d0;
-    transition: all 0.2s ease;
-}
-
-.shipping-card:hover .price {
-    background: #dcfce7;
-}
-
-.shipping-card.selected .price {
-    background: #dcfce7;
-    border-color: #4caf50;
-    color: #2e7d32;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .price,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .price { font-size: 14px !important; font-weight: 700 !important; color: #16a34a !important; padding: 5px 10px !important; background: #f0fdf4 !important; border-radius: 6px !important; border: 1px solid #bbf7d0 !important; transition: all 0.2s ease !important; white-space: nowrap !important; display: inline-block !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card:hover .price,
+.checkout-index-index #checkout-shipping-method-load .shipping-card:hover .price { background: #dcfce7 !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .price,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .price { background: #dcfce7 !important; border-color: #4caf50 !important; color: #15803d !important; }
 
 /* Free Badge */
-.shipping-card .free-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
-    color: #ffffff;
-    padding: 8px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    box-shadow: 0 3px 8px rgba(76, 175, 80, 0.25);
-    transition: all 0.2s ease;
-}
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card .free-badge,
+.checkout-index-index #checkout-shipping-method-load .shipping-card .free-badge { display: inline-flex !important; align-items: center !important; gap: 4px !important; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important; color: #ffffff !important; padding: 6px 12px !important; border-radius: 16px !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: 0.2px !important; box-shadow: 0 2px 6px rgba(34, 197, 94, 0.25) !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .shipping-card.selected .free-badge,
+.checkout-index-index #checkout-shipping-method-load .shipping-card.selected .free-badge { box-shadow: 0 3px 8px rgba(34, 197, 94, 0.35) !important; }
 
-.shipping-card:hover .free-badge {
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.35);
-    transform: scale(1.03);
-}
-
-.shipping-card.selected .free-badge {
-    box-shadow: 0 5px 12px rgba(76, 175, 80, 0.4);
-}
-
-/* Hidden Radio */
-.shipping-card .shipping-radio {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-    width: 0;
-    height: 0;
-}
-
-/* Notice */
-.shipping-info-notice {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 10px 14px;
-    background: #e3f2fd;
-    border-radius: 8px;
-    border-left: 3px solid #2196f3;
-    font-size: 12px;
-    color: #1565c0;
-    margin-top: 16px;
-    line-height: 1.5;
-}
-
-.shipping-info-notice svg,
-.shipping-info-notice .info-icon {
-    flex-shrink: 0;
-    width: 16px;
-    height: 16px;
-    margin-top: 1px;
-}
-
-.shipping-info-notice span {
-    flex: 1;
-}
-
-/* Focus */
-.shipping-card:focus-visible {
-    outline: 3px solid #4caf50;
-    outline-offset: 2px;
-}
+/* Policy Link */
+.checkout-index-index .shipping-methods-cards-wrapper .delivery-policy-link,
+.checkout-index-index #checkout-shipping-method-load .delivery-policy-link { margin-top: 16px !important; padding-top: 14px !important; border-top: 1px solid #e8e8e8 !important; text-align: center !important; display: block !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .delivery-policy-link .policy-link,
+.checkout-index-index #checkout-shipping-method-load .delivery-policy-link .policy-link { display: inline-flex !important; align-items: center !important; gap: 6px !important; color: #3b82f6 !important; font-size: 13px !important; font-weight: 500 !important; text-decoration: none !important; transition: all 0.15s ease !important; padding: 6px 12px !important; border-radius: 6px !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .delivery-policy-link .policy-link:hover,
+.checkout-index-index #checkout-shipping-method-load .delivery-policy-link .policy-link:hover { color: #2563eb !important; background: #eff6ff !important; text-decoration: none !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .delivery-policy-link .policy-link .link-icon,
+.checkout-index-index #checkout-shipping-method-load .delivery-policy-link .policy-link .link-icon { flex-shrink: 0 !important; }
+.checkout-index-index .shipping-methods-cards-wrapper .delivery-policy-link .policy-link span,
+.checkout-index-index #checkout-shipping-method-load .delivery-policy-link .policy-link span { text-decoration: underline !important; text-underline-offset: 2px !important; }
 
 /* ============================================
-   HIDE DEFAULT MAGENTO SHIPPING RATES LIST
-   Our custom cards component replaces it
+   SHIPPING FORM & BUTTONS
    ============================================ */
 
-/* Hide the default shipping methods form and list */
+/* Hide Magento shipping table */
 .checkout-index-index .checkout-shipping-method .methods-shipping,
-.checkout-index-index .checkout-shipping-method .table-checkout-shipping-method,
-.checkout-index-index #co-shipping-method-form,
-.checkout-index-index .opc-wrapper #opc-shipping_method .step-content {
+.checkout-index-index .checkout-shipping-method .table-checkout-shipping-method {
     display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    pointer-events: none !important;
 }
 
-/* Hide original Magento shipping table */
-.shipping-table-hidden {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    position: absolute !important;
-    pointer-events: none !important;
+/* Keep form visible for buttons */
+.checkout-index-index #co-shipping-method-form {
+    display: block !important;
+    visibility: visible !important;
+    position: relative;
 }
 
-.shipping-form-hidden {
-    position: absolute !important;
-    visibility: hidden !important;
-    width: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    pointer-events: none !important;
+/* Buttons container with proper spacing */
+.checkout-index-index #shipping-method-buttons-container,
+.checkout-index-index .checkout-shipping-method .actions-toolbar {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 20px !important;
+    padding-top: 16px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.checkout-index-index #shipping-method-buttons-container button.action.continue {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 /* ============================================
-   BUTTONS - PRIMARY ACTIONS
+   BUTTONS & ACTIONS
    ============================================ */
 
 .checkout-index-index button.action.primary,
@@ -579,204 +469,114 @@
    ORDER SUMMARY SIDEBAR
    ============================================ */
 
-.checkout-index-index .opc-block-summary {
-    background: #ffffff;
-    border: 1px solid #e5e5e5;
-    border-radius: 3px;
-}
-
-.checkout-index-index .opc-block-summary > .title {
-    cursor: pointer;
-    padding: 15px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.checkout-index-index .opc-block-summary > .title:after {
-    content: '\25BC';
-    float: right;
-    transition: transform 0.3s;
-}
-
-.checkout-index-index .opc-block-summary.active > .title:after {
-    transform: rotate(180deg);
-}
-
-.checkout-index-index .opc-block-summary .product-item {
-    padding: 10px;
-    border-bottom: 1px solid #f0f0f0;
-    display: flex;
-    gap: 10px;
-}
-
-.checkout-index-index .opc-block-summary .product-item-photo {
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
-}
-
-.checkout-index-index .opc-block-summary .product-item-name {
-    font-size: 14px;
-    margin: 0 0 5px 0;
-}
-
-/* ============================================
-   TOTALS TABLE
-   ============================================ */
-
-.checkout-index-index .opc-block-summary .table-totals {
-    margin: 15px 0;
-}
-
-.checkout-index-index .opc-block-summary .table-totals tr {
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.checkout-index-index .opc-block-summary .table-totals .mark {
-    padding: 8px 10px;
-    font-size: 14px;
-}
-
-.checkout-index-index .opc-block-summary .table-totals .amount {
-    padding: 8px 10px;
-    text-align: right;
-    font-weight: 600;
-}
-
-.checkout-index-index .opc-block-summary .grand.totals {
-    border-top: 2px solid #333;
-    font-size: 16px;
-    font-weight: 700;
-}
+.checkout-index-index .opc-block-summary { background: #ffffff; border: 1px solid #e5e5e5; border-radius: 3px; }
+.checkout-index-index .opc-block-summary > .title { cursor: pointer; padding: 15px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 16px; }
+.checkout-index-index .opc-block-summary > .title:after { content: '\25BC'; float: right; transition: transform 0.3s; }
+.checkout-index-index .opc-block-summary.active > .title:after { transform: rotate(180deg); }
+.checkout-index-index .opc-block-summary .product-item { padding: 10px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 10px; }
+.checkout-index-index .opc-block-summary .product-item-photo { width: 60px; height: 60px; flex-shrink: 0; }
+.checkout-index-index .opc-block-summary .product-item-name { font-size: 14px; margin: 0 0 5px 0; }
+.checkout-index-index .opc-block-summary .table-totals { margin: 15px 0; }
+.checkout-index-index .opc-block-summary .table-totals tr { border-bottom: 1px solid #f0f0f0; }
+.checkout-index-index .opc-block-summary .table-totals .mark { padding: 8px 10px; font-size: 14px; }
+.checkout-index-index .opc-block-summary .table-totals .amount { padding: 8px 10px; text-align: right; font-weight: 600; }
+.checkout-index-index .opc-block-summary .grand.totals { border-top: 2px solid #333; font-size: 16px; font-weight: 700; }
 
 /* ============================================
    PAYMENT METHODS
    ============================================ */
 
-.checkout-index-index .payment-method {
-    border: 2px solid #e5e5e5;
-    border-radius: 3px;
-    margin-bottom: 12px;
-    padding: 15px;
-    transition: border-color 0.2s;
-}
-
+.checkout-index-index .payment-method { border: 2px solid #e5e5e5; border-radius: 3px; margin-bottom: 12px; padding: 15px; transition: border-color 0.2s; }
 .checkout-index-index .payment-method._active,
-.checkout-index-index .payment-method:hover {
-    border-color: #4caf50;
-    background: #fafafa;
-}
-
-.checkout-index-index .payment-method .payment-method-title {
-    font-weight: 600;
-    font-size: 14px;
-    margin: 0;
-}
+.checkout-index-index .payment-method:hover { border-color: #4caf50; background: #fafafa; }
+.checkout-index-index .payment-method .payment-method-title { font-weight: 600; font-size: 14px; margin: 0; }
 
 /* ============================================
    DISCOUNT/PROMO CODE
    ============================================ */
 
-.checkout-index-index .discount-code {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
-    margin: 15px 0;
-}
-
-.checkout-index-index .discount-code .title {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    cursor: pointer;
-}
-
-.checkout-index-index .discount-code .title:after {
-    content: '+';
-    float: right;
-    font-size: 18px;
-}
-
-.checkout-index-index .discount-code.active .title:after {
-    content: '\2212';
-}
-
-.checkout-index-index .discount-code input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    margin-bottom: 8px;
-}
-
-.checkout-index-index .discount-code button {
-    width: 100%;
-    padding: 8px 12px;
-    background: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.checkout-index-index .discount-code button:hover {
-    background: #45a049;
-}
+.checkout-index-index .discount-code { background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0; }
+.checkout-index-index .discount-code .title { font-size: 14px; font-weight: 600; margin-bottom: 10px; cursor: pointer; }
+.checkout-index-index .discount-code .title:after { content: '+'; float: right; font-size: 18px; }
+.checkout-index-index .discount-code.active .title:after { content: '\2212'; }
+.checkout-index-index .discount-code input { width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 8px; }
+.checkout-index-index .discount-code button { width: 100%; padding: 8px 12px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.checkout-index-index .discount-code button:hover { background: #45a049; }
 
 /* ============================================
    MESSAGES & ALERTS
    ============================================ */
 
-.checkout-index-index .message {
-    padding: 12px 16px;
-    border-radius: 3px;
-    font-size: 14px;
-    margin-bottom: 15px;
-}
-
-.checkout-index-index .message.message-success {
-    background: #e8f5e9;
-    border: 1px solid #c8e6c9;
-    color: #2e7d32;
-}
-
-.checkout-index-index .message.message-error {
-    background: #ffebee;
-    border: 1px solid #ffcdd2;
-    color: #c62828;
-}
-
-.checkout-index-index .message.message-info {
-    background: #e3f2fd;
-    border: 1px solid #bbdefb;
-    color: #1565c0;
-}
+.checkout-index-index .message { padding: 12px 16px; border-radius: 3px; font-size: 14px; margin-bottom: 15px; }
+.checkout-index-index .message.message-success { background: #e8f5e9; border: 1px solid #c8e6c9; color: #2e7d32; }
+.checkout-index-index .message.message-error { background: #ffebee; border: 1px solid #ffcdd2; color: #c62828; }
+.checkout-index-index .message.message-info { background: #e3f2fd; border: 1px solid #bbdefb; color: #1565c0; }
 
 /* ============================================
    LOADING STATES
    ============================================ */
 
-.checkout-index-index .loading-mask {
-    background: rgba(255, 255, 255, 0.8);
+.checkout-index-index .loading-mask { background: rgba(255, 255, 255, 0.8); }
+.checkout-index-index .loading-mask .loader { display: flex; align-items: center; justify-content: center; }
+
+/* ============================================
+   REGION/FIELD HIDING
+   ============================================ */
+
+/* Hide region text input - only dropdown */
+.checkout-index-index .field.region,
+.checkout-index-index .field[name="shippingAddress.region"],
+.checkout-index-index .field[name="region"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
 }
 
-.checkout-index-index .loading-mask .loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.checkout-index-index .field.region input[type="text"],
+.checkout-index-index .field[name*="region"] input[type="text"],
+.checkout-index-index .field.region_id input[type="text"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
 }
+
+/* Ensure region dropdown visible */
+.checkout-index-index .field.region select,
+.checkout-index-index .field[name*="region"] select,
+.checkout-index-index .field.region_id select { display: block !important; width: 100% !important; min-height: 40px !important; visibility: visible !important; }
+.checkout-index-index .field.region,
+.checkout-index-index .field[name*="region"],
+.checkout-index-index .field.region_id { display: block !important; visibility: visible !important; }
+.checkout-index-index .field.region select option[value=""],
+.checkout-index-index .field[name*="region"] select option[value=""] { color: #999; }
+
+/* Hide unnecessary fields */
+.checkout-index-index .field[name*="fax"],
+.checkout-index-index .field[name*="middlename"],
+.checkout-index-index .field[name*="prefix"],
+.checkout-index-index .field[name*="suffix"] { display: none !important; }
+.checkout-index-index .field[name*="postcode"],
+.checkout-index-index .field.postcode { display: none !important; }
+.checkout-index-index .field[name*="company"],
+.checkout-index-index .field.company { display: none !important; }
 
 /* ============================================
    UTILITY CLASSES
    ============================================ */
 
 .checkout-index-index .no-display,
-.checkout-index-index .hidden {
-    display: none !important;
-}
-
-.checkout-index-index .visible {
-    display: block !important;
-}
+.checkout-index-index .hidden { display: none !important; }
+.checkout-index-index .visible { display: block !important; }
