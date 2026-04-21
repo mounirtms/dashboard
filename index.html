@@ -1,487 +1,413 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - TechnoStationery Server Management</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            color: #667eea;
-            font-size: 3em;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .header .subtitle {
-            color: #666;
-            font-size: 1.3em;
-            margin-bottom: 20px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 0.9em;
-            margin-top: 10px;
-        }
-
-        .status-badge.operational {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .dashboard-card {
-            background: white;
-            padding: 35px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .dashboard-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .dashboard-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .card-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-            opacity: 0.8;
-        }
-
-        .card-title {
-            font-size: 1.8em;
-            color: #333;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .card-description {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            font-size: 1.05em;
-        }
-
-        .card-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .card-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-
-        .features-section {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-
-        .feature-item {
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            border-left: 4px solid #667eea;
-        }
-
-        .feature-item h4 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-
-        .feature-item p {
-            color: #666;
-            line-height: 1.5;
-        }
-
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .footer {
-            text-align: center;
-            color: white;
-            padding: 30px;
-            font-size: 1.1em;
-        }
-
-        .footer a {
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            border-bottom: 2px solid white;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
-        }
-
-        .new-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #ff4444;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: 600;
-            animation: pulse 2s infinite;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Server Control Center — technostationery.com</title>
+<style>
+:root {
+  --bg: #0a0e17; --card: #111827; --border: #1e293b;
+  --text: #e2e8f0; --muted: #94a3b8; --accent: #3b82f6;
+  --green: #22c55e; --yellow: #eab308; --red: #ef4444;
+  --orange: #f97316; --cyan: #06b6d4;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+.header { background: linear-gradient(135deg, #0f172a, #1e293b); padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 1.2rem; font-weight: 600; }
+.header .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.header .status-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.header .status-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.header .status-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+.container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+.grid { display: grid; gap: 16px; }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.card h3 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.metric { font-size: 2rem; font-weight: 700; }
+.metric.sm { font-size: 1.2rem; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+.badge.green { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge.yellow { background: rgba(234,179,8,0.15); color: var(--yellow); }
+.badge.red { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge.blue { background: rgba(59,130,246,0.15); color: var(--accent); }
+.progress-bar { height: 6px; background: #1e293b; border-radius: 9999px; overflow: hidden; margin-top: 8px; }
+.progress-bar .fill { height: 100%; border-radius: 9999px; transition: width 0.5s; }
+.progress-bar .fill.green { background: var(--green); }
+.progress-bar .fill.yellow { background: var(--yellow); }
+.progress-bar .fill.red { background: var(--red); }
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+th { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 500; }
+td { padding: 6px 8px; border-bottom: 1px solid rgba(30,41,59,0.5); }
+tr:hover td { background: rgba(59,130,246,0.05); }
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: transparent; border: 1px solid var(--border); color: var(--muted); transition: all 0.2s; }
+.tab:hover { border-color: var(--accent); color: var(--text); }
+.tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-warning { background: var(--yellow); color: #000; }
+.btn-success { background: var(--green); color: #fff; }
+.btn:hover { opacity: 0.9; }
+.btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.logs { font-family: 'Fira Code', monospace; font-size: 0.75rem; background: #000; padding: 12px; border-radius: 8px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; color: #a5f3fc; }
+#last-update { font-size: 0.8rem; color: var(--muted); }
+.loading { color: var(--muted); font-style: italic; }
+.section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.cron-entry { padding: 8px 0; border-bottom: 1px solid rgba(30,41,59,0.5); }
+.cron-entry .schedule { font-family: 'Fira Code', monospace; font-size: 0.75rem; color: var(--cyan); }
+.cron-entry .command { font-size: 0.8rem; color: var(--text); margin-top: 2px; }
+.cron-entry .comment { font-size: 0.7rem; color: var(--muted); }
+.script-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid rgba(30,41,59,0.5); }
+.script-item .name { font-size: 0.85rem; }
+.script-item .meta { font-size: 0.7rem; color: var(--muted); }
+.output-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; }
+.output-modal.show { display: flex; align-items: center; justify-content: center; }
+.output-modal .content { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.output-modal .close { float: right; cursor: pointer; font-size: 1.2rem; color: var(--muted); }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <span>🚀</span>
-                TechnoStationery Server Management
-            </h1>
-            <p class="subtitle">Centralized Monitoring & Management Dashboard</p>
-            <span class="status-badge operational">✅ All Systems Operational</span>
-        </div>
+<div class="header">
+  <div>
+    <h1>🖥️ Server Control Center</h1>
+    <span id="last-update">Loading...</span>
+  </div>
+  <div>
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-text">Checking...</span>
+    <button onclick="doLogout()" style="margin-left:16px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem" title="Logout">Logout</button>
+  </div>
+</div>
 
-        <div class="stats-bar">
-            <div class="stat-card">
-                <div class="stat-value">3</div>
-                <div class="stat-label">Environments</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">5</div>
-                <div class="stat-label">Active Tools</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">99.9%</div>
-                <div class="stat-label">Uptime</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">24/7</div>
-                <div class="stat-label">Monitoring</div>
-            </div>
-        </div>
+<div class="container">
+  <!-- Top Metrics Row -->
+  <div class="grid grid-4" id="metrics-row"></div>
 
-        <div class="dashboard-grid">
-            <div class="dashboard-card" onclick="window.location.href='queue-monitor.html'">
-                <div class="new-badge">NEW</div>
-                <div class="card-icon">📊</div>
-                <h3 class="card-title">Queue Monitor</h3>
-                <p class="card-description">
-                    Real-time queue monitoring with visual dashboard. Track queue size, CPU usage, 
-                    consumer processes, and system health across all environments.
-                </p>
-                <a href="queue-monitor.html" class="card-button">Open Dashboard →</a>
-            </div>
+  <!-- Tabs -->
+  <div class="tabs" style="margin-top:20px">
+    <div class="tab active" data-tab="processes">⚡ Processes</div>
+    <div class="tab" data-tab="services">🔧 Services</div>
+    <div class="tab" data-tab="sites">🌐 Sites</div>
+    <div class="tab" data-tab="crons">⏰ Crons</div>
+    <div class="tab" data-tab="queues">📬 Queues</div>
+    <div class="tab" data-tab="indexers">📊 Indexers</div>
+    <div class="tab" data-tab="scripts">🚀 Scripts</div>
+    <div class="tab" data-tab="actions">🛠️ Actions</div>
+  </div>
 
-            <div class="dashboard-card">
-                <div class="card-icon">🧹</div>
-                <h3 class="card-title">Queue Cleanup</h3>
-                <p class="card-description">
-                    Automated queue cleanup tools. Remove old jobs, reset stuck processes, 
-                    and optimize database tables with one click.
-                </p>
-                <a href="#" onclick="alert('Run via SSH: bash /home/technadminy7/public_html/scripts/queue-cleanup-optimizer.sh production --force'); return false;" class="card-button">View Commands →</a>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="card-icon">🚨</div>
-                <h3 class="card-title">Emergency Cleanup</h3>
-                <p class="card-description">
-                    Emergency recovery tools for critical situations. Kill stuck consumers, 
-                    clean massive backlogs, and restore system stability.
-                </p>
-                <a href="#" onclick="alert('Emergency: bash /home/technadminy7/public_html/scripts/emergency-queue-cleanup.sh production'); return false;" class="card-button">Emergency Actions →</a>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="card-icon">📈</div>
-                <h3 class="card-title">System Metrics</h3>
-                <p class="card-description">
-                    Comprehensive system metrics and performance monitoring. 
-                    CPU usage, memory, disk space, and database statistics.
-                </p>
-                <a href="api/queue-monitor.php?env=production&action=status" class="card-button" target="_blank">View API →</a>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="card-icon">📜</div>
-                <h3 class="card-title">Logs & Reports</h3>
-                <p class="card-description">
-                    Access deployment logs, cleanup reports, and system activity. 
-                    Track all maintenance operations and system changes.
-                </p>
-                <a href="webapp/logs/" class="card-button">View Logs →</a>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="card-icon">⚙️</div>
-                <h3 class="card-title">Configuration</h3>
-                <p class="card-description">
-                    Manage cron jobs, thresholds, and system settings. 
-                    Configure automated cleanup schedules and alert triggers.
-                </p>
-                <a href="#" onclick="showConfig(); return false;" class="card-button">Settings →</a>
-            </div>
-        </div>
-
-        <div class="features-section">
-            <h2 style="color: #667eea; font-size: 2em; margin-bottom: 10px;">🎯 Key Features</h2>
-            <p style="color: #666; margin-bottom: 30px; font-size: 1.1em;">
-                Comprehensive server management and monitoring tools for TechnoStationery infrastructure
-            </p>
-
-            <div class="features-grid">
-                <div class="feature-item">
-                    <h4>✅ Real-Time Monitoring</h4>
-                    <p>Live queue status, CPU usage, and system health across all environments</p>
-                </div>
-
-                <div class="feature-item">
-                    <h4>🔄 Automated Cleanup</h4>
-                    <p>Scheduled queue cleanup every 6 hours with configurable thresholds</p>
-                </div>
-
-                <div class="feature-item">
-                    <h4>⚡ Emergency Recovery</h4>
-                    <p>One-click emergency cleanup for critical production issues</p>
-                </div>
-
-                <div class="feature-item">
-                    <h4>📊 Visual Analytics</h4>
-                    <p>Beautiful charts and graphs for queue distribution and trends</p>
-                </div>
-
-                <div class="feature-item">
-                    <h4>🎨 Multi-Environment</h4>
-                    <p>Manage Production, Beta, and Dev environments from one dashboard</p>
-                </div>
-
-                <div class="feature-item">
-                    <h4>🔔 Smart Alerts</h4>
-                    <p>Automated alerts when queues exceed thresholds or CPU spikes</p>
-                </div>
-
-                <div class="feature-item">
-                    <h4>📱 Mobile Friendly</h4>
-                    <p>Responsive design works perfectly on tablets and phones</p>
-                </div>
-
-                <div class="feature-item">
-                    <h4>🔒 Secure Access</h4>
-                    <p>Protected API endpoints with proper authentication</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="features-section">
-            <h2 style="color: #667eea; font-size: 2em; margin-bottom: 20px;">📋 Quick Commands</h2>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                <h4 style="color: #667eea; margin-bottom: 10px;">🔍 Check Queue Status</h4>
-                <code style="background: #e9ecef; padding: 10px; display: block; border-radius: 5px; font-family: monospace; overflow-x: auto;">
-                    mysql -uroot -p'YourNewStrongPassword' -h127.0.0.1 -P3307 technadminy7_dBT8x12y22 -e "SELECT COUNT(*), status FROM queue GROUP BY status;"
-                </code>
-            </div>
-
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                <h4 style="color: #667eea; margin-bottom: 10px;">🧹 Run Cleanup</h4>
-                <code style="background: #e9ecef; padding: 10px; display: block; border-radius: 5px; font-family: monospace; overflow-x: auto;">
-                    bash /home/technadminy7/public_html/scripts/queue-cleanup-optimizer.sh production --force
-                </code>
-            </div>
-
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                <h4 style="color: #667eea; margin-bottom: 10px;">🚨 Emergency Cleanup</h4>
-                <code style="background: #e9ecef; padding: 10px; display: block; border-radius: 5px; font-family: monospace; overflow-x: auto;">
-                    bash /home/technadminy7/public_html/scripts/emergency-queue-cleanup.sh production
-                </code>
-            </div>
-
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
-                <h4 style="color: #667eea; margin-bottom: 10px;">📊 View API Data</h4>
-                <code style="background: #e9ecef; padding: 10px; display: block; border-radius: 5px; font-family: monospace; overflow-x: auto;">
-                    curl https://dashboard.technostationery.com/api/queue-monitor.php?env=production&action=status
-                </code>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>TechnoStationery Server Management Dashboard &copy; 2026</p>
-            <p style="margin-top: 10px;">
-                <a href="https://github.com/mounirtms/TECHNO-ETL" target="_blank">View on GitHub</a> | 
-                <a href="webapp/logs/" target="_blank">View Logs</a> | 
-                <a href="queue-monitor.html">Queue Monitor</a>
-            </p>
-        </div>
+  <!-- Processes Tab -->
+  <div class="tab-content active" id="tab-processes">
+    <div class="card">
+      <h3>Top CPU Processes</h3>
+      <table id="top-proc-table">
+        <thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Runtime</th><th>Command</th></tr></thead>
+        <tbody><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+      </table>
     </div>
+  </div>
 
-    <script>
-        function showConfig() {
-            const config = `
-QUEUE CLEANUP CONFIGURATION:
-═══════════════════════════════════════
+  <!-- Services Tab -->
+  <div class="tab-content" id="tab-services">
+    <div class="card">
+      <h3>Service Status</h3>
+      <div id="services-list" class="grid grid-4"></div>
+    </div>
+  </div>
 
-Thresholds:
-• Completed jobs: >24 hours → DELETE
-• Failed jobs: >48 hours → DELETE  
-• Stuck jobs: >2 hours → RESET
-• Very old jobs: >7 days → DELETE
-• Cron entries: >7 days → DELETE
+  <!-- Sites Tab -->
+  <div class="tab-content" id="tab-sites">
+    <div class="card">
+      <h3>All Sites</h3>
+      <table id="sites-table">
+        <thead><tr><th>Site</th><th>User</th><th>PHP-FPM</th><th>Disk</th><th>DB Size</th><th>Mode</th><th>Cache</th><th>Status</th></tr></thead>
+        <tbody><tr><td colspan="8" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 
-Health Alerts:
-• Queue size >10,000 → CRITICAL
-• Queue size >5,000 → WARNING
-• CPU usage >80% → CRITICAL
-• CPU usage >60% → WARNING
+  <!-- Crons Tab -->
+  <div class="tab-content" id="tab-crons">
+    <div class="card">
+      <h3>Active Cron Jobs (<span id="cron-count">0</span>)</h3>
+      <div id="cron-list"></div>
+    </div>
+  </div>
 
-Cron Schedule:
-0 */6 * * * - Run cleanup every 6 hours
-*/30 * * * * - Emergency trigger check
+  <!-- Queues Tab -->
+  <div class="tab-content" id="tab-queues">
+    <div class="card">
+      <h3>Queue Consumers & Pending Messages</h3>
+      <div class="grid grid-2">
+        <div>
+          <h3>Consumers</h3>
+          <div id="consumer-list"></div>
+        </div>
+        <div>
+          <h3>Pending by Queue</h3>
+          <div id="queue-pending"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-Environments:
-• Production: /home/technadminy7/public_html
-• Beta: /home/beta/public_html
-• Dev: /home/dev/public_html
+  <!-- Indexers Tab -->
+  <div class="tab-content" id="tab-indexers">
+    <div class="card">
+      <h3>Magento Indexers</h3>
+      <table id="indexer-table">
+        <thead><tr><th>Indexer</th><th>Title</th><th>Status</th></tr></thead>
+        <tbody><tr><td colspan="3" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 
-Database:
-• Host: 127.0.0.1:3307
-• Production DB: technadminy7_dBT8x12y22
-• Beta DB: beta_dBT8x12y22
-• Dev DB: dev_dBT8x12y22
-            `;
-            alert(config);
-        }
+  <!-- Scripts Tab -->
+  <div class="tab-content" id="tab-scripts">
+    <div class="card">
+      <h3>Available Scripts</h3>
+      <div class="tabs" id="script-cat-tabs"></div>
+      <div id="script-list"></div>
+    </div>
+  </div>
 
-        // Check API health on load
-        fetch('api/queue-monitor.php?env=production&action=status')
-            .then(response => response.json())
-            .then(data => {
-                console.log('API Health Check:', data);
-                if (data.health === 'critical') {
-                    document.querySelector('.status-badge').textContent = '⚠️ Critical Alert';
-                    document.querySelector('.status-badge').className = 'status-badge';
-                    document.querySelector('.status-badge').style.background = '#ffebee';
-                    document.querySelector('.status-badge').style.color = '#c62828';
-                }
-            })
-            .catch(error => {
-                console.log('API check failed (may require database connection):', error);
-            });
-    </script>
+  <!-- Actions Tab -->
+  <div class="tab-content" id="tab-actions">
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>CI/CD Pipeline</h3>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">Manage deployments across all environments</p>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="window.location.href='/app/#/cicd'">CI/CD Dashboard</button>
+          <button class="btn btn-success" onclick="window.location.href='/app/#/environments'">Environments</button>
+          <button class="btn btn-warning" onclick="window.location.href='/app/#/scripts'">Script Runner</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Emergency Actions</h3>
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="doCleanup('all')">🔥 Full Cleanup (Kill stuck + Restart PHP-FPM)</button>
+          <button class="btn btn-warning" onclick="doCleanup('messenger')">⚠️ Kill Messenger Consumers</button>
+          <button class="btn btn-primary" onclick="doCleanup('phpfpm')">🔄 Restart PHP-FPM</button>
+          <button class="btn btn-success" onclick="doCleanup('cache')">🧹 Flush Cache</button>
+        </div>
+        <div id="action-output" class="logs" style="display:none"></div>
+      </div>
+      <div class="card">
+        <h3>Quick Commands</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="runScript('/home/technadminy7/public_html/scripts/maintenance/master_cleanup.sh')">Master Cleanup</button>
+          <button class="btn btn-primary" onclick="runScript('/home/technadminy7/public_html/scripts/maintenance/nightly_cache_flush.sh')">Cache Flush</button>
+          <button class="btn btn-primary" onclick="runScript('/home/dashboard/public_html/scripts/database/database_health_check.php')">DB Health</button>
+          <button class="btn btn-primary" onclick="runScript('/home/dashboard/public_html/scripts/database/cleanup_database.php')">DB Cleanup</button>
+        </div>
+        <div id="quick-output" class="logs" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Output Modal -->
+<div class="output-modal" id="output-modal">
+  <div class="content">
+    <span class="close" onclick="document.getElementById('output-modal').classList.remove('show')">&times;</span>
+    <h3 id="modal-title">Script Output</h3>
+    <div class="logs" id="modal-output"></div>
+  </div>
+</div>
+
+<script>
+const API = '/api/monitor.php';
+const AUTH_API = '/api/auth.php';
+let refreshInterval;
+
+// ── Authentication Check ──
+async function checkAuth() {
+  try {
+    const r = await fetch(AUTH_API + '?action=check');
+    const d = await r.json();
+    if (!d.authenticated) {
+      window.location.href = '/login.html';
+      return false;
+    }
+    // Show logged in user in header
+    const header = document.querySelector('.header');
+    if (header && d.user) {
+      const userBadge = document.createElement('span');
+      userBadge.style.cssText = 'font-size:0.8rem;color:var(--muted);margin-left:16px';
+      userBadge.textContent = '👤 ' + (d.user.full_name || d.user.username);
+      userBadge.id = 'user-badge';
+      header.appendChild(userBadge);
+    }
+    return true;
+  } catch(e) {
+    window.location.href = '/login.html';
+    return false;
+  }
+}
+
+// Check auth before loading dashboard
+(async function init() {
+  const authenticated = await checkAuth();
+  if (!authenticated) return;
+  refresh();
+  refreshInterval = setInterval(refresh, 30000);
+})();
+
+// ── Tabs ──
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Fetch & Render ──
+async function loadOverview() {
+  try {
+    const r = await fetch(API + '?action=overview');
+    if (!r.ok) return; // Skip if unauthorized
+    const d = await r.json();
+    document.getElementById('last-update').textContent = 'Updated: ' + d.timestamp;
+    // Status dot
+    const load1 = d.load['1min'];
+    const dot = document.getElementById('status-dot');
+    const txt = document.getElementById('status-text');
+    if(load1 < 4) { dot.className='status-dot green'; txt.textContent='Normal'; }
+    else if(load1 < 8) { dot.className='status-dot yellow'; txt.textContent='Elevated'; }
+    else { dot.className='status-dot red'; txt.textContent='High Load: ' + load1.toFixed(2); }
+    // Metrics
+    const metricsHtml = `
+      <div class="card"><h3>CPU Load (1m / 5m / 15m)</h3><div class="metric">${d.load['1min'].toFixed(2)}</div><div class="sm" style="color:var(--muted)">${d.load['5min'].toFixed(2)} / ${d.load['15min'].toFixed(2)}</div></div>
+      <div class="card"><h3>Memory Usage</h3><div class="metric">${d.memory.used_pct}%</div><div class="progress-bar"><div class="fill ${d.memory.used_pct>85?'red':d.memory.used_pct>65?'yellow':'green'}" style="width:${d.memory.used_pct}%"></div></div><div class="sm" style="color:var(--muted)">${d.memory.available_mb} MB free / ${d.memory.total_mb} MB total</div></div>
+      <div class="card"><h3>Disk Usage</h3><div class="metric">${d.disk.pct}</div><div class="sm" style="color:var(--muted)">${d.disk.used} used / ${d.disk.total} total — ${d.disk.free} free</div></div>
+      <div class="card"><h3>Processes</h3><div class="metric sm">PHP-FPM: <strong>${d.processes.php_fpm}</strong> | HTTPD: <strong>${d.processes.httpd}</strong></div><div class="sm" style="color:var(--muted)">Messenger: ${d.processes.messenger} | Zombies: ${d.processes.zombies}</div><div class="sm" style="color:var(--muted)">DB: ${d.database.connections} conn / ${d.database.running} running</div></div>
+    `;
+    document.getElementById('metrics-row').innerHTML = metricsHtml;
+    // Top processes
+    let procHtml = '';
+    d.top_processes.forEach(p => {
+      const cpuClass = p.cpu > 50 ? 'red' : p.cpu > 20 ? 'yellow' : 'green';
+      procHtml += `<tr><td>${p.pid}</td><td><span class="badge ${cpuClass}">${p.cpu}%</span></td><td>${p.mem}%</td><td>${p.time}</td><td style="max-width:400px;overflow:hidden;text-overflow:ellipsis">${p.cmd}</td></tr>`;
+    });
+    document.querySelector('#top-proc-table tbody').innerHTML = procHtml;
+    // Services
+    let svcHtml = '';
+    Object.entries(d.services).forEach(([k,v]) => {
+      const cls = v==='running'?'green':v==='dead'?'red':'yellow';
+      svcHtml += `<div class="card" style="text-align:center"><h3>${k}</h3><span class="badge ${cls}">${v}</span></div>`;
+    });
+    document.getElementById('services-list').innerHTML = svcHtml;
+  } catch(e) { console.error(e); }
+}
+
+async function loadSites() {
+  try {
+    const r = await fetch(API + '?action=sites');
+    if (!r.ok) return;
+    const d = await r.json();
+    let html = '';
+    Object.values(d.sites).forEach(s => {
+      html += `<tr><td><strong>${s.name}</strong><br><span style="color:var(--muted);font-size:0.7rem">${s.path}</span></td><td>${s.user}</td><td>${s.php_fpm_workers}</td><td>${s.disk_usage}</td><td>${s.db_size||'—'}</td><td>${s.magento_mode||'—'}</td><td>${s.cache_status||'—'}</td><td><span class="badge ${s.exists?'green':'red'}">${s.exists?'Active':'Missing'}</span></td></tr>`;
+    });
+    document.querySelector('#sites-table tbody').innerHTML = html;
+  } catch(e) { console.error(e); }
+}
+
+async function loadCrons() {
+  try {
+    const r = await fetch(API + '?action=crons');
+    if (!r.ok) return;
+    const d = await r.json();
+    document.getElementById('cron-count').textContent = d.total;
+    let html = '';
+    d.entries.forEach(e => {
+      html += `<div class="cron-entry"><div class="schedule">${e.schedule}</div><div class="command">${e.command.substring(0,120)}${e.command.length>120?'...':''}</div>${e.running>0?`<span class="badge yellow">Running (${e.running})</span>`:''}${e.comment?`<div class="comment">${e.comment}</div>`:''}</div>`;
+    });
+    document.getElementById('cron-list').innerHTML = html;
+  } catch(e) { console.error(e); }
+}
+
+async function loadQueues() {
+  try {
+    const r = await fetch(API + '?action=queues');
+    if (!r.ok) return;
+    const d = await r.json();
+    let cHtml = '';
+    d.consumers.forEach(c => { cHtml += `<div style="padding:4px 0;font-size:0.85rem">📋 ${c}</div>`; });
+    document.getElementById('consumer-list').innerHTML = cHtml || 'No consumers configured';
+    let qHtml = '';
+    Object.entries(d.queue_counts).forEach(([q,n]) => {
+      const cls = n>100?'red':n>10?'yellow':'green';
+      qHtml += `<div style="padding:4px 0;font-size:0.85rem">${q}: <span class="badge ${cls}">${n} pending</span></div>`;
+    });
+    document.getElementById('queue-pending').innerHTML = qHtml || 'No pending messages';
+  } catch(e) { console.error(e); }
+}
+
+async function loadIndexers() {
+  try {
+    const r = await fetch(API + '?action=indexer');
+    if (!r.ok) return;
+    const d = await r.json();
+    let html = '';
+    d.indexers.forEach(i => {
+      const cls = i.status.toLowerCase().includes('ready')?'green':'yellow';
+      html += `<tr><td><strong>${i.name}</strong></td><td>${i.title}</td><td><span class="badge ${cls}">${i.status}</span></td></tr>`;
+    });
+    document.querySelector('#indexer-table tbody').innerHTML = html;
+  } catch(e) { console.error(e); }
+}
+
+async function doCleanup(type) {
+  const output = document.getElementById('action-output');
+  output.style.display = 'block';
+  output.textContent = 'Executing cleanup...';
+  try {
+    const r = await fetch(API + '?action=cleanup&type=' + type);
+    const d = await r.json();
+    output.textContent = JSON.stringify(d, null, 2);
+    setTimeout(loadOverview, 3000);
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+}
+
+async function doLogout() {
+  try {
+    await fetch(AUTH_API + '?action=logout', { method: 'POST' });
+  } catch(e) {}
+  window.location.href = '/login.html';
+}
+
+async function runScript(script) {
+  const output = document.getElementById('quick-output');
+  output.style.display = 'block';
+  output.textContent = 'Running ' + script + '...';
+  try {
+    const r = await fetch(API + '?action=execute&script=' + encodeURIComponent(script));
+    const d = await r.json();
+    output.textContent = 'Exit Code: ' + d.exit_code + '\n\n' + (d.output || []).join('\n');
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+}
+
+// ── Auto-refresh ──
+function refresh() {
+  loadOverview();
+  loadSites();
+  loadCrons();
+  loadQueues();
+  loadIndexers();
+}
+refresh();
+refreshInterval = setInterval(refresh, 30000);
+</script>
 </body>
 </html>
