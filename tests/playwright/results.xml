@@ -1,0 +1,227 @@
+<testsuites id="" name="" tests="5" failures="1" skipped="0" errors="1" time="216.22266100000002">
+<testsuite name="emergency-production.spec.js" timestamp="2026-04-01T23:53:26.226Z" hostname="chromium" tests="5" failures="1" skipped="0" time="207.912" errors="1">
+<testcase name="Emergency Production Tests › homepage should load in under 5 seconds" classname="emergency-production.spec.js" time="103.251">
+<system-out>
+<![CDATA[=== EMERGENCY TEST: Homepage Load ===
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium/error-context.md]]
+=== EMERGENCY TEST: Homepage Load ===
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/video.webm]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/error-context.md]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+<error message="page.waitForLoadState: Timeout 30000ms exceeded." type="TimeoutError">
+<![CDATA[  [chromium] › emergency-production.spec.js:10:3 › Emergency Production Tests › homepage should load in under 5 seconds 
+
+    TimeoutError: page.waitForLoadState: Timeout 30000ms exceeded.
+
+      14 |     
+      15 |     await page.goto('/', { timeout: 30000 });
+    > 16 |     await page.waitForLoadState('networkidle', { timeout: 30000 });
+         |                ^
+      17 |     
+      18 |     const loadTime = Date.now() - startTime;
+      19 |     console.log(`Homepage loaded in: ${loadTime}ms`);
+        at /home/technadminy7/public_html/tests/playwright/tests/emergency-production.spec.js:16:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: page.waitForLoadState: Timeout 30000ms exceeded.
+
+      14 |     
+      15 |     await page.goto('/', { timeout: 30000 });
+    > 16 |     await page.waitForLoadState('networkidle', { timeout: 30000 });
+         |                ^
+      17 |     
+      18 |     const loadTime = Date.now() - startTime;
+      19 |     console.log(`Homepage loaded in: ${loadTime}ms`);
+        at /home/technadminy7/public_html/tests/playwright/tests/emergency-production.spec.js:16:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/emergency-production-Emerg-89d3e-uld-load-in-under-5-seconds-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</error>
+</testcase>
+<testcase name="Emergency Production Tests › checkout should be accessible" classname="emergency-production.spec.js" time="9.599">
+<system-out>
+<![CDATA[=== EMERGENCY TEST: Checkout Access ===
+Checkout URL: https://technostationery.com/checkout/cart/
+Checkout load time: Promise {
+  [36m<pending>[39m,
+  [[32mSymbol(async_id_symbol)[39m]: [33m11310[39m,
+  [[32mSymbol(trigger_async_id_symbol)[39m]: [33m11051[39m,
+  [[32mSymbol(kResourceStore)[39m]: [90mundefined[39m
+}
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium/error-context.md]]
+=== EMERGENCY TEST: Checkout Access ===
+Checkout URL: https://technostationery.com/checkout/cart/
+Checkout load time: Promise {
+  [36m<pending>[39m,
+  [[32mSymbol(async_id_symbol)[39m]: [33m29308[39m,
+  [[32mSymbol(trigger_async_id_symbol)[39m]: [33m28589[39m,
+  [[32mSymbol(kResourceStore)[39m]: [90mundefined[39m
+}
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/video.webm]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/error-context.md]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+<failure message="expect(received).toBeLessThan(expected)" type="expect.toBeLessThan">
+<![CDATA[  [chromium] › emergency-production.spec.js:38:3 › Emergency Production Tests › checkout should be accessible 
+
+    Error: expect(received).toBeLessThan(expected)
+
+    Matcher error: received value must be a number or bigint
+
+    Received has type:  object
+    Received has value: Promise {}
+
+      53 |     
+      54 |     // Should load in under 10 seconds
+    > 55 |     expect(loadTime).toBeLessThan(10000);
+         |                      ^
+      56 |   });
+      57 |
+      58 |   test('no critical JavaScript errors', async ({ page }) => {
+        at /home/technadminy7/public_html/tests/playwright/tests/emergency-production.spec.js:55:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeLessThan(expected)
+
+    Matcher error: received value must be a number or bigint
+
+    Received has type:  object
+    Received has value: Promise {}
+
+      53 |     
+      54 |     // Should load in under 10 seconds
+    > 55 |     expect(loadTime).toBeLessThan(10000);
+         |                      ^
+      56 |   });
+      57 |
+      58 |   test('no critical JavaScript errors', async ({ page }) => {
+        at /home/technadminy7/public_html/tests/playwright/tests/emergency-production.spec.js:55:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/emergency-production-Emerg-0eb4c-eckout-should-be-accessible-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+</testcase>
+<testcase name="Emergency Production Tests › no critical JavaScript errors" classname="emergency-production.spec.js" time="42.027">
+<system-out>
+<![CDATA[=== EMERGENCY TEST: No JS Errors ===
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-8e260--critical-JavaScript-errors-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-8e260--critical-JavaScript-errors-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-8e260--critical-JavaScript-errors-chromium/error-context.md]]
+=== EMERGENCY TEST: No JS Errors ===
+Critical errors found: [33m0[39m
+Errors: []
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-8e260--critical-JavaScript-errors-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Emergency Production Tests › add to cart should work" classname="emergency-production.spec.js" time="14.81">
+<system-out>
+<![CDATA[=== EMERGENCY TEST: Add to Cart ===
+Add to cart errors: [33m0[39m
+]]>
+</system-out>
+</testcase>
+<testcase name="Emergency Production Tests › performance metrics" classname="emergency-production.spec.js" time="38.225">
+<system-out>
+<![CDATA[=== EMERGENCY TEST: Performance Metrics ===
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-70d18-n-Tests-performance-metrics-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-70d18-n-Tests-performance-metrics-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-70d18-n-Tests-performance-metrics-chromium/error-context.md]]
+=== EMERGENCY TEST: Performance Metrics ===
+Performance metrics: {
+  ttfb: [33m330[39m,
+  domContentLoaded: [33m1600[39m,
+  loadComplete: [33m3444[39m,
+  domElements: [33m2506[39m
+}
+
+[[ATTACHMENT|test-results/emergency-production-Emerg-70d18-n-Tests-performance-metrics-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

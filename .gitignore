@@ -11,7 +11,8 @@
 /webapp
 # Composer dependencies
 /vendor/
-
+/app/etc/env.php
+/app/etc/config.php
 # Node modules
 /node_modules/
 

@@ -1,0 +1,17 @@
+{
+  "name": "magento2-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright tests for Techno Stationery Magento 2",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.43.0"
+  },
+  "author": "Techno Stationery",
+  "license": "MIT"
+}
