@@ -95,11 +95,27 @@ class Apply extends Action implements CsrfAwareActionInterface
 
             $this->accountManagement->applyGiftCardToCart($quoteId, $code);
 
+            // Collect totals to ensure the gift card segment is populated
+            $quote->collectTotals()->save();
+
+            // Get the applied gift card amount for the response
+            $giftAmountUsed = 0;
+            $appliedCodes = [];
+            if ($quote->getExtensionAttributes() && $quote->getExtensionAttributes()->getAmGiftcardQuote()) {
+                $giftAmountUsed = $quote->getExtensionAttributes()->getAmGiftcardQuote()->getGiftAmountUsed();
+                $giftCards = $quote->getExtensionAttributes()->getAmGiftcardQuote()->getGiftCards();
+                foreach ($giftCards as $card) {
+                    $appliedCodes[] = $card['code'] ?? $card['gift_card_code'] ?? '';
+                }
+            }
+
             return $result->setData([
                 'success' => true,
                 'error' => false,
                 'message' => __('Carte cadeau "%1" appliquée avec succès', $code),
-                'code' => $code
+                'code' => $code,
+                'amount_used' => $giftAmountUsed,
+                'applied_codes' => $appliedCodes
             ]);
 
         } catch (\Exception $e) {

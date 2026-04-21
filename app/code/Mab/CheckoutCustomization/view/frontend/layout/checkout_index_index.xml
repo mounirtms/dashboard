@@ -97,15 +97,9 @@
                                                                             <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/payment/gift-card-messages</item>
                                                                             <item name="displayArea" xsi:type="string">messages</item>
                                                                         </item>
-                                                                    </item>
-                                                                </item>
-                                                                <!-- Show applied gift cards -->
-                                                                <item name="checked-gift-card-renderer" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/account/codes</item>
-                                                                    <item name="template" xsi:type="string">Amasty_GiftCardAccount/account/codes</item>
-                                                                    <item name="config" xsi:type="array">
-                                                                        <item name="imports" xsi:type="array">
-                                                                            <item name="cards" xsi:type="string">${ "checkout.steps.billing-step.payment.afterMethods.amgift-card" }:checkedCards</item>
+                                                                        <item name="amcard-cart-render" xsi:type="array">
+                                                                            <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/account/codes</item>
+                                                                            <item name="template" xsi:type="string">Amasty_GiftCardAccount/account/codes</item>
                                                                         </item>
                                                                     </item>
                                                                 </item>
