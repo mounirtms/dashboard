@@ -10,28 +10,39 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  # Skip for API endpoints
-  RewriteRule ^api/ - [L]
+  # Route /yalidine-api/* to PHP handler (avoids Cloudflare blocking /api/yalidine/*)
+  RewriteRule ^yalidine-api(/.*)?$ /api/yalidine/index.php [L,QSA]
 
-  # Handle /webapp/ subdirectory
-  RewriteRule ^webapp/$ /webapp_public/index.html [L]
-  RewriteRule ^webapp/(.+)$ /webapp_public/$1 [L]
+  # Route other Node.js API endpoints to PHP proxy
+  RewriteCond %{REQUEST_URI} ^/(commands|monitoring|mdm|cegid|techno)
+  RewriteRule ^(.*)$ /api/node-proxy.php [L,QSA]
 
   # Skip for existing files and directories
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
+  # Handle /webapp/ subdirectory
+  RewriteRule ^webapp/$ /webapp_public/index.html [L]
+  RewriteRule ^webapp/(.+)$ /webapp_public/$1 [L]
+
   # All other requests go to index.html (React Router handles routing)
   RewriteRule ^ /index.html [L]
 </IfModule>
 
-# Security Headers
+# CORS headers for proxied API
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"
   Header set X-Frame-Options "SAMEORIGIN"
   Header set X-XSS-Protection "1; mode=block"
   Header set Referrer-Policy "strict-origin-when-cross-origin"
+  
+  # Allow CORS for API endpoints
+  <If "%{REQUEST_URI} =~ m#^/api/#">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+  </If>
 </IfModule>
 
 # Disable directory browsing
