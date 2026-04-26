@@ -436,9 +436,19 @@ require([
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 success: function(response) {
                     console.log('[Gift Card Check] Raw Response:', response);
+                    console.log('[Gift Card Check] Response type:', typeof response);
+                    console.log('[Gift Card Check] Response length:', response ? response.length : 0);
                     
                     try {
                         var data = response;
+                        
+                        // Handle empty response
+                        if (!response || response === '' || response === '""') {
+                            console.log('[Gift Card Check] Empty response detected');
+                            $balanceDiv.hide();
+                            showMessage('error', '<?= $escaper->escapeJs(__('Code invalide ou carte expirée')) ?>', 5000);
+                            return;
+                        }
                         
                         // Parse if response is a string
                         if (typeof response === 'string') {
@@ -502,7 +512,7 @@ require([
                     } catch (e) {
                         console.error('[Gift Card Check] Error:', e);
                         $balanceDiv.hide();
-                        showMessage('error', '<?= $escaper->escapeJs(__('Erreur lors de la vérification')) ?>', 5000);
+                        showMessage('error', '<?= $escaper->escapeJs(__('Code invalide ou carte expirée')) ?>', 5000);
                     }
                 },
                 error: function(xhr, status, error) {

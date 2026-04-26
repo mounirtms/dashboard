@@ -29,26 +29,46 @@ class CheckResponsePlugin
     }
 
     /**
-     * After plugin to ensure response is never empty
+     * Around plugin to completely control the response
      */
-    public function afterExecute(Check $subject, $result)
-    {
-        // If result is not a Json result, wrap it
-        if (!$result instanceof Json) {
+    public function aroundExecute(
+        Check $subject,
+        \Closure $proceed
+    ) {
+        // Log that plugin is being called
+        error_log("[Mab GiftCardFix] aroundExecute called");
+        
+        try {
+            $result = $proceed();
+            
+            error_log("[Mab GiftCardFix] Result type: " . get_class($result));
+            error_log("[Mab GiftCardFix] Result data: " . var_export($result->getData(), true));
+            
+            // Ensure result is Json
+            if (!$result instanceof Json) {
+                $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+                $result = $resultJson->setData($result);
+            }
+            
+            // Check for empty response
+            $data = $result->getData();
+            if (empty($data) || $data === '' || $data === '""') {
+                error_log("[Mab GiftCardFix] Empty response detected, returning error");
+                return $result->setData($this->serializer->serialize([
+                    'error' => true,
+                    'message' => 'Code invalide ou carte expirée'
+                ]));
+            }
+            
+            return $result;
+        } catch (\Exception $e) {
+            // Catch any exception and return proper JSON
+            error_log("[Mab GiftCardFix] Exception caught: " . $e->getMessage());
             $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-            return $resultJson->setData($result);
-        }
-
-        // Check if the response data is empty
-        $responseData = $result->getData();
-        if (empty($responseData) || $responseData === '' || $responseData === '""') {
-            $errorResponse = $this->serializer->serialize([
+            return $resultJson->setData($this->serializer->serialize([
                 'error' => true,
-                'message' => 'Code invalide ou carte expirée'
-            ]);
-            return $result->setData($errorResponse);
+                'message' => $e->getMessage() ?: 'An error occurred'
+            ]));
         }
-
-        return $result;
     }
 }
