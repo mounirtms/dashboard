@@ -17,8 +17,8 @@ return [
         'connection' => [
             'default' => [
                 'host' => '127.0.0.1:3307',
-                'dbname' => 'dev_dBT8x12y22',
-                'username' => 'dev_ntdbusr24',
+                'dbname' => 'technadminy7_dBT8x12y22',
+                'username' => 'technadminy7_ntdbusr24',
                 'password' => 'the-correct-password',
                 'model' => 'mysql4',
                 'engine' => 'innodb',
@@ -47,7 +47,13 @@ return [
                     'port' => '6379',
                     'password' => '',
                     'compress_data' => '1',
-                    'compression_lib' => ''
+                    'compression_lib' => 'gzip',
+                    'force_standalone' => '0',
+                    'connect_retries' => '5',
+                    'read_timeout' => '2',
+                    'automatic_cleaning_factor' => '0',
+                    'compress_tags' => '1',
+                    'compress_threshold' => '20480'
                 ]
             ],
             'page_cache' => [
@@ -57,11 +63,15 @@ return [
                     'database' => '1',
                     'port' => '6379',
                     'password' => '',
-                    'compress_data' => '0',
+                    'compress_data' => '1',
+                    'compression_lib' => 'gzip',
+                    'compress_tags' => '1',
+                    'compress_threshold' => '20480',
                     'database_pattern' => '/^[0-9]+$/'
                 ]
             ]
-        ]
+        ],
+        'allow_parallel_generation' => true
     ],
     'session' => [
         'save' => 'redis',
@@ -81,7 +91,7 @@ return [
             'first_lifetime' => '600',
             'bot_first_lifetime' => '60',
             'bot_lifetime' => '7200',
-            'disable_locking' => '0',
+            'disable_locking' => '1',
             'min_lifetime' => '60',
             'max_lifetime' => '2592000'
         ]
@@ -150,14 +160,14 @@ return [
             ],
             'web' => [
                 'unsecure' => [
-                    'base_url' => 'https://dev.technostationery.com/',
-                    'base_link_url' => 'http://dev.technostationery.com/',
+                    'base_url' => 'https://technostationery.com/',
+                    'base_link_url' => 'http://technostationery.com/',
                     'base_static_url' => null,
                     'base_media_url' => null
                 ],
                 'secure' => [
-                    'base_url' => 'https://dev.technostationery.com/',
-                    'base_link_url' => 'https://dev.technostationery.com/',
+                    'base_url' => 'https://technostationery.com/',
+                    'base_link_url' => 'https://technostationery.com/',
                     'base_static_url' => null,
                     'base_media_url' => null
                 ],
@@ -179,7 +189,20 @@ return [
                 'search' => [
                     'elasticsearch7_server_hostname' => '127.0.0.1',
                     'elasticsearch7_server_port' => '9200',
-                    'elasticsearch7_index_prefix' => 'techno_stationery'
+                    'elasticsearch7_index_prefix' => 'techno_stationery',
+                    'elasticsearch7_enable_auth' => '0',
+                    'elasticsearch7_server_timeout' => '15',
+                    'elasticsearch7_minimum_should_match' => '0',
+                    'opensearch_server_port' => '9200',
+                    'opensearch_index_prefix' => 'magento2',
+                    'opensearch_enable_auth' => '0',
+                    'opensearch_server_timeout' => '15',
+                    'min_query_length' => '2',
+                    'max_query_length' => '128',
+                    'search_suggestion_enabled' => '1',
+                    'search_suggestion_count' => '5',
+                    'search_recommendations_enabled' => '1',
+                    'search_recommendations_count' => '5'
                 ]
             ],
             'cataloginventory' => [
@@ -303,7 +326,7 @@ return [
             ],
             'system' => [
                 'smtp' => [
-                    'host' => 'localhost',
+                    'host' => '127.0.0.1:3307',
                     'port' => '25'
                 ],
                 'full_page_cache' => [
@@ -324,13 +347,13 @@ return [
                 ],
                 'js' => [
                     'session_storage_key' => 'collected_errors',
-                    'merge_files' => '0',
+                    'merge_files' => '1',
                     'minify_files' => '1',
                     'enable_js_bundling' => '0',
                     'move_script_to_bottom' => '1'
                 ],
                 'css' => [
-                    'merge_css_files' => '0',
+                    'merge_css_files' => '1',
                     'minify_files' => '1'
                 ],
                 'template' => [
