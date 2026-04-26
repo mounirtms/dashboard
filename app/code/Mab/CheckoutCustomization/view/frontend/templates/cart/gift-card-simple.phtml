@@ -175,6 +175,177 @@ require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
         grid-template-columns: 1fr;
     }
 }
+
+/* Gift Card Block Styles */
+.block.gift-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    margin-bottom: 15px;
+}
+
+.block.gift-card .title {
+    padding: 15px 20px;
+    cursor: pointer;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: 8px 8px 0 0;
+}
+
+.block.gift-card .title strong {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.block.gift-card .title .gift-emoji {
+    margin-right: 8px;
+}
+
+.block.gift-card .content {
+    padding: 20px;
+}
+
+.block.gift-card .gift-card-hint {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.block.gift-card .field {
+    margin-bottom: 15px;
+}
+
+.block.gift-card .field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.block.gift-card .input-text {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.block.gift-card .input-text:focus {
+    border-color: #4a90d9;
+    box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+    outline: none;
+}
+
+.block.gift-card .actions-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.block.gift-card .actions-toolbar .primary,
+.block.gift-card .actions-toolbar .secondary {
+    flex: 1;
+}
+
+.block.gift-card .actions-toolbar button {
+    width: 100%;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.block.gift-card .actions-toolbar .primary button {
+    background: #4a90d9;
+    color: #fff;
+}
+
+.block.gift-card .actions-toolbar .primary button:hover {
+    background: #357abd;
+}
+
+.block.gift-card .actions-toolbar .secondary button {
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+}
+
+.block.gift-card .actions-toolbar .secondary button:hover {
+    background: #e0e0e0;
+}
+
+.block.gift-card .actions-toolbar button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.block.gift-card .gift-card-balance {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.block.gift-card .balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.block.gift-card .balance-label {
+    font-size: 14px;
+    color: #666;
+}
+
+.block.gift-card .balance-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+.block.gift-card .balance-status {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.block.gift-card .status-label {
+    color: #666;
+}
+
+.block.gift-card .status-value {
+    font-weight: 600;
+}
+
+.block.gift-card .messages {
+    margin-top: 15px;
+}
+
+.block.gift-card .message {
+    padding: 12px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.block.gift-card .message-error {
+    background: #fdecea;
+    border: 1px solid #f5c6cb;
+    color: #d32f2f;
+}
+
+.block.gift-card .message-success {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    color: #2e7d32;
+}
 </style>
 
 <script>
@@ -261,17 +432,26 @@ require([
             $.ajax({
                 url: '/amgcard/cart/check',
                 type: 'POST',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify({ giftcard_code: code }),
+                data: { amgiftcard: code },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 success: function(response) {
-                    console.log('[Gift Card Check] Response:', response);
+                    console.log('[Gift Card Check] Raw Response:', response);
                     
                     try {
                         var data = response;
                         
+                        // Parse if response is a string
                         if (typeof response === 'string') {
                             data = JSON.parse(response);
+                        }
+                        
+                        console.log('[Gift Card Check] Parsed Data:', data);
+                        
+                        // Check for error response
+                        if (data && data.error) {
+                            $balanceDiv.hide();
+                            showMessage('error', data.message || '<?= $escaper->escapeJs(__('Code invalide')) ?>', 5000);
+                            return;
                         }
                         
                         var balanceHtml = data.balance || '';
@@ -327,6 +507,7 @@ require([
                 },
                 error: function(xhr, status, error) {
                     console.error('[Gift Card Check] AJAX Error:', status, error);
+                    console.error('[Gift Card Check] Response:', xhr.responseText);
                     
                     var errorMsg = '<?= $escaper->escapeJs(__('Code invalide ou carte expirée')) ?>';
                     

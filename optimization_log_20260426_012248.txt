@@ -1,0 +1,131 @@
+[2026-04-26 01:22:48] === SAFE PERFORMANCE OPTIMIZATIONS ===
+[2026-04-26 01:22:48] 
+[2026-04-26 01:22:48] Step 1: Baseline performance...
+[2026-04-26 01:22:48] Testing performance...
+[2026-04-26 01:22:49]   Test 1: 0.697182s
+[2026-04-26 01:22:51]   Test 2: 0.694706s
+[2026-04-26 01:22:52]   Test 3: 0.700658s
+[2026-04-26 01:22:54]   Test 4: 0.713493s
+[2026-04-26 01:22:56]   Test 5: 0.716584s
+[2026-04-26 01:22:57]   Average: .704s
+[2026-04-26 01:22:57] 
+[2026-04-26 01:22:57] Step 2: Flush and warm all caches...
+Flushed cache types:
+config
+layout
+block_html
+collections
+reflection
+db_ddl
+compiled_config
+eav
+customer_notification
+config_integration
+config_integration_api
+full_page
+config_webservice
+translate
+amasty_blog
+amasty_report_builder_scheme
+mab_delivery
+Cleaned cache types:
+config
+layout
+block_html
+collections
+reflection
+db_ddl
+compiled_config
+eav
+customer_notification
+config_integration
+config_integration_api
+full_page
+config_webservice
+translate
+amasty_blog
+amasty_report_builder_scheme
+mab_delivery
+[2026-04-26 01:23:13] ✓ Cache flushed
+[2026-04-26 01:23:13] 
+[2026-04-26 01:23:13] Step 3: Warming cache with 10 requests...
+[2026-04-26 01:23:27]   Request 1 done
+[2026-04-26 01:23:30]   Request 2 done
+[2026-04-26 01:23:32]   Request 3 done
+[2026-04-26 01:23:33]   Request 4 done
+[2026-04-26 01:23:33]   Request 5 done
+[2026-04-26 01:23:34]   Request 6 done
+[2026-04-26 01:23:35]   Request 7 done
+[2026-04-26 01:23:36]   Request 8 done
+[2026-04-26 01:23:37]   Request 9 done
+[2026-04-26 01:23:37]   Request 10 done
+[2026-04-26 01:23:37] ✓ Cache warmed
+[2026-04-26 01:23:37] 
+[2026-04-26 01:23:37] Step 4: Performance after cache warmup...
+[2026-04-26 01:23:37] Testing performance...
+[2026-04-26 01:23:38]   Test 1: 0.770221s
+[2026-04-26 01:23:40]   Test 2: 0.671601s
+[2026-04-26 01:23:42]   Test 3: 0.733166s
+[2026-04-26 01:23:43]   Test 4: 0.733196s
+[2026-04-26 01:23:45]   Test 5: 0.732575s
+[2026-04-26 01:23:46]   Average: .728s
+[2026-04-26 01:23:46] 
+[2026-04-26 01:23:46] Step 5: Checking indexer status...
+[2026-04-26 01:23:47]   Found 1 indexers processing
+[2026-04-26 01:23:47]   Waiting for them to complete...
+[2026-04-26 01:23:52] ✓ Indexers checked
+[2026-04-26 01:23:52] 
+[2026-04-26 01:23:52] Step 6: Optimizing critical database tables...
+Table	Op	Msg_type	Msg_text
+technadminy7_dBT8x12y22.catalog_product_entity	optimize	note	Table does not support optimize, doing recreate + analyze instead
+technadminy7_dBT8x12y22.catalog_product_entity	optimize	status	OK
+Table	Op	Msg_type	Msg_text
+technadminy7_dBT8x12y22.catalog_category_product	optimize	note	Table does not support optimize, doing recreate + analyze instead
+technadminy7_dBT8x12y22.catalog_category_product	optimize	status	OK
+Table	Op	Msg_type	Msg_text
+technadminy7_dBT8x12y22.quote	optimize	note	Table does not support optimize, doing recreate + analyze instead
+technadminy7_dBT8x12y22.quote	optimize	status	OK
+Table	Op	Msg_type	Msg_text
+technadminy7_dBT8x12y22.sales_order	optimize	note	Table does not support optimize, doing recreate + analyze instead
+technadminy7_dBT8x12y22.sales_order	optimize	status	OK
+[2026-04-26 01:23:55] ✓ Tables optimized
+[2026-04-26 01:23:55] 
+[2026-04-26 01:23:55] Step 7: Final performance test...
+[2026-04-26 01:23:55] Testing performance...
+[2026-04-26 01:23:55]   Test 1: 0.694521s
+[2026-04-26 01:23:57]   Test 2: 0.691594s
+[2026-04-26 01:23:59]   Test 3: 0.902802s
+[2026-04-26 01:24:01]   Test 4: 0.704252s
+[2026-04-26 01:24:02]   Test 5: 0.685092s
+[2026-04-26 01:24:03]   Average: .735s
+[2026-04-26 01:24:03] 
+[2026-04-26 01:24:03] === OPTIMIZATION RESULTS ===
+[2026-04-26 01:24:03] Baseline:      [2026-04-26 01:22:48] Testing performance...
+[2026-04-26 01:22:49]   Test 1: 0.697182s
+[2026-04-26 01:22:51]   Test 2: 0.694706s
+[2026-04-26 01:22:52]   Test 3: 0.700658s
+[2026-04-26 01:22:54]   Test 4: 0.713493s
+[2026-04-26 01:22:56]   Test 5: 0.716584s
+[2026-04-26 01:22:57]   Average: .704s
+.704s
+[2026-04-26 01:24:03] After warmup:  [2026-04-26 01:23:37] Testing performance...
+[2026-04-26 01:23:38]   Test 1: 0.770221s
+[2026-04-26 01:23:40]   Test 2: 0.671601s
+[2026-04-26 01:23:42]   Test 3: 0.733166s
+[2026-04-26 01:23:43]   Test 4: 0.733196s
+[2026-04-26 01:23:45]   Test 5: 0.732575s
+[2026-04-26 01:23:46]   Average: .728s
+.728s
+[2026-04-26 01:24:03] Final:         [2026-04-26 01:23:55] Testing performance...
+[2026-04-26 01:23:55]   Test 1: 0.694521s
+[2026-04-26 01:23:57]   Test 2: 0.691594s
+[2026-04-26 01:23:59]   Test 3: 0.902802s
+[2026-04-26 01:24:01]   Test 4: 0.704252s
+[2026-04-26 01:24:02]   Test 5: 0.685092s
+[2026-04-26 01:24:03]   Average: .735s
+.735s
+[2026-04-26 01:24:03] 
+[2026-04-26 01:24:03] Improvement: 70.400%
+[2026-04-26 01:24:03] 
+[2026-04-26 01:24:03] === OPTIMIZATION COMPLETE ===
+[2026-04-26 01:24:03] Log saved to: /home/technadminy7/public_html/optimization_log_20260426_012248.txt

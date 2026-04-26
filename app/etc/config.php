@@ -454,6 +454,7 @@ return [
         'Mab_Core' => 1,
         'Mab_DeliveryOptions' => 1,
         'Mab_ElasticsearchFix' => 1,
+        'Mab_GiftCardFix' => 1,
         'Mab_GuestFix' => 1,
         'Mab_License' => 1,
         'Mab_SocialLogin' => 0,
