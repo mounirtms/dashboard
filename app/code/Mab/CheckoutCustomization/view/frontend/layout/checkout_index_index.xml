@@ -85,9 +85,9 @@
                                                     <item name="children" xsi:type="array">
                                                         <item name="afterMethods" xsi:type="array">
                                                             <item name="children" xsi:type="array">
-                                                                <!-- Gift Card input form in payment section -->
+                                                                <!-- Gift Card input form in payment section - French version -->
                                                                 <item name="amgift-card" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/view/payment/gift-card</item>
+                                                                    <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/view/payment/gift-card</item>
                                                                     <item name="config" xsi:type="array">
                                                                         <item name="isCart" xsi:type="boolean">false</item>
                                                                     </item>
@@ -119,7 +119,7 @@
                                                 <item name="totals" xsi:type="array">
                                                     <item name="children" xsi:type="array">
                                                         <item name="amgiftcard" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Amasty_GiftCardAccount/js/cart/totals/giftcard</item>
+                                                            <item name="component" xsi:type="string">Mab_CheckoutCustomization/js/cart/totals/giftcard</item>
                                                             <item name="config" xsi:type="array">
                                                                 <item name="title" xsi:type="string" translate="true">Carte Cadeau</item>
                                                             </item>

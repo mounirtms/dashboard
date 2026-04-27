@@ -724,3 +724,224 @@
 .checkout-index-index .no-display,
 .checkout-index-index .hidden { display: none !important; }
 .checkout-index-index .visible { display: block !important; }
+
+/* ============================================
+   GIFT CARD - CHECKOUT PAYMENT SECTION
+   ============================================ */
+
+.mab-giftcard-container.compact {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    margin: 15px 0;
+    padding: 0;
+}
+
+.mab-giftcard-header {
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: 8px 8px 0 0;
+}
+
+.mab-giftcard-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.mab-giftcard-applied-list {
+    padding: 8px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.mab-giftcard-applied-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.mab-giftcard-code {
+    font-family: monospace;
+    color: #333;
+}
+
+.mab-giftcard-remove {
+    background: none;
+    border: none;
+    color: #d32f2f;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+.mab-giftcard-remove:hover {
+    text-decoration: underline;
+}
+
+.mab-giftcard-form-container {
+    padding: 12px 16px;
+}
+
+.mab-giftcard-form {
+    margin: 0;
+}
+
+.mab-giftcard-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.mab-giftcard-input-wrapper {
+    flex: 1;
+    min-width: 200px;
+}
+
+.mab-giftcard-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.mab-giftcard-input:focus {
+    border-color: #4a90d9;
+    box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+    outline: none;
+}
+
+.mab-giftcard-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.mab-giftcard-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+
+.mab-giftcard-btn-primary {
+    background: #4a90d9;
+    color: #fff;
+}
+
+.mab-giftcard-btn-primary:hover {
+    background: #357abd;
+}
+
+.mab-giftcard-btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+}
+
+.mab-giftcard-btn-secondary:hover {
+    background: #e0e0e0;
+}
+
+.mab-giftcard-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Balance display */
+.mab-giftcard-balance {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.mab-giftcard-balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.mab-giftcard-balance-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.mab-giftcard-balance-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+.mab-giftcard-status-row {
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.mab-giftcard-status-label {
+    color: #666;
+}
+
+.mab-giftcard-status-value {
+    font-weight: 600;
+}
+
+.mab-giftcard-expiry-row {
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.mab-giftcard-expiry-value {
+    color: #e67e22;
+    font-weight: 500;
+}
+
+/* Messages */
+.mab-giftcard-messages-wrapper {
+    margin-top: 10px;
+}
+
+.mab-giftcard-message {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.mab-giftcard-message.error {
+    background: #fdecea;
+    border: 1px solid #f5c6cb;
+    color: #d32f2f;
+}
+
+.mab-giftcard-message.success {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    color: #2e7d32;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .mab-giftcard-row {
+        flex-direction: column;
+    }
+    .mab-giftcard-actions {
+        width: 100%;
+    }
+    .mab-giftcard-btn {
+        flex: 1;
+    }
+}

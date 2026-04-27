@@ -29,46 +29,45 @@ class CheckResponsePlugin
     }
 
     /**
-     * Around plugin to completely control the response
+     * After plugin to fix check response format
      */
-    public function aroundExecute(
+    public function afterExecute(
         Check $subject,
-        \Closure $proceed
+        $result
     ) {
-        // Log that plugin is being called
-        error_log("[Mab GiftCardFix] aroundExecute called");
-        
         try {
-            $result = $proceed();
-            
-            error_log("[Mab GiftCardFix] Result type: " . get_class($result));
-            error_log("[Mab GiftCardFix] Result data: " . var_export($result->getData(), true));
-            
-            // Ensure result is Json
-            if (!$result instanceof Json) {
+            // If result is already Json, just return it
+            if ($result instanceof Json) {
+                return $result;
+            }
+
+            // Handle non-Json results
+            if (is_array($result)) {
                 $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-                $result = $resultJson->setData($result);
+                return $resultJson->setData($result);
             }
-            
-            // Check for empty response
-            $data = $result->getData();
-            if (empty($data) || $data === '' || $data === '""') {
-                error_log("[Mab GiftCardFix] Empty response detected, returning error");
-                return $result->setData($this->serializer->serialize([
-                    'error' => true,
-                    'message' => 'Code invalide ou carte expirée'
-                ]));
+
+            // Handle string results (double-encoded JSON)
+            if (is_string($result) && !empty($result)) {
+                $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+                // Try to decode to verify it's valid JSON
+                $decoded = $this->serializer->unserialize($result);
+                return $resultJson->setData($decoded);
             }
-            
-            return $result;
-        } catch (\Exception $e) {
-            // Catch any exception and return proper JSON
-            error_log("[Mab GiftCardFix] Exception caught: " . $e->getMessage());
+
+            // Empty result - return error
             $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-            return $resultJson->setData($this->serializer->serialize([
+            return $resultJson->setData([
+                'error' => true,
+                'message' => 'Code invalide ou carte expirée'
+            ]);
+        } catch (\Exception $e) {
+            error_log("[Mab GiftCardFix] Exception: " . $e->getMessage());
+            $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+            return $resultJson->setData([
                 'error' => true,
                 'message' => $e->getMessage() ?: 'An error occurred'
-            ]));
+            ]);
         }
     }
 }

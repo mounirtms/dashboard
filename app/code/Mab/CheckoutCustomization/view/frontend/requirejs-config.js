@@ -37,8 +37,10 @@ var config = {
     },
     map: {
         '*': {
-            // Map Amasty gift-code to our implementation
-            'Amasty_GiftCardAccount/js/action/gift-code': 'Mab_CheckoutCustomization/js/action/gift-code'
+            // Map Amasty gift-code-actions to our implementation
+            'Amasty_GiftCardAccount/js/action/gift-code': 'Mab_CheckoutCustomization/js/action/gift-code',
+            // Map Amasty gift-card payment view to our fixed version
+            'Amasty_GiftCardAccount/js/view/payment/gift-card': 'Mab_CheckoutCustomization/js/view/payment/gift-card'
         }
     },
     shim: {

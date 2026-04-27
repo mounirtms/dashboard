@@ -152,6 +152,10 @@ require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
                         <span class="status-label"><?= $escaper->escapeHtml(__('Statut:')) ?></span>
                         <span class="status-value" id="status-value"><?= $escaper->escapeHtml(__('Actif')) ?></span>
                     </div>
+                    <div class="balance-expiry" id="balance-expiry">
+                        <span class="expiry-label"><?= $escaper->escapeHtml(__('Expiration:')) ?></span>
+                        <span class="expiry-value" id="expiry-value"></span>
+                    </div>
                 </div>
                 
                 <!-- Messages -->
@@ -324,6 +328,22 @@ require(['jquery', 'jquery/ui', 'mage/collapsible'], function($) {
     font-weight: 600;
 }
 
+.block.gift-card .balance-expiry {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.block.gift-card .expiry-label {
+    color: #666;
+}
+
+.block.gift-card .expiry-value {
+    font-weight: 600;
+    color: #e67e22;
+}
+
 .block.gift-card .messages {
     margin-top: 15px;
 }
@@ -365,6 +385,8 @@ require([
         var $balanceDiv = $('#gift-card-balance');
         var $balanceAmount = $('#balance-amount');
         var $statusValue = $('#status-value');
+        var $expiryDiv = $('#balance-expiry');
+        var $expiryValue = $('#expiry-value');
         var $errorMsg = $('#gift-card-error');
         var $errorText = $('#gift-card-error-text');
         var $successMsg = $('#gift-card-success');
@@ -492,16 +514,23 @@ require([
                                 $statusValue.css('color', '#2e7d32');
                             }
                             
-                            var infoText = '';
-                            if (expiredDate && expiredDate !== 'unlimited') {
-                                infoText += ' | <?= $escaper->escapeJs(__('Expiration:')) ?> ' + expiredDate;
-                            } else if (expiredDate === 'unlimited') {
-                                infoText += ' | <?= $escaper->escapeJs(__('Illimité')) ?>';
+                            // Show expiry date
+                            if (expiredDate && expiredDate !== 'unlimited' && expiredDate !== 'null') {
+                                var dateObj = new Date(expiredDate);
+                                var formattedDate = dateObj.toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                });
+                                $expiryValue.text(formattedDate);
+                                $expiryDiv.show();
+                            } else if (expiredDate === 'unlimited' || expiredDate === 'null') {
+                                $expiryValue.text('Illimité');
+                                $expiryDiv.show();
+                            } else {
+                                $expiryDiv.hide();
                             }
-                            if (usage) {
-                                infoText += ' | ' + usage;
-                            }
-                            
+
                             $balanceDiv.show();
                             showMessage('success', '<?= $escaper->escapeJs(__('Carte cadeau valide - Solde: ')) ?>' + balanceText, 5000);
                         } else {

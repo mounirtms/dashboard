@@ -1,5 +1,6 @@
-<!-- ko if: isVisible() -->
-<div class="mab-giftcard-container compact" data-bind="css: {'customer-logged-in': isCustomerLoggedIn()}">
+<!-- ko if: isComponentVisible() -->
+<!-- ko if: isGiftCardEnable() -->
+<div class="mab-giftcard-container compact">
     <!-- Header -->
     <div class="mab-giftcard-header">
         <h3 class="mab-giftcard-title" data-bind="text: titleText"></h3>
@@ -11,8 +12,8 @@
         <!-- ko if: $data.length > 0 -->
         <div class="mab-giftcard-applied-item">
             <span class="mab-giftcard-code" data-bind="text: $data"></span>
-            <button type="button" 
-                    class="mab-giftcard-remove" 
+            <button type="button"
+                    class="mab-giftcard-remove"
                     data-bind="
                         text: $parent.removeText,
                         click: $parent.removeSelected.bind($parent, $data),
@@ -23,16 +24,16 @@
         <!-- /ko -->
     </div>
 
-    <!-- Gift card form - single row layout -->
+    <!-- Gift card form -->
     <div class="mab-giftcard-form-container">
         <form action="#" class="mab-giftcard-form" onsubmit="event.preventDefault()">
             <div class="mab-giftcard-row">
                 <div class="mab-giftcard-input-wrapper">
-                    <input type="text" 
+                    <input type="text"
                            class="mab-giftcard-input"
                            data-bind="
-                               event: {keyup: apply.bind($data)}, 
-                               value: cardCode, 
+                               event: {keyup: apply.bind($data)},
+                               value: cardCode,
                                attr: {
                                    placeholder: placeholderText,
                                    'aria-label': placeholderText
@@ -41,30 +42,38 @@
                            autocomplete="off" />
                 </div>
                 <div class="mab-giftcard-actions">
-                    <button type="button" 
-                            class="mab-giftcard-btn mab-giftcard-btn-primary" 
+                    <button type="button"
+                            class="mab-giftcard-btn mab-giftcard-btn-primary"
                             data-bind="
-                                click: apply.bind($data), 
+                                click: apply.bind($data),
                                 text: applyText,
                                 attr: {'aria-label': applyText}">
                     </button>
-                    <button type="button" 
-                            class="mab-giftcard-btn mab-giftcard-btn-secondary" 
+                    <button type="button"
+                            class="mab-giftcard-btn mab-giftcard-btn-secondary"
                             data-bind="
-                                click: check.bind($data), 
+                                click: check.bind($data),
                                 text: checkText,
                                 attr: {'aria-label': checkText}">
                     </button>
                 </div>
             </div>
-            
-            <!-- Compact balance -->
+
+            <!-- Balance display with expiry -->
             <div class="mab-giftcard-balance" data-bind="visible: balanceVisible">
-                <span class="mab-giftcard-balance-label">Solde:</span>
-                <span class="mab-giftcard-balance-amount" data-bind="text: balanceAmount"></span>
-                <span class="mab-giftcard-balance-status" data-bind="text: balanceStatus"></span>
+                <div class="mab-giftcard-balance-row">
+                    <span class="mab-giftcard-balance-label">Solde:</span>
+                    <span class="mab-giftcard-balance-amount" data-bind="text: balanceAmount"></span>
+                </div>
+                <div class="mab-giftcard-status-row">
+                    <span class="mab-giftcard-status-label">Statut:</span>
+                    <span class="mab-giftcard-status-value" data-bind="text: balanceStatus"></span>
+                </div>
+                <div class="mab-giftcard-expiry-row" data-bind="visible: expiryVisible">
+                    <span class="mab-giftcard-expiry-value" data-bind="text: balanceExpiry"></span>
+                </div>
             </div>
-            
+
             <!-- Messages -->
             <div class="mab-giftcard-messages-wrapper" data-bind="visible: errorMessage() || successMessage()">
                 <div class="mab-giftcard-message error" data-bind="visible: errorMessage, text: errorMessage"></div>
@@ -73,4 +82,8 @@
         </form>
     </div>
 </div>
+<!-- /ko -->
+<!-- /ko -->
+<!-- ko ifnot: isComponentVisible() -->
+<!-- Guest users: gift card hidden -->
 <!-- /ko -->
