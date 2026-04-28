@@ -26,6 +26,10 @@
   RewriteRule ^webapp/$ /webapp_public/index.html [L]
   RewriteRule ^webapp/(.+)$ /webapp_public/$1 [L]
 
+  # Handle /cloudflare/ subdirectory SPA
+  RewriteRule ^cloudflare/$ /cloudflare/index.html [L]
+  RewriteRule ^cloudflare/(.+)$ /cloudflare/$1 [L]
+
   # Route /yalidine-api/* to PHP handler (avoids Cloudflare blocking /api/yalidine/*)
   RewriteRule ^yalidine-api(/.*)?$ /api/yalidine/index.php [L,QSA]
 
