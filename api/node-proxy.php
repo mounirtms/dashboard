@@ -11,14 +11,14 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
 // Determine which API endpoint to proxy
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$queryString = $_SERVER['QUERY_STRING'];
+$requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+$queryString = $_SERVER['QUERY_STRING'] ?? '';
 
 // Extract the API path (e.g., /api/yalidine/stores -> yalidine/stores)
 $apiPath = ltrim(str_replace('/api/', '', $requestUri), '/');
@@ -38,7 +38,7 @@ curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 
 // Set method
-$method = $_SERVER['REQUEST_METHOD'];
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($method !== 'GET') {
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 }

@@ -3,228 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Login</title>
+<title>Server Control Center — Login</title>
 <style>
-:root {
-  --bg: #0a0e17;
-  --card: #111827;
-  --border: #1e293b;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --red: #ef4444;
-  --green: #22c55e;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.login-container {
-  width: 100%;
-  max-width: 400px;
-  padding: 20px;
-}
-.login-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 40px 32px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-}
-.login-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-.login-header h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.login-header p {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-.form-group {
-  margin-bottom: 20px;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.85rem;
-  color: var(--muted);
-  font-weight: 500;
-}
-.form-group input {
-  width: 100%;
-  padding: 12px 16px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 1rem;
-  transition: border-color 0.2s;
-}
-.form-group input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-.btn-login {
-  width: 100%;
-  padding: 12px;
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-top: 8px;
-}
-.btn-login:hover {
-  background: var(--accent-hover);
-}
-.btn-login:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.error-message {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: var(--red);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  margin-bottom: 20px;
-  display: none;
-}
-.error-message.show {
-  display: block;
-}
-.loading {
-  display: none;
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.85rem;
-  margin-top: 12px;
-}
-.loading.show {
-  display: block;
-}
-.footer {
-  text-align: center;
-  margin-top: 24px;
-  color: var(--muted);
-  font-size: 0.75rem;
-}
+:root{--bg:#0a0e17;--card:#111827;--border:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--accent:#3b82f6;--accent-h:#2563eb;--red:#ef4444;--green:#22c55e;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.wrap{width:100%;max-width:420px;padding:24px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:40px 34px;box-shadow:0 24px 48px rgba(0,0,0,0.35);}
+.logo{text-align:center;margin-bottom:28px;}
+.logo h1{font-size:1.35rem;font-weight:700;letter-spacing:-0.3px;}
+.logo p{color:var(--muted);font-size:0.84rem;margin-top:5px;}
+.status-bar{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+.s-pill{font-size:0.72rem;padding:3px 9px;border-radius:9999px;border:1px solid;}
+.s-pill.ok{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#22c55e;}
+.s-pill.down{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#ef4444;}
+.s-pill.chk{background:rgba(148,163,184,0.1);border-color:rgba(148,163,184,0.2);color:var(--muted);}
+.fg{margin-bottom:18px;}
+.fg label{display:block;margin-bottom:5px;font-size:0.82rem;color:var(--muted);font-weight:500;}
+.fg input{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.95rem;transition:border-color 0.2s;}
+.fg input:focus{outline:none;border-color:var(--accent);}
+.btn{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:background 0.2s;margin-top:4px;}
+.btn:hover{background:var(--accent-h);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.err{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);padding:10px 12px;border-radius:7px;font-size:0.82rem;margin-bottom:16px;display:none;}
+.err.show{display:block;}
+.footer{text-align:center;margin-top:20px;color:var(--muted);font-size:0.72rem;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <h1>Server Control Center</h1>
-      <p>Enter your credentials to access the dashboard</p>
+<div class="wrap">
+  <div class="card">
+    <div class="logo">
+      <h1>🖥️ Server Control Center</h1>
+      <p>technostationery.com</p>
+      <div class="status-bar" id="status-bar">
+        <span class="s-pill chk" id="pill-db">DB ···</span>
+        <span class="s-pill chk" id="pill-node">Node ···</span>
+        <span class="s-pill chk" id="pill-load">Load ···</span>
+      </div>
     </div>
 
-    <div id="error-msg" class="error-message"></div>
+    <div id="err-msg" class="err"></div>
 
     <form id="login-form" onsubmit="handleLogin(event)">
-      <div class="form-group">
+      <div class="fg">
         <label for="username">Username</label>
         <input type="text" id="username" name="username" autocomplete="username" required autofocus>
       </div>
-      <div class="form-group">
+      <div class="fg">
         <label for="password">Password</label>
         <input type="password" id="password" name="password" autocomplete="current-password" required>
       </div>
-      <button type="submit" id="btn-submit" class="btn-login">Sign In</button>
-      <div id="loading" class="loading">Signing in...</div>
+      <button type="submit" class="btn" id="login-btn">Sign In</button>
     </form>
   </div>
-  <div class="footer">Techno Stationery - Server Management Dashboard</div>
+  <div class="footer">v3.1.0 &nbsp;·&nbsp; <span id="server-time"></span></div>
 </div>
 
 <script>
-const API = '/api/auth.php';
-
-function showError(msg) {
-  const el = document.getElementById('error-msg');
-  el.textContent = msg;
-  el.classList.add('show');
+// Load server status pills
+async function loadStatus() {
+  try {
+    const r = await fetch('/api/status.php');
+    const d = await r.json();
+    const dp = document.getElementById('pill-db');
+    const np = document.getElementById('pill-node');
+    const lp = document.getElementById('pill-load');
+    dp.textContent = 'DB ' + (d.services.db === 'ok' ? '✓' : '✗');
+    dp.className = 's-pill ' + (d.services.db === 'ok' ? 'ok' : 'down');
+    np.textContent = 'Node ' + (d.services.node === 'ok' ? '✓' : '✗');
+    np.className = 's-pill ' + (d.services.node === 'ok' ? 'ok' : 'down');
+    const lv = d.load['1m'];
+    lp.textContent = 'Load ' + lv;
+    lp.className = 's-pill ' + (lv < 4 ? 'ok' : lv < 8 ? 'chk' : 'down');
+  } catch(e) {}
 }
 
-function hideError() {
-  document.getElementById('error-msg').classList.remove('show');
+// Show clock
+function tick() {
+  document.getElementById('server-time').textContent = new Date().toLocaleTimeString();
 }
+tick(); setInterval(tick, 1000);
+loadStatus();
 
 async function handleLogin(e) {
   e.preventDefault();
-  hideError();
-
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value;
-  const btn = document.getElementById('btn-submit');
-  const loading = document.getElementById('loading');
-
-  if (!username || !password) {
-    showError('Please enter both username and password');
-    return;
-  }
-
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('err-msg');
+  err.classList.remove('show');
   btn.disabled = true;
-  btn.textContent = 'Signing in...';
-  loading.classList.add('show');
-
+  btn.innerHTML = '<span class="spinner"></span>Signing in...';
   try {
-    const formData = new FormData();
-    formData.append('action', 'login');
-    formData.append('username', username);
-    formData.append('password', password);
-
-    const response = await fetch(API + '?action=login', {
-      method: 'POST',
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
+    const fd = new FormData(document.getElementById('login-form'));
+    const r = await fetch('/api/auth.php?action=login', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      btn.innerHTML = '✓ Redirecting...';
       window.location.href = '/';
     } else {
-      showError(data.message || 'Login failed');
-      document.getElementById('password').value = '';
+      err.textContent = d.message || 'Login failed';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
     }
-  } catch (err) {
-    showError('Connection error. Please try again.');
-  } finally {
+  } catch(e) {
+    err.textContent = 'Server error. Please try again.';
+    err.classList.add('show');
     btn.disabled = false;
-    btn.textContent = 'Sign In';
-    loading.classList.remove('show');
+    btn.innerHTML = 'Sign In';
   }
 }
-
-// Check if already logged in
-async function checkSession() {
-  try {
-    const response = await fetch(API + '?action=check');
-    const data = await response.json();
-    if (data.authenticated) {
-      window.location.href = '/';
-    }
-  } catch (e) {
-    // Not logged in, show login form
-  }
-}
-
-checkSession();
 </script>
 </body>
 </html>

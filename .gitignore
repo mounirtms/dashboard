@@ -13,20 +13,21 @@ dist_complete/
 webapp_public/
 app/
 
-# Environment & Config
+# Environment & Sensitive Config
 .env
 .env.local
 .env.*.local
-config/
+!.env.example
+config/private/
+*.key
+*.pem
 
 # Logs & Runtime
 logs/
 *.log
 error_log
 api/error_log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+api/telegram/logs/
 
 # IDE & Editor
 .vscode/
@@ -34,8 +35,6 @@ yarn-error.log*
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
 
 # OS Files
 .DS_Store
@@ -44,6 +43,7 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+Thumbs.db
 Thumbs.db:stream
 
 # Backup Files
@@ -69,22 +69,12 @@ version.json
 # Git Credentials
 .git-credentials
 
-# Package Manager
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
 # Testing
 coverage/
 .nyc_output/
 
-# Misc
-odoo_module/
-backend/queries/
-backend/src/config/*
-!backend/src/config/*.example
-backend/.env
-backend/production/
-src/generated/prisma/
+# Symlinks
+phpmyadmin/
+
+# Data directories (contain runtime data)
+api/telegram/data/

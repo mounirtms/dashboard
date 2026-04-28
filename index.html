@@ -9,101 +9,123 @@
   --bg: #0a0e17; --card: #111827; --border: #1e293b;
   --text: #e2e8f0; --muted: #94a3b8; --accent: #3b82f6;
   --green: #22c55e; --yellow: #eab308; --red: #ef4444;
-  --orange: #f97316; --cyan: #06b6d4;
+  --orange: #f97316; --cyan: #06b6d4; --purple: #a855f7;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
-.header { background: linear-gradient(135deg, #0f172a, #1e293b); padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.header h1 { font-size: 1.2rem; font-weight: 600; }
-.header .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-.header .status-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
-.header .status-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
-.header .status-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse 1s infinite; }
-@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
-.container { max-width: 1600px; margin: 0 auto; padding: 20px; }
-.grid { display: grid; gap: 16px; }
-.grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-.grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-.grid-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-.card h3 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-.metric { font-size: 2rem; font-weight: 700; }
-.metric.sm { font-size: 1.2rem; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+.header { background: linear-gradient(135deg, #0f172a, #1e293b); padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.header h1 { font-size: 1.1rem; font-weight: 600; }
+.header-right { display:flex; align-items:center; gap: 10px; flex-wrap:wrap; }
+.status-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+.status-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.status-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.status-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+.container { max-width: 1600px; margin: 0 auto; padding: 18px 20px; }
+.grid { display: grid; gap: 14px; }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.card h3 { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.metric { font-size: 1.9rem; font-weight: 700; }
+.metric.sm { font-size: 1.1rem; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 600; }
 .badge.green { background: rgba(34,197,94,0.15); color: var(--green); }
 .badge.yellow { background: rgba(234,179,8,0.15); color: var(--yellow); }
 .badge.red { background: rgba(239,68,68,0.15); color: var(--red); }
 .badge.blue { background: rgba(59,130,246,0.15); color: var(--accent); }
-.progress-bar { height: 6px; background: #1e293b; border-radius: 9999px; overflow: hidden; margin-top: 8px; }
+.badge.purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+.progress-bar { height: 5px; background: #1e293b; border-radius: 9999px; overflow: hidden; margin-top: 7px; }
 .progress-bar .fill { height: 100%; border-radius: 9999px; transition: width 0.5s; }
 .progress-bar .fill.green { background: var(--green); }
 .progress-bar .fill.yellow { background: var(--yellow); }
 .progress-bar .fill.red { background: var(--red); }
-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-th { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 500; }
-td { padding: 6px 8px; border-bottom: 1px solid rgba(30,41,59,0.5); }
+table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+th { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 500; }
+td { padding: 5px 8px; border-bottom: 1px solid rgba(30,41,59,0.5); }
 tr:hover td { background: rgba(59,130,246,0.05); }
-.tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
-.tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: transparent; border: 1px solid var(--border); color: var(--muted); transition: all 0.2s; }
+.tabs { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+.tab { padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 0.82rem; background: transparent; border: 1px solid var(--border); color: var(--muted); transition: all 0.2s; }
 .tab:hover { border-color: var(--accent); color: var(--text); }
 .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
-.btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+.btn { padding: 7px 14px; border-radius: 7px; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 500; transition: all 0.2s; }
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-danger { background: var(--red); color: #fff; }
 .btn-warning { background: var(--yellow); color: #000; }
 .btn-success { background: var(--green); color: #fff; }
-.btn:hover { opacity: 0.9; }
-.btn-sm { padding: 4px 10px; font-size: 0.75rem; }
-.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.logs { font-family: 'Fira Code', monospace; font-size: 0.75rem; background: #000; padding: 12px; border-radius: 8px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; color: #a5f3fc; }
-#last-update { font-size: 0.8rem; color: var(--muted); }
-.loading { color: var(--muted); font-style: italic; }
-.section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-.cron-entry { padding: 8px 0; border-bottom: 1px solid rgba(30,41,59,0.5); }
-.cron-entry .schedule { font-family: 'Fira Code', monospace; font-size: 0.75rem; color: var(--cyan); }
-.cron-entry .command { font-size: 0.8rem; color: var(--text); margin-top: 2px; }
-.cron-entry .comment { font-size: 0.7rem; color: var(--muted); }
-.script-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid rgba(30,41,59,0.5); }
-.script-item .name { font-size: 0.85rem; }
-.script-item .meta { font-size: 0.7rem; color: var(--muted); }
-.output-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; }
+.btn-secondary { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid var(--border); }
+.btn:hover { opacity: 0.85; }
+.btn-sm { padding: 4px 9px; font-size: 0.72rem; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.logs { font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.72rem; background: #000; padding: 10px 12px; border-radius: 7px; max-height: 280px; overflow-y: auto; white-space: pre-wrap; color: #a5f3fc; line-height: 1.6; }
+#last-update { font-size: 0.76rem; color: var(--muted); }
+.loading { color: var(--muted); font-style: italic; font-size: 0.82rem; }
+.section-title { font-size: 1rem; font-weight: 600; margin-bottom: 14px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+/* Scripts */
+.script-cat-tab { padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; border: 1px solid var(--border); color: var(--muted); background: transparent; transition:all 0.2s; }
+.script-cat-tab.active { background: rgba(59,130,246,0.2); border-color: var(--accent); color: var(--accent); }
+.script-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(30,41,59,0.4); }
+.script-row:last-child { border-bottom: none; }
+.script-row .s-name { font-size: 0.82rem; font-weight: 500; }
+.script-row .s-meta { font-size: 0.7rem; color: var(--muted); }
+/* Modal */
+.output-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; }
 .output-modal.show { display: flex; align-items: center; justify-content: center; }
-.output-modal .content { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto; }
-.output-modal .close { float: right; cursor: pointer; font-size: 1.2rem; color: var(--muted); }
+.output-modal .content { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; max-width: 820px; width: 92%; max-height: 80vh; overflow-y: auto; }
+.output-modal .close { float: right; cursor: pointer; font-size: 1.3rem; color: var(--muted); }
+/* Service grid */
+.svc-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; display:flex; align-items:center; gap:10px; }
+.svc-name { font-size: 0.82rem; font-weight:500; flex:1; }
+/* Metric cards */
+.metric-card { text-align: center; padding: 16px 12px; }
+.metric-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.metric-value { font-size: 1.8rem; font-weight: 700; color: var(--text); margin: 4px 0; }
+.metric-sub { font-size: 0.75rem; color: var(--muted); }
+.infra-stat { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(30,41,59,0.4); font-size: 0.82rem; }
+.infra-stat:last-child { border-bottom: none; }
+.infra-label { color: var(--muted); }
+.infra-val { font-weight: 600; color: var(--text); }
+.infra-val.green { color: var(--green); }
+.infra-val.yellow { color: var(--yellow); }
+.infra-val.red { color: var(--red); }
 </style>
 </head>
 <body>
 <div class="header">
   <div>
     <h1>🖥️ Server Control Center</h1>
-    <span id="last-update">Loading...</span>
+    <div id="last-update" style="margin-top:2px">Loading...</div>
   </div>
-  <div>
-    <span class="status-dot" id="status-dot"></span>
-    <span id="status-text">Checking...</span>
-    <button onclick="doLogout()" style="margin-left:16px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem" title="Logout">Logout</button>
+  <div class="header-right">
+    <span><span class="status-dot" id="status-dot"></span><span id="status-text">Checking...</span></span>
+    <a href="/phpmyadmin/" target="_blank" style="background:rgba(34,197,94,0.12);color:var(--green);padding:5px 12px;border-radius:6px;text-decoration:none;font-size:0.8rem;border:1px solid rgba(34,197,94,0.3)">🗄️ phpMyAdmin</a>
+    <span id="user-badge" style="font-size:0.78rem;color:var(--muted)"></span>
+    <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem">Logout</button>
   </div>
 </div>
 
 <div class="container">
-  <!-- Top Metrics Row -->
-  <div class="grid grid-4" id="metrics-row"></div>
+  <div class="grid grid-4" id="metrics-row" style="margin-bottom:16px"></div>
 
-  <!-- Tabs -->
-  <div class="tabs" style="margin-top:20px">
+  <div class="tabs">
     <div class="tab active" data-tab="processes">⚡ Processes</div>
     <div class="tab" data-tab="services">🔧 Services</div>
     <div class="tab" data-tab="sites">🌐 Sites</div>
+    <div class="tab" data-tab="infrastructure">🏗️ Infrastructure</div>
+    <div class="tab" data-tab="commerce">🛒 Commerce</div>
     <div class="tab" data-tab="crons">⏰ Crons</div>
     <div class="tab" data-tab="queues">📬 Queues</div>
     <div class="tab" data-tab="indexers">📊 Indexers</div>
     <div class="tab" data-tab="scripts">🚀 Scripts</div>
+    <div class="tab" data-tab="dbhealth">💾 DB Health</div>
     <div class="tab" data-tab="actions">🛠️ Actions</div>
+    <div class="tab" data-tab="telegram">🔔 Notifications</div>
   </div>
 
-  <!-- Processes Tab -->
+  <!-- Processes -->
   <div class="tab-content active" id="tab-processes">
     <div class="card">
       <h3>Top CPU Processes</h3>
@@ -114,15 +136,15 @@ tr:hover td { background: rgba(59,130,246,0.05); }
     </div>
   </div>
 
-  <!-- Services Tab -->
+  <!-- Services -->
   <div class="tab-content" id="tab-services">
     <div class="card">
       <h3>Service Status</h3>
-      <div id="services-list" class="grid grid-4"></div>
+      <div id="services-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px"></div>
     </div>
   </div>
 
-  <!-- Sites Tab -->
+  <!-- Sites -->
   <div class="tab-content" id="tab-sites">
     <div class="card">
       <h3>All Sites</h3>
@@ -133,35 +155,123 @@ tr:hover td { background: rgba(59,130,246,0.05); }
     </div>
   </div>
 
-  <!-- Crons Tab -->
-  <div class="tab-content" id="tab-crons">
+  <!-- Infrastructure -->
+  <div class="tab-content" id="tab-infrastructure">
+    <div class="grid grid-3" style="margin-bottom:20px">
+      <!-- Redis Card -->
+      <div class="card">
+        <h3>🔴 Redis</h3>
+        <div id="redis-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+      </div>
+      <!-- Elasticsearch Card -->
+      <div class="card">
+        <h3>🟡 Elasticsearch</h3>
+        <div id="elasticsearch-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+      </div>
+      <!-- Varnish Card -->
+      <div class="card">
+        <h3>🟢 Varnish</h3>
+        <div id="varnish-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+      </div>
+      <!-- Cloudflare Card -->
+      <div class="card">
+        <h3>🔵 Cloudflare</h3>
+        <div id="cloudflare-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+    <!-- Network & I/O -->
     <div class="card">
-      <h3>Active Cron Jobs (<span id="cron-count">0</span>)</h3>
-      <div id="cron-list"></div>
+      <h3>📡 Network, I/O &amp; System</h3>
+      <div id="system-advanced-content" style="margin-top:12px" class="grid grid-2"><div class="loading">Loading...</div></div>
+    </div>
+    <!-- PHP-FPM Pools -->
+    <div class="card" style="margin-top:20px">
+      <h3>🔧 PHP-FPM Pools</h3>
+      <div id="phpfpm-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
     </div>
   </div>
 
-  <!-- Queues Tab -->
+  <!-- Commerce -->
+  <div class="tab-content" id="tab-commerce">
+    <!-- Live Metrics -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">Today's Orders</div>
+        <div class="metric-value" id="commerce-today-orders">-</div>
+        <div class="metric-sub" id="commerce-today-revenue"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Last Hour</div>
+        <div class="metric-value" id="commerce-hour-orders">-</div>
+        <div class="metric-sub" id="commerce-hour-revenue"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Active Carts</div>
+        <div class="metric-value" id="commerce-active-carts">-</div>
+        <div class="metric-sub" id="commerce-carts-value"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Online Customers</div>
+        <div class="metric-value" id="commerce-online">-</div>
+        <div class="metric-sub">(15 min window)</div>
+      </div>
+    </div>
+    <!-- Recent Orders & Product Stats -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>📦 Recent Orders</h3>
+        <table id="recent-orders-table" style="margin-top:12px">
+          <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>
+          <tbody><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>📊 Product Inventory</h3>
+        <div id="product-stats-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+    <!-- Customer Stats -->
+    <div class="card">
+      <h3>👥 Customer Statistics</h3>
+      <div id="customer-stats-content" style="margin-top:12px" class="grid grid-4"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- Crons -->
+  <div class="tab-content" id="tab-crons">
+    <div class="card">
+      <h3>Active Cron Jobs (<span id="cron-count">0</span>)</h3>
+      <div id="cron-list" style="max-height:500px;overflow-y:auto;margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- Queues -->
   <div class="tab-content" id="tab-queues">
     <div class="card">
-      <h3>Queue Consumers & Pending Messages</h3>
-      <div class="grid grid-2">
+      <h3>Queue Consumers &amp; Pending Messages</h3>
+      <div class="grid grid-2" style="margin-top:8px">
         <div>
-          <h3>Consumers</h3>
+          <div class="section-title" style="font-size:0.85rem">Consumers</div>
           <div id="consumer-list"></div>
         </div>
         <div>
-          <h3>Pending by Queue</h3>
+          <div class="section-title" style="font-size:0.85rem">Pending by Queue</div>
           <div id="queue-pending"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Indexers Tab -->
+  <!-- Indexers -->
   <div class="tab-content" id="tab-indexers">
     <div class="card">
-      <h3>Magento Indexers</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin-bottom:0">Magento Indexers</h3>
+        <div>
+          <button class="btn btn-sm btn-secondary" onclick="loadIndexers('prod')">Production</button>
+          <button class="btn btn-sm btn-secondary" onclick="loadIndexers('beta')" style="margin-left:6px">Beta</button>
+        </div>
+      </div>
       <table id="indexer-table">
         <thead><tr><th>Indexer</th><th>Title</th><th>Status</th></tr></thead>
         <tbody><tr><td colspan="3" class="loading">Loading...</td></tr></tbody>
@@ -169,46 +279,340 @@ tr:hover td { background: rgba(59,130,246,0.05); }
     </div>
   </div>
 
-  <!-- Scripts Tab -->
+  <!-- Scripts -->
   <div class="tab-content" id="tab-scripts">
     <div class="card">
-      <h3>Available Scripts</h3>
-      <div class="tabs" id="script-cat-tabs"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin-bottom:0">Available Scripts</h3>
+        <button class="btn btn-sm btn-secondary" onclick="loadScripts()">↻ Refresh</button>
+      </div>
+      <div id="script-cat-tabs" class="tabs" style="margin-bottom:12px"></div>
       <div id="script-list"></div>
     </div>
   </div>
 
-  <!-- Actions Tab -->
+
+  <!-- DB Health -->
+  <div class="tab-content" id="tab-dbhealth">
+    <div class="grid grid-2">
+      <div class="card" id="dbh-prod">
+        <h3>🟢 Production DB — technadminy7_dBT8x12y22</h3>
+        <div id="dbh-prod-stats" class="loading">Loading...</div>
+      </div>
+      <div class="card" id="dbh-beta">
+        <h3>🟡 Beta DB — beta_dBT8x12y22</h3>
+        <div id="dbh-beta-stats" class="loading">Loading...</div>
+      </div>
+      <div class="card" style="grid-column:1/-1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin-bottom:0">⚠️ Fragmented Tables (Production)</h3>
+          <button class="btn btn-sm btn-warning" onclick="runOptimize()">🔧 OPTIMIZE Fragmented</button>
+        </div>
+        <table id="frag-table">
+          <thead><tr><th>Table</th><th>Size</th><th>Frag</th><th>Rows</th><th>Frag%</th></tr></thead>
+          <tbody><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+        </table>
+        <div id="optimize-output" class="logs" style="display:none;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
   <div class="tab-content" id="tab-actions">
     <div class="grid grid-2">
+
+      <!-- Database -->
       <div class="card">
-        <h3>CI/CD Pipeline</h3>
-        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">Manage deployments across all environments</p>
+        <h3>🗄️ Database (MariaDB 10.6 — Port 3307)</h3>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Login with root / YourNewStrongPassword</p>
+        <div class="btn-group">
+          <a class="btn btn-success" href="/phpmyadmin/?db=technadminy7_dBT8x12y22&server=1" target="_blank">🟢 Production DB</a>
+          <a class="btn btn-warning" href="/phpmyadmin/?db=beta_dBT8x12y22&server=1" target="_blank">🟡 Beta DB</a>
+          <a class="btn btn-primary" href="/phpmyadmin/?db=dev_dBT8x12y22&server=1" target="_blank">🔵 Dev DB</a>
+          <a class="btn btn-secondary" href="/phpmyadmin/?db=akeneo_pim&server=1" target="_blank">🟣 PIM DB</a>
+        </div>
+        <div id="db-stats" style="margin-top:12px;font-size:0.78rem;color:var(--muted)">Loading DB stats...</div>
+      </div>
+
+      <!-- CI/CD -->
+      <div class="card">
+        <h3>🚀 CI/CD Pipeline</h3>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Manage deployments across all environments</p>
         <div class="btn-group">
           <button class="btn btn-primary" onclick="window.location.href='/app/#/cicd'">CI/CD Dashboard</button>
           <button class="btn btn-success" onclick="window.location.href='/app/#/environments'">Environments</button>
           <button class="btn btn-warning" onclick="window.location.href='/app/#/scripts'">Script Runner</button>
         </div>
       </div>
+
+      <!-- Emergency -->
       <div class="card">
-        <h3>Emergency Actions</h3>
+        <h3>⚠️ Emergency Actions</h3>
         <div class="btn-group">
-          <button class="btn btn-danger" onclick="doCleanup('all')">🔥 Full Cleanup (Kill stuck + Restart PHP-FPM)</button>
-          <button class="btn btn-warning" onclick="doCleanup('messenger')">⚠️ Kill Messenger Consumers</button>
+          <button class="btn btn-danger" onclick="doCleanup('all')">🔥 Full Cleanup</button>
+          <button class="btn btn-warning" onclick="doCleanup('messenger')">Kill Messenger</button>
           <button class="btn btn-primary" onclick="doCleanup('phpfpm')">🔄 Restart PHP-FPM</button>
           <button class="btn btn-success" onclick="doCleanup('cache')">🧹 Flush Cache</button>
         </div>
-        <div id="action-output" class="logs" style="display:none"></div>
+        <div id="action-output" class="logs" style="display:none;margin-top:10px"></div>
       </div>
+
+      <!-- Quick Commands -->
       <div class="card">
-        <h3>Quick Commands</h3>
+        <h3>⚡ Quick Commands</h3>
         <div class="btn-group">
-          <button class="btn btn-primary" onclick="runScript('/home/technadminy7/public_html/scripts/maintenance/master_cleanup.sh')">Master Cleanup</button>
-          <button class="btn btn-primary" onclick="runScript('/home/technadminy7/public_html/scripts/maintenance/nightly_cache_flush.sh')">Cache Flush</button>
-          <button class="btn btn-primary" onclick="runScript('/home/dashboard/public_html/scripts/database/database_health_check.php')">DB Health</button>
-          <button class="btn btn-primary" onclick="runScript('/home/dashboard/public_html/scripts/database/cleanup_database.php')">DB Cleanup</button>
+          <button class="btn btn-primary" onclick="quickRun('maintenance','master_cleanup.sh')">Master Cleanup</button>
+          <button class="btn btn-primary" onclick="quickRun('maintenance','nightly_cache_flush.sh')">Cache Flush</button>
+          <button class="btn btn-primary" onclick="quickRun('database','database_health_check.php')">DB Health</button>
+          <button class="btn btn-primary" onclick="quickRun('database','cleanup_database.php')">DB Cleanup</button>
         </div>
-        <div id="quick-output" class="logs" style="display:none"></div>
+        <div id="quick-output" class="logs" style="display:none;margin-top:10px"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Telegram Notifications -->
+  <div class="tab-content" id="tab-telegram">
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>🤖 Bot Status</h3>
+        <div id="bot-status" style="margin-top:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span class="status-dot green" id="bot-status-dot"></span>
+            <span style="font-size:0.9rem;font-weight:600">@ServerNotif205bot</span>
+          </div>
+          <div style="font-size:0.82rem;color:var(--muted)">
+            <p><strong style="color:var(--text)">Webhook:</strong> <span id="bot-webhook-status">Active</span></p>
+            <p><strong style="color:var(--text)">Authorized Users:</strong> <span id="bot-auth-count">1</span></p>
+            <p><strong style="color:var(--text)">Alerts Enabled:</strong> <span id="bot-alert-status">Yes</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚡ Quick Actions</h3>
+        <div class="btn-group" style="margin-top:12px">
+          <button class="btn btn-success" onclick="testTelegram()">📤 Send Test Message</button>
+          <button class="btn btn-primary" onclick="window.open('/api/telegram/setup.php', '_blank')">🔧 Re-run Setup</button>
+        </div>
+        <div id="tg-output" class="logs" style="display:none;margin-top:12px"></div>
+      </div>
+
+      <div class="card">
+        <h3>🛍️ Customer Bot Status</h3>
+        <div id="customer-bot-status" style="margin-top:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span class="status-dot yellow" id="customer-bot-dot"></span>
+            <span style="font-size:0.9rem;font-weight:600">@TechnoStationeryShopBot</span>
+          </div>
+          <div style="font-size:0.82rem;color:var(--muted)">
+            <p><strong style="color:var(--text)">Status:</strong> <span id="customer-bot-enabled">Disabled</span></p>
+            <p><strong style="color:var(--text)">Environment:</strong> Beta Magento 2.4.6</p>
+            <p><strong style="color:var(--text)">Poller:</strong> <span id="customer-poller-status">Not Running</span></p>
+          </div>
+          <div class="btn-group" style="margin-top:12px">
+            <button class="btn btn-sm btn-primary" onclick="testCustomerBot()">🧪 Test Bot</button>
+            <button class="btn btn-sm btn-success" onclick="enableCustomerBot()">✅ Enable</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>🛒 Customer Bot Commands</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px">
+          <div>
+            <div style="font-size:0.78rem;color:var(--accent);margin-bottom:8px">📱 Customer Commands</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/start</code> - Main menu<br>
+              <code>/browse</code> - Browse products<br>
+              <code>/search</code> - Search products<br>
+              <code>/cart</code> - View cart<br>
+              <code>/orders</code> - Order history
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--green);margin-bottom:8px">🔧 Setup Instructions</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              1. Create bot via @BotFather<br>
+              2. Add token to config.php<br>
+              3. Enable bot in config<br>
+              4. Add cron job for poller<br>
+              5. Test bot functionality
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🤖 AI Report Generator</h3>
+        <div style="margin-top:12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            <select id="ai-report-type" style="padding:7px 10px;background:#0a0e17;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem">
+              <option value="database">Database Analysis</option>
+              <option value="performance">Performance Review</option>
+              <option value="security">Security Audit</option>
+              <option value="infrastructure">Infrastructure</option>
+              <option value="orders">Orders Analysis</option>
+            </select>
+            <select id="ai-env" style="padding:7px 10px;background:#0a0e17;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem">
+              <option value="prod">Production</option>
+              <option value="beta">Beta</option>
+              <option value="dev">Dev</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="generateAIReport()" style="width:100%">🤖 Generate AI Report</button>
+          <div id="ai-report-output" class="logs" style="display:none;margin-top:12px;max-height:300px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>📊 AI Cache Status</h3>
+        <div id="ai-cache-stats" style="margin-top:12px;font-size:0.82rem;color:var(--muted)">
+          <button class="btn btn-primary" onclick="loadAICacheStats()" style="padding:6px 12px;font-size:0.78rem">🔄 Load Cache Stats</button>
+          <button class="btn btn-danger" onclick="clearAICache()" style="padding:6px 12px;font-size:0.78rem;margin-left:8px">🗑️ Clear Cache</button>
+          <div id="ai-cache-output" style="margin-top:12px;display:none"></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>🗄️ Cache Management</h3>
+        <div style="margin-top:12px">
+          <div style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">
+            Execute Magento cache operations across environments. These commands run via CLI with timeout protection.
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px">
+            <div>
+              <div style="font-size:0.78rem;color:var(--accent);margin-bottom:8px">Production</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('flush','prod')">Flush</button>
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('clean','prod')">Clean</button>
+                <button class="btn btn-sm btn-danger" onclick="executeCacheAction('purge','prod')">Purge + CF</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.78rem;color:var(--green);margin-bottom:8px">Beta</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('flush','beta')">Flush</button>
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('clean','beta')">Clean</button>
+                <button class="btn btn-sm btn-danger" onclick="executeCacheAction('purge','beta')">Purge + CF</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Dev</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('flush','dev')">Flush</button>
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('clean','dev')">Clean</button>
+                <button class="btn btn-sm btn-danger" onclick="executeCacheAction('purge','dev')">Purge + CF</button>
+              </div>
+            </div>
+          </div>
+          <div id="cache-execution-output" class="logs" style="display:none;margin-top:12px;max-height:300px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>📋 Available Bot Commands</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px">
+          <div>
+            <div style="font-size:0.78rem;color:var(--accent);margin-bottom:8px">⚡ System</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/status</code> - Server overview<br>
+              <code>/services</code> - Service status<br>
+              <code>/load</code> - CPU/Memory/Disk<br>
+              <code>/processes</code> - Top processes
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--green);margin-bottom:8px">📦 Magento</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/orders</code> - Today's orders<br>
+              <code>/online</code> - Users online<br>
+              <code>/inventory</code> - Low stock<br>
+              <code>/cache</code> - Cache status<br>
+              <code>/indexers</code> - Indexer status
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">📬 Queues</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/queues</code> - Queue status<br>
+              <code>/consumers</code> - Running consumers
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--purple);margin-bottom:8px">💾 Database</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/dbhealth prod|beta|dev|all</code> - DB health<br>
+              <code>/slowqueries prod|beta|dev</code> - Slow queries<br>
+              <code>/db:size prod|beta|dev</code> - Size breakdown<br>
+              <code>/db:tables prod|beta|dev</code> - Table stats<br>
+              <code>/db:connections prod|beta|dev</code> - Connections<br>
+              <code>/db:optimize prod|beta|dev</code> - Optimize<br>
+              <code>/db:cleanup prod|beta|dev</code> - Clean data
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">🤖 AI Commands</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/ai:report database prod</code> - DB analysis<br>
+              <code>/ai:report performance prod</code> - Performance<br>
+              <code>/ai:report security prod</code> - Security audit<br>
+              <code>/ai:query &lt;prompt&gt;</code> - Custom query<br>
+              <code>/ai:cache:clear</code> - Clear cache
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--pink);margin-bottom:8px">🗄️ Cache Management</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/cache:flush prod|beta|dev</code> - Flush all cache<br>
+              <code>/cache:clean prod|beta|dev</code> - Clean cache<br>
+              <code>/cache:purge prod|beta|dev</code> - Purge + Cloudflare
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--red);margin-bottom:8px">📝 Log Analysis</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/logs:summary prod [h]</code> - Log summary<br>
+              <code>/logs:critical prod [h]</code> - Critical errors<br>
+              <code>/logs:errors prod [h]</code> - Error patterns<br>
+              <code>/logs:ai prod [h]</code> - AI analysis
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--orange);margin-bottom:8px">🔐 Admin</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/auth</code> - Manage users<br>
+              <code>/alerts</code> - Alert settings<br>
+              <code>/stats</code> - Bot statistics<br>
+              <code>/help</code> - Show commands
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>🔐 Authorized Users</h3>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:16px;margin-top:12px">
+          <div>
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <input type="text" id="tg-chat-id-input" placeholder="Chat ID (e.g., 6972138184)" style="flex:1;padding:7px 10px;background:#0a0e17;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;font-family:monospace">
+              <input type="text" id="tg-user-name-input" placeholder="Name" style="width:150px;padding:7px 10px;background:#0a0e17;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem">
+              <button class="btn btn-success" onclick="addTelegramUser()">➕ Add User</button>
+            </div>
+            <div id="authorized-users-list" style="font-size:0.82rem;color:var(--muted)">
+              Loading...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>📊 Recent Activity Logs</h3>
+        <div id="telegram-logs" style="margin-top:12px" class="logs" style="max-height:200px">
+          Loading...
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -218,48 +622,29 @@ tr:hover td { background: rgba(59,130,246,0.05); }
 <div class="output-modal" id="output-modal">
   <div class="content">
     <span class="close" onclick="document.getElementById('output-modal').classList.remove('show')">&times;</span>
-    <h3 id="modal-title">Script Output</h3>
+    <h3 id="modal-title" style="margin-bottom:12px">Script Output</h3>
     <div class="logs" id="modal-output"></div>
   </div>
 </div>
 
 <script>
-const API = '/api/monitor.php';
-const AUTH_API = '/api/auth.php';
-let refreshInterval;
+const MONITOR_API = '/api/monitor.php';
+const DASH_API    = '/api/dashboard.php';
+const AUTH_API    = '/api/auth.php';
+let scriptData = {};
 
-// ── Authentication Check ──
+// ── Auth ──
 async function checkAuth() {
   try {
     const r = await fetch(AUTH_API + '?action=check');
     const d = await r.json();
-    if (!d.authenticated) {
-      window.location.href = '/login.html';
-      return false;
-    }
-    // Show logged in user in header
-    const header = document.querySelector('.header');
-    if (header && d.user) {
-      const userBadge = document.createElement('span');
-      userBadge.style.cssText = 'font-size:0.8rem;color:var(--muted);margin-left:16px';
-      userBadge.textContent = '👤 ' + (d.user.full_name || d.user.username);
-      userBadge.id = 'user-badge';
-      header.appendChild(userBadge);
+    if (!d.authenticated) { window.location.href = '/login.html'; return false; }
+    if (d.user) {
+      document.getElementById('user-badge').textContent = '👤 ' + (d.user.full_name || d.user.username);
     }
     return true;
-  } catch(e) {
-    window.location.href = '/login.html';
-    return false;
-  }
+  } catch(e) { window.location.href = '/login.html'; return false; }
 }
-
-// Check auth before loading dashboard
-(async function init() {
-  const authenticated = await checkAuth();
-  if (!authenticated) return;
-  refresh();
-  refreshInterval = setInterval(refresh, 30000);
-})();
 
 // ── Tabs ──
 document.querySelectorAll('.tab').forEach(t => {
@@ -268,146 +653,1069 @@ document.querySelectorAll('.tab').forEach(t => {
     document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
     t.classList.add('active');
     document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+    if (t.dataset.tab === 'scripts' && Object.keys(scriptData).length === 0) loadScripts();
+    if (t.dataset.tab === 'dbhealth') loadDbHealth();
+    if (t.dataset.tab === 'infrastructure') loadInfrastructure();
+    if (t.dataset.tab === 'commerce') loadCommerce();
+    if (t.dataset.tab === 'telegram') {
+      loadTelegramConfig();
+      loadAlerts();
+    }
   });
 });
 
-// ── Fetch & Render ──
+// ── Overview ──
 async function loadOverview() {
   try {
-    const r = await fetch(API + '?action=overview');
-    if (!r.ok) return; // Skip if unauthorized
+    const r = await fetch(MONITOR_API + '?action=overview');
+    if (!r.ok) return;
     const d = await r.json();
     document.getElementById('last-update').textContent = 'Updated: ' + d.timestamp;
-    // Status dot
-    const load1 = d.load['1min'];
+    const l = d.load['1min'];
     const dot = document.getElementById('status-dot');
     const txt = document.getElementById('status-text');
-    if(load1 < 4) { dot.className='status-dot green'; txt.textContent='Normal'; }
-    else if(load1 < 8) { dot.className='status-dot yellow'; txt.textContent='Elevated'; }
-    else { dot.className='status-dot red'; txt.textContent='High Load: ' + load1.toFixed(2); }
-    // Metrics
-    const metricsHtml = `
-      <div class="card"><h3>CPU Load (1m / 5m / 15m)</h3><div class="metric">${d.load['1min'].toFixed(2)}</div><div class="sm" style="color:var(--muted)">${d.load['5min'].toFixed(2)} / ${d.load['15min'].toFixed(2)}</div></div>
-      <div class="card"><h3>Memory Usage</h3><div class="metric">${d.memory.used_pct}%</div><div class="progress-bar"><div class="fill ${d.memory.used_pct>85?'red':d.memory.used_pct>65?'yellow':'green'}" style="width:${d.memory.used_pct}%"></div></div><div class="sm" style="color:var(--muted)">${d.memory.available_mb} MB free / ${d.memory.total_mb} MB total</div></div>
-      <div class="card"><h3>Disk Usage</h3><div class="metric">${d.disk.pct}</div><div class="sm" style="color:var(--muted)">${d.disk.used} used / ${d.disk.total} total — ${d.disk.free} free</div></div>
-      <div class="card"><h3>Processes</h3><div class="metric sm">PHP-FPM: <strong>${d.processes.php_fpm}</strong> | HTTPD: <strong>${d.processes.httpd}</strong></div><div class="sm" style="color:var(--muted)">Messenger: ${d.processes.messenger} | Zombies: ${d.processes.zombies}</div><div class="sm" style="color:var(--muted)">DB: ${d.database.connections} conn / ${d.database.running} running</div></div>
+    if(l < 4) { dot.className='status-dot green'; txt.textContent='Normal'; }
+    else if(l < 8) { dot.className='status-dot yellow'; txt.textContent='Elevated'; }
+    else { dot.className='status-dot red'; txt.textContent='High Load: '+l.toFixed(2); }
+
+    const memClass = d.memory.used_pct > 85 ? 'red' : d.memory.used_pct > 65 ? 'yellow' : 'green';
+    document.getElementById('metrics-row').innerHTML = `
+      <div class="card">
+        <h3>CPU Load (1m / 5m / 15m)</h3>
+        <div class="metric">${d.load['1min'].toFixed(2)}</div>
+        <div style="font-size:0.8rem;color:var(--muted)">${d.load['5min'].toFixed(2)} / ${d.load['15min'].toFixed(2)}</div>
+      </div>
+      <div class="card">
+        <h3>Memory</h3>
+        <div class="metric">${d.memory.used_pct}%</div>
+        <div class="progress-bar"><div class="fill ${memClass}" style="width:${d.memory.used_pct}%"></div></div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:5px">${d.memory.available_mb} MB free / ${d.memory.total_mb} MB total${d.memory.swap_pct > 0 ? ' — Swap: '+d.memory.swap_pct+'%' : ''}</div>
+      </div>
+      <div class="card">
+        <h3>Disk (/home)</h3>
+        <div class="metric">${d.disk.pct}</div>
+        <div style="font-size:0.78rem;color:var(--muted)">${d.disk.used} used / ${d.disk.total} total — ${d.disk.free} free</div>
+      </div>
+      <div class="card">
+        <h3>Processes &amp; DB</h3>
+        <div style="font-size:0.9rem">PHP-FPM: <strong>${d.processes.php_fpm}</strong> &nbsp; HTTPD: <strong>${d.processes.httpd}</strong></div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:4px">Messenger: ${d.processes.messenger} | Zombies: ${d.processes.zombies}</div>
+        <div style="font-size:0.78rem;color:var(--muted)">DB: ${d.database.connections} conn / ${d.database.running} running</div>
+      </div>
     `;
-    document.getElementById('metrics-row').innerHTML = metricsHtml;
-    // Top processes
-    let procHtml = '';
-    d.top_processes.forEach(p => {
-      const cpuClass = p.cpu > 50 ? 'red' : p.cpu > 20 ? 'yellow' : 'green';
-      procHtml += `<tr><td>${p.pid}</td><td><span class="badge ${cpuClass}">${p.cpu}%</span></td><td>${p.mem}%</td><td>${p.time}</td><td style="max-width:400px;overflow:hidden;text-overflow:ellipsis">${p.cmd}</td></tr>`;
+
+    // Processes table
+    let ph = '';
+    (d.top_processes || []).forEach(p => {
+      const c = p.cpu > 50 ? 'red' : p.cpu > 20 ? 'yellow' : 'green';
+      ph += `<tr><td>${p.pid}</td><td><span class="badge ${c}">${p.cpu}%</span></td><td>${p.mem}%</td><td>${p.time}</td><td style="max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.cmd}</td></tr>`;
     });
-    document.querySelector('#top-proc-table tbody').innerHTML = procHtml;
+    document.querySelector('#top-proc-table tbody').innerHTML = ph || '<tr><td colspan="5" class="loading">No processes</td></tr>';
+
     // Services
-    let svcHtml = '';
-    Object.entries(d.services).forEach(([k,v]) => {
-      const cls = v==='running'?'green':v==='dead'?'red':'yellow';
-      svcHtml += `<div class="card" style="text-align:center"><h3>${k}</h3><span class="badge ${cls}">${v}</span></div>`;
+    let sh = '';
+    Object.entries(d.services || {}).forEach(([k, v]) => {
+      const cls = v === 'running' ? 'green' : v === 'dead' ? 'red' : 'yellow';
+      sh += `<div class="svc-card"><span class="status-dot ${cls}" style="flex-shrink:0"></span><span class="svc-name">${k}</span><span class="badge ${cls}">${v}</span></div>`;
     });
-    document.getElementById('services-list').innerHTML = svcHtml;
-  } catch(e) { console.error(e); }
+    document.getElementById('services-list').innerHTML = sh;
+  } catch(e) { console.error('overview', e); }
 }
 
 async function loadSites() {
   try {
-    const r = await fetch(API + '?action=sites');
+    const r = await fetch(MONITOR_API + '?action=sites');
     if (!r.ok) return;
     const d = await r.json();
-    let html = '';
-    Object.values(d.sites).forEach(s => {
-      html += `<tr><td><strong>${s.name}</strong><br><span style="color:var(--muted);font-size:0.7rem">${s.path}</span></td><td>${s.user}</td><td>${s.php_fpm_workers}</td><td>${s.disk_usage}</td><td>${s.db_size||'—'}</td><td>${s.magento_mode||'—'}</td><td>${s.cache_status||'—'}</td><td><span class="badge ${s.exists?'green':'red'}">${s.exists?'Active':'Missing'}</span></td></tr>`;
+    let h = '';
+    Object.values(d.sites || {}).forEach(s => {
+      h += `<tr>
+        <td><strong>${s.name}</strong><br><span style="color:var(--muted);font-size:0.68rem">${s.path}</span></td>
+        <td>${s.user}</td><td>${s.php_fpm_workers}</td>
+        <td>${s.disk_usage}</td><td>${s.db_size || '—'}</td>
+        <td>${s.magento_mode || '—'}</td><td>${s.cache_status || '—'}</td>
+        <td><span class="badge ${s.exists ? 'green' : 'red'}">${s.exists ? 'Active' : 'Missing'}</span></td>
+      </tr>`;
     });
-    document.querySelector('#sites-table tbody').innerHTML = html;
-  } catch(e) { console.error(e); }
+    document.querySelector('#sites-table tbody').innerHTML = h || '<tr><td colspan="8" class="loading">No sites</td></tr>';
+  } catch(e) { console.error('sites', e); }
 }
 
 async function loadCrons() {
   try {
-    const r = await fetch(API + '?action=crons');
+    const r = await fetch(MONITOR_API + '?action=crons');
     if (!r.ok) return;
     const d = await r.json();
-    document.getElementById('cron-count').textContent = d.total;
-    let html = '';
-    d.entries.forEach(e => {
-      html += `<div class="cron-entry"><div class="schedule">${e.schedule}</div><div class="command">${e.command.substring(0,120)}${e.command.length>120?'...':''}</div>${e.running>0?`<span class="badge yellow">Running (${e.running})</span>`:''}${e.comment?`<div class="comment">${e.comment}</div>`:''}</div>`;
+    document.getElementById('cron-count').textContent = d.total || 0;
+    let h = '';
+    (d.entries || []).forEach(e => {
+      h += `<div style="padding:7px 0;border-bottom:1px solid rgba(30,41,59,0.5)">
+        <div style="font-family:monospace;font-size:0.75rem;color:var(--cyan)">${e.schedule}</div>
+        <div style="font-size:0.8rem;margin-top:2px">${(e.command||'').substring(0,130)}${(e.command||'').length>130?'...':''}</div>
+        ${e.running > 0 ? `<span class="badge yellow" style="margin-top:3px">Running (${e.running})</span>` : ''}
+        ${e.comment ? `<div style="font-size:0.7rem;color:var(--muted)">${e.comment}</div>` : ''}
+      </div>`;
     });
-    document.getElementById('cron-list').innerHTML = html;
-  } catch(e) { console.error(e); }
+    document.getElementById('cron-list').innerHTML = h || '<div class="loading">No cron jobs</div>';
+  } catch(e) { console.error('crons', e); }
 }
 
 async function loadQueues() {
   try {
-    const r = await fetch(API + '?action=queues');
+    const r = await fetch(MONITOR_API + '?action=queues');
     if (!r.ok) return;
     const d = await r.json();
-    let cHtml = '';
-    d.consumers.forEach(c => { cHtml += `<div style="padding:4px 0;font-size:0.85rem">📋 ${c}</div>`; });
-    document.getElementById('consumer-list').innerHTML = cHtml || 'No consumers configured';
-    let qHtml = '';
-    Object.entries(d.queue_counts).forEach(([q,n]) => {
-      const cls = n>100?'red':n>10?'yellow':'green';
-      qHtml += `<div style="padding:4px 0;font-size:0.85rem">${q}: <span class="badge ${cls}">${n} pending</span></div>`;
-    });
-    document.getElementById('queue-pending').innerHTML = qHtml || 'No pending messages';
-  } catch(e) { console.error(e); }
+    let ch = (d.consumers || []).map(c => `<div style="padding:4px 0;font-size:0.82rem">📋 ${c}</div>`).join('');
+    document.getElementById('consumer-list').innerHTML = ch || '<div class="loading">No consumers</div>';
+    let qh = Object.entries(d.queue_counts || {}).map(([q, n]) => {
+      const cls = n > 100 ? 'red' : n > 10 ? 'yellow' : 'green';
+      return `<div style="padding:4px 0;font-size:0.82rem">${q}: <span class="badge ${cls}">${n}</span></div>`;
+    }).join('');
+    document.getElementById('queue-pending').innerHTML = qh || '<div style="font-size:0.82rem;color:var(--green)">✓ No pending messages</div>';
+  } catch(e) { console.error('queues', e); }
 }
 
-async function loadIndexers() {
+async function loadIndexers(env = 'prod') {
   try {
-    const r = await fetch(API + '?action=indexer');
+    const r = await fetch(MONITOR_API + '?action=indexer&env=' + env);
     if (!r.ok) return;
     const d = await r.json();
-    let html = '';
-    d.indexers.forEach(i => {
-      const cls = i.status.toLowerCase().includes('ready')?'green':'yellow';
-      html += `<tr><td><strong>${i.name}</strong></td><td>${i.title}</td><td><span class="badge ${cls}">${i.status}</span></td></tr>`;
-    });
-    document.querySelector('#indexer-table tbody').innerHTML = html;
-  } catch(e) { console.error(e); }
+    let h = (d.indexers || []).map(i => {
+      const cls = i.status.toLowerCase().includes('ready') ? 'green' : 'yellow';
+      return `<tr><td><strong>${i.name}</strong></td><td>${i.title}</td><td><span class="badge ${cls}">${i.status}</span></td></tr>`;
+    }).join('');
+    document.querySelector('#indexer-table tbody').innerHTML = h || '<tr><td colspan="3" class="loading">No indexers found</td></tr>';
+  } catch(e) { console.error('indexers', e); }
+}
+
+// ── Scripts ──
+async function loadScripts() {
+  document.getElementById('script-list').innerHTML = '<div class="loading">Loading scripts...</div>';
+  try {
+    const r = await fetch(DASH_API + '?action=scripts');
+    if (!r.ok) return;
+    const d = await r.json();
+    scriptData = d.scripts || {};
+    renderScriptCats(Object.keys(scriptData)[0]);
+  } catch(e) {
+    document.getElementById('script-list').innerHTML = '<div class="loading">Error loading scripts</div>';
+  }
+}
+
+function renderScriptCats(activeCat) {
+  const cats = Object.keys(scriptData);
+  if (!cats.length) { document.getElementById('script-list').innerHTML = '<div class="loading">No scripts found</div>'; return; }
+  if (!activeCat || !scriptData[activeCat]) activeCat = cats[0];
+  document.getElementById('script-cat-tabs').innerHTML = cats.map(c =>
+    `<div class="script-cat-tab ${c === activeCat ? 'active' : ''}" onclick="renderScriptCats('${c}')">${c} <span style="color:var(--muted);font-size:0.7rem">(${(scriptData[c]||[]).length})</span></div>`
+  ).join('');
+  const scripts = scriptData[activeCat] || [];
+  if (!scripts.length) { document.getElementById('script-list').innerHTML = '<div class="loading">No scripts in this category</div>'; return; }
+  document.getElementById('script-list').innerHTML = scripts.map(s => `
+    <div class="script-row">
+      <div>
+        <div class="s-name">${s.name}</div>
+        <div class="s-meta">Modified: ${s.modified} &nbsp;|&nbsp; Size: ${s.size}b &nbsp;|&nbsp; <span class="badge ${s.ext === 'php' ? 'blue' : 'green'}">${s.ext}</span></div>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="runScript('${activeCat}','${s.name}')">▶ Run</button>
+    </div>
+  `).join('');
+}
+
+async function runScript(category, name) {
+  const modal = document.getElementById('output-modal');
+  const output = document.getElementById('modal-output');
+  document.getElementById('modal-title').textContent = '▶ ' + name;
+  output.textContent = 'Running...';
+  modal.classList.add('show');
+  try {
+    const r = await fetch(DASH_API + '?action=run&category=' + encodeURIComponent(category) + '&script=' + encodeURIComponent(name));
+    const d = await r.json();
+    output.textContent = 'Exit Code: ' + (d.result?.exit_code ?? '?') + '\n\n' + (d.result?.output || d.error || 'No output');
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+}
+
+async function quickRun(category, name) {
+  const out = document.getElementById('quick-output');
+  out.style.display = 'block';
+  out.textContent = 'Running ' + name + '...';
+  try {
+    const r = await fetch(DASH_API + '?action=run&category=' + encodeURIComponent(category) + '&script=' + encodeURIComponent(name));
+    const d = await r.json();
+    out.textContent = 'Exit: ' + (d.result?.exit_code ?? '?') + '\n' + (d.result?.output || d.error || '');
+  } catch(e) { out.textContent = 'Error: ' + e.message; }
 }
 
 async function doCleanup(type) {
-  const output = document.getElementById('action-output');
-  output.style.display = 'block';
-  output.textContent = 'Executing cleanup...';
+  const out = document.getElementById('action-output');
+  out.style.display = 'block';
+  out.textContent = 'Executing ' + type + '...';
   try {
-    const r = await fetch(API + '?action=cleanup&type=' + type);
+    const r = await fetch(MONITOR_API + '?action=cleanup&type=' + type);
     const d = await r.json();
-    output.textContent = JSON.stringify(d, null, 2);
+    out.textContent = JSON.stringify(d, null, 2);
     setTimeout(loadOverview, 3000);
-  } catch(e) { output.textContent = 'Error: ' + e.message; }
+  } catch(e) { out.textContent = 'Error: ' + e.message; }
+}
+
+async function loadDbStats() {
+  try {
+    const r = await fetch(DASH_API + '?action=database&env=prod');
+    const d = await r.json();
+    if (d.success && d.data) {
+      document.getElementById('db-stats').innerHTML =
+        `<strong>Production:</strong> ${d.data.size_mb} MB &nbsp;|&nbsp; ${d.data.table_count} tables &nbsp;|&nbsp; ${d.data.connections} connections`;
+    }
+  } catch(e) {}
 }
 
 async function doLogout() {
-  try {
-    await fetch(AUTH_API + '?action=logout', { method: 'POST' });
-  } catch(e) {}
+  try { await fetch(AUTH_API + '?action=logout', { method: 'POST' }); } catch(e) {}
   window.location.href = '/login.html';
 }
 
-async function runScript(script) {
-  const output = document.getElementById('quick-output');
-  output.style.display = 'block';
-  output.textContent = 'Running ' + script + '...';
+// ── Telegram Notifications ──
+const TELEGRAM_TEST_API = '/api/telegram-test.php';
+const TELEGRAM_USERS_API = '/api/telegram-users.php';
+
+async function loadTelegramConfig() {
   try {
-    const r = await fetch(API + '?action=execute&script=' + encodeURIComponent(script));
-    const d = await r.json();
-    output.textContent = 'Exit Code: ' + d.exit_code + '\n\n' + (d.output || []).join('\n');
-  } catch(e) { output.textContent = 'Error: ' + e.message; }
+    // Load authorized users
+    const r = await fetch(TELEGRAM_USERS_API + '?action=list');
+    if (r.ok) {
+      const d = await r.json();
+      document.getElementById('bot-auth-count').textContent = d.count || 0;
+      
+      if (d.users && d.users.length > 0) {
+        const html = d.users.map(u => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(30,41,59,0.4)">
+            <div>
+              <strong style="color:var(--text)">${u.name}</strong>
+              <code style="margin-left:10px;color:var(--muted)">${u.chat_id}</code>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="removeTelegramUser(${u.chat_id})">🗑️ Remove</button>
+          </div>
+        `).join('');
+        document.getElementById('authorized-users-list').innerHTML = html;
+      } else {
+        document.getElementById('authorized-users-list').innerHTML = '<p style="color:var(--muted)">No authorized users</p>';
+      }
+    }
+
+    // Load logs
+    const r2 = await fetch(TELEGRAM_USERS_API + '?action=logs&limit=30');
+    if (r2.ok) {
+      const d = await r2.json();
+      if (d.logs && d.logs.length > 0) {
+        const html = d.logs.slice(0, 30).map(log => {
+          const statusColor = log.status === 'received' || log.status === 'executed' ? 'var(--green)' : 
+                             log.status === 'error' ? 'var(--red)' : 'var(--yellow)';
+          return `<div style="font-size:0.72rem;color:var(--muted);padding:2px 0">
+            <span style="color:var(--cyan)">${log.timestamp}</span> | 
+            <span style="color:${statusColor}">${log.status}</span> | 
+            ${log.user} → ${log.command}
+          </div>`;
+        }).join('');
+        document.getElementById('telegram-logs').innerHTML = html;
+      } else {
+        document.getElementById('telegram-logs').innerHTML = '<p>No activity yet</p>';
+      }
+    }
+  } catch(e) {
+    console.error('Failed to load Telegram config:', e);
+  }
 }
 
-// ── Auto-refresh ──
+async function addTelegramUser() {
+  const chatId = document.getElementById('tg-chat-id-input').value.trim();
+  const name = document.getElementById('tg-user-name-input').value.trim();
+
+  if (!chatId) {
+    alert('Please enter a Chat ID');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('chat_id', chatId);
+  formData.append('name', name || 'Unknown');
+
+  try {
+    const r = await fetch(TELEGRAM_USERS_API + '?action=add', {
+      method: 'POST',
+      body: formData
+    });
+    const d = await r.json();
+
+    if (d.success) {
+      alert('✅ ' + d.message);
+      document.getElementById('tg-chat-id-input').value = '';
+      document.getElementById('tg-user-name-input').value = '';
+      loadTelegramConfig();
+    } else {
+      alert('❌ ' + d.message);
+    }
+  } catch(e) {
+    alert('❌ Error: ' + e.message);
+  }
+}
+
+async function removeTelegramUser(chatId) {
+  if (!confirm('Remove this user from authorized list?')) return;
+
+  const formData = new FormData();
+  formData.append('chat_id', chatId);
+
+  try {
+    const r = await fetch(TELEGRAM_USERS_API + '?action=remove', {
+      method: 'POST',
+      body: formData
+    });
+    const d = await r.json();
+
+    if (d.success) {
+      alert('✅ ' + d.message);
+      loadTelegramConfig();
+    } else {
+      alert('❌ ' + d.message);
+    }
+  } catch(e) {
+    alert('❌ Error: ' + e.message);
+  }
+}
+
+async function testTelegram() {
+  const out = document.getElementById('tg-output');
+  out.style.display = 'block';
+  out.textContent = 'Sending test message...';
+  
+  try {
+    const r = await fetch(TELEGRAM_TEST_API + '?action=test');
+    const d = await r.json();
+    
+    if (d.success) {
+      out.style.color = 'var(--green)';
+      out.textContent = '✅ Test message sent successfully! Check your Telegram.';
+    } else {
+      out.style.color = 'var(--red)';
+      out.textContent = '❌ Failed: ' + d.message;
+    }
+  } catch(e) {
+    out.style.color = 'var(--red)';
+    out.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+// ── Customer Bot Functions ──
+async function testCustomerBot() {
+  const output = document.getElementById('tg-output');
+  output.style.display = 'block';
+  output.textContent = 'Testing customer bot...';
+  
+  try {
+    const r = await fetch('/api/telegram/customer_test.php?action=test');
+    const d = await r.json();
+    
+    if (d.success) {
+      output.style.color = 'var(--green)';
+      output.textContent = '✅ Customer bot is working!\nBot: ' + (d.bot_name || 'Unknown');
+    } else {
+      output.style.color = 'var(--red)';
+      output.textContent = '❌ Failed: ' + (d.error || 'Unknown error');
+    }
+  } catch(e) {
+    output.style.color = 'var(--red)';
+    output.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+async function enableCustomerBot() {
+  if (!confirm('Enable customer bot? Make sure you have added the bot token to config.php first.')) return;
+  
+  const output = document.getElementById('tg-output');
+  output.style.display = 'block';
+  output.textContent = 'Enabling customer bot...';
+  
+  try {
+    const r = await fetch('/api/telegram/customer_test.php?action=enable', {
+      method: 'POST'
+    });
+    const d = await r.json();
+    
+    if (d.success) {
+      output.style.color = 'var(--green)';
+      output.textContent = '✅ Customer bot enabled!\n\nNext steps:\n1. Add cron job: */1 * * * * php /home/dashboard/public_html/api/telegram/customer_poller.php\n2. Test the bot via Telegram';
+      document.getElementById('customer-bot-enabled').textContent = 'Enabled';
+      document.getElementById('customer-bot-dot').className = 'status-dot green';
+    } else {
+      output.style.color = 'var(--red)';
+      output.textContent = '❌ Failed: ' + (d.error || 'Unknown error');
+    }
+  } catch(e) {
+    output.style.color = 'var(--red)';
+    output.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+// ── AI Report Functions ──
+async function generateAIReport() {
+  const reportType = document.getElementById('ai-report-type').value;
+  const env = document.getElementById('ai-env').value;
+  const output = document.getElementById('ai-report-output');
+  
+  output.style.display = 'block';
+  output.textContent = `⏳ Generating AI ${reportType} report for ${env}...\n(This may take 1-2 minutes)`;
+  output.style.color = 'var(--cyan)';
+  
+  try {
+    const formData = new FormData();
+    formData.append('action', 'ai_report');
+    formData.append('type', reportType);
+    formData.append('env', env);
+    
+    const r = await fetch('/api/telegram/utils/qodercli_api.php', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!r.ok) {
+      throw new Error('API request failed');
+    }
+    
+    const d = await r.json();
+    
+    if (d.success) {
+      output.style.color = 'var(--text)';
+      output.style.whiteSpace = 'pre-wrap';
+      output.textContent = d.report || 'No report generated';
+    } else {
+      output.style.color = 'var(--red)';
+      output.textContent = '❌ Error: ' + (d.error || 'Unknown error');
+    }
+  } catch(e) {
+    output.style.color = 'var(--red)';
+    output.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+async function loadAICacheStats() {
+  const output = document.getElementById('ai-cache-output');
+  output.style.display = 'block';
+  output.textContent = 'Loading cache stats...';
+  
+  try {
+    const r = await fetch('/api/telegram/utils/qodercli_api.php?action=cache_stats');
+    const d = await r.json();
+    
+    if (d.success) {
+      output.style.color = 'var(--text)';
+      output.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px">
+          <div><div style="font-size:0.72rem;color:var(--muted)">TOTAL REPORTS</div><div style="font-size:1.2rem;font-weight:700">${d.stats.total || 0}</div></div>
+          <div><div style="font-size:0.72rem;color:var(--muted)">CACHE SIZE</div><div style="font-size:1.2rem;font-weight:700">${(d.stats.size / 1024).toFixed(1)} KB</div></div>
+          <div><div style="font-size:0.72rem;color:var(--muted)">CACHE DIR</div><div style="font-size:0.8rem;font-family:monospace">/api/telegram/data/ai_cache/</div></div>
+        </div>
+      `;
+    } else {
+      output.style.color = 'var(--red)';
+      output.textContent = '❌ Error: ' + (d.error || 'Unknown error');
+    }
+  } catch(e) {
+    output.style.color = 'var(--red)';
+    output.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+async function clearAICache() {
+  if (!confirm('Clear all AI report cache?')) return;
+  
+  const output = document.getElementById('ai-cache-output');
+  output.style.display = 'block';
+  output.textContent = 'Clearing cache...';
+  
+  try {
+    const r = await fetch('/api/telegram/utils/qodercli_api.php?action=clear_cache', {
+      method: 'POST'
+    });
+    const d = await r.json();
+    
+    if (d.success) {
+      output.style.color = 'var(--green)';
+      output.textContent = '✅ Cache cleared successfully';
+      // Reload stats if visible
+      if (output.innerHTML) {
+        loadAICacheStats();
+      }
+    } else {
+      output.style.color = 'var(--red)';
+      output.textContent = '❌ Error: ' + (d.error || 'Failed to clear cache');
+    }
+  } catch(e) {
+    output.style.color = 'var(--red)';
+    output.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+async function executeCacheAction(action, env) {
+  const output = document.getElementById('cache-execution-output');
+  output.style.display = 'block';
+  output.style.color = 'var(--cyan)';
+  output.textContent = `⏳ Executing cache:${action} for ${env}...\n(This may take 30-120 seconds)`;
+  
+  try {
+    const formData = new FormData();
+    formData.append('action', 'cache_' + action);
+    formData.append('env', env);
+    
+    const r = await fetch('/api/telegram/utils/cache_api.php', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!r.ok) {
+      throw new Error('API request failed');
+    }
+    
+    const d = await r.json();
+    
+    if (d.success) {
+      output.style.color = 'var(--green)';
+      output.style.whiteSpace = 'pre-wrap';
+      output.textContent = '✅ Success:\n\n' + (d.output || 'No output');
+    } else {
+      output.style.color = 'var(--red)';
+      output.textContent = '❌ Error: ' + (d.error || 'Unknown error');
+    }
+  } catch(e) {
+    output.style.color = 'var(--red)';
+    output.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+// Load Telegram config when tab is activated
+document.querySelector('[data-tab="telegram"]')?.addEventListener('click', () => {
+  loadTelegramConfig();
+});
+
+
+async function loadDbHealth() {
+  try {
+    const r = await fetch(MONITOR_API + '?action=dbhealth');
+    if (!r.ok) return;
+    const d = await r.json();
+    ['prod','beta'].forEach(env => {
+      const db = d.databases[env];
+      if (!db || db.error) {
+        document.getElementById('dbh-'+env+'-stats').innerHTML = '<span class="badge red">Error</span>';
+        return;
+      }
+      const fragPct = db.size_mb > 0 ? ((db.frag_mb / db.size_mb)*100).toFixed(1) : 0;
+      const fragCls = fragPct > 15 ? 'red' : fragPct > 5 ? 'yellow' : 'green';
+      document.getElementById('dbh-'+env+'-stats').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <div><div style="font-size:0.72rem;color:var(--muted)">SIZE</div><div style="font-size:1.4rem;font-weight:700">${db.size_mb} MB</div></div>
+          <div><div style="font-size:0.72rem;color:var(--muted)">FRAGMENTATION</div><div style="font-size:1.4rem;font-weight:700"><span style="color:var(--${fragCls === 'red' ? 'red' : fragCls === 'yellow' ? 'yellow' : 'green'})">${db.frag_mb} MB</span></div></div>
+          <div><div style="font-size:0.72rem;color:var(--muted)">CONNECTIONS</div><div style="font-size:1.1rem;font-weight:600">${db.connections} <span style="font-size:0.75rem;color:var(--muted)">(${db.running} running)</span></div></div>
+          <div><div style="font-size:0.72rem;color:var(--muted)">SLOW QUERIES</div><div style="font-size:1.1rem;font-weight:600"><span class="badge ${db.slow_queries > 100 ? 'red' : db.slow_queries > 10 ? 'yellow' : 'green'}">${db.slow_queries}</span></div></div>
+        </div>`;
+    });
+    // Fragmented tables
+    const frags = d.databases.prod?.fragmented_tables || [];
+    if (frags.length === 0) {
+      document.querySelector('#frag-table tbody').innerHTML = '<tr><td colspan="5" style="color:var(--green)">✓ No significantly fragmented tables</td></tr>';
+    } else {
+      document.querySelector('#frag-table tbody').innerHTML = frags.map(t => {
+        const fp = t.size_mb > 0 ? ((t.frag_mb / t.size_mb)*100).toFixed(1) : 0;
+        const cls = fp > 20 ? 'red' : fp > 10 ? 'yellow' : 'green';
+        return `<tr><td><strong>${t.table_name}</strong></td><td>${t.size_mb} MB</td><td><span class="badge ${cls}">${t.frag_mb} MB</span></td><td>${Number(t.table_rows).toLocaleString()}</td><td><span class="badge ${cls}">${fp}%</span></td></tr>`;
+      }).join('');
+    }
+  } catch(e) { console.error('dbhealth', e); }
+}
+
+async function runOptimize() {
+  const out = document.getElementById('optimize-output');
+  out.style.display = 'block';
+  out.textContent = 'Running OPTIMIZE on fragmented tables... (this may take a minute)';
+  try {
+    const r = await fetch(DASH_API + '?action=run&category=database&script=cleanup_database.php');
+    const d = await r.json();
+    out.textContent = 'Exit: ' + (d.result?.exit_code ?? '?') + '\n' + (d.result?.output || d.error || '');
+    setTimeout(loadDbHealth, 3000);
+  } catch(e) { out.textContent = 'Error: ' + e.message; }
+}
+
 function refresh() {
   loadOverview();
   loadSites();
   loadCrons();
   loadQueues();
   loadIndexers();
+  loadDbStats();
+  loadInfrastructure();
+  loadCommerce();
 }
-refresh();
-refreshInterval = setInterval(refresh, 30000);
+
+// Background refresh for heavy infrastructure data (every 60 seconds)
+setInterval(() => {
+  loadInfrastructure();
+}, 60000);
+
+// Background refresh for commerce data (every 30 seconds)
+setInterval(() => {
+  loadCommerce();
+}, 30000);
+
+// ── Infrastructure Tab ──
+async function loadInfrastructure() {
+  try {
+    const [redisR, esR, varnishR, sysR, phpfpmR, cfR] = await Promise.all([
+      fetch(MONITOR_API + '?action=redis'),
+      fetch(MONITOR_API + '?action=elasticsearch'),
+      fetch(MONITOR_API + '?action=varnish'),
+      fetch(MONITOR_API + '?action=system_advanced'),
+      fetch(MONITOR_API + '?action=phpfpm_pools'),
+      fetch(MONITOR_API + '?action=cloudflare')
+    ]);
+
+    const redis = redisR.ok ? await redisR.json() : null;
+    const es = esR.ok ? await esR.json() : null;
+    const varnish = varnishR.ok ? await varnishR.json() : null;
+    const sys = sysR.ok ? await sysR.json() : null;
+    const phpfpm = phpfpmR.ok ? await phpfpmR.json() : null;
+    const cf = cfR.ok ? await cfR.json() : null;
+
+    renderRedis(redis);
+    renderElasticsearch(es);
+    renderVarnish(varnish);
+    renderSystemAdvanced(sys);
+    renderPhpFPM(phpfpm);
+    renderCloudflare(cf);
+  } catch(e) { console.error('infrastructure', e); }
+}
+
+function renderRedis(data) {
+  const el = document.getElementById('redis-content');
+  if (!data || data.error) {
+    el.innerHTML = '<div class="loading">Redis unavailable</div>';
+    return;
+  }
+
+  const memPct = data.memory.maxmemory > 0 ? ((data.memory.used_bytes / data.memory.maxmemory) * 100).toFixed(1) : 0;
+  const memClass = memPct > 90 ? 'red' : memPct > 70 ? 'yellow' : 'green';
+  const hitRate = data.stats.hit_rate.toFixed(1);
+  const hitClass = hitRate > 80 ? 'green' : hitRate > 50 ? 'yellow' : 'red';
+
+  let html = `
+    <div class="infra-stat"><span class="infra-label">Memory</span><span class="infra-val">${(data.memory.used_mb || 0)} MB / ${(data.memory.maxmemory_mb || 0)} MB</span></div>
+    <div class="progress-bar"><div class="fill ${memClass}" style="width:${Math.min(memPct, 100)}%"></div></div>
+    <div class="infra-stat"><span class="infra-label">Hit Rate</span><span class="infra-val ${hitClass}">${hitRate}%</span></div>
+    <div class="infra-stat"><span class="infra-label">Ops/sec</span><span class="infra-val">${(data.stats.ops_per_sec || 0).toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Keys</span><span class="infra-val">${(data.keyspace.total_keys || 0).toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Clients</span><span class="infra-val">${data.stats.connected_clients || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Evictions</span><span class="infra-val">${(data.stats.evicted_keys || 0).toLocaleString()}</span></div>
+  `;
+
+  if (data.keyspace.databases && Object.keys(data.keyspace.databases).length > 0) {
+    html += '<div style="margin-top:10px;font-size:0.78rem;color:var(--muted)">DB Breakdown:</div><table style="margin-top:4px"><thead><tr><th>DB</th><th>Keys</th><th>Expires</th></tr></thead><tbody>';
+    Object.entries(data.keyspace.databases).forEach(([db, info]) => {
+      html += `<tr><td>${db}</td><td>${info.keys}</td><td>${info.expires || 0}</td></tr>`;
+    });
+    html += '</tbody></table>';
+  }
+
+  el.innerHTML = html;
+}
+
+function renderElasticsearch(data) {
+  const el = document.getElementById('elasticsearch-content');
+  if (!data || data.error) {
+    el.innerHTML = '<div class="loading">Elasticsearch unavailable</div>';
+    return;
+  }
+
+  const status = data.cluster.status || 'unknown';
+  const statusClass = status === 'green' ? 'green' : status === 'yellow' ? 'yellow' : 'red';
+  const jvmPct = data.nodes.jvm_heap_pct || 0;
+  const jvmClass = jvmPct > 85 ? 'red' : jvmPct > 70 ? 'yellow' : 'green';
+
+  let html = `
+    <div class="infra-stat"><span class="infra-label">Cluster Status</span><span class="badge ${statusClass}">${status.toUpperCase()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Nodes</span><span class="infra-val">${data.cluster.number_of_nodes || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Shards</span><span class="infra-val">${data.cluster.active_shards || 0} (unassigned: ${data.cluster.unassigned_shards || 0})</span></div>
+    <div class="infra-stat"><span class="infra-label">JVM Heap</span><span class="infra-val ${jvmClass}">${jvmPct}% of ${(data.nodes.jvm_heap_max_mb || 0)} MB</span></div>
+    <div class="progress-bar"><div class="fill ${jvmClass}" style="width:${Math.min(jvmPct, 100)}%"></div></div>
+    <div class="infra-stat"><span class="infra-label">GC Count</span><span class="infra-val">${(data.nodes.gc_count || 0).toLocaleString()}</span></div>
+  `;
+
+  if (data.indices && data.indices.length > 0) {
+    html += '<div style="margin-top:10px;font-size:0.78rem;color:var(--muted)">Top Indices:</div><table style="margin-top:4px"><thead><tr><th>Index</th><th>Docs</th><th>Size</th></tr></thead><tbody>';
+    data.indices.slice(0, 8).forEach(idx => {
+      html += `<tr><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${idx.index}</td><td>${Number(idx.docs_count || 0).toLocaleString()}</td><td>${idx.store_size || '0b'}</td></tr>`;
+    });
+    html += '</tbody></table>';
+  }
+
+  el.innerHTML = html;
+}
+
+function renderVarnish(data) {
+  const el = document.getElementById('varnish-content');
+  if (!data || data.error) {
+    el.innerHTML = '<div class="loading">Varnish unavailable</div>';
+    return;
+  }
+
+  const hitRate = data.hit_ratio || 0;
+  const hitClass = hitRate > 80 ? 'green' : hitRate > 50 ? 'yellow' : 'red';
+  const storagePct = data.storage.total_bytes > 0 ? ((data.storage.used_bytes / data.storage.total_bytes) * 100).toFixed(1) : 0;
+  const storageClass = storagePct > 90 ? 'red' : storagePct > 70 ? 'yellow' : 'green';
+
+  let html = `
+    <div class="infra-stat"><span class="infra-label">Hit Ratio</span><span class="infra-val ${hitClass}">${hitRate}%</span></div>
+    <div class="progress-bar"><div class="fill ${hitClass}" style="width:${Math.min(hitRate, 100)}%"></div></div>
+    <div class="infra-stat"><span class="infra-label">Hits</span><span class="infra-val green">${(data.hits || 0).toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Misses</span><span class="infra-val yellow">${(data.misses || 0).toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Req/sec</span><span class="infra-val">${(data.req_per_sec || 0).toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Storage</span><span class="infra-val">${data.storage.used || 0} / ${data.storage.total || 0}</span></div>
+    <div class="progress-bar"><div class="fill ${storageClass}" style="width:${Math.min(storagePct, 100)}%"></div></div>
+    <div class="infra-stat"><span class="infra-label">Backend Failures</span><span class="infra-val">${data.backend_failures || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Evictions</span><span class="infra-val">${(data.evictions || 0).toLocaleString()}</span></div>
+  `;
+
+  // Device type breakdown
+  if (data.device_types) {
+    const dt = data.device_types;
+    html += `
+      <div style="grid-column:1/-1;margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">📱 Device Types (last ${data.total_device_requests || 0} requests)</div>
+        <div class="infra-stat"><span class="infra-label">📱 Mobile</span><span class="infra-val cyan">${dt.mobile?.percentage || 0}% <span style="font-size:0.7rem;color:var(--muted)">(${(dt.mobile?.count || 0).toLocaleString()})</span></span></div>
+        <div class="infra-stat"><span class="infra-label">📟 Tablet</span><span class="infra-val yellow">${dt.tablet?.percentage || 0}% <span style="font-size:0.7rem;color:var(--muted)">(${(dt.tablet?.count || 0).toLocaleString()})</span></span></div>
+        <div class="infra-stat"><span class="infra-label">🖥️ Desktop</span><span class="infra-val green">${dt.desktop?.percentage || 0}% <span style="font-size:0.7rem;color:var(--muted)">(${(dt.desktop?.count || 0).toLocaleString()})</span></span></div>
+      </div>
+    `;
+  }
+
+  el.innerHTML = html;
+}
+
+async function cfAction(action, params = {}) {
+  try {
+    const formData = new URLSearchParams({ action2: action, ...params });
+    const res = await fetch(MONITOR_API + '?action=cloudflare_action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      loadInfrastructure();
+    } else {
+      showToast(data.message || 'Action failed', 'error');
+    }
+  } catch(e) {
+    showToast('Cloudflare action failed: ' + e.message, 'error');
+  }
+}
+
+function renderCloudflare(data) {
+  const el = document.getElementById('cloudflare-content');
+  if (!data || data.error) {
+    el.innerHTML = '<div class="loading">Cloudflare unavailable</div>';
+    return;
+  }
+
+  const z = data.zone || {};
+  const s = data.settings || {};
+  const a = data.analytics_totals || {};
+  const fw = data.firewall || {};
+  const days = data.analytics || [];
+  const statusClass = z.status === 'active' ? 'green' : 'yellow';
+  const sslClass = s.ssl === 'full' || s.ssl === 'strict' ? 'green' : s.ssl === 'flexible' ? 'yellow' : 'red';
+
+  // Build mini chart bars for analytics
+  let chartHtml = '';
+  if (days.length > 0) {
+    const maxReq = Math.max(...days.map(d => d.requests), 1);
+    chartHtml = `
+      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">📊 7-Day Traffic (Requests)</div>
+        <div style="display:flex;align-items:flex-end;gap:4px;height:60px">
+          ${days.reverse().map(d => {
+            const h = Math.max((d.requests / maxReq) * 55, 2);
+            const pct = ((d.requests / maxReq) * 100).toFixed(0);
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="${d.date}: ${d.requests.toLocaleString()} reqs, ${d.pageViews.toLocaleString()} PV, ${d.threats} threats, ${d.uniques.toLocaleString()} uniq">
+              <div style="width:100%;height:${h}px;background:linear-gradient(to top,rgba(59,130,246,0.3),rgba(59,130,246,0.8));border-radius:3px 3px 0 0"></div>
+              <div style="font-size:0.6rem;color:var(--muted)">${d.date.slice(5)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">
+          <div class="infra-stat"><span class="infra-label">Total Reqs</span><span class="infra-val cyan">${(a.requests || 0).toLocaleString()}</span></div>
+          <div class="infra-stat"><span class="infra-label">Page Views</span><span class="infra-val green">${(a.pageViews || 0).toLocaleString()}</span></div>
+          <div class="infra-stat"><span class="infra-label">Threats</span><span class="infra-val yellow">${(a.threats || 0).toLocaleString()}</span></div>
+          <div class="infra-stat"><span class="infra-label">Uniques</span><span class="infra-val">${(a.uniques || 0).toLocaleString()}</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  let fwHtml = '';
+  if (fw.total > 0) {
+    fwHtml = `
+      <div class="infra-stat"><span class="infra-label">Firewall Events</span><span class="infra-val yellow">${fw.total.toLocaleString()}</span></div>
+      <div class="infra-stat"><span class="infra-label">Blocked</span><span class="infra-val red">${fw.blocked || 0}</span></div>
+      <div class="infra-stat"><span class="infra-label">Challenged</span><span class="infra-val yellow">${fw.challenged || 0}</span></div>
+    `;
+  }
+
+  let html = `
+    <div class="infra-stat"><span class="infra-label">Zone</span><span class="infra-val">${z.name || '-'}</span></div>
+    <div class="infra-stat"><span class="infra-label">Status</span><span class="infra-val ${statusClass}">${z.status || 'unknown'}</span></div>
+    <div class="infra-stat"><span class="infra-label">Plan</span><span class="infra-val">${z.plan || 'Free'}</span></div>
+    <div class="infra-stat"><span class="infra-label">SSL</span><span class="infra-val ${sslClass}">${s.ssl || 'off'}</span></div>
+    <div class="infra-stat"><span class="infra-label">Cache Level</span><span class="infra-val">${s.cache_level || '-'}</span></div>
+    <div class="infra-stat"><span class="infra-label">Dev Mode</span><span class="infra-val ${s.development_mode === 'on' ? 'yellow' : 'green'}">${s.development_mode || 'off'}</span></div>
+    <div class="infra-stat"><span class="infra-label">Brotli</span><span class="infra-val ${s.brotli === 'on' ? 'green' : 'red'}">${s.brotli || 'off'}</span></div>
+    <div class="infra-stat"><span class="infra-label">HTTP/3</span><span class="infra-val ${s.http3 === 'on' ? 'green' : 'red'}">${s.http3 || 'off'}</span></div>
+    <div class="infra-stat"><span class="infra-label">Browser TTL</span><span class="infra-val">${Math.round((s.browser_cache_ttl || 0) / 3600)}h</span></div>
+    ${fw.total > 0 ? `<div style="grid-column:1/-1;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px"><div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">🛡️ Firewall (24h)</div>${fwHtml}</div>` : ''}
+
+    <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">⚡ Quick Actions</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <button class="btn" onclick="cfAction('purge_all')" style="background:#f59e0b;color:#000;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Purge All</button>
+        <button class="btn" onclick="cfAction('toggle_dev_mode',{value:'on'})" style="background:#3b82f6;color:#fff;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Dev Mode ON</button>
+        <button class="btn" onclick="cfAction('toggle_dev_mode',{value:'off'})" style="background:#6b7280;color:#fff;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Dev Mode OFF</button>
+        <button class="btn" onclick="cfAction('cache_level',{level:'aggressive'})" style="background:#10b981;color:#fff;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Cache Aggressive</button>
+        <button class="btn" onclick="cfAction('cache_level',{level:'basic'})" style="background:#ef4444;color:#fff;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Cache Basic</button>
+      </div>
+    </div>
+
+    <div style="grid-column:1/-1;margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">🔧 Settings</div>
+      <div class="infra-stat"><span class="infra-label">Always Online</span><span class="infra-val ${s.always_online === 'on' ? 'green' : 'red'}">${s.always_online || 'off'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Auto HTTPS</span><span class="infra-val ${s.automatic_https_rewrites === 'on' ? 'green' : 'red'}">${s.automatic_https_rewrites || 'off'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Security</span><span class="infra-val">${s.security_level || '-'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Minify CSS</span><span class="infra-val ${s.minify_css === 'on' ? 'green' : 'red'}">${s.minify_css || 'off'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Minify JS</span><span class="infra-val ${s.minify_js === 'on' ? 'green' : 'red'}">${s.minify_js || 'off'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Rocket Loader</span><span class="infra-val ${s.rocket_loader === 'on' ? 'yellow' : 'green'}">${s.rocket_loader || 'off'}</span></div>
+      <div class="infra-stat"><span class="infra-label">WAF</span><span class="infra-val ${s.waf === 'on' ? 'green' : 'red'}">${s.waf || 'off'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Polish</span><span class="infra-val ${s.polish === 'off' ? 'red' : 'green'}">${s.polish || 'off'}</span></div>
+    </div>
+
+    ${chartHtml}
+  `;
+
+  el.innerHTML = html;
+}
+
+function renderSystemAdvanced(data) {
+  const el = document.getElementById('system-advanced-content');
+  if (!data || data.error) {
+    el.innerHTML = '<div class="loading">System metrics unavailable</div>';
+    return;
+  }
+
+  const net = data.network || {};
+  const io = data.io || {};
+  const sys = data.system || {};
+
+  let html = `
+    <div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">📡 Network (enp1s0f0)</div>
+      <div class="infra-stat"><span class="infra-label">RX</span><span class="infra-val green">${net.rx_rate || '0 B/s'}</span></div>
+      <div class="infra-stat"><span class="infra-label">TX</span><span class="infra-val cyan">${net.tx_rate || '0 B/s'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Total RX</span><span class="infra-val">${net.total_rx || '0 B'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Total TX</span><span class="infra-val">${net.total_tx || '0 B'}</span></div>
+    </div>
+    <div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">💾 Disk I/O (sda2)</div>
+      <div class="infra-stat"><span class="infra-label">Read IOPS</span><span class="infra-val">${(io.read_iops || 0).toLocaleString()}</span></div>
+      <div class="infra-stat"><span class="infra-label">Write IOPS</span><span class="infra-val">${(io.write_iops || 0).toLocaleString()}</span></div>
+      <div class="infra-stat"><span class="infra-label">Read Rate</span><span class="infra-val">${io.read_rate || '0 B/s'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Write Rate</span><span class="infra-val">${io.write_rate || '0 B/s'}</span></div>
+    </div>
+    <div style="grid-column:1/-1">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🖥️ System</div>
+      <div class="infra-stat"><span class="infra-label">File Descriptors</span><span class="infra-val">${(sys.file_descriptors_used || 0).toLocaleString()} / ${(sys.file_descriptors_max || 65536).toLocaleString()}</span></div>
+      <div class="infra-stat"><span class="infra-label">Uptime</span><span class="infra-val">${sys.uptime_human || 'Unknown'}</span></div>
+    </div>
+  `;
+
+  el.innerHTML = html;
+}
+
+function renderPhpFPM(data) {
+  const el = document.getElementById('phpfpm-content');
+  if (!data || !data.pools || data.pools.length === 0) {
+    el.innerHTML = '<div class="loading">No PHP-FPM pools found</div>';
+    return;
+  }
+
+  let html = '<table><thead><tr><th>Pool</th><th>Max Children</th><th>Active Workers</th><th>Utilization</th></tr></thead><tbody>';
+  data.pools.forEach(pool => {
+    const utilPct = pool.utilization_pct || 0;
+    const utilClass = utilPct > 90 ? 'red' : utilPct > 70 ? 'yellow' : 'green';
+    html += `<tr>
+      <td><strong>${pool.name}</strong></td>
+      <td>${pool.max_children || 0}</td>
+      <td>${pool.active_workers || 0}</td>
+      <td><span class="badge ${utilClass}">${utilPct.toFixed(1)}%</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+
+  el.innerHTML = html;
+}
+
+// ── Commerce Tab ──
+async function loadCommerce() {
+  try {
+    const [prodR, betaR] = await Promise.all([
+      fetch(DASH_API + '?action=magento-stats&env=prod'),
+      fetch(DASH_API + '?action=magento-stats&env=beta')
+    ]);
+
+    const prod = prodR.ok ? await prodR.json() : null;
+    const beta = betaR.ok ? await betaR.json() : null;
+
+    renderCommerce(prod, beta);
+  } catch(e) { console.error('commerce', e); }
+}
+
+function renderCommerce(prod, beta) {
+  const data = prod?.success ? prod.data : null;
+
+  // Today's orders
+  document.getElementById('commerce-today-orders').textContent = data?.today_orders?.count || 0;
+  document.getElementById('commerce-today-revenue').textContent = data?.today_orders?.revenue ? `$${Number(data.today_orders.revenue).toLocaleString()}` : '$0';
+
+  // Last hour
+  document.getElementById('commerce-hour-orders').textContent = data?.last_hour_orders?.count || 0;
+  document.getElementById('commerce-hour-revenue').textContent = data?.last_hour_orders?.revenue ? `$${Number(data.last_hour_orders.revenue).toLocaleString()}` : '$0';
+
+  // Active carts
+  document.getElementById('commerce-active-carts').textContent = data?.active_carts?.count || 0;
+  document.getElementById('commerce-carts-value').textContent = data?.active_carts?.value ? `$${Number(data.active_carts.value).toLocaleString()}` : '$0';
+
+  // Online customers
+  document.getElementById('commerce-online').textContent = data?.online_customers || 0;
+
+  // Recent orders table
+  const orders = data?.recent_orders || [];
+  if (orders.length === 0) {
+    document.querySelector('#recent-orders-table tbody').innerHTML = '<tr><td colspan="4" class="loading">No recent orders</td></tr>';
+  } else {
+    let html = orders.slice(0, 5).map(o => {
+      const statusClass = o.status === 'complete' ? 'green' : o.status === 'pending' ? 'yellow' : o.status === 'processing' ? 'blue' : 'red';
+      return `<tr>
+        <td><strong>${o.increment_id}</strong></td>
+        <td><span class="badge ${statusClass}">${o.status}</span></td>
+        <td>$${Number(o.grand_total || 0).toLocaleString()}</td>
+        <td style="font-size:0.75rem">${o.created_at?.substring(0, 10) || ''}</td>
+      </tr>`;
+    }).join('');
+    document.querySelector('#recent-orders-table tbody').innerHTML = html;
+  }
+
+  // Product stats
+  const products = data?.products || {};
+  document.getElementById('product-stats-content').innerHTML = `
+    <div class="infra-stat"><span class="infra-label">Total Products</span><span class="infra-val">${products.total || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Enabled</span><span class="infra-val green">${products.enabled || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">In Stock</span><span class="infra-val green">${products.in_stock || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Low Stock</span><span class="infra-val yellow">${products.low_stock || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Out of Stock</span><span class="infra-val red">${products.out_of_stock || 0}</span></div>
+  `;
+
+  // Customer stats
+  const customers = data?.customers || {};
+  document.getElementById('customer-stats-content').innerHTML = `
+    <div class="card metric-card">
+      <div class="metric-label">Total Customers</div>
+      <div class="metric-value">${customers.total || 0}</div>
+    </div>
+    <div class="card metric-card">
+      <div class="metric-label">New Today</div>
+      <div class="metric-value">${customers.new_today || 0}</div>
+      <div class="metric-sub"></div>
+    </div>
+    <div class="card metric-card">
+      <div class="metric-label">New This Week</div>
+      <div class="metric-value">${customers.new_this_week || 0}</div>
+      <div class="metric-sub"></div>
+    </div>
+    <div class="card metric-card">
+      <div class="metric-label">Beta Customers</div>
+      <div class="metric-value">${beta?.success ? (beta.data.customers?.total || 0) : 0}</div>
+      <div class="metric-sub"></div>
+    </div>
+  `;
+}
+
+// ── Alerts Tab ──
+async function loadAlerts() {
+  try {
+    const r = await fetch(MONITOR_API + '?action=alerts');
+    if (!r.ok) return;
+    const d = await r.json();
+
+    const alerts = d.alerts || [];
+    const summary = d.summary || {};
+
+    let html = '';
+    if (alerts.length === 0) {
+      html = '<div style="text-align:center;padding:20px;color:var(--muted)">No recent alerts</div>';
+    } else {
+      html = '<table><thead><tr><th>Time</th><th>Type</th><th>Key</th><th>Age</th></tr></thead><tbody>';
+      alerts.slice(0, 20).forEach(a => {
+        const ageMin = a.age_minutes || 0;
+        const ageStr = ageMin < 60 ? `${ageMin}m ago` : `${(ageMin/60).toFixed(1)}h ago`;
+        html += `<tr>
+          <td style="font-size:0.75rem">${a.timestamp || ''}</td>
+          <td><span class="badge ${a.type === 'critical' ? 'red' : a.type === 'warning' ? 'yellow' : 'blue'}">${a.type}</span></td>
+          <td style="font-size:0.75rem;font-family:monospace">${a.alert_key || ''}</td>
+          <td>${ageStr}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+    }
+
+    // Insert at top of Notifications tab
+    const notifTab = document.getElementById('tab-telegram');
+    const existingAlerts = document.getElementById('alerts-section');
+    if (!existingAlerts) {
+      const alertDiv = document.createElement('div');
+      alertDiv.id = 'alerts-section';
+      alertDiv.className = 'card';
+      alertDiv.style.cssText = 'grid-column:1/-1;margin-bottom:20px';
+      alertDiv.innerHTML = `<h3>📊 Recent Alerts</h3><div style="margin-top:12px">${html}</div>
+        <div style="margin-top:12px;font-size:0.82rem;color:var(--muted)">
+          Total: <strong>${summary.total_sent || 0}</strong> | 
+          Last hour: <strong>${summary.last_hour || 0}</strong> | 
+          Dedup active: <strong>${summary.dedup_active || 0}</strong>
+        </div>`;
+      notifTab.insertBefore(alertDiv, notifTab.firstChild);
+    } else {
+      existingAlerts.innerHTML = `<h3>📊 Recent Alerts</h3><div style="margin-top:12px">${html}</div>
+        <div style="margin-top:12px;font-size:0.82rem;color:var(--muted)">
+          Total: <strong>${summary.total_sent || 0}</strong> | 
+          Last hour: <strong>${summary.last_hour || 0}</strong> | 
+          Dedup active: <strong>${summary.dedup_active || 0}</strong>
+        </div>`;
+    }
+  } catch(e) { console.error('alerts', e); }
+}
+
+// Update tab click handlers
+
+(async function init() {
+  const auth = await checkAuth();
+  if (!auth) return;
+  refresh();
+  setInterval(refresh, 30000);
+})();
 </script>
 </body>
 </html>

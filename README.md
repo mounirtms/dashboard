@@ -1,11 +1,40 @@
 # Server Control Center — technostationery.com
 
+**Version:** 3.1.0  
+**Author:** Mounir Abderrahmani  
+**Last Updated:** 2026-04-28
+
 ## Overview
 
 Complete server management dashboard and operational scripts for the technostationery.com infrastructure.
 
 **Dashboard URL:** `https://dashboard.technostationery.com/`  
 **API Endpoint:** `https://dashboard.technostationery.com/api/monitor.php`
+
+## 🔐 Environment Configuration
+
+The dashboard uses environment variables for sensitive configuration. Before deploying:
+
+```bash
+# Copy the environment template
+cp .env.example .env
+
+# Edit with your actual credentials
+nano .env
+```
+
+**Important:** The `.env` file is excluded from version control. Never commit sensitive credentials.
+
+### Required Environment Variables
+
+- `DB_PASS` - Database root password
+- `TELEGRAM_SERVER_BOT_TOKEN` - Server notification bot token
+- `TELEGRAM_CUSTOMER_BOT_TOKEN` - Customer shopping bot token
+- `CF_API_TOKEN` - Cloudflare API token
+- `CF_ZONE_ID` - Cloudflare zone identifier
+- `CF_ACCOUNT_ID` - Cloudflare account identifier
+
+See `.env.example` for the complete list of configuration options.
 
 ---
 

@@ -54,6 +54,15 @@ function cmd($c, $timeout=5) {
 }
 function cmd_line($c, $t=5) { $r=cmd($c,$t); return trim(implode("\n",$r['output'])); }
 function safe_num($v,$d=0) { return is_numeric($v) ? round($v+0,$d) : $d; }
+function format_bytes($bytes) {
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $i = 0;
+    while ($bytes >= 1024 && $i < count($units) - 1) {
+        $bytes /= 1024;
+        $i++;
+    }
+    return round($bytes, 2) . ' ' . $units[$i];
+}
 
 // ── Actions ──
 function overview() {
@@ -113,6 +122,59 @@ function overview() {
     $access_rate = cmd_line("tail -100 /etc/apache2/logs/access_log 2>/dev/null | wc -l");
     $error_503 = cmd_line("grep -c ' 503 ' /etc/apache2/logs/access_log 2>/dev/null || echo 0");
     $error_500 = cmd_line("grep -c ' 500 ' /etc/apache2/logs/access_log 2>/dev/null || echo 0");
+
+    // ── Telegram Alerts (Critical Conditions with Deduplication) ──
+    $telegramConfig = require __DIR__ . '/telegram/config.php';
+    if ($telegramConfig['alerts']['enabled'] ?? true) {
+        require_once __DIR__ . '/telegram/AlertManager.php';
+        $alertManager = new AlertManager($telegramConfig);
+        require_once __DIR__ . '/telegram/BotHandler.php';
+        
+        try {
+            $bot = new BotHandler($telegramConfig, 'server');
+
+            // Check for down services
+            foreach ($services as $svc => $status) {
+                if ($status !== 'running') {
+                    $alertKey = "service_down:$svc";
+                    if ($alertManager->shouldSend($alertKey, 'service')) {
+                        $text = "🔴 *Service Down*\n\nService `$svc` is not running (status: `$status`)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
+                        $bot->sendAlert($alertKey, 'service', $text);
+                    }
+                }
+            }
+
+            // Check CPU load (critical >= 8)
+            if ($load[0] >= 8) {
+                $alertKey = "high_cpu_load";
+                if ($alertManager->shouldSend($alertKey, 'load')) {
+                    $text = "🔴 *High CPU Load*\n\n1-min load average: `{$load[0]}` (threshold: 8)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
+                    $bot->sendAlert($alertKey, 'load', $text);
+                }
+            }
+
+            // Check memory usage (critical >= 85%)
+            if ($mem_used_pct >= 85) {
+                $alertKey = "high_memory";
+                if ($alertManager->shouldSend($alertKey, 'memory')) {
+                    $text = "🔴 *High Memory Usage*\n\nMemory usage: `{$mem_used_pct}%` (threshold: 85%)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
+                    $bot->sendAlert($alertKey, 'memory', $text);
+                }
+            }
+
+            // Check HTTP 503 errors
+            if ((int)$error_503 > 10) {
+                $alertKey = "http_503_errors";
+                if ($alertManager->shouldSend($alertKey, 'http_error')) {
+                    $text = "🔴 *HTTP 503 Errors*\n\nDetected `$error_503` HTTP 503 errors in access logs\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
+                    $bot->sendAlert($alertKey, 'http_error', $text);
+                }
+            }
+        } catch (Exception $e) {
+            // Silently fail - don't break monitoring if telegram has issues
+            error_log("Telegram alert error: " . $e->getMessage());
+        }
+    }
 
     echo json_encode([
         'load' => ['1min'=>$load[0],'5min'=>$load[1],'15min'=>$load[2]],
@@ -246,6 +308,37 @@ function queues() {
             @$db->close();
         }
     } catch(\Exception $e) {}
+
+    // ── Telegram Alerts (Queue Overflow with Deduplication) ──
+    $telegramConfig = require __DIR__ . '/telegram/config.php';
+    if ($telegramConfig['alerts']['enabled'] ?? true) {
+        require_once __DIR__ . '/telegram/AlertManager.php';
+        $alertManager = new AlertManager($telegramConfig);
+        require_once __DIR__ . '/telegram/BotHandler.php';
+        
+        try {
+            $bot = new BotHandler($telegramConfig, 'server');
+
+            $total_pending = array_sum($queue_info);
+            if ($total_pending >= 100) {
+                $alertKey = "queue_overflow";
+                if ($alertManager->shouldSend($alertKey, 'queue')) {
+                    $overflow_queues = [];
+                    foreach ($queue_info as $q_name => $q_count) {
+                        if ($q_count >= 10) {
+                            $overflow_queues[] = "`$q_name`: $q_count";
+                        }
+                    }
+                    $details = "Total pending messages: `$total_pending`\n\n" . implode("\n", $overflow_queues);
+                    $text = "🔴 *Queue Overflow*\n\n$details\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
+                    $bot->sendAlert($alertKey, 'queue', $text);
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Telegram queue alert error: " . $e->getMessage());
+        }
+    }
+
     echo json_encode(['consumers'=>$consumers,'queue_counts'=>$queue_info,'timestamp'=>date('Y-m-d H:i:s')], JSON_PRETTY_PRINT);
 }
 
@@ -293,10 +386,836 @@ function execute() {
     foreach($allowed_prefixes as $p) { if(strpos($real,$p)===0) { $allowed=true; break; } }
     if(!$allowed) { echo json_encode(['error'=>'Script not in allowed paths']); return; }
     $ext = pathinfo($real,PATHINFO_EXTENSION);
-    $cmd = $ext==='php' ? "php '$real' $args 2>&1" : "bash '$real' $args 2>&1";
-    $output = []; $ret = 0;
-    exec($cmd, $output, $ret);
-    echo json_encode(['script'=>$script,'exit_code'=>$ret,'output'=>$output,'timestamp'=>date('Y-m-d H:i:s')], JSON_PRETTY_PRINT);
+    $cmd = $ext==='php' ? "/opt/cpanel/ea-php82/root/usr/bin/php '$real' $args 2>&1" : "bash '$real' $args 2>&1";
+    $desc = [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']];
+    $proc = @proc_open($cmd, $desc, $pipes);
+    $out = []; $ret = 1;
+    if (is_resource($proc)) {
+        stream_set_timeout($pipes[1], 60);
+        while(($ln=fgets($pipes[1]))!==false) $out[]=rtrim($ln);
+        $st=proc_get_status($proc);
+        if($st['running']) proc_terminate($proc,9);
+        proc_close($proc);
+        $ret=$st['exitcode']??1;
+    }
+    echo json_encode(['script'=>$script,'exit_code'=>$ret,'output'=>$out,'timestamp'=>date('Y-m-d H:i:s')], JSON_PRETTY_PRINT);
+}
+
+
+function dbhealth() {
+    $results = [];
+    $dbs = [
+        'prod' => 'technadminy7_dBT8x12y22',
+        'beta' => 'beta_dBT8x12y22',
+    ];
+    foreach ($dbs as $env => $dbName) {
+        $db = @new mysqli(DB_HOST, DB_USER, DB_PASS, $dbName, DB_PORT);
+        if (!$db || $db->connect_error) { $results[$env] = ['error' => 'Cannot connect']; continue; }
+        // Size
+        $r = $db->query("SELECT ROUND(SUM(data_length+index_length)/1024/1024,1) as mb, ROUND(SUM(data_free)/1024/1024,1) as frag_mb FROM information_schema.TABLES WHERE table_schema='$dbName'");
+        $size = $r ? $r->fetch_assoc() : [];
+        // Top fragmented tables
+        $r2 = $db->query("SELECT table_name, ROUND((data_length+index_length)/1024/1024,1) as size_mb, ROUND(data_free/1024/1024,1) as frag_mb, table_rows FROM information_schema.TABLES WHERE table_schema='$dbName' AND data_free > 10485760 ORDER BY data_free DESC LIMIT 10");
+        $frags = [];
+        if ($r2) while ($row = $r2->fetch_assoc()) $frags[] = $row;
+        // Connections
+        $r3 = $db->query("SHOW STATUS LIKE 'Threads_connected'");
+        $conns = $r3 ? $r3->fetch_row()[1] : 0;
+        $r4 = $db->query("SHOW STATUS LIKE 'Threads_running'");
+        $running = $r4 ? $r4->fetch_row()[1] : 0;
+        // Slow queries
+        $r5 = $db->query("SHOW STATUS LIKE 'Slow_queries'");
+        $slow = $r5 ? $r5->fetch_row()[1] : 0;
+        $db->close();
+        $results[$env] = [
+            'db' => $dbName,
+            'size_mb' => floatval($size['mb'] ?? 0),
+            'frag_mb' => floatval($size['frag_mb'] ?? 0),
+            'connections' => intval($conns),
+            'running' => intval($running),
+            'slow_queries' => intval($slow),
+            'fragmented_tables' => $frags,
+        ];
+    }
+    echo json_encode(['databases' => $results, 'timestamp' => date('Y-m-d H:i:s')], JSON_PRETTY_PRINT);
+}
+
+// ── New Real-Time Monitoring Endpoints ──
+
+/**
+ * Redis deep monitoring
+ */
+function redis_stats() {
+    $result = ['error' => 'Redis not available'];
+    
+    try {
+        // Memory info
+        $mem = cmd_line("redis-cli -p 6379 INFO memory", 3);
+        $stats = cmd_line("redis-cli -p 6379 INFO stats", 3);
+        $keyspace = cmd_line("redis-cli -p 6379 INFO keyspace", 3);
+        $clients = cmd_line("redis-cli -p 6379 INFO clients", 3);
+        
+        if (strpos($mem, 'used_memory_human') !== false) {
+            $parse = function($data, $key) {
+                foreach (explode("\n", $data) as $line) {
+                    if (strpos($line, "$key:") === 0) {
+                        return trim(explode(':', $line)[1]);
+                    }
+                }
+                return null;
+            };
+            
+            $used_mem = $parse($mem, 'used_memory_human');
+            $peak_mem = $parse($mem, 'used_memory_peak_human');
+            $used_bytes = safe_num($parse($mem, 'used_memory'), 0);
+            $maxmemory = $parse($mem, 'maxmemory_human');
+            
+            $hits = safe_num($parse($stats, 'keyspace_hits'), 0);
+            $misses = safe_num($parse($stats, 'keyspace_misses'), 0);
+            $hit_rate = ($hits + $misses) > 0 ? round($hits / ($hits + $misses) * 100, 1) : 0;
+            
+            $ops_sec = $parse($stats, 'instantaneous_ops_per_sec');
+            $evicted = $parse($stats, 'evicted_keys');
+            $expired = $parse($stats, 'expired_keys');
+            
+            $connected_clients = $parse($clients, 'connected_clients');
+            $blocked_clients = $parse($clients, 'blocked_clients');
+            
+            // Parse keyspace
+            $db_info = [];
+            $total_keys = 0;
+            foreach (explode("\n", $keyspace) as $line) {
+                if (preg_match('/^db(\d+):keys=(\d+),expires=(\d+),avg_ttl=(\d+)/', $line, $m)) {
+                    $db_info[] = [
+                        'db' => "db{$m[1]}",
+                        'keys' => (int)$m[2],
+                        'expires' => (int)$m[3],
+                        'avg_ttl' => (int)$m[4]
+                    ];
+                    $total_keys += (int)$m[2];
+                }
+            }
+            
+            $result = [
+                'connected' => true,
+                'memory' => [
+                    'used_human' => $used_mem,
+                    'peak_human' => $peak_mem,
+                    'used_bytes' => $used_bytes,
+                    'max_human' => $maxmemory ?: 'unlimited'
+                ],
+                'stats' => [
+                    'hit_rate' => $hit_rate,
+                    'hits' => $hits,
+                    'misses' => $misses,
+                    'ops_per_sec' => $ops_sec ?: 0,
+                    'evicted_keys' => $evicted ?: 0,
+                    'expired_keys' => $expired ?: 0
+                ],
+                'clients' => [
+                    'connected' => $connected_clients ?: 0,
+                    'blocked' => $blocked_clients ?: 0
+                ],
+                'keyspace' => [
+                    'total_keys' => $total_keys,
+                    'databases' => $db_info
+                ]
+            ];
+        }
+    } catch (Exception $e) {
+        $result['error'] = $e->getMessage();
+    }
+    
+    echo json_encode($result, JSON_PRETTY_PRINT);
+}
+
+/**
+ * Elasticsearch cluster health monitoring
+ */
+function elasticsearch_stats() {
+    $result = ['error' => 'Elasticsearch not available'];
+    
+    try {
+        // Cluster health
+        $health_json = cmd_line("curl -s --max-time 3 localhost:9200/_cluster/health", 5);
+        $health = json_decode($health_json, true);
+        
+        if ($health && isset($health['status'])) {
+            // Index stats
+            $indices_raw = cmd_line("curl -s --max-time 3 'localhost:9200/_cat/indices?h=index,health,docs.count,store.size&s=store.size:desc'", 5);
+            $indices = [];
+            foreach (explode("\n", trim($indices_raw)) as $line) {
+                $parts = preg_split('/\s+/', trim($line));
+                if (count($parts) >= 4) {
+                    $indices[] = [
+                        'name' => $parts[0],
+                        'health' => $parts[1],
+                        'docs' => $parts[2],
+                        'size' => $parts[3]
+                    ];
+                }
+            }
+            $indices = array_slice($indices, 0, 10); // Top 10
+            
+            // JVM stats
+            $jvm_json = cmd_line("curl -s --max-time 3 'localhost:9200/_nodes/stats/jvm?filter_path=**.mem.heap_used_in_bytes,**.mem.heap_max_in_bytes,**.gc.collectors.*.collection_count'", 5);
+            $jvm = json_decode($jvm_json, true);
+            
+            $jvm_heap_pct = 0;
+            $gc_young = 0;
+            $gc_old = 0;
+            
+            if ($jvm) {
+                $nodes = $jvm['nodes'] ?? [];
+                foreach ($nodes as $node) {
+                    $heap_used = $node['jvm']['mem']['heap_used_in_bytes'] ?? 0;
+                    $heap_max = $node['jvm']['mem']['heap_max_in_bytes'] ?? 1;
+                    $jvm_heap_pct = round($heap_used / $heap_max * 100, 1);
+                    
+                    $gc = $node['jvm']['gc']['collectors'] ?? [];
+                    $gc_young = $gc['young']['collection_count'] ?? 0;
+                    $gc_old = $gc['old']['collection_count'] ?? 0;
+                    break; // First node
+                }
+            }
+            
+            $result = [
+                'cluster' => [
+                    'status' => $health['status'],
+                    'number_of_nodes' => $health['number_of_nodes'] ?? 0,
+                    'active_shards' => $health['active_shards'] ?? 0,
+                    'unassigned_shards' => $health['unassigned_shards'] ?? 0
+                ],
+                'nodes' => [
+                    'jvm_heap_pct' => $jvm_heap_pct,
+                    'jvm_heap_max_mb' => round($heap_max / 1024 / 1024),
+                    'gc_count' => $gc_young + $gc_old
+                ],
+                'indices' => array_map(function($idx) {
+                    return [
+                        'index' => $idx['name'],
+                        'docs_count' => $idx['docs'],
+                        'store_size' => $idx['size']
+                    ];
+                }, $indices)
+            ];
+        }
+    } catch (Exception $e) {
+        $result['error'] = $e->getMessage();
+    }
+    
+    echo json_encode($result, JSON_PRETTY_PRINT);
+}
+
+/**
+ * Varnish cache analytics
+ */
+function varnish_stats() {
+    $result = ['error' => 'Varnish not available'];
+    
+    try {
+        $varnish_json = cmd_line("varnishstat -1 -j", 5);
+        $varnish = json_decode($varnish_json, true);
+        
+        if ($varnish) {
+            $get_val = function($key) use ($varnish) {
+                return $varnish[$key]['value'] ?? 0;
+            };
+            
+            $cache_hit = $get_val('MAIN.cache_hit');
+            $cache_miss = $get_val('MAIN.cache_miss');
+            $total = $cache_hit + $cache_miss;
+            $hit_ratio = $total > 0 ? round($cache_hit / $total * 100, 1) : 0;
+            
+            $sess_conn = $get_val('MAIN.sess_conn');
+            $uptime = $get_val('MGT.uptime');
+            $req_per_sec = $uptime > 0 ? round($sess_conn / $uptime, 2) : 0;
+            
+            $s0_g_bytes = $get_val('SMA.s0.g_bytes');
+            $s0_g_space = $get_val('SMA.s0.g_space');
+            $s0_total = $s0_g_bytes + $s0_g_space;
+            $storage_pct = $s0_total > 0 ? round($s0_g_bytes / $s0_total * 100, 1) : 0;
+            
+            $backend_conn = $get_val('MAIN.backend_conn');
+            $backend_fail = $get_val('MAIN.backend_fail');
+            $backend_healthy = $backend_fail == 0;
+            
+            $n_expired = $get_val('MAIN.n_expired');
+            $n_lru_nuked = $get_val('MAIN.n_lru_nuked');
+
+            // Device type tracking from varnishlog (last 500 requests)
+            $device_counts = ['mobile' => 0, 'tablet' => 0, 'desktop' => 0];
+            $vlog_output = cmd_line("varnishlog -d -g raw 2>/dev/null | grep 'device:' | tail -500", 5);
+            if ($vlog_output) {
+                foreach (explode("\n", trim($vlog_output)) as $line) {
+                    if (strpos($line, 'device:mobile') !== false) $device_counts['mobile']++;
+                    elseif (strpos($line, 'device:tablet') !== false) $device_counts['tablet']++;
+                    elseif (strpos($line, 'device:desktop') !== false) $device_counts['desktop']++;
+                }
+            }
+            $total_devices = array_sum($device_counts);
+            $device_pct = [];
+            foreach ($device_counts as $type => $count) {
+                $device_pct[$type] = [
+                    'count' => $count,
+                    'percentage' => $total_devices > 0 ? round($count / $total_devices * 100, 1) : 0
+                ];
+            }
+
+            $result = [
+                'hit_ratio' => $hit_ratio,
+                'hits' => $cache_hit,
+                'misses' => $cache_miss,
+                'req_per_sec' => $req_per_sec,
+                'storage' => [
+                    'used_bytes' => $s0_g_bytes,
+                    'available_bytes' => $s0_g_space,
+                    'total_bytes' => $s0_total,
+                    'used' => format_bytes($s0_g_bytes),
+                    'total' => format_bytes($s0_total)
+                ],
+                'backend_connections' => $backend_conn,
+                'backend_failures' => $backend_fail,
+                'backend_healthy' => $backend_healthy,
+                'evictions' => $n_expired + $n_lru_nuked,
+                'device_types' => $device_pct,
+                'total_device_requests' => $total_devices
+            ];
+        }
+    } catch (Exception $e) {
+        $result['error'] = $e->getMessage();
+    }
+    
+    echo json_encode($result, JSON_PRETTY_PRINT);
+}
+
+/**
+ * System advanced: network, I/O, CPU per-core, uptime, file descriptors
+ */
+function system_advanced_stats() {
+    try {
+        // Network from /proc/net/dev
+        $net_data = ['rx_bytes' => 0, 'tx_bytes' => 0, 'rx_packets' => 0, 'tx_packets' => 0, 'rx_errors' => 0, 'tx_errors' => 0];
+        $net_lines = explode("\n", @file_get_contents('/proc/net/dev'));
+        foreach ($net_lines as $line) {
+            if (strpos($line, 'enp') !== false || strpos($line, 'eth') !== false || strpos($line, 'ens') !== false) {
+                $parts = preg_split('/\s+/', trim(explode(':', $line)[1]));
+                if (count($parts) >= 10) {
+                    $net_data = [
+                        'rx_bytes' => (int)$parts[0],
+                        'rx_packets' => (int)$parts[1],
+                        'rx_errors' => (int)$parts[2],
+                        'rx_drop' => (int)$parts[3],
+                        'tx_bytes' => (int)$parts[8],
+                        'tx_packets' => (int)$parts[9],
+                        'tx_errors' => (int)$parts[10],
+                        'tx_drop' => (int)$parts[11]
+                    ];
+                }
+                break;
+            }
+        }
+        
+        // CPU per-core from /proc/stat
+        $cpu_cores = [];
+        $stat_lines = explode("\n", @file_get_contents('/proc/stat'));
+        foreach ($stat_lines as $line) {
+            if (preg_match('/^cpu(\d+)\s+/', $line, $m)) {
+                $parts = preg_split('/\s+/', trim(substr($line, strpos($line, ' '))));
+                if (count($parts) >= 7) {
+                    $user = $parts[0] + $parts[1];
+                    $system = $parts[2] + ($parts[5] ?? 0) + ($parts[6] ?? 0);
+                    $idle = $parts[3];
+                    $total = $user + $system + $idle;
+                    $cpu_cores[] = [
+                        'core' => (int)$m[1],
+                        'utilization' => $total > 0 ? round(($user + $system) / $total * 100, 1) : 0
+                    ];
+                }
+            }
+        }
+        
+        // Disk I/O from /proc/diskstats
+        $disk_io = [];
+        $disk_lines = explode("\n", @file_get_contents('/proc/diskstats'));
+        foreach ($disk_lines as $line) {
+            $parts = preg_split('/\s+/', trim($line));
+            if (count($parts) >= 14 && ($parts[2] == 'sda' || $parts[2] == 'sda2')) {
+                $disk_io[$parts[2]] = [
+                    'reads_completed' => (int)$parts[3],
+                    'sectors_read' => (int)$parts[5],
+                    'writes_completed' => (int)$parts[7],
+                    'sectors_written' => (int)$parts[9],
+                    'time_reading_ms' => (int)$parts[6],
+                    'time_writing_ms' => (int)$parts[10]
+                ];
+            }
+        }
+        
+        // Calculate I/O deltas
+        $snapshot_file = __DIR__ . '/telegram/data/io_snapshot.json';
+        $prev_snapshot = @json_decode(@file_get_contents($snapshot_file), true);
+        $now = time();
+        $current_snapshot = ['timestamp' => $now, 'disk' => $disk_io, 'net' => $net_data];
+        
+        $io_rates = ['read_iops' => 0, 'write_iops' => 0, 'read_mbps' => 0, 'write_mbps' => 0, 'rx_mbps' => 0, 'tx_mbps' => 0];
+        if ($prev_snapshot && ($now - $prev_snapshot['timestamp']) > 0) {
+            $delta_t = $now - $prev_snapshot['timestamp'];
+            
+            // Disk I/O rates
+            foreach (['sda', 'sda2'] as $dev) {
+                if (isset($disk_io[$dev]) && isset($prev_snapshot['disk'][$dev])) {
+                    $d_reads = $disk_io[$dev]['reads_completed'] - $prev_snapshot['disk'][$dev]['reads_completed'];
+                    $d_writes = $disk_io[$dev]['writes_completed'] - $prev_snapshot['disk'][$dev]['writes_completed'];
+                    $d_sectors_r = $disk_io[$dev]['sectors_read'] - $prev_snapshot['disk'][$dev]['sectors_read'];
+                    $d_sectors_w = $disk_io[$dev]['sectors_written'] - $prev_snapshot['disk'][$dev]['sectors_written'];
+                    
+                    $io_rates['read_iops'] += $d_reads / $delta_t;
+                    $io_rates['write_iops'] += $d_writes / $delta_t;
+                    $io_rates['read_mbps'] = round($d_sectors_r * 512 / 1024 / 1024 / $delta_t, 2);
+                    $io_rates['write_mbps'] = round($d_sectors_w * 512 / 1024 / 1024 / $delta_t, 2);
+                }
+            }
+            
+            // Network rates
+            if (isset($net_data['rx_bytes']) && isset($prev_snapshot['net']['rx_bytes'])) {
+                $d_rx = $net_data['rx_bytes'] - $prev_snapshot['net']['rx_bytes'];
+                $d_tx = $net_data['tx_bytes'] - $prev_snapshot['net']['tx_bytes'];
+                $io_rates['rx_mbps'] = round($d_rx / 1024 / 1024 / $delta_t, 2);
+                $io_rates['tx_mbps'] = round($d_tx / 1024 / 1024 / $delta_t, 2);
+            }
+        }
+        
+        // Save current snapshot
+        @file_put_contents($snapshot_file, json_encode($current_snapshot), LOCK_EX);
+        
+        // Uptime
+        $uptime_raw = @file_get_contents('/proc/uptime');
+        $uptime_seconds = (int)explode(' ', $uptime_raw)[0];
+        $days = floor($uptime_seconds / 86400);
+        $hours = floor(($uptime_seconds % 86400) / 3600);
+        $minutes = floor(($uptime_seconds % 3600) / 60);
+        
+        // File descriptors
+        $file_nr = explode(' ', trim(@file_get_contents('/proc/sys/fs/file-nr')));
+        
+        $result = [
+            'network' => [
+                'rx_bytes' => $net_data['rx_bytes'],
+                'tx_bytes' => $net_data['tx_bytes'],
+                'rx_packets' => $net_data['rx_packets'],
+                'tx_packets' => $net_data['tx_packets'],
+                'rx_errors' => $net_data['rx_errors'],
+                'tx_errors' => $net_data['tx_errors'],
+                'rx_rate' => $io_rates['rx_mbps'] > 0 ? round($io_rates['rx_mbps'], 2) . ' MB/s' : '0 B/s',
+                'tx_rate' => $io_rates['tx_mbps'] > 0 ? round($io_rates['tx_mbps'], 2) . ' MB/s' : '0 B/s',
+                'total_rx' => $net_data['rx_bytes'] > 0 ? format_bytes($net_data['rx_bytes']) : '0 B',
+                'total_tx' => $net_data['tx_bytes'] > 0 ? format_bytes($net_data['tx_bytes']) : '0 B'
+            ],
+            'cpu_per_core' => $cpu_cores,
+            'io' => [
+                'read_iops' => round($io_rates['read_iops'], 1),
+                'write_iops' => round($io_rates['write_iops'], 1),
+                'read_rate' => $io_rates['read_mbps'] > 0 ? round($io_rates['read_mbps'], 2) . ' MB/s' : '0 B/s',
+                'write_rate' => $io_rates['write_mbps'] > 0 ? round($io_rates['write_mbps'], 2) . ' MB/s' : '0 B/s'
+            ],
+            'system' => [
+                'uptime_seconds' => $uptime_seconds,
+                'uptime_human' => "{$days}d {$hours}h {$minutes}m",
+                'file_descriptors_used' => (int)$file_nr[0],
+                'file_descriptors_max' => (int)$file_nr[2]
+            ]
+        ];
+        
+        echo json_encode($result, JSON_PRETTY_PRINT);
+    } catch (Exception $e) {
+        echo json_encode(['error' => $e->getMessage()], JSON_PRETTY_PRINT);
+    }
+}
+
+/**
+ * PHP-FPM per-pool statistics
+ */
+function phpfpm_pools_stats() {
+    try {
+        $pools_dir = '/opt/cpanel/ea-php82/root/etc/php-fpm.d';
+        $pools = [];
+        
+        if (is_dir($pools_dir)) {
+            foreach (glob("$pools_dir/*.conf") as $conf_file) {
+                $content = @file_get_contents($conf_file);
+                if (!$content) continue;
+                
+                $pool_name = basename($conf_file, '.conf');
+                
+                $parse_config = function($key) use ($content) {
+                    if (preg_match("/$key\s*=\s*(.+)/", $content, $m)) {
+                        return trim($m[1]);
+                    }
+                    return null;
+                };
+                
+                $user = $parse_config('user') ?: $pool_name;
+                $max_children = (int)($parse_config('pm.max_children') ?: 50);
+                $start_servers = (int)($parse_config('pm.start_servers') ?: 5);
+                $min_spare = (int)($parse_config('pm.min_spare_servers') ?: 5);
+                $max_spare = (int)($parse_config('pm.max_spare_servers') ?: 35);
+                $max_requests = (int)($parse_config('pm.max_requests') ?: 500);
+                $slowlog_timeout = $parse_config('request_slowlog_timeout') ?: '0';
+                
+                // Count active workers
+                $active_workers = safe_num(cmd_line("ps aux | grep 'php-fpm: pool $user' | grep -v grep | grep -v master | wc -l"), 0);
+                $utilization = $max_children > 0 ? round($active_workers / $max_children * 100, 1) : 0;
+                
+                // Slow log size
+                $slowlog_path = "/home/$user/logs/php-fpm.slow.log";
+                $slowlog_size = file_exists($slowlog_path) ? round(filesize($slowlog_path) / 1024 / 1024, 1) : 0;
+                
+                $pools[] = [
+                    'name' => $pool_name,
+                    'user' => $user,
+                    'max_children' => $max_children,
+                    'active_workers' => $active_workers,
+                    'utilization_percent' => $utilization,
+                    'start_servers' => $start_servers,
+                    'min_spare_servers' => $min_spare,
+                    'max_spare_servers' => $max_spare,
+                    'max_requests' => $max_requests,
+                    'slowlog_timeout' => $slowlog_timeout,
+                    'slowlog_size_mb' => $slowlog_size
+                ];
+            }
+        }
+        
+        echo json_encode(['pools' => $pools, 'count' => count($pools)], JSON_PRETTY_PRINT);
+    } catch (Exception $e) {
+        echo json_encode(['error' => $e->getMessage()], JSON_PRETTY_PRINT);
+    }
+}
+
+/**
+ * Alert history and state
+ */
+function alert_history() {
+    try {
+        require_once __DIR__ . '/telegram/AlertManager.php';
+        $config = require __DIR__ . '/telegram/config.php';
+        $am = new AlertManager($config);
+        
+        $state_file = __DIR__ . '/telegram/data/alert_state.json';
+        $state = @json_decode(@file_get_contents($state_file), true) ?: ['last_sent' => [], 'history' => []];
+        
+        $history = array_map(function($h) {
+            return [
+                'key' => $h['key'],
+                'type' => $h['type'],
+                'timestamp' => date('Y-m-d H:i:s', $h['timestamp']),
+                'age_minutes' => round((time() - $h['timestamp']) / 60)
+            ];
+        }, array_slice(array_reverse($state['history']), 0, 50));
+        
+        $active_alerts = array_map(function($key, $ts) {
+            return [
+                'key' => $key,
+                'last_sent' => date('Y-m-d H:i:s', $ts),
+                'age_minutes' => round((time() - $ts) / 60)
+            ];
+        }, array_keys($state['last_sent']), $state['last_sent']);
+        
+        echo json_encode([
+            'stats' => $am->getStats(),
+            'history' => $history,
+            'active_alerts' => $active_alerts
+        ], JSON_PRETTY_PRINT);
+    } catch (Exception $e) {
+        echo json_encode(['error' => $e->getMessage()], JSON_PRETTY_PRINT);
+    }
+}
+
+/**
+ * Quick Redis check for overview
+ */
+function redis_quick_check() {
+    try {
+        $ping = cmd_line("redis-cli -p 6379 PING", 2);
+        if ($ping === 'PONG') {
+            $dbsize = cmd_line("redis-cli -p 6379 DBSIZE", 2);
+            $keys = 0;
+            if (preg_match('/(\d+)/', $dbsize, $m)) {
+                $keys = (int)$m[1];
+            }
+            return ['connected' => true, 'keys' => $keys];
+        }
+    } catch (Exception $e) {}
+    return ['connected' => false, 'keys' => 0];
+}
+
+/**
+ * Quick Varnish check for overview
+ */
+function varnish_quick_check() {
+    try {
+        $varnish_json = cmd_line("varnishstat -1 -j", 3);
+        $varnish = json_decode($varnish_json, true);
+        if ($varnish) {
+            $hits = $varnish['MAIN.cache_hit']['value'] ?? 0;
+            $misses = $varnish['MAIN.cache_miss']['value'] ?? 0;
+            $total = $hits + $misses;
+            $hit_ratio = $total > 0 ? round($hits / $total * 100, 1) : 0;
+            return ['connected' => true, 'hit_ratio' => $hit_ratio];
+        }
+    } catch (Exception $e) {}
+    return ['connected' => false, 'hit_ratio' => 0];
+}
+
+/**
+ * Cloudflare API helper
+ */
+define('CF_API_TOKEN', 'cfut_D4T7Fy8FNpNx8u2oQ9N13z9LQ9KoPQucNR9LSa0j737f4219');
+define('CF_ZONE_ID', '4919ad3406fcabba381edbd543814a68');
+define('CF_ACCOUNT_ID', 'cb89f9d4bfa5ff6fe2c8528847dbc5fe');
+define('CF_EMAIL', 'amine.bo@techno-dz.com');
+
+function cf_api($endpoint, $method = 'GET', $data = null) {
+    $url = "https://api.cloudflare.com/client/v4{$endpoint}";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bearer " . CF_API_TOKEN,
+        "Content-Type: application/json"
+    ]);
+    if ($data) {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    }
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return ['code' => $httpCode, 'body' => json_decode($response, true)];
+}
+
+/**
+ * Cloudflare zone info and settings
+ */
+function cloudflare_stats() {
+    $result = ['error' => 'Cloudflare API unavailable'];
+
+    try {
+        // Zone info
+        $zone = cf_api("/zones/" . CF_ZONE_ID);
+        if (!$zone['body']['success']) {
+            $result['error'] = $zone['body']['errors'][0]['message'] ?? 'API error';
+            echo json_encode($result);
+            return;
+        }
+
+        $z = $zone['body']['result'];
+        $zoneInfo = [
+            'name' => $z['name'],
+            'status' => $z['status'],
+            'plan' => $z['plan']['name'] ?? 'Unknown',
+            'development_mode' => $z['development_mode'] ?? 'off',
+        ];
+
+        // Zone settings
+        $settings = cf_api("/zones/" . CF_ZONE_ID . "/settings");
+        $settingsMap = [];
+        if ($settings['body']['success']) {
+            foreach ($settings['body']['result'] as $s) {
+                $settingsMap[$s['id']] = $s['value'];
+            }
+        }
+
+        // SSL info
+        $ssl = cf_api("/zones/" . CF_ZONE_ID . "/settings/ssl");
+        $sslMode = 'off';
+        if ($ssl['body']['success'] && isset($ssl['body']['result']['value'])) {
+            $sslMode = $ssl['body']['result']['value'];
+        }
+
+        // Cache purge history
+        $cachePurgeHistory = cf_api("/zones/" . CF_ZONE_ID . "/purge_history");
+
+        // GraphQL analytics - last 7 days
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $weekAgo = date('Y-m-d', strtotime('-8 days'));
+        $graphql = cf_api("/graphql", 'POST', [
+            'query' => "query { viewer { zones(filter: {zoneTag: \"" . CF_ZONE_ID . "\"}) { httpRequests1dGroups(limit: 7, filter: {date_gt: \"{$weekAgo}\"}, orderBy: [date_DESC]) { dimensions { date } sum { requests pageViews threats } uniq { uniques } } } } }"
+        ]);
+        $analytics = [];
+        $totals = ['requests' => 0, 'pageViews' => 0, 'threats' => 0, 'uniques' => 0];
+        if ($graphql['body']['success'] && isset($graphql['body']['data']['viewer']['zones'][0])) {
+            $days = $graphql['body']['data']['viewer']['zones'][0]['httpRequests1dGroups'];
+            foreach ($days as $day) {
+                $analytics[] = [
+                    'date' => $day['dimensions']['date'],
+                    'requests' => $day['sum']['requests'] ?? 0,
+                    'pageViews' => $day['sum']['pageViews'] ?? 0,
+                    'threats' => $day['sum']['threats'] ?? 0,
+                    'uniques' => $day['uniq']['uniques'] ?? 0,
+                ];
+                $totals['requests'] += $day['sum']['requests'] ?? 0;
+                $totals['pageViews'] += $day['sum']['pageViews'] ?? 0;
+                $totals['threats'] += $day['sum']['threats'] ?? 0;
+                $totals['uniques'] += $day['uniq']['uniques'] ?? 0;
+            }
+        }
+
+        // Firewall events (last 24h)
+        $fw = cf_api("/zones/" . CF_ZONE_ID . "/firewall/events");
+        $firewallSummary = ['blocked' => 0, 'challenged' => 0, 'total' => 0];
+        if ($fw['body']['success'] && isset($fw['body']['result'])) {
+            $firewallSummary['total'] = $fw['body']['result']['total'] ?? 0;
+            foreach ($fw['body']['result'] as $event) {
+                if ($event['action'] === 'block') $firewallSummary['blocked']++;
+                if ($event['action'] === 'js_challenge' || $event['action'] === 'captcha') $firewallSummary['challenged']++;
+            }
+        }
+
+        // Account-level analytics summary
+        $account = cf_api("/accounts/" . CF_ACCOUNT_ID);
+        $accountName = '';
+        if ($account['body']['success']) {
+            $accountName = $account['body']['result']['name'] ?? '';
+        }
+
+        $result = [
+            'zone' => $zoneInfo,
+            'account' => $accountName,
+            'settings' => [
+                'always_online' => $settingsMap['always_online'] ?? 'unknown',
+                'automatic_https_rewrites' => $settingsMap['automatic_https_rewrites'] ?? 'unknown',
+                'browser_cache_ttl' => $settingsMap['browser_cache_ttl'] ?? 0,
+                'cache_level' => $settingsMap['cache_level'] ?? 'unknown',
+                'development_mode' => $settingsMap['development_mode'] ?? 'off',
+                'minify_css' => $settingsMap['minify']['css'] ?? 'off',
+                'minify_js' => $settingsMap['minify']['js'] ?? 'off',
+                'minify_html' => $settingsMap['minify']['html'] ?? 'off',
+                'rocket_loader' => $settingsMap['rocket_loader'] ?? 'off',
+                'ssl' => $sslMode,
+                'security_level' => $settingsMap['security_level'] ?? 'unknown',
+                'http2' => $settingsMap['http2'] ?? 'off',
+                'http3' => $settingsMap['http3'] ?? 'off',
+                'ipv6' => $settingsMap['ipv6'] ?? 'off',
+                'brotli' => $settingsMap['brotli'] ?? 'off',
+                'early_hints' => $settingsMap['early_hints'] ?? 'off',
+                'waf' => $settingsMap['waf'] ?? 'off',
+                'polish' => $settingsMap['polish'] ?? 'off',
+            ],
+            'purge_history' => $cachePurgeHistory['body']['success'] ? ($cachePurgeHistory['body']['result'] ?? []) : [],
+            'analytics' => $analytics,
+            'analytics_totals' => $totals,
+            'firewall' => $firewallSummary,
+        ];
+    } catch (Exception $e) {
+        $result['error'] = $e->getMessage();
+    }
+
+    echo json_encode($result, JSON_PRETTY_PRINT);
+}
+
+/**
+ * Cloudflare actions
+ */
+function cloudflare_action() {
+    $action = $_POST['action'] ?? $_GET['action2'] ?? '';
+    $result = ['success' => false, 'message' => 'Unknown action'];
+
+    try {
+        switch ($action) {
+            case 'purge_all':
+                $res = cf_api("/zones/" . CF_ZONE_ID . "/purge_cache", 'POST', ['purge_everything' => true]);
+                if ($res['body']['success']) {
+                    $result = ['success' => true, 'message' => 'Cache purged successfully'];
+                } else {
+                    $result['message'] = $res['body']['errors'][0]['message'] ?? 'Purge failed';
+                }
+                break;
+
+            case 'purge_url':
+                $url = $_POST['url'] ?? '';
+                if (!$url) {
+                    $result['message'] = 'URL required';
+                    break;
+                }
+                $urls = array_map('trim', explode("\n", $url));
+                $res = cf_api("/zones/" . CF_ZONE_ID . "/purge_cache", 'POST', ['files' => $urls]);
+                if ($res['body']['success']) {
+                    $result = ['success' => true, 'message' => 'URLs purged successfully'];
+                } else {
+                    $result['message'] = $res['body']['errors'][0]['message'] ?? 'Purge failed';
+                }
+                break;
+
+            case 'purge_tag':
+                $tag = $_POST['tag'] ?? '';
+                if (!$tag) {
+                    $result['message'] = 'Cache tag required';
+                    break;
+                }
+                $res = cf_api("/zones/" . CF_ZONE_ID . "/purge_cache", 'POST', ['tags' => [$tag]]);
+                if ($res['body']['success']) {
+                    $result = ['success' => true, 'message' => 'Cache tag purged successfully'];
+                } else {
+                    $result['message'] = $res['body']['errors'][0]['message'] ?? 'Purge failed';
+                }
+                break;
+
+            case 'toggle_dev_mode':
+                $value = $_POST['value'] ?? 'off';
+                $res = cf_api("/zones/" . CF_ZONE_ID . "/settings/development_mode", 'POST', ['value' => $value]);
+                if ($res['body']['success']) {
+                    $result = ['success' => true, 'message' => "Development mode {$value}"];
+                } else {
+                    $result['message'] = $res['body']['errors'][0]['message'] ?? 'Failed';
+                }
+                break;
+
+            case 'toggle_setting':
+                $setting = $_POST['setting'] ?? '';
+                $value = $_POST['value'] ?? '';
+                if (!$setting || !$value) {
+                    $result['message'] = 'Setting and value required';
+                    break;
+                }
+                $res = cf_api("/zones/" . CF_ZONE_ID . "/settings/{$setting}", 'POST', ['value' => $value]);
+                if ($res['body']['success']) {
+                    $result = ['success' => true, 'message' => "{$setting} set to {$value}"];
+                } else {
+                    $result['message'] = $res['body']['errors'][0]['message'] ?? 'Failed';
+                }
+                break;
+
+            case 'always_online':
+                $value = $_POST['value'] ?? 'on';
+                $res = cf_api("/zones/" . CF_ZONE_ID . "/settings/always_online", 'POST', ['value' => $value]);
+                if ($res['body']['success']) {
+                    $result = ['success' => true, 'message' => "Always Online {$value}"];
+                } else {
+                    $result['message'] = $res['body']['errors'][0]['message'] ?? 'Failed';
+                }
+                break;
+
+            case 'cache_level':
+                $level = $_POST['level'] ?? 'aggressive';
+                $res = cf_api("/zones/" . CF_ZONE_ID . "/settings/cache_level", 'POST', ['value' => $level]);
+                if ($res['body']['success']) {
+                    $result = ['success' => true, 'message' => "Cache level set to {$level}"];
+                } else {
+                    $result['message'] = $res['body']['errors'][0]['message'] ?? 'Failed';
+                }
+                break;
+
+            default:
+                $result['message'] = "Unknown action: {$action}";
+        }
+    } catch (Exception $e) {
+        $result['message'] = $e->getMessage();
+    }
+
+    echo json_encode($result, JSON_PRETTY_PRINT);
 }
 
 // ── Router ──
@@ -308,5 +1227,14 @@ switch($action) {
     case 'cleanup': cleanup($_GET['type']??'all'); break;
     case 'indexer': indexer($_GET['env']??'prod'); break;
     case 'execute': execute(); break;
+    case 'dbhealth': dbhealth(); break;
+    case 'redis': redis_stats(); break;
+    case 'elasticsearch': elasticsearch_stats(); break;
+    case 'varnish': varnish_stats(); break;
+    case 'system_advanced': system_advanced_stats(); break;
+    case 'phpfpm_pools': phpfpm_pools_stats(); break;
+    case 'alerts': alert_history(); break;
+    case 'cloudflare': cloudflare_stats(); break;
+    case 'cloudflare_action': cloudflare_action(); break;
     default: overview();
 }

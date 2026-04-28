@@ -8,14 +8,14 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
 // Get the original request path - try multiple server variables
-$actualPath = $_SERVER['REDIRECT_URL'] ?? $_SERVER['ORIG_PATH_INFO'] ?? $_SERVER['PATH_INFO'] ?? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$queryString = $_SERVER['QUERY_STRING'] ?? $_SERVER['REDIRECT_QUERY_STRING'] ?? '';
+$actualPath = $_SERVER['REDIRECT_URL'] ?? $_SERVER['ORIG_PATH_INFO'] ?? $_SERVER['PATH_INFO'] ?? parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+$queryString = $_SERVER['QUERY_STRING'] ?? $_SERVER['REDIRECT_QUERY_STRING'] ?? parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY) ?? '';
 
 // Extract path after /yalidine-api/
 $path = '';
