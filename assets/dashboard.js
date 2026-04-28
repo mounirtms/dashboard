@@ -800,57 +800,172 @@ function renderCloudflare(data) {
   const a = data.analytics_totals || {};
   const fw = data.firewall || {};
   const days = data.analytics || [];
+  const hours = data.hourly_analytics || [];
+  const countries = data.countries || [];
+  const statusCodes = data.status_codes || [];
+  const topUrls = data.top_urls || [];
+  const threatTypes = data.threat_types || [];
+  const cacheHitRatio = data.cache_hit_ratio || 0;
+  const bwFormatted = data.bandwidth_formatted || '0 B';
+  const sslCert = data.ssl_certificate;
+
   const statusClass = z.status === 'active' ? 'green' : 'yellow';
   const sslClass = s.ssl === 'full' || s.ssl === 'strict' ? 'green' : s.ssl === 'flexible' ? 'yellow' : 'red';
 
-  // Build mini chart bars for analytics
-  let chartHtml = '';
+  // Format numbers
+  const fmtNum = (n) => (n || 0).toLocaleString();
+
+  let html = `
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div class="infra-stat"><span class="infra-label">Zone</span><span class="infra-val">${z.name || '-'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Status</span><span class="infra-val ${statusClass}">${z.status || 'unknown'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Plan</span><span class="infra-val">${z.plan || 'Free'}</span></div>
+      <div class="infra-stat"><span class="infra-label">SSL</span><span class="infra-val ${sslClass}">${s.ssl || 'off'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Cache Level</span><span class="infra-val">${s.cache_level || '-'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Dev Mode</span><span class="infra-val ${s.development_mode === 'on' ? 'yellow' : 'green'}">${s.development_mode || 'off'}</span></div>
+    </div>
+  `;
+
+  // SSL Certificate info
+  if (sslCert) {
+    const certClass = sslCert.status === 'active' ? 'green' : sslCert.days_left < 30 ? 'red' : 'yellow';
+    const daysText = sslCert.days_left !== null ? sslCert.days_left + ' days left' : 'N/A';
+    html += `<div class="infra-stat"><span class="infra-label">SSL Cert</span><span class="infra-val ${certClass}">${sslCert.status} (${daysText})</span></div>`;
+  }
+
+  // 7-Day Traffic Chart
   if (days.length > 0) {
     const maxReq = Math.max(...days.map(d => d.requests), 1);
-    chartHtml = `
+    html += `
       <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">📊 7-Day Traffic (Requests)</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">📊 7-Day Traffic</div>
         <div style="display:flex;align-items:flex-end;gap:4px;height:60px">
-          ${days.reverse().map(d => {
+          ${days.map(d => {
             const h = Math.max((d.requests / maxReq) * 55, 2);
-            const pct = ((d.requests / maxReq) * 100).toFixed(0);
-            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="${d.date}: ${d.requests.toLocaleString()} reqs, ${d.pageViews.toLocaleString()} PV, ${d.threats} threats, ${d.uniques.toLocaleString()} uniq">
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="${d.date}: ${fmtNum(d.requests)} reqs, ${fmtNum(d.pageViews)} PV, ${d.threats} threats, ${fmtNum(d.uniques)} uniq">
               <div style="width:100%;height:${h}px;background:linear-gradient(to top,rgba(59,130,246,0.3),rgba(59,130,246,0.8));border-radius:3px 3px 0 0"></div>
               <div style="font-size:0.6rem;color:var(--muted)">${d.date.slice(5)}</div>
             </div>`;
           }).join('')}
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">
-          <div class="infra-stat"><span class="infra-label">Total Reqs</span><span class="infra-val cyan">${(a.requests || 0).toLocaleString()}</span></div>
-          <div class="infra-stat"><span class="infra-label">Page Views</span><span class="infra-val green">${(a.pageViews || 0).toLocaleString()}</span></div>
-          <div class="infra-stat"><span class="infra-label">Threats</span><span class="infra-val yellow">${(a.threats || 0).toLocaleString()}</span></div>
-          <div class="infra-stat"><span class="infra-label">Uniques</span><span class="infra-val">${(a.uniques || 0).toLocaleString()}</span></div>
+          <div class="infra-stat"><span class="infra-label">Total Reqs</span><span class="infra-val cyan">${fmtNum(a.requests)}</span></div>
+          <div class="infra-stat"><span class="infra-label">Page Views</span><span class="infra-val green">${fmtNum(a.pageViews)}</span></div>
+          <div class="infra-stat"><span class="infra-label">Bandwidth</span><span class="infra-val">${bwFormatted}</span></div>
+          <div class="infra-stat"><span class="infra-label">Uniques</span><span class="infra-val">${fmtNum(a.uniques)}</span></div>
         </div>
       </div>
     `;
   }
 
-  let fwHtml = '';
-  if (fw.total > 0) {
-    fwHtml = `
-      <div class="infra-stat"><span class="infra-label">Firewall Events</span><span class="infra-val yellow">${fw.total.toLocaleString()}</span></div>
-      <div class="infra-stat"><span class="infra-label">Blocked</span><span class="infra-val red">${fw.blocked || 0}</span></div>
-      <div class="infra-stat"><span class="infra-label">Challenged</span><span class="infra-val yellow">${fw.challenged || 0}</span></div>
+  // Cache Hit Ratio
+  html += `
+    <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">⚡ Cache Performance</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+        <div class="infra-stat">
+          <span class="infra-label">Hit Ratio</span>
+          <span class="infra-val ${cacheHitRatio > 80 ? 'green' : cacheHitRatio > 50 ? 'yellow' : 'red'}">${cacheHitRatio}%</span>
+        </div>
+        <div class="infra-stat"><span class="infra-label">Cached</span><span class="infra-val green">${fmtNum(a.cachedRequests)}</span></div>
+        <div class="infra-stat"><span class="infra-label">Uncached</span><span class="infra-val red">${fmtNum(a.uncachedRequests)}</span></div>
+        <div class="infra-stat"><span class="infra-label">Cached BW</span><span class="infra-val">${(a.cachedBytes / 1073741824).toFixed(1)} GB</span></div>
+      </div>
+      <div class="progress-bar" style="margin-top:8px;height:8px"><div class="fill ${cacheHitRatio > 80 ? 'green' : cacheHitRatio > 50 ? 'yellow' : 'red'}" style="width:${cacheHitRatio}%"></div></div>
+    </div>
+  `;
+
+  // Hourly Traffic (last 24h)
+  if (hours.length > 0) {
+    const maxHr = Math.max(...hours.map(h => h.requests), 1);
+    html += `
+      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🕐 24h Hourly Traffic</div>
+        <div style="display:flex;align-items:flex-end;gap:2px;height:40px">
+          ${hours.map(h => {
+            const hrHeight = Math.max((h.requests / maxHr) * 35, 1);
+            const time = h.datetime ? h.datetime.slice(11, 16) : '';
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center" title="${time}: ${fmtNum(h.requests)} reqs">
+              <div style="width:100%;height:${hrHeight}px;background:rgba(34,197,94,0.6);border-radius:2px 2px 0 0"></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
     `;
   }
 
-  let html = `
-    <div class="infra-stat"><span class="infra-label">Zone</span><span class="infra-val">${z.name || '-'}</span></div>
-    <div class="infra-stat"><span class="infra-label">Status</span><span class="infra-val ${statusClass}">${z.status || 'unknown'}</span></div>
-    <div class="infra-stat"><span class="infra-label">Plan</span><span class="infra-val">${z.plan || 'Free'}</span></div>
-    <div class="infra-stat"><span class="infra-label">SSL</span><span class="infra-val ${sslClass}">${s.ssl || 'off'}</span></div>
-    <div class="infra-stat"><span class="infra-label">Cache Level</span><span class="infra-val">${s.cache_level || '-'}</span></div>
-    <div class="infra-stat"><span class="infra-label">Dev Mode</span><span class="infra-val ${s.development_mode === 'on' ? 'yellow' : 'green'}">${s.development_mode || 'off'}</span></div>
-    <div class="infra-stat"><span class="infra-label">Brotli</span><span class="infra-val ${s.brotli === 'on' ? 'green' : 'red'}">${s.brotli || 'off'}</span></div>
-    <div class="infra-stat"><span class="infra-label">HTTP/3</span><span class="infra-val ${s.http3 === 'on' ? 'green' : 'red'}">${s.http3 || 'off'}</span></div>
-    <div class="infra-stat"><span class="infra-label">Browser TTL</span><span class="infra-val">${Math.round((s.browser_cache_ttl || 0) / 3600)}h</span></div>
-    ${fw.total > 0 ? `<div style="grid-column:1/-1;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px"><div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">🛡️ Firewall (24h)</div>${fwHtml}</div>` : ''}
+  // Countries
+  if (countries.length > 0) {
+    html += `
+      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🌍 Top Countries (7d)</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">
+          ${countries.slice(0, 8).map(c => `
+            <div class="infra-stat">
+              <span class="infra-label">${c.flag} ${c.name}</span>
+              <span class="infra-val">${c.percentage}% (${fmtNum(c.requests)})</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
 
+  // HTTP Status Codes
+  if (statusCodes.length > 0) {
+    const totalStatus = statusCodes.reduce((sum, s) => sum + s.requests, 0);
+    html += `
+      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">📡 HTTP Status Distribution</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+          ${statusCodes.map(sc => {
+            const pct = totalStatus > 0 ? ((sc.requests / totalStatus) * 100).toFixed(1) : 0;
+            const cls = sc.class == 2 ? 'green' : sc.class == 3 ? 'cyan' : sc.class == 4 ? 'yellow' : sc.class == 5 ? 'red' : '';
+            return `<div class="infra-stat"><span class="infra-label">${sc.label}</span><span class="infra-val ${cls}">${pct}% (${fmtNum(sc.requests)})</span></div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Top URLs
+  if (topUrls.length > 0) {
+    html += `
+      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🔗 Top URLs (7d)</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">
+          ${topUrls.slice(0, 6).map(u => `
+            <div class="infra-stat">
+              <span class="infra-label" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${u.path}">${u.path}</span>
+              <span class="infra-val">${fmtNum(u.requests)} reqs</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Threats
+  if (a.threats > 0 || threatTypes.length > 0) {
+    html += `
+      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🛡️ Threats (7d)</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+          <div class="infra-stat"><span class="infra-label">Total Threats</span><span class="infra-val yellow">${fmtNum(a.threats)}</span></div>
+          <div class="infra-stat"><span class="infra-label">Blocked</span><span class="infra-val red">${fmtNum(fw.blocked)}</span></div>
+          <div class="infra-stat"><span class="infra-label">Challenged</span><span class="infra-val yellow">${fmtNum(fw.challenged)}</span></div>
+        </div>
+        ${threatTypes.length > 0 ? `
+          <div style="margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:4px">
+            ${threatTypes.slice(0, 4).map(t => `<div class="infra-stat"><span class="infra-label">${t.type}</span><span class="infra-val red">${fmtNum(t.count)}</span></div>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  // Quick Actions
+  html += `
     <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
       <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">⚡ Quick Actions</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
@@ -864,17 +979,15 @@ function renderCloudflare(data) {
 
     <div style="grid-column:1/-1;margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px">
       <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">🔧 Settings</div>
-      <div class="infra-stat"><span class="infra-label">Always Online</span><span class="infra-val ${s.always_online === 'on' ? 'green' : 'red'}">${s.always_online || 'off'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Auto HTTPS</span><span class="infra-val ${s.automatic_https_rewrites === 'on' ? 'green' : 'red'}">${s.automatic_https_rewrites || 'off'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Security</span><span class="infra-val">${s.security_level || '-'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Minify CSS</span><span class="infra-val ${s.minify_css === 'on' ? 'green' : 'red'}">${s.minify_css || 'off'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Minify JS</span><span class="infra-val ${s.minify_js === 'on' ? 'green' : 'red'}">${s.minify_js || 'off'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Rocket Loader</span><span class="infra-val ${s.rocket_loader === 'on' ? 'yellow' : 'green'}">${s.rocket_loader || 'off'}</span></div>
-      <div class="infra-stat"><span class="infra-label">WAF</span><span class="infra-val ${s.waf === 'on' ? 'green' : 'red'}">${s.waf || 'off'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Polish</span><span class="infra-val ${s.polish === 'off' ? 'red' : 'green'}">${s.polish || 'off'}</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <div class="infra-stat"><span class="infra-label">Always Online</span><span class="infra-val ${s.always_online === 'on' ? 'green' : 'red'}">${s.always_online || 'off'}</span></div>
+        <div class="infra-stat"><span class="infra-label">Auto HTTPS</span><span class="infra-val ${s.automatic_https_rewrites === 'on' ? 'green' : 'red'}">${s.automatic_https_rewrites || 'off'}</span></div>
+        <div class="infra-stat"><span class="infra-label">Security</span><span class="infra-val">${s.security_level || '-'}</span></div>
+        <div class="infra-stat"><span class="infra-label">Brotli</span><span class="infra-val ${s.brotli === 'on' ? 'green' : 'red'}">${s.brotli || 'off'}</span></div>
+        <div class="infra-stat"><span class="infra-label">HTTP/3</span><span class="infra-val ${s.http3 === 'on' ? 'green' : 'red'}">${s.http3 || 'off'}</span></div>
+        <div class="infra-stat"><span class="infra-label">WAF</span><span class="infra-val ${s.waf === 'on' ? 'green' : 'red'}">${s.waf || 'off'}</span></div>
+      </div>
     </div>
-
-    ${chartHtml}
   `;
 
   el.innerHTML = html;

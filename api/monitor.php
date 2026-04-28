@@ -1047,12 +1047,9 @@ function varnish_quick_check() {
 /**
  * Cloudflare API helper
  */
-define('CF_API_TOKEN', 'cfut_D4T7Fy8FNpNx8u2oQ9N13z9LQ9KoPQucNR9LSa0j737f4219');
-define('CF_ZONE_ID', '4919ad3406fcabba381edbd543814a68');
-define('CF_ACCOUNT_ID', 'cb89f9d4bfa5ff6fe2c8528847dbc5fe');
-define('CF_EMAIL', 'amine.bo@techno-dz.com');
-
+// Cloudflare credentials from .env (fallback to defaults for backward compatibility)
 function cf_api($endpoint, $method = 'GET', $data = null) {
+    $token = defined('CF_API_TOKEN') ? CF_API_TOKEN : ($_ENV['CF_API_TOKEN'] ?? '');
     $url = "https://api.cloudflare.com/client/v4{$endpoint}";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -1060,7 +1057,7 @@ function cf_api($endpoint, $method = 'GET', $data = null) {
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bearer " . CF_API_TOKEN,
+        "Authorization: Bearer " . $token,
         "Content-Type: application/json"
     ]);
     if ($data) {
@@ -1072,15 +1069,28 @@ function cf_api($endpoint, $method = 'GET', $data = null) {
     return ['code' => $httpCode, 'body' => json_decode($response, true)];
 }
 
+function get_cf_constant($name, $default = '') {
+    if (defined($name)) return constant($name);
+    return $_ENV[$name] ?? $default;
+}
+
 /**
- * Cloudflare zone info and settings
+ * Cloudflare zone info, settings, and comprehensive analytics
  */
 function cloudflare_stats() {
+    $zoneId = get_cf_constant('CF_ZONE_ID');
+    $accountId = get_cf_constant('CF_ACCOUNT_ID');
+    
+    if (empty($zoneId)) {
+        echo json_encode(['error' => 'Cloudflare not configured']);
+        return;
+    }
+
     $result = ['error' => 'Cloudflare API unavailable'];
 
     try {
         // Zone info
-        $zone = cf_api("/zones/" . CF_ZONE_ID);
+        $zone = cf_api("/zones/" . $zoneId);
         if (!$zone['body']['success']) {
             $result['error'] = $zone['body']['errors'][0]['message'] ?? 'API error';
             echo json_encode($result);
@@ -1096,7 +1106,7 @@ function cloudflare_stats() {
         ];
 
         // Zone settings
-        $settings = cf_api("/zones/" . CF_ZONE_ID . "/settings");
+        $settings = cf_api("/zones/" . $zoneId . "/settings");
         $settingsMap = [];
         if ($settings['body']['success']) {
             foreach ($settings['body']['result'] as $s) {
@@ -1104,54 +1114,280 @@ function cloudflare_stats() {
             }
         }
 
-        // SSL info
-        $ssl = cf_api("/zones/" . CF_ZONE_ID . "/settings/ssl");
+        // SSL mode
+        $ssl = cf_api("/zones/" . $zoneId . "/settings/ssl");
         $sslMode = 'off';
         if ($ssl['body']['success'] && isset($ssl['body']['result']['value'])) {
             $sslMode = $ssl['body']['result']['value'];
         }
 
-        // Cache purge history
-        $cachePurgeHistory = cf_api("/zones/" . CF_ZONE_ID . "/purge_history");
+        // SSL certificate status
+        $sslCert = cf_api("/zones/" . $zoneId . "/ssl/certificate_statuses");
+        $sslCertInfo = null;
+        if ($sslCert['body']['success'] && !empty($sslCert['body']['result'])) {
+            $cert = $sslCert['body']['result'][0];
+            $expiryDate = $cert['expires_on'] ?? null;
+            $daysLeft = $expiryDate ? max(0, (strtotime($expiryDate) - time()) / 86400) : null;
+            $sslCertInfo = [
+                'status' => $cert['status'] ?? 'unknown',
+                'expires_on' => $expiryDate,
+                'days_left' => $daysLeft ? round($daysLeft) : null,
+                'hostnames' => $cert['hostnames'] ?? [],
+            ];
+        }
 
-        // GraphQL analytics - last 7 days
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        // Cache purge history
+        $cachePurgeHistory = cf_api("/zones/" . $zoneId . "/purge_history");
+
+        // Enhanced GraphQL analytics
         $weekAgo = date('Y-m-d', strtotime('-8 days'));
-        $graphql = cf_api("/graphql", 'POST', [
-            'query' => "query { viewer { zones(filter: {zoneTag: \"" . CF_ZONE_ID . "\"}) { httpRequests1dGroups(limit: 7, filter: {date_gt: \"{$weekAgo}\"}, orderBy: [date_DESC]) { dimensions { date } sum { requests pageViews threats } uniq { uniques } } } } }"
-        ]);
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $today = date('Y-m-d');
+        
+        $graphqlQuery = <<<GRAPHQL
+{
+  viewer {
+    zones(filter: {zoneTag: "{$zoneId}"}) {
+      # 7-day daily traffic with bandwidth and cache metrics
+      dailyTraffic: httpRequests1dGroups(
+        limit: 7
+        filter: {date_gt: "{$weekAgo}", date_lt: "{$today}"}
+        orderBy: [date_ASC]
+      ) {
+        sum {
+          requests pageViews threats uniques
+          bytes bytesAll cachedBytes uncachedBytes
+          cachedRequests uncachedRequests
+        }
+        uniq { uniques }
+        dimensions { date }
+      }
+      # 24-hour hourly breakdown
+      hourlyTraffic: httpRequests1hGroups(
+        limit: 24
+        orderBy: [datetime_ASC]
+      ) {
+        sum { requests bytes threats cachedRequests uncachedRequests }
+        dimensions { datetime }
+      }
+      # Top countries by requests
+      countries: httpRequests1dGroups(
+        limit: 10
+        filter: {date_gt: "{$weekAgo}"}
+        orderBy: [requests_DESC]
+      ) {
+        sum { requests bytes threats }
+        dimensions { country }
+      }
+      # HTTP status code distribution
+      statusCodes: httpRequests1dGroups(
+        limit: 5
+        filter: {date_gt: "{$weekAgo}"}
+        orderBy: [requests_DESC]
+      ) {
+        sum { requests }
+        dimensions { responseStatusClass }
+      }
+      # Top 10 URLs by requests
+      topUrls: httpRequests1dGroups(
+        limit: 10
+        filter: {date_gt: "{$weekAgo}"}
+        orderBy: [requests_DESC]
+      ) {
+        sum { requests bytes }
+        dimensions { clientRequestPath }
+      }
+      # Threat types
+      threatTypes: httpRequests1dGroups(
+        limit: 10
+        filter: {date_gt: "{$weekAgo}", threats_gt: 0}
+        orderBy: [threats_DESC]
+      ) {
+        sum { threats }
+        dimensions { threatPathingName }
+      }
+    }
+  }
+}
+GRAPHQL;
+
+        $graphql = cf_api("/graphql", 'POST', ['query' => $graphqlQuery]);
+        
+        // Parse analytics
         $analytics = [];
-        $totals = ['requests' => 0, 'pageViews' => 0, 'threats' => 0, 'uniques' => 0];
+        $hourlyAnalytics = [];
+        $countries = [];
+        $statusCodes = [];
+        $topUrls = [];
+        $threatTypes = [];
+        $totals = [
+            'requests' => 0, 'pageViews' => 0, 'threats' => 0, 'uniques' => 0,
+            'bytes' => 0, 'bytesAll' => 0, 'cachedBytes' => 0, 'uncachedBytes' => 0,
+            'cachedRequests' => 0, 'uncachedRequests' => 0,
+        ];
+
         if ($graphql['body']['success'] && isset($graphql['body']['data']['viewer']['zones'][0])) {
-            $days = $graphql['body']['data']['viewer']['zones'][0]['httpRequests1dGroups'];
-            foreach ($days as $day) {
-                $analytics[] = [
-                    'date' => $day['dimensions']['date'],
-                    'requests' => $day['sum']['requests'] ?? 0,
-                    'pageViews' => $day['sum']['pageViews'] ?? 0,
-                    'threats' => $day['sum']['threats'] ?? 0,
-                    'uniques' => $day['uniq']['uniques'] ?? 0,
+            $data = $graphql['body']['data']['viewer']['zones'][0];
+            
+            // Daily traffic
+            if (isset($data['dailyTraffic'])) {
+                foreach ($data['dailyTraffic'] as $day) {
+                    $analytics[] = [
+                        'date' => $day['dimensions']['date'],
+                        'requests' => $day['sum']['requests'] ?? 0,
+                        'pageViews' => $day['sum']['pageViews'] ?? 0,
+                        'threats' => $day['sum']['threats'] ?? 0,
+                        'uniques' => $day['uniq']['uniques'] ?? 0,
+                        'bytes' => $day['sum']['bytes'] ?? 0,
+                        'cachedBytes' => $day['sum']['cachedBytes'] ?? 0,
+                        'uncachedBytes' => $day['sum']['uncachedBytes'] ?? 0,
+                        'cachedRequests' => $day['sum']['cachedRequests'] ?? 0,
+                        'uncachedRequests' => $day['sum']['uncachedRequests'] ?? 0,
+                    ];
+                    $totals['requests'] += $day['sum']['requests'] ?? 0;
+                    $totals['pageViews'] += $day['sum']['pageViews'] ?? 0;
+                    $totals['threats'] += $day['sum']['threats'] ?? 0;
+                    $totals['uniques'] += $day['uniq']['uniques'] ?? 0;
+                    $totals['bytes'] += $day['sum']['bytes'] ?? 0;
+                    $totals['bytesAll'] += $day['sum']['bytesAll'] ?? 0;
+                    $totals['cachedBytes'] += $day['sum']['cachedBytes'] ?? 0;
+                    $totals['uncachedBytes'] += $day['sum']['uncachedBytes'] ?? 0;
+                    $totals['cachedRequests'] += $day['sum']['cachedRequests'] ?? 0;
+                    $totals['uncachedRequests'] += $day['sum']['uncachedRequests'] ?? 0;
+                }
+            }
+
+            // Hourly traffic
+            if (isset($data['hourlyTraffic'])) {
+                foreach ($data['hourlyTraffic'] as $hour) {
+                    $hourlyAnalytics[] = [
+                        'datetime' => $hour['dimensions']['datetime'],
+                        'requests' => $hour['sum']['requests'] ?? 0,
+                        'bytes' => $hour['sum']['bytes'] ?? 0,
+                        'threats' => $hour['sum']['threats'] ?? 0,
+                        'cachedRequests' => $hour['sum']['cachedRequests'] ?? 0,
+                        'uncachedRequests' => $hour['sum']['uncachedRequests'] ?? 0,
+                    ];
+                }
+            }
+
+            // Countries
+            if (isset($data['countries'])) {
+                $countryNames = [
+                    'DZ' => ['name' => 'Algeria', 'flag' => '🇩🇿'],
+                    'FR' => ['name' => 'France', 'flag' => '🇫🇷'],
+                    'US' => ['name' => 'United States', 'flag' => '🇺🇸'],
+                    'GB' => ['name' => 'United Kingdom', 'flag' => '🇬🇧'],
+                    'DE' => ['name' => 'Germany', 'flag' => '🇩🇪'],
+                    'MA' => ['name' => 'Morocco', 'flag' => '🇲🇦'],
+                    'TN' => ['name' => 'Tunisia', 'flag' => '🇹🇳'],
+                    'SA' => ['name' => 'Saudi Arabia', 'flag' => '🇸🇦'],
+                    'AE' => ['name' => 'UAE', 'flag' => '🇦🇪'],
+                    'EG' => ['name' => 'Egypt', 'flag' => '🇪🇬'],
+                    'CA' => ['name' => 'Canada', 'flag' => '🇨🇦'],
+                    'IT' => ['name' => 'Italy', 'flag' => '🇮🇹'],
+                    'ES' => ['name' => 'Spain', 'flag' => '🇪🇸'],
+                    'NL' => ['name' => 'Netherlands', 'flag' => '🇳🇱'],
+                    'RU' => ['name' => 'Russia', 'flag' => '🇷🇺'],
+                    'CN' => ['name' => 'China', 'flag' => '🇨🇳'],
+                    'IN' => ['name' => 'India', 'flag' => '🇮🇳'],
+                    'BR' => ['name' => 'Brazil', 'flag' => '🇧🇷'],
+                    'JP' => ['name' => 'Japan', 'flag' => '🇯🇵'],
+                    'TR' => ['name' => 'Turkey', 'flag' => '🇹🇷'],
                 ];
-                $totals['requests'] += $day['sum']['requests'] ?? 0;
-                $totals['pageViews'] += $day['sum']['pageViews'] ?? 0;
-                $totals['threats'] += $day['sum']['threats'] ?? 0;
-                $totals['uniques'] += $day['uniq']['uniques'] ?? 0;
+                
+                $totalCountryRequests = 0;
+                foreach ($data['countries'] as $c) {
+                    $totalCountryRequests += $c['sum']['requests'] ?? 0;
+                }
+                
+                foreach ($data['countries'] as $c) {
+                    $code = $c['dimensions']['country'] ?? '??';
+                    $info = $countryNames[$code] ?? ['name' => $code, 'flag' => '🌐'];
+                    $requests = $c['sum']['requests'] ?? 0;
+                    $pct = $totalCountryRequests > 0 ? round(($requests / $totalCountryRequests) * 100, 1) : 0;
+                    $countries[] = [
+                        'code' => $code,
+                        'name' => $info['name'],
+                        'flag' => $info['flag'],
+                        'requests' => $requests,
+                        'bytes' => $c['sum']['bytes'] ?? 0,
+                        'threats' => $c['sum']['threats'] ?? 0,
+                        'percentage' => $pct,
+                    ];
+                }
+            }
+
+            // Status codes
+            if (isset($data['statusCodes'])) {
+                foreach ($data['statusCodes'] as $s) {
+                    $statusClass = $s['dimensions']['responseStatusClass'] ?? 'unknown';
+                    $statusCodes[] = [
+                        'class' => $statusClass,
+                        'label' => $statusClass . 'xx',
+                        'requests' => $s['sum']['requests'] ?? 0,
+                    ];
+                }
+            }
+
+            // Top URLs
+            if (isset($data['topUrls'])) {
+                foreach ($data['topUrls'] as $u) {
+                    $path = $u['dimensions']['clientRequestPath'] ?? '/';
+                    $topUrls[] = [
+                        'path' => $path,
+                        'requests' => $u['sum']['requests'] ?? 0,
+                        'bytes' => $u['sum']['bytes'] ?? 0,
+                    ];
+                }
+            }
+
+            // Threat types
+            if (isset($data['threatTypes'])) {
+                foreach ($data['threatTypes'] as $t) {
+                    $threatType = $t['dimensions']['threatPathingName'] ?? 'unknown';
+                    $threatTypes[] = [
+                        'type' => $threatType,
+                        'count' => $t['sum']['threats'] ?? 0,
+                    ];
+                }
             }
         }
 
+        // Cache hit ratio
+        $totalCacheRequests = $totals['cachedRequests'] + $totals['uncachedRequests'];
+        $cacheHitRatio = $totalCacheRequests > 0 ? round(($totals['cachedRequests'] / $totalCacheRequests) * 100, 1) : 0;
+
+        // Format bytes
+        $formatBytes = function($bytes) {
+            if ($bytes >= 1073741824) return round($bytes / 1073741824, 1) . ' GB';
+            if ($bytes >= 1048576) return round($bytes / 1048576, 1) . ' MB';
+            if ($bytes >= 1024) return round($bytes / 1024, 1) . ' KB';
+            return $bytes . ' B';
+        };
+
         // Firewall events (last 24h)
-        $fw = cf_api("/zones/" . CF_ZONE_ID . "/firewall/events");
-        $firewallSummary = ['blocked' => 0, 'challenged' => 0, 'total' => 0];
+        $fw = cf_api("/zones/" . $zoneId . "/firewall/events");
+        $firewallSummary = ['blocked' => 0, 'challenged' => 0, 'total' => 0, 'events' => []];
         if ($fw['body']['success'] && isset($fw['body']['result'])) {
             $firewallSummary['total'] = $fw['body']['result']['total'] ?? 0;
-            foreach ($fw['body']['result'] as $event) {
+            $events = $fw['body']['result'] ?? [];
+            foreach (array_slice($events, 0, 10) as $event) {
+                $firewallSummary['events'][] = [
+                    'action' => $event['action'] ?? 'unknown',
+                    'source' => $event['source'] ?? '',
+                    'rule_id' => $event['rule_id'] ?? '',
+                    'datetime' => $event['datetime'] ?? '',
+                ];
+            }
+            foreach ($events as $event) {
                 if ($event['action'] === 'block') $firewallSummary['blocked']++;
                 if ($event['action'] === 'js_challenge' || $event['action'] === 'captcha') $firewallSummary['challenged']++;
             }
         }
 
-        // Account-level analytics summary
-        $account = cf_api("/accounts/" . CF_ACCOUNT_ID);
+        // Account info
+        $account = cf_api("/accounts/" . $accountId);
         $accountName = '';
         if ($account['body']['success']) {
             $accountName = $account['body']['result']['name'] ?? '';
@@ -1160,6 +1396,7 @@ function cloudflare_stats() {
         $result = [
             'zone' => $zoneInfo,
             'account' => $accountName,
+            'ssl_certificate' => $sslCertInfo,
             'settings' => [
                 'always_online' => $settingsMap['always_online'] ?? 'unknown',
                 'automatic_https_rewrites' => $settingsMap['automatic_https_rewrites'] ?? 'unknown',
@@ -1182,7 +1419,14 @@ function cloudflare_stats() {
             ],
             'purge_history' => $cachePurgeHistory['body']['success'] ? ($cachePurgeHistory['body']['result'] ?? []) : [],
             'analytics' => $analytics,
+            'hourly_analytics' => $hourlyAnalytics,
+            'countries' => $countries,
+            'status_codes' => $statusCodes,
+            'top_urls' => $topUrls,
+            'threat_types' => $threatTypes,
             'analytics_totals' => $totals,
+            'cache_hit_ratio' => $cacheHitRatio,
+            'bandwidth_formatted' => $formatBytes($totals['bytes']),
             'firewall' => $firewallSummary,
         ];
     } catch (Exception $e) {
