@@ -79,6 +79,72 @@ class Security {
     }
 
     /**
+     * Get rate limit status for a specific chat
+     * Returns array with: limit, used, remaining, window, reset_in
+     */
+    public function getRateLimitStatus(int $chatId): array {
+        $rateFile = $this->getRateLimitFile();
+        $limit = $this->config['security']['rate_limit'] ?? 20;
+        $window = $this->config['security']['rate_window'] ?? 60;
+        $history = $this->loadRateHistory($rateFile);
+        $now = time();
+        $windowStart = $now - $window;
+
+        // Clean and count
+        $userRequests = [];
+        $totalRequests = 0;
+        if (isset($history[$chatId])) {
+            $userRequests = array_filter($history[$chatId], fn($t) => $t > $windowStart);
+        }
+        foreach ($history as $cid => $times) {
+            $totalRequests += count(array_filter($times, fn($t) => $t > $windowStart));
+        }
+
+        $used = count($userRequests);
+        $remaining = max(0, $limit - $used);
+        $resetIn = $used > 0 ? max(0, (min($userRequests) + $window) - $now) : 0;
+
+        return [
+            'limit' => $limit,
+            'window' => $window,
+            'used' => $used,
+            'remaining' => $remaining,
+            'reset_in' => $resetIn,
+            'total_requests' => $totalRequests,
+        ];
+    }
+
+    /**
+     * Get overall rate limit statistics across all chats
+     */
+    public function getOverallRateStats(): array {
+        $rateFile = $this->getRateLimitFile();
+        $history = $this->loadRateHistory($rateFile);
+        $now = time();
+        $window = $this->config['security']['rate_window'] ?? 60;
+        $windowStart = $now - $window;
+
+        $activeChats = 0;
+        $totalRequests = 0;
+        $chatsOverLimit = 0;
+        $limit = $this->config['security']['rate_limit'] ?? 20;
+
+        foreach ($history as $cid => $times) {
+            $recent = array_filter($times, fn($t) => $t > $windowStart);
+            $count = count($recent);
+            if ($count > 0) $activeChats++;
+            $totalRequests += $count;
+            if ($count >= $limit) $chatsOverLimit++;
+        }
+
+        return [
+            'active_chats' => $activeChats,
+            'total_requests' => $totalRequests,
+            'chats_over_limit' => $chatsOverLimit,
+        ];
+    }
+
+    /**
      * Validate webhook signature (if provided by Telegram)
      */
     public function validateWebhook(array $headers, string $body): bool {

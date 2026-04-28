@@ -65,7 +65,11 @@ class BotHandler {
             $retryAfter = $this->security->getRateLimitRetryAfter($chatId);
             $resetAt = date('H:i:s', time() + $retryAfter);
             $this->security->logInteraction($chatId, $username, $text, 'rate_limited');
-            $this->sendMessage($chatId, "⏱️ Rate limit exceeded. Please wait $retryAfter seconds (resets at $resetAt).");
+            $msg = "⚠️ *Rate Limit Exceeded*\n\n";
+            $msg .= "Limit: 20 messages per minute\n";
+            $msg .= "Please wait *{$retryAfter}s* (resets at {$resetAt})\n\n";
+            $msg .= "_Tip: Use concise commands and avoid rapid-fire messages._";
+            $this->sendMessage($chatId, $msg);
             return;
         }
 

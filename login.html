@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="">
 <title>Server Control Center — Login</title>
 <style>
 :root{--bg:#0a0e17;--card:#111827;--border:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--accent:#3b82f6;--accent-h:#2563eb;--red:#ef4444;--green:#22c55e;}
@@ -81,12 +82,28 @@ async function loadStatus() {
   } catch(e) {}
 }
 
+// Load CSRF token
+let csrfToken = '';
+async function loadCSRFToken() {
+  try {
+    const r = await fetch('/api/auth.php?action=csrf_token');
+    const d = await r.json();
+    if (d.success) {
+      csrfToken = d.csrf_token;
+      document.querySelector('meta[name="csrf-token"]').content = csrfToken;
+    }
+  } catch(e) {
+    console.error('Failed to load CSRF token:', e);
+  }
+}
+
 // Show clock
 function tick() {
   document.getElementById('server-time').textContent = new Date().toLocaleTimeString();
 }
 tick(); setInterval(tick, 1000);
 loadStatus();
+loadCSRFToken();
 
 async function handleLogin(e) {
   e.preventDefault();
@@ -97,6 +114,7 @@ async function handleLogin(e) {
   btn.innerHTML = '<span class="spinner"></span>Signing in...';
   try {
     const fd = new FormData(document.getElementById('login-form'));
+    fd.append('csrf_token', csrfToken);
     const r = await fetch('/api/auth.php?action=login', { method: 'POST', body: fd });
     const d = await r.json();
     if (d.success) {
@@ -107,6 +125,8 @@ async function handleLogin(e) {
       err.classList.add('show');
       btn.disabled = false;
       btn.innerHTML = 'Sign In';
+      // Reload CSRF token on failed attempt
+      await loadCSRFToken();
     }
   } catch(e) {
     err.textContent = 'Server error. Please try again.';

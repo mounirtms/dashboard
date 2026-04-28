@@ -222,9 +222,9 @@ class CommandRouter {
         // /logs:ai -> logAction = 'ai'
         $logAction = substr($fullCommand, 6); // Remove 'logs:'
         
-        $validActions = ['summary', 'critical', 'errors', 'ai'];
+        $validActions = ['summary', 'critical', 'errors', 'ai', 'tail', 'search', 'find'];
         if (!in_array($logAction, $validActions)) {
-            $bot->sendMessage($chatId, "❓ Unknown log command: `$command`\n\n*Available:* `/logs:summary`, `/logs:critical`, `/logs:errors`, `/logs:ai`");
+            $bot->sendMessage($chatId, "❓ Unknown log command: `$command`\n\n*Available:* `/logs:summary`, `/logs:critical`, `/logs:errors`, `/logs:ai`, `/logs:tail`, `/logs:search`, `/logs:find`");
             return null;
         }
 
@@ -376,7 +376,13 @@ class CommandRouter {
         $this->commands['/auth'] = ['group' => 'admin', 'method' => 'cmd_auth'];
         $this->commands['/alerts'] = ['group' => 'admin', 'method' => 'cmd_alerts'];
         $this->commands['/stats'] = ['group' => 'admin', 'method' => 'cmd_stats'];
+        $this->commands['/ratelimit'] = ['group' => 'admin', 'method' => 'cmd_ratelimit'];
+        $this->commands['/rl'] = ['group' => 'admin', 'method' => 'cmd_ratelimit']; // Alias
+        $this->commands['/botstatus'] = ['group' => 'admin', 'method' => 'cmd_botstatus'];
         $this->commands['/help'] = ['group' => 'admin', 'method' => 'cmd_help'];
+
+        // Magento extended
+        $this->commands['/onlineusers'] = ['group' => 'magento', 'method' => 'cmd_onlineusers'];
     }
 
     private function getHandler(string $group, BotHandler $bot) {

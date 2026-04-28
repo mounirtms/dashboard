@@ -204,10 +204,41 @@ class MagentoCommands {
     }
 
     /**
-     * /online - Users online (kept for backward compatibility)
+     * /online - Users online across all environments or specific env
      */
     public function cmd_online(int $chatId, string $args, BotHandler $bot): array {
-        $env = $this->parseEnv($args);
+        $arg = trim(strtolower($args));
+        
+        if ($arg === 'all' || $arg === '') {
+            // Show all environments
+            $envs = ['prod', 'beta', 'dev'];
+            $text = "👥 *Users Online (All Envs)*\n\n";
+            $totalOnline = 0;
+            
+            foreach ($envs as $env) {
+                $envConfig = $this->envHelper->getEnvConfig($env);
+                if (!$envConfig || $envConfig['type'] !== 'magento') continue;
+                
+                $stats = $this->envHelper->getCustomerStats($env);
+                $active = $stats['active_sessions'] ?? 0;
+                $totalOnline += $active;
+                $emoji = $active > 10 ? '🟢' : ($active > 0 ? '🟡' : '⚫');
+                $text .= "{$emoji} *{$envConfig['name']}:* `$active` online\n";
+            }
+            
+            $text .= "\n*Total:* `$totalOnline` users online";
+            
+            // Add active carts
+            $cartStats = $this->envHelper->getRevenueStats('prod');
+            if (isset($cartStats['active_carts'])) {
+                $text .= "\n*Active Carts (30m):* `{$cartStats['active_carts']}`";
+            }
+            
+            return $bot->sendMessage($chatId, $text);
+        }
+        
+        // Specific environment
+        $env = $this->parseEnv($arg);
         $envConfig = $this->envHelper->getEnvConfig($env);
 
         if (!$envConfig || $envConfig['type'] !== 'magento') {
@@ -222,6 +253,71 @@ class MagentoCommands {
         $text .= "*New Today:* `{$stats['new_today']}`\n";
 
         return $bot->sendMessage($chatId, $text);
+    }
+
+    /**
+     * /onlineusers - Detailed online users with breakdown
+     */
+    public function cmd_onlineusers(int $chatId, string $args, BotHandler $bot): array {
+        $env = $this->parseEnv(trim($args));
+        $envConfig = $this->envHelper->getEnvConfig($env);
+
+        if (!$envConfig || $envConfig['type'] !== 'magento') {
+            return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/onlineusers prod|beta|dev`");
+        }
+
+        $db = $this->envHelper->getDbConnection($env);
+        if (!$db) {
+            return $bot->sendMessage($chatId, "❌ Could not connect to {$envConfig['name']} database");
+        }
+
+        $dbName = $envConfig['database'];
+        
+        // Active visitors (last 15 minutes)
+        $visitors = $db->query("SELECT COUNT(DISTINCT customer_id) as cnt FROM {$dbName}.customer_visitor WHERE last_visit_at >= NOW() - INTERVAL 15 MINUTE")->fetch_assoc();
+        $activeVisitors = (int)($visitors['cnt'] ?? 0);
+        
+        // Active guests (last 15 minutes)
+        $guests = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM {$dbName}.customer_visitor WHERE customer_id = 0 AND last_visit_at >= NOW() - INTERVAL 15 MINUTE")->fetch_assoc();
+        $activeGuests = (int)($guests['cnt'] ?? 0);
+        $activeCustomers = $activeVisitors - $activeGuests;
+        
+        // Active carts (last 30 minutes)
+        $carts = $db->query("SELECT COUNT(*) as cnt, SUM(items_count) as items FROM {$dbName}.quote WHERE is_active = 1 AND updated_at >= NOW() - INTERVAL 30 MINUTE")->fetch_assoc();
+        $activeCarts = (int)($carts['cnt'] ?? 0);
+        $cartItems = (int)($carts['items'] ?? 0);
+        
+        // Top pages visited
+        $topPages = $db->query("SELECT url, COUNT(*) as cnt FROM {$dbName}.customer_visitor WHERE last_visit_at >= NOW() - INTERVAL 15 MINUTE GROUP BY url ORDER BY cnt DESC LIMIT 5");
+        $pagesText = '';
+        while ($row = $topPages->fetch_assoc()) {
+            $url = parse_url($row['url'], PHP_URL_PATH) ?? $row['url'];
+            $pagesText .= "• `{$url}` ({$row['cnt']})\n";
+        }
+        
+        // User agent breakdown (mobile vs desktop)
+        $mobile = $db->query("SELECT COUNT(*) as cnt FROM {$dbName}.customer_visitor WHERE last_visit_at >= NOW() - INTERVAL 15 MINUTE AND (http_user_agent LIKE '%Mobile%' OR http_user_agent LIKE '%Android%' OR http_user_agent LIKE '%iPhone%')")->fetch_assoc();
+        $mobileCount = (int)($mobile['cnt'] ?? 0);
+        $desktopCount = $activeVisitors - $mobileCount;
+
+        $text = "👥 *Online Users: {$envConfig['name']}*\n\n";
+        $text .= "*Active (15m):* `$activeVisitors`\n";
+        $text .= "  • Customers: `$activeCustomers`\n";
+        $text .= "  • Guests: `$activeGuests`\n";
+        $text .= "  • Mobile: `$mobileCount`\n";
+        $text .= "  • Desktop: `$desktopCount`\n\n";
+        $text .= "*Active Carts (30m):* `$activeCarts` ($cartItems items)\n\n";
+        
+        if (!empty($pagesText)) {
+            $text .= "*Top Pages:*\n";
+            $text .= $pagesText;
+        }
+
+        $keyboard = [
+            [['text' => '🔄 Refresh', 'callback_data' => "magento:onlineusers:{$env}"]],
+        ];
+
+        return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
     }
 
     /**

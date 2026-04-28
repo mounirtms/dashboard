@@ -1,5 +1,19 @@
 <?php
 session_start();
+
+// Load environment variables
+$envFile = dirname(__DIR__) . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
 if (empty($_SESSION['logged_in'])) {
     header('Content-Type: application/json');
     header('HTTP/1.1 401 Unauthorized');
@@ -16,21 +30,31 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
+// Rate limiting: 60 requests per minute per user
+require_once __DIR__ . '/RateLimiter.php';
+require_once __DIR__ . '/InputValidator.php';
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 60, 60);
+$userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+if (!$rateLimiter->checkOrReject($userIdentifier)) {
+    error_log("Dashboard API rate limit exceeded for user: $userIdentifier");
+    exit;
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-define('SCRIPTS_DIR', '/home/dashboard/public_html/scripts');
-define('LOGS_DIR', '/home/dashboard/public_html/logs');
-define('BETA_PATH', '/home/beta/public_html');
-define('PROD_PATH', '/home/technadminy7/public_html');
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3307');
-define('DB_USER', 'root');
-define('DB_PASS', 'YourNewStrongPassword');
-define('DB_PROD', 'technadminy7_dBT8x12y22');
-define('DB_BETA', 'beta_dBT8x12y22');
+define('SCRIPTS_DIR', $_ENV['SCRIPTS_DIR'] ?? '/home/dashboard/public_html/scripts');
+define('LOGS_DIR', $_ENV['LOGS_DIR'] ?? '/home/dashboard/public_html/logs');
+define('BETA_PATH', $_ENV['BETA_PATH'] ?? '/home/beta/public_html');
+define('PROD_PATH', $_ENV['PROD_PATH'] ?? '/home/technadminy7/public_html');
+define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');
+define('DB_PORT', $_ENV['DB_PORT'] ?? '3307');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_PROD', $_ENV['DB_PROD'] ?? 'technadminy7_dBT8x12y22');
+define('DB_BETA', $_ENV['DB_BETA'] ?? 'beta_dBT8x12y22');
 
 function sendResponse($data, $statusCode = 200) {
     http_response_code($statusCode);
@@ -130,17 +154,41 @@ function handleRequest() {
         case 'run':
             $category = $_GET['category'] ?? '';
             $script   = $_GET['script'] ?? '';
-            if (empty($category) || empty($script)) sendError('Missing category and script');
+            
+            // Validate inputs
+            $category = InputValidator::validateCategory($category);
+            if ($category === false) {
+                sendError('Invalid category format', 400);
+            }
+            
+            $script = InputValidator::validateScriptName($script);
+            if ($script === false) {
+                sendError('Invalid script name format. Only alphanumeric, underscore, hyphen, and .php/.sh extensions allowed.', 400);
+            }
+            
+            if (empty($category) || empty($script)) {
+                sendError('Missing category and script');
+            }
+            
             $scriptPath = SCRIPTS_DIR . '/' . basename($category) . '/' . basename($script);
-            if (!file_exists($scriptPath)) sendError('Script not found', 404);
+            if (!file_exists($scriptPath)) {
+                sendError('Script not found', 404);
+            }
+            
             $result = executeScript($scriptPath);
             sendResponse(['success'=>$result['success'],'result'=>$result,'timestamp'=>date('Y-m-d H:i:s')]);
             break;
         case 'database':
+            $env = $_GET['env'] ?? 'prod';
+            $env = InputValidator::validateEnvironment($env);
+            if ($env === false) {
+                sendError('Invalid environment. Must be one of: prod, beta, dev, pim, dashboard, lms', 400);
+            }
             sendResponse(['success'=>true,'data'=>getDatabaseStatus($env),'timestamp'=>date('Y-m-d H:i:s')]);
             break;
         case 'logs':
             $limit = intval($_GET['limit'] ?? 10);
+            $limit = InputValidator::validateLimit($limit);
             sendResponse(['success'=>true,'logs'=>getRecentLogs($limit),'timestamp'=>date('Y-m-d H:i:s')]);
             break;
         case 'magento-stats':

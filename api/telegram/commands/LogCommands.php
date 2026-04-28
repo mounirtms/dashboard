@@ -169,6 +169,144 @@ class LogCommands {
     }
 
     /**
+     * /logs:tail <type> <lines> - Tail log files in real-time
+     * Types: system, exception, debug, cron, php-fpm, varnish, redis, elasticsearch
+     */
+    public function cmd_tail(int $chatId, string $args, BotHandler $bot): array {
+        $parts = explode(' ', trim($args));
+        $type = $parts[0] ?? 'system';
+        $lines = intval($parts[1] ?? 50);
+        $env = $parts[2] ?? 'prod';
+        
+        if ($lines > 100) $lines = 100; // Cap at 100 lines for Telegram
+        if ($lines < 10) $lines = 10;
+
+        $logFile = $this->getLogFile($type, $env);
+        if (!$logFile || !file_exists($logFile)) {
+            return $bot->sendMessage($chatId, "❌ Log file not found for *{$type}* in *{$env}*.\n\n*Available types:* system, exception, debug, cron, php-fpm, varnish, redis, elasticsearch");
+        }
+
+        $output = [];
+        $lastLine = exec("tail -n $lines " . escapeshellarg($logFile), $output, $returnCode);
+        
+        if ($returnCode !== 0 || empty($output)) {
+            return $bot->sendMessage($chatId, "✅ No entries in *{$type}* log for *{$env}*");
+        }
+
+        $text = "*📋 {$type} log ({$env}) - Last " . count($output) . " lines*\n\n";
+        $text .= "```\n";
+        foreach (array_slice($output, -30) as $line) {
+            $text .= substr($line, 0, 200) . "\n";
+        }
+        $text .= "```";
+
+        if (count($output) > 30) {
+            $text .= "\n\n_(Showing last 30 of " . count($output) . " lines)_";
+        }
+
+        $keyboard = [
+            [['text' => '🔄 Refresh', 'callback_data' => "logs:refresh:{$type}:{$lines}:{$env}"]],
+        ];
+
+        return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
+    }
+
+    /**
+     * /logs:search <pattern> <type> <env> - Search logs for pattern
+     */
+    public function cmd_search(int $chatId, string $args, BotHandler $bot): array {
+        $parts = explode(' ', trim($args));
+        $pattern = $parts[0] ?? '';
+        $type = $parts[1] ?? 'system';
+        $env = $parts[2] ?? 'prod';
+        $maxResults = intval($parts[3] ?? 20);
+
+        if (empty($pattern)) {
+            return $bot->sendMessage($chatId, "❌ *Usage:* `/logs:search <pattern> [type] [env]`\n\n*Example:* `/logs:search Fatal system prod`\n\n*Types:* system, exception, debug, cron, php-fpm");
+        }
+
+        $logFile = $this->getLogFile($type, $env);
+        if (!$logFile || !file_exists($logFile)) {
+            return $bot->sendMessage($chatId, "❌ Log file not found for *{$type}* in *{$env}*");
+        }
+
+        // Use grep to search
+        $output = [];
+        $cmd = "grep -i " . escapeshellarg($pattern) . " " . escapeshellarg($logFile) . " | tail -n $maxResults";
+        exec($cmd, $output, $returnCode);
+
+        if (empty($output)) {
+            return $bot->sendMessage($chatId, "✅ No matches for *`{$pattern}`* in *{$type}* log (*{$env}*)");
+        }
+
+        $text = "*🔍 Search: `{$pattern}`*\n";
+        $text .= "*Found:* `" . count($output) . "` matches in *{$type}* (*{$env}*)\n\n";
+
+        foreach (array_slice($output, 0, 15) as $line) {
+            $line = substr($line, 0, 200);
+            // Highlight the pattern
+            $highlighted = str_ireplace($pattern, "*{$pattern}*", $line);
+            $text .= "```\n{$highlighted}\n```\n";
+        }
+
+        if (count($output) > 15) {
+            $text .= "\n_(Showing 15 of " . count($output) . " matches)_";
+        }
+
+        return $bot->sendMessage($chatId, $text);
+    }
+
+    /**
+     * /logs:find <filename> - Find log files by name
+     */
+    public function cmd_find(int $chatId, string $args, BotHandler $bot): array {
+        $pattern = trim($args);
+        
+        if (empty($pattern)) {
+            return $bot->sendMessage($chatId, "❌ *Usage:* `/logs:find <pattern>`\n\n*Examples:*\n`/logs:find error`\n`/logs:find *.log`\n`/logs:find system`");
+        }
+
+        // Search in common log directories
+        $searchDirs = [
+            '/home/technadminy7/public_html/var/log',
+            '/home/beta/public_html/var/log',
+            '/home/dev/public_html/var/log',
+            '/home/pim/public_html/var/log',
+            '/home/dashboard/public_html/api/telegram/logs',
+        ];
+
+        $results = [];
+        foreach ($searchDirs as $dir) {
+            if (!is_dir($dir)) continue;
+            
+            $output = [];
+            $cmd = "find " . escapeshellarg($dir) . " -iname " . escapeshellarg("*{$pattern}*") . " -type f 2>/dev/null";
+            exec($cmd, $output);
+            
+            foreach ($output as $file) {
+                $size = filesize($file);
+                $sizeStr = $size > 1048576 ? round($size / 1048576, 1) . 'MB' : round($size / 1024, 1) . 'KB';
+                $results[] = ['file' => $file, 'size' => $sizeStr];
+            }
+        }
+
+        if (empty($results)) {
+            return $bot->sendMessage($chatId, "✅ No log files found matching *`{$pattern}`*");
+        }
+
+        $text = "*📁 Log Files: `{$pattern}`*\n\n";
+        foreach (array_slice($results, 0, 20) as $r) {
+            $text .= "• `{$r['file']}` ({$r['size']})\n";
+        }
+
+        if (count($results) > 20) {
+            $text .= "\n_... and " . (count($results) - 20) . " more files_";
+        }
+
+        return $bot->sendMessage($chatId, $text);
+    }
+
+    /**
      * /logs:ai <env> <hours> - AI-powered log analysis
      */
     public function cmd_ai(int $chatId, string $args, BotHandler $bot): array {
@@ -456,6 +594,32 @@ Format as markdown with clear sections. Be specific and actionable.";
     private function ensureCacheDir(): void {
         if (!is_dir($this->cacheDir)) {
             @mkdir($this->cacheDir, 0755, true);
+        }
+    }
+
+    /**
+     * Get log file path for a given type and environment
+     */
+    private function getLogFile(string $type, string $env): ?string {
+        $magentoLogs = $this->logPaths[$env] ?? null;
+        
+        switch ($type) {
+            case 'system':
+            case 'exception':
+            case 'debug':
+                return $magentoLogs ? "$magentoLogs/{$type}.log" : null;
+            case 'cron':
+                return $magentoLogs ? "$magentoLogs/cron.log" : null;
+            case 'php-fpm':
+                return '/home/dashboard/logs/php-fpm-slow.log';
+            case 'varnish':
+                return '/var/log/varnish/varnish.log';
+            case 'redis':
+                return '/var/log/redis/redis.log';
+            case 'elasticsearch':
+                return '/var/log/elasticsearch/elasticsearch.log';
+            default:
+                return $magentoLogs ? "$magentoLogs/{$type}.log" : null;
         }
     }
 

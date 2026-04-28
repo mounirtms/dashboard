@@ -127,6 +127,122 @@ class AdminCommands {
     }
 
     /**
+     * /ratelimit - Show current rate limit status
+     */
+    public function cmd_ratelimit(int $chatId, string $args, BotHandler $bot): array {
+        $security = $bot->getSecurity();
+        $status = $security->getRateLimitStatus($chatId);
+        $overall = $security->getOverallRateStats();
+
+        $text = "*⏱️ Rate Limit Status*\n\n";
+        $text .= "*Your Usage:*\n";
+        $text .= "Limit: `{$status['limit']} msgs / {$status['window']}s`\n";
+        $text .= "Used: `{$status['used']}`\n";
+        $text .= "Remaining: `{$status['remaining']}`\n";
+        if ($status['reset_in'] > 0) {
+            $text .= "Resets in: `{$status['reset_in']}s`\n";
+        }
+        $text .= "\n*Overall:*\n";
+        $text .= "Active chats: `{$overall['active_chats']}`\n";
+        $text .= "Total requests (60s): `{$overall['total_requests']}`\n";
+
+        return $bot->sendMessage($chatId, $text);
+    }
+
+    /**
+     * /botstatus - Show bot health and status information
+     */
+    public function cmd_botstatus(int $chatId, string $args, BotHandler $bot): array {
+        $security = $bot->getSecurity();
+        $rateStatus = $security->getRateLimitStatus($chatId);
+
+        // Bot info
+        try {
+            $botInfo = $bot->getMe();
+            $botName = $botInfo['first_name'] . ' (@' . $botInfo['username'] . ')';
+        } catch (Exception $e) {
+            $botName = 'Error getting bot info';
+        }
+
+        // Webhook status
+        try {
+            $whInfo = $bot->getWebhookInfo();
+            $whUrl = $whInfo['url'] ?? 'Not set';
+            $whPending = $whInfo['pending_update_count'] ?? 0;
+            $whLastErr = $whInfo['last_error_date'] ?? null;
+            $whStatus = $whUrl === '' ? 'Polling' : 'Webhook';
+        } catch (Exception $e) {
+            $whStatus = 'Unknown';
+            $whPending = 0;
+            $whLastErr = null;
+        }
+
+        // Alert status
+        $alertStats = $bot->getAlertStats();
+
+        // Log file stats
+        $logFile = __DIR__ . '/../logs/bot_interactions.log';
+        $totalInteractions = 0;
+        $lastActivity = 'Never';
+        $errorCount = 0;
+        $rateLimitCount = 0;
+        if (file_exists($logFile)) {
+            $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $totalInteractions = count($lines);
+            
+            // Count errors and rate limits
+            foreach ($lines as $line) {
+                if (strpos($line, 'status=error') !== false) $errorCount++;
+                if (strpos($line, 'status=rate_limited') !== false) $rateLimitCount++;
+            }
+            
+            if (!empty($lines)) {
+                $lastLine = end($lines);
+                if (preg_match('/\[([^\]]+)\]/', $lastLine, $m)) {
+                    $lastActivity = $m[1];
+                }
+            }
+        }
+
+        // Customer bot status
+        $customerPollerRunning = false;
+        $activeSessions = 0;
+        $sessionDir = __DIR__ . '/../data/customer_sessions';
+        if (is_dir($sessionDir)) {
+            $activeSessions = count(glob($sessionDir . '/*.json'));
+        }
+        // Check if poller cron is running (check last modified time of offset file)
+        $offsetFile = __DIR__ . '/../data/customer_last_offset.txt';
+        if (file_exists($offsetFile)) {
+            $lastMod = filemtime($offsetFile);
+            $customerPollerRunning = (time() - $lastMod) < 120; // Within last 2 minutes
+        }
+
+        $text = "*🤖 Bot Status*\n\n";
+        $text .= "*Bot:* `$botName`\n";
+        $text .= "*Mode:* `$whStatus`\n";
+        $text .= "*Pending Updates:* `$whPending`\n";
+        if ($whLastErr) {
+            $text .= "*Last Webhook Error:* `" . date('H:i:s', $whLastErr) . "`\n";
+        }
+        $text .= "\n*Activity:*\n";
+        $text .= "Total Messages: `$totalInteractions`\n";
+        $text .= "Last Activity: `$lastActivity`\n";
+        $text .= "Errors: `$errorCount`\n";
+        $text .= "Rate Limited: `$rateLimitCount`\n";
+        $text .= "\n*Rate Limit (you):*\n";
+        $text .= "{$rateStatus['used']}/{$rateStatus['limit']} used ({$rateStatus['remaining']} remaining)\n";
+        $text .= "\n*Alert System:*\n";
+        $text .= "Enabled: `" . ($alertStats['enabled'] ? 'Yes' : 'No') . "`\n";
+        $text .= "Last hour: `{$alertStats['last_hour']}`/{$alertStats['limits']['max_per_hour']}\n";
+        $text .= "\n*Customer Bot:*\n";
+        $text .= "Poller: `" . ($customerPollerRunning ? 'Running' : 'Stopped') . "`\n";
+        $text .= "Active Sessions: `$activeSessions`\n";
+
+        return $bot->sendMessage($chatId, $text);
+    }
+
+    /**
      * /help - Show help message
      */
     public function cmd_help(int $chatId, string $args, BotHandler $bot): array {
@@ -140,8 +256,10 @@ class AdminCommands {
         $text .= "/processes - Top CPU processes\n\n";
 
         $text .= "*Magento Commands:*\n";
+        $text .= "/env - Environment status\n";
         $text .= "/orders - Today's orders\n";
-        $text .= "/online - Users online now\n";
+        $text .= "/online - Users online (all envs)\n";
+        $text .= "/onlineusers - Detailed online users\n";
         $text .= "/inventory - Low stock items\n";
         $text .= "/cache - Cache status\n";
         $text .= "/indexers - Indexer status\n\n";
@@ -152,13 +270,25 @@ class AdminCommands {
 
         $text .= "*Database Commands:*\n";
         $text .= "/dbhealth - Database health\n";
-        $text .= "/slowqueries - Slow query report\n\n";
+        $text .= "/slowqueries - Slow query report\n";
+        $text .= "/db:size - Database size\n";
+        $text .= "/db:tables - Table listing\n\n";
+
+        $text .= "*Log Commands:*\n";
+        $text .= "/logs:summary - Log analysis\n";
+        $text .= "/logs:critical - Critical errors\n";
+        $text .= "/logs:errors - Error patterns\n";
+        $text .= "/logs:tail - Tail log files\n";
+        $text .= "/logs:search - Search logs\n";
+        $text .= "/logs:find - Find log files\n\n";
 
         $text .= "*Admin Commands:*\n";
         $text .= "/start - Welcome message\n";
         $text .= "/auth - Manage authorized users\n";
         $text .= "/alerts - Alert settings\n";
         $text .= "/stats - Bot statistics\n";
+        $text .= "/ratelimit - Rate limit status\n";
+        $text .= "/botstatus - Bot health info\n";
         $text .= "/help - Show this message\n";
 
         return $bot->sendMessage($chatId, $text);

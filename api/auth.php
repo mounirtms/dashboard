@@ -5,10 +5,28 @@
  */
 session_start();
 
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3307');
-define('DB_USER', 'root');
-define('DB_PASS', 'YourNewStrongPassword');
+// Load environment variables
+$envFile = dirname(__DIR__) . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
+require_once __DIR__ . '/CSRFManager.php';
+require_once __DIR__ . '/RateLimiter.php';
+require_once __DIR__ . '/InputValidator.php';
+
+// Database configuration from environment
+define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');
+define('DB_PORT', $_ENV['DB_PORT'] ?? '3307');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
 define('DB_NAME', 'dashboard_auth');
 
 // Session configuration
@@ -109,10 +127,32 @@ function storeSession($userId) {
 
 // ── Actions ──
 function handleLogin() {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+    // Rate limiting: 10 requests per minute per IP
+    $rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 10, 60);
+    if (!$rateLimiter->checkOrReject($_SERVER['REMOTE_ADDR'] ?? 'unknown')) {
+        logAudit('rate_limit_exceeded', 'Login rate limit exceeded');
+        return;
+    }
 
-    if (empty($username) || empty($password)) {
+    // Note: CSRF verification is NOT required for login since this is the
+    // authentication entry point where no session/token exists yet.
+    // CSRF protection is enforced on all other authenticated endpoints.
+
+    $username = $_POST['username'] ?? '';
+    // Strip server-added escaping from special characters (some servers add backslashes before !, @, etc.)
+    $password = stripslashes($_POST['password'] ?? '');
+
+    // Validate inputs
+    $username = InputValidator::validateUsername($username);
+    if ($username === false) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid username format. Must be 3-50 alphanumeric characters or underscores.'
+        ]);
+        return;
+    }
+
+    if (empty($password)) {
         echo json_encode(['success' => false, 'message' => 'Username and password are required']);
         return;
     }
@@ -165,6 +205,7 @@ function handleLogin() {
 }
 
 function handleLogout() {
+    // CSRF not required for logout (safe to allow without)
     $userId = $_SESSION['user_id'] ?? null;
     logAudit('logout', '', $userId);
 
@@ -199,6 +240,15 @@ function handleCheckSession() {
 function handleChangePassword() {
     if (empty($_SESSION['logged_in'])) {
         echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+        return;
+    }
+
+    // Verify CSRF token
+    if (!CSRFManager::verifyRequest()) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid or expired security token. Please refresh the page and try again.'
+        ]);
         return;
     }
 
@@ -251,22 +301,59 @@ function handleCreateUser() {
         return;
     }
 
+    // Verify CSRF token
+    if (!CSRFManager::verifyRequest()) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid or expired security token. Please refresh the page and try again.'
+        ]);
+        return;
+    }
+
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
     $fullName = $_POST['full_name'] ?? '';
     $email = $_POST['email'] ?? '';
     $role = $_POST['role'] ?? 'viewer';
 
-    if (empty($username) || empty($password)) {
+    // Validate inputs
+    $username = InputValidator::validateUsername($username);
+    if ($username === false) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid username format. Must be 3-50 alphanumeric characters or underscores.'
+        ]);
+        return;
+    }
+
+    if (empty($password)) {
         echo json_encode(['success' => false, 'message' => 'Username and password are required']);
         return;
     }
 
-    if (strlen($password) < 8) {
-        echo json_encode(['success' => false, 'message' => 'Password must be at least 8 characters']);
+    // Validate password strength
+    $passwordValidation = InputValidator::validatePassword($password);
+    if (!$passwordValidation['valid']) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Password too weak: ' . implode(', ', $passwordValidation['errors'])
+        ]);
         return;
     }
 
+    // Validate email if provided
+    if (!empty($email)) {
+        $email = InputValidator::sanitizeEmail($email);
+        if ($email === false) {
+            echo json_encode(['success' => false, 'message' => 'Invalid email format']);
+            return;
+        }
+    }
+
+    // Validate full name
+    $fullName = InputValidator::sanitizeString($fullName, 100);
+
+    // Validate role
     if (!in_array($role, ['admin', 'viewer'])) {
         $role = 'viewer';
     }
@@ -299,6 +386,13 @@ switch ($action) {
         break;
     case 'check':
         handleCheckSession();
+        break;
+    case 'csrf_token':
+        echo json_encode([
+            'success' => true,
+            'csrf_token' => CSRFManager::getToken(),
+            'csrf_token_name' => CSRFManager::getTokenName()
+        ]);
         break;
     case 'change_password':
         handleChangePassword();
