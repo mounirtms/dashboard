@@ -7,9 +7,8 @@
 define([
     'jquery',
     'mage/storage',
-    'mage/url',
-    'Magento_Customer/js/customer-data'
-], function ($, storage, urlBuilder, customerData) {
+    'mage/url'
+], function ($, storage, urlBuilder) {
     'use strict';
 
     var VisualEffects = {
@@ -17,6 +16,7 @@ define([
         initialized: false,
         effectQueue: [],
         activeEffects: new Set(),
+        customerData: null,
         
         /**
          * Initialize visual effects
@@ -71,11 +71,22 @@ define([
             $(document).on('cart:milestoneReached', function(event, data) {
                 self.triggerEffect('milestone', data);
             });
-            
-            // Monitor cart data changes
-            var cartData = customerData.get('cart');
-            cartData.subscribe(function(updatedCart) {
-                self.handleCartUpdate(updatedCart);
+        },
+
+        /**
+         * Initialize customer data monitoring (called only when needed)
+         */
+        initCustomerData: function() {
+            if (this.customerData) {
+                return;
+            }
+            var self = this;
+            require(['Magento_Customer/js/customer-data'], function(customerData) {
+                self.customerData = customerData;
+                var cartData = customerData.get('cart');
+                cartData.subscribe(function(updatedCart) {
+                    self.handleCartUpdate(updatedCart);
+                });
             });
         },
 
@@ -127,7 +138,7 @@ define([
          * Initialize progress bar
          */
         initializeProgressBar: function() {
-            if (!this.config.shipping_effects.progress_bar_enabled) {
+            if (!this.config.shipping_effects || !this.config.shipping_effects.progress_bar_enabled) {
                 return;
             }
             
@@ -140,21 +151,17 @@ define([
          * Create progress bar HTML
          */
         createProgressBarHtml: function() {
-            var style = this.config.shipping_effects.progress_bar_style || 'modern';
+            var style = (this.config.shipping_effects && this.config.shipping_effects.progress_bar_style) || 'modern';
             var styleClass = 'mab-progress-' + style;
             
-            return `
-                <div class="mab-free-shipping-progress ${styleClass}" id="mab-shipping-progress">
-                    <div class="progress-container">
-                        <div class="progress-bar" id="mab-progress-bar">
-                            <div class="progress-fill" id="mab-progress-fill"></div>
-                        </div>
-                        <div class="progress-text" id="mab-progress-text">
-                            Loading...
-                        </div>
-                    </div>
-                </div>
-            `;
+            return '<div class="mab-free-shipping-progress ' + styleClass + '" id="mab-shipping-progress">' +
+                '<div class="progress-container">' +
+                    '<div class="progress-bar" id="mab-progress-bar">' +
+                        '<div class="progress-fill" id="mab-progress-fill"></div>' +
+                    '</div>' +
+                    '<div class="progress-text" id="mab-progress-text">Loading...</div>' +
+                '</div>' +
+            '</div>';
         },
 
         /**
@@ -223,9 +230,9 @@ define([
          */
         getProgressText: function(conditions) {
             if (conditions.eligible) {
-                return 'Free shipping unlocked! 🎉';
+                return 'Free shipping unlocked!';
             } else if (conditions.amount_needed > 0) {
-                return `Add ${this.formatCurrency(conditions.amount_needed)} for free shipping`;
+                return 'Add ' + this.formatCurrency(conditions.amount_needed) + ' for free shipping';
             } else {
                 return 'Free shipping available';
             }
@@ -237,18 +244,18 @@ define([
         handleProgressEffects: function(conditions) {
             // Trigger celebration if free shipping is achieved
             if (conditions.eligible && conditions.visual_effects) {
-                conditions.visual_effects.forEach(effect => {
+                conditions.visual_effects.forEach(function(effect) {
                     if (effect.trigger === 'free_shipping_achieved') {
                         this.executeEffect(effect);
                     }
-                });
+                }.bind(this));
             }
             
             // Handle threshold notifications
             if (conditions.notifications) {
-                conditions.notifications.forEach(notification => {
+                conditions.notifications.forEach(function(notification) {
                     this.showNotification(notification);
-                });
+                }.bind(this));
             }
         },
 
@@ -273,7 +280,7 @@ define([
             this.updateProgressBar();
             
             // Trigger cart update effect
-            if (this.config.cart_effects.cart_update !== 'none') {
+            if (this.config.cart_effects && this.config.cart_effects.cart_update !== 'none') {
                 this.triggerEffect('cart_update', cartData);
             }
             
@@ -285,18 +292,18 @@ define([
          * Check for milestone achievements
          */
         checkMilestones: function(cartData) {
-            if (!this.config.cart_effects.milestone_effects) {
+            if (!this.config.cart_effects || !this.config.cart_effects.milestone_effects) {
                 return;
             }
             
             var cartTotal = parseFloat(cartData.subtotal_excl_tax) || 0;
             var milestones = this.config.cart_effects.milestones || [];
             
-            milestones.forEach(milestone => {
+            milestones.forEach(function(milestone) {
                 if (cartTotal >= milestone.amount && !this.isMilestoneTriggered(milestone.amount)) {
                     this.triggerMilestone(milestone);
                 }
-            });
+            }.bind(this));
         },
 
         /**
@@ -355,11 +362,11 @@ define([
          */
         getEffectConfig: function(effectType) {
             var effects = {
-                'add_to_cart': this.config.cart_effects.add_to_cart,
-                'cart_update': this.config.cart_effects.cart_update,
-                'step_completion': this.config.checkout_effects.step_completion,
-                'free_shipping_celebration': this.config.shipping_effects.free_shipping_celebration,
-                'order_success': this.config.checkout_effects.order_success
+                'add_to_cart': (this.config.cart_effects && this.config.cart_effects.add_to_cart) || 'none',
+                'cart_update': (this.config.cart_effects && this.config.cart_effects.cart_update) || 'none',
+                'step_completion': (this.config.checkout_effects && this.config.checkout_effects.step_completion) || 'none',
+                'free_shipping_celebration': (this.config.shipping_effects && this.config.shipping_effects.free_shipping_celebration) || 'none',
+                'order_success': (this.config.checkout_effects && this.config.checkout_effects.order_success) || 'none'
             };
             
             return effects[effectType] || 'none';
@@ -450,7 +457,7 @@ define([
             var count = Math.floor(3 * intensity);
             
             for (var i = 0; i < count; i++) {
-                setTimeout(() => {
+                setTimeout(function() {
                     confetti({
                         particleCount: Math.floor(50 * intensity),
                         angle: 60,
@@ -485,7 +492,7 @@ define([
          * Create sparkle element
          */
         createSparkle: function($target) {
-            var $sparkle = $('<div class="mab-sparkle">✨</div>');
+            var $sparkle = $('<div class="mab-sparkle">✦</div>');
             var targetOffset = $target.offset();
             var targetWidth = $target.outerWidth();
             var targetHeight = $target.outerHeight();
@@ -516,7 +523,7 @@ define([
             var $target = this.getEffectTarget(config);
             
             $target.addClass('mab-bounce-effect');
-            setTimeout(() => {
+            setTimeout(function() {
                 $target.removeClass('mab-bounce-effect');
             }, this.config.animation_duration);
         },
@@ -528,7 +535,7 @@ define([
             var $target = this.getEffectTarget(config);
             
             $target.addClass('mab-pulse-effect');
-            setTimeout(() => {
+            setTimeout(function() {
                 $target.removeClass('mab-pulse-effect');
             }, this.config.animation_duration);
         },
@@ -540,7 +547,7 @@ define([
             var $target = this.getEffectTarget(config);
             
             $target.addClass('mab-glow-effect');
-            setTimeout(() => {
+            setTimeout(function() {
                 $target.removeClass('mab-glow-effect');
             }, this.config.animation_duration);
         },
@@ -552,7 +559,7 @@ define([
             var $target = this.getEffectTarget(config);
             
             $target.addClass('mab-shake-effect');
-            setTimeout(() => {
+            setTimeout(function() {
                 $target.removeClass('mab-shake-effect');
             }, this.config.animation_duration);
         },
@@ -564,7 +571,7 @@ define([
             var $target = this.getEffectTarget(config);
             
             $target.addClass('mab-zoom-effect');
-            setTimeout(() => {
+            setTimeout(function() {
                 $target.removeClass('mab-zoom-effect');
             }, this.config.animation_duration);
         },
@@ -574,12 +581,12 @@ define([
          */
         executeCelebration: function(config) {
             this.executeConfetti(config);
-            setTimeout(() => {
+            setTimeout(function() {
                 this.executeFireworks(config);
-            }, 500);
-            setTimeout(() => {
+            }.bind(this), 500);
+            setTimeout(function() {
                 this.executeSparkles(config);
-            }, 1000);
+            }.bind(this), 1000);
         },
 
         /**
@@ -641,49 +648,48 @@ define([
          * Show notification
          */
         showNotification: function(notification) {
-            var $notification = $(`
-                <div class="mab-notification mab-notification-${notification.type}">
-                    <span class="notification-icon">${this.getNotificationIcon(notification.icon)}</span>
-                    <span class="notification-message">${notification.message}</span>
-                </div>
-            `);
+            var icons = {
+                'success': '\u2705',
+                'info': '\u2139\uFE0F',
+                'warning': '\u26A0\uFE0F',
+                'error': '\u274C'
+            };
+            
+            var icon = icons[notification.icon] || icons.info;
+            
+            var $notification = $(
+                '<div class="mab-notification mab-notification-' + notification.type + '">' +
+                    '<span class="notification-icon">' + icon + '</span>' +
+                    '<span class="notification-message">' + notification.message + '</span>' +
+                '</div>'
+            );
             
             $('body').append($notification);
             
-            setTimeout(() => {
+            setTimeout(function() {
                 $notification.addClass('show');
             }, 100);
             
-            setTimeout(() => {
+            setTimeout(function() {
                 $notification.removeClass('show');
-                setTimeout(() => {
+                setTimeout(function() {
                     $notification.remove();
                 }, 300);
             }, 3000);
         },
 
         /**
-         * Get notification icon
-         */
-        getNotificationIcon: function(iconType) {
-            var icons = {
-                'success': '✅',
-                'info': 'ℹ️',
-                'warning': '⚠️',
-                'error': '❌'
-            };
-            
-            return icons[iconType] || icons.info;
-        },
-
-        /**
          * Format currency
          */
         formatCurrency: function(amount) {
-            return new Intl.NumberFormat('fr-DZ', {
-                style: 'currency',
-                currency: 'DZD'
-            }).format(amount);
+            try {
+                return new Intl.NumberFormat('fr-DZ', {
+                    style: 'currency',
+                    currency: 'DZD'
+                }).format(amount);
+            } catch (e) {
+                return amount + ' DZD';
+            }
         },
 
         /**

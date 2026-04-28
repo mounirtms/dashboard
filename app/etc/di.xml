@@ -268,13 +268,7 @@
             <argument name="handlers"  xsi:type="array">
                 <item name="system" xsi:type="object">Magento\Framework\Logger\Handler\System</item>
                 <item name="debug" xsi:type="object">Magento\Framework\Logger\Handler\Debug</item>
-                <item name="syslog" xsi:type="object">Magento\Framework\Logger\Handler\Syslog</item>
             </argument>
-        </arguments>
-    </type>
-    <type name="Magento\Framework\Logger\Handler\Syslog">
-        <arguments>
-            <argument name="ident" xsi:type="string">Magento</argument>
         </arguments>
     </type>
     <type name="Magento\Framework\Model\Context">
@@ -803,17 +797,6 @@
                 <item name="extension" xsi:type="string">\Magento\Framework\Api\Code\Generator\ExtensionAttributesGenerator</item>
                 <item name="remote" xsi:type="string">\Magento\Framework\MessageQueue\Code\Generator\RemoteServiceGenerator</item>
                 <item name="proxyDeferred" xsi:type="string">\Magento\Framework\Async\Code\Generator\ProxyDeferredGenerator</item>
-            </argument>
-        </arguments>
-    </type>
-    <type name="Magento\Framework\App\Cache\Frontend\Pool">
-        <arguments>
-            <argument name="frontendSettings" xsi:type="array">
-                <item name="page_cache" xsi:type="array">
-                    <item name="backend_options" xsi:type="array">
-                        <item name="cache_dir" xsi:type="string">page_cache</item>
-                    </item>
-                </item>
             </argument>
         </arguments>
     </type>

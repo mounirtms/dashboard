@@ -8,8 +8,7 @@
         <referenceContainer name="before.body.end">
             <block class="Mab\VisualEffects\Block\VisualEffects" 
                    name="mab.visual.effects" 
-                   template="Mab_VisualEffects::visual-effects.phtml"
-                   cacheable="false"/>
+                   template="Mab_VisualEffects::visual-effects.phtml"/>
         </referenceContainer>
     </body>
 </page>

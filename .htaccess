@@ -14,32 +14,26 @@ DirectoryIndex index.php
 </IfModule>
 # php -- END cPanel-generated handler, do not edit
 
-# Block aggressive bots - Added 2026-04-08
+# Bot & Scanner Protection - Consolidated 2026-04-27
 SetEnvIfNoCase User-Agent "SemrushBot" bad_bot
 SetEnvIfNoCase User-Agent "AhrefsBot" bad_bot
 SetEnvIfNoCase User-Agent "MJ12bot" bad_bot
 SetEnvIfNoCase User-Agent "DotBot" bad_bot
 SetEnvIfNoCase User-Agent "PetalBot" bad_bot
 SetEnvIfNoCase User-Agent "DataForSeoBot" bad_bot
-SetEnvIfNoCase User-Agent " serpstatbot" bad_bot
-<IfModule mod_authz_core.c>
-  <RequireAll>
-    Require all granted
-    Require not env bad_bot
-  </RequireAll>
-</IfModule>
-
-# Bot Protection (included)
+SetEnvIfNoCase User-Agent "serpstatbot" bad_bot
 SetEnvIfNoCase User-Agent "GPTBot" bad_bot
-SetEnvIfNoCase User-Agent "AhrefsBot" bad_bot
-SetEnvIfNoCase User-Agent "SemrushBot" bad_bot
-SetEnvIfNoCase User-Agent "MJ12bot" bad_bot
 SetEnvIfNoCase User-Agent "Bytespider" bad_bot
 SetEnvIfNoCase User-Agent "CCBot" bad_bot
-<RequireAll>
-    Require all granted
-    Require not env bad_bot
-</RequireAll>
+<IfModule mod_authz_core.c>
+    <RequireAll>
+        Require all granted
+        Require not env bad_bot
+        Require not ip 4.232.90.232
+        Require not ip 34.150.216.55
+        Require not ip 96.126.130.244
+    </RequireAll>
+</IfModule>
 
 ############################################
 # PERFORMANCE OPTIMIZATION - Browser Caching

@@ -7,11 +7,13 @@
         </arguments>
     </type>
     
+    <!-- DISABLED: License validation HTTP calls to Firebase cause latency
     <type name="Magento\Framework\Module\Manager">
         <plugin name="mab_core_module_output_enablement" 
                 type="Mab\Core\Plugin\Framework\Module\ModuleOutputEnablement" 
                 sortOrder="10"/>
     </type>
+    -->
 
     <!-- Cache configuration -->
     <type name="Magento\Framework\View\Element\Template">

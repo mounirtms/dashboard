@@ -24,9 +24,8 @@
     require([
         'jquery',
         'Mab_VisualEffects/js/visual-effects',
-        'Magento_Customer/js/customer-data',
         'domReady!'
-    ], function ($, VisualEffects, customerData) {
+    ], function ($, VisualEffects) {
         'use strict';
         
         var config = <?= /* @noEscape */ $block->getEffectConfigJson() ?>;
@@ -35,18 +34,34 @@
             // Initialize visual effects
             VisualEffects.init(config);
             
-            // Monitor cart updates
-            var cart = customerData.get('cart');
-            cart.subscribe(function (updatedCart) {
-                VisualEffects.handleCartUpdate(updatedCart);
-                
-                // Update progress bar
-                if (config.shipping_effects.progress_bar_enabled) {
-                    VisualEffects.updateProgressBar();
-                }
-            });
+            // Only load customer data on cart/checkout pages
+            var isCartOrCheckout = window.checkoutConfig !== undefined || 
+                                   window.location.href.indexOf('checkout/cart') > -1;
             
-            // Monitor cart item updates
+            if (isCartOrCheckout) {
+                require(['Magento_Customer/js/customer-data'], function (customerData) {
+                    // Initialize customer data monitoring
+                    VisualEffects.initCustomerData();
+                    
+                    // Monitor cart updates
+                    var cart = customerData.get('cart');
+                    cart.subscribe(function (updatedCart) {
+                        VisualEffects.handleCartUpdate(updatedCart);
+                        
+                        // Update progress bar
+                        if (config.shipping_effects && config.shipping_effects.progress_bar_enabled) {
+                            VisualEffects.updateProgressBar();
+                        }
+                    });
+                    
+                    // Initialize progress bar immediately
+                    if (config.shipping_effects && config.shipping_effects.progress_bar_enabled) {
+                        VisualEffects.updateProgressBar();
+                    }
+                });
+            }
+            
+            // Monitor cart item deletes (works without customer-data)
             $(document).on('click', '.cart.item .action.action-delete', function() {
                 var $item = $(this).closest('.cart.item');
                 $item.addClass('mab-bounce-effect');
@@ -65,11 +80,6 @@
                     $input.removeClass('mab-pulse-effect');
                 }, config.animation_duration);
             });
-            
-            // Initialize progress bar immediately
-            if (config.shipping_effects.progress_bar_enabled) {
-                VisualEffects.updateProgressBar();
-            }
         }
     });
     </script>
