@@ -36,15 +36,20 @@ class Security {
      */
     public function checkRateLimit(int $chatId): bool {
         $rateFile = $this->getRateLimitFile();
-        $limit = $this->config['security']['rate_limit'] ?? 10;
+        $limit = $this->config['security']['rate_limit'] ?? 20;
         $window = $this->config['security']['rate_window'] ?? 60;
 
         $history = $this->loadRateHistory($rateFile);
         $now = time();
         $windowStart = $now - $window;
 
-        // Clean old entries
-        $history = array_filter($history, fn($t) => $t > $windowStart);
+        // Clean old entries per chat
+        foreach ($history as $cid => $timestamps) {
+            $history[$cid] = array_values(array_filter($timestamps, fn($t) => $t > $windowStart));
+            if (empty($history[$cid])) {
+                unset($history[$cid]);
+            }
+        }
 
         if (!isset($history[$chatId])) {
             $history[$chatId] = [];
@@ -52,6 +57,7 @@ class Security {
 
         // Check if over limit
         if (count($history[$chatId]) >= $limit) {
+            $this->saveRateHistory($rateFile, $history);
             return false;
         }
 
