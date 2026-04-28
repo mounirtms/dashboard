@@ -5,6 +5,19 @@
  */
 session_start();
 
+// Load environment variables
+$envFile = dirname(__DIR__) . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
 // Require authentication
 if (empty($_SESSION['logged_in'])) {
     header('Content-Type: application/json');
@@ -18,15 +31,25 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 
+// Rate limiting: 120 requests per minute per user (2 per second)
+require_once __DIR__ . '/RateLimiter.php';
+require_once __DIR__ . '/InputValidator.php';
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 120, 60);
+$userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+if (!$rateLimiter->checkOrReject($userIdentifier)) {
+    error_log("Rate limit exceeded for user: $userIdentifier");
+    exit;
+}
+
 // ── Configuration ──
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3307');
-define('DB_USER', 'root');
-define('DB_PASS', 'YourNewStrongPassword');
-define('PROD_PATH', '/home/technadminy7/public_html');
-define('BETA_PATH', '/home/beta/public_html');
-define('PIM_PATH', '/home/pim/public_html');
-define('DASHBOARD_PATH', '/home/dashboard/public_html');
+define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');
+define('DB_PORT', $_ENV['DB_PORT'] ?? '3307');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('PROD_PATH', $_ENV['PROD_PATH'] ?? '/home/technadminy7/public_html');
+define('BETA_PATH', $_ENV['BETA_PATH'] ?? '/home/beta/public_html');
+define('PIM_PATH', $_ENV['PIM_PATH'] ?? '/home/pim/public_html');
+define('DASHBOARD_PATH', $_ENV['DASHBOARD_PATH'] ?? '/home/dashboard/public_html');
 define('SITES', [
     ['key' => 'prod', 'name' => 'technostationery.com', 'path' => PROD_PATH, 'user' => 'technadminy7', 'db' => 'technadminy7_dBT8x12y22'],
     ['key' => 'beta', 'name' => 'beta.technostationery.com', 'path' => BETA_PATH, 'user' => 'beta', 'db' => 'beta_dBT8x12y22'],
@@ -38,6 +61,26 @@ define('SITES', [
 
 $action = $_GET['action'] ?? 'overview';
 $site = $_GET['site'] ?? 'prod';
+
+// Validate action parameter
+$allowedActions = [
+    'overview', 'sites', 'crons', 'queues', 'cleanup', 'indexer',
+    'execute', 'dbhealth', 'redis', 'elasticsearch', 'varnish',
+    'system_advanced', 'phpfpm_pools', 'alerts', 'cloudflare',
+    'cloudflare_action'
+];
+$action = InputValidator::validateAction($action, $allowedActions);
+if ($action === false) {
+    echo json_encode(['error' => 'Invalid action parameter']);
+    exit;
+}
+
+// Validate site parameter
+$site = InputValidator::validateEnvironment($site);
+if ($site === false) {
+    echo json_encode(['error' => 'Invalid site parameter']);
+    exit;
+}
 
 // ── Helpers ──
 function cmd($c, $timeout=5) {
@@ -54,6 +97,36 @@ function cmd($c, $timeout=5) {
 }
 function cmd_line($c, $t=5) { $r=cmd($c,$t); return trim(implode("\n",$r['output'])); }
 function safe_num($v,$d=0) { return is_numeric($v) ? round($v+0,$d) : $d; }
+
+/**
+ * Parse human-readable memory value to bytes
+ * Supports: B, K, KB, M, MB, G, GB, T, TB
+ */
+function parse_memory_value($value) {
+    $value = trim(strtoupper($value));
+    if (is_numeric($value)) return (float)$value;
+    
+    $units = [
+        'TB' => 1099511627776,
+        'GB' => 1073741824,
+        'MB' => 1048576,
+        'KB' => 1024,
+        'T' => 1099511627776,
+        'G' => 1073741824,
+        'M' => 1048576,
+        'K' => 1024,
+        'B' => 1
+    ];
+    
+    foreach ($units as $unit => $multiplier) {
+        if (strpos($value, $unit) !== false) {
+            $num = (float)str_replace($unit, '', $value);
+            return $num * $multiplier;
+        }
+    }
+    
+    return 0;
+}
 function format_bytes($bytes) {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
     $i = 0;
@@ -502,15 +575,18 @@ function redis_stats() {
                     'used_human' => $used_mem,
                     'peak_human' => $peak_mem,
                     'used_bytes' => $used_bytes,
-                    'max_human' => $maxmemory ?: 'unlimited'
+                    'max_human' => $maxmemory ?: 'unlimited',
+                    'used_mb' => round($used_bytes / 1024 / 1024, 1),
+                    'maxmemory_mb' => $maxmemory ? round(parse_memory_value($maxmemory) / 1024 / 1024, 1) : 0
                 ],
                 'stats' => [
                     'hit_rate' => $hit_rate,
                     'hits' => $hits,
                     'misses' => $misses,
-                    'ops_per_sec' => $ops_sec ?: 0,
-                    'evicted_keys' => $evicted ?: 0,
-                    'expired_keys' => $expired ?: 0
+                    'ops_per_sec' => (int)($ops_sec ?: 0),
+                    'evicted_keys' => (int)($evicted ?: 0),
+                    'expired_keys' => (int)($expired ?: 0),
+                    'connected_clients' => (int)($connected_clients ?: 0)
                 ],
                 'clients' => [
                     'connected' => $connected_clients ?: 0,
