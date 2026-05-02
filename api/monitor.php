@@ -3,6 +3,17 @@
  * Server Monitoring API — Real-time system data
  * All endpoints return live server data for the dashboard
  */
+
+// Clean any output that might have been accidentally included
+while (ob_get_level()) ob_end_clean();
+ob_start();
+
+// Set headers first
+header('Content-Type: application/json');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+error_reporting(0);
+ini_set('display_errors', 0);
+
 session_start();
 
 // Load environment variables
