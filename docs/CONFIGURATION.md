@@ -35,13 +35,14 @@ Added inline `fetch()` monkey-patch in `index.html` to handle PHP shebang in API
 
 ## Akeneo PIM
 - **URL**: https://pim.technostationery.com
-- **Location**: `/home/pim/akeneopublic_html`
-- **Working Directory**: `/home/pim/public_html` (main PIM - working)
+- **Location**: `/home/pim/public_html` (serving via cPanel)
+- **Note**: Login has encoder/hasher mismatch issue (bcrypt vs sha512 in Symfony 6+)
 
 ### Known Issues
-PIM login at `/home/pim/akeneopublic_html` has authentication issues:
-- Password encoding mismatch between bcrypt and sha512
-- The main working PIM is at `/home/pim/public_html`
+1. **PIM Login**: Password encoding mismatch between bcrypt (legacy) vs sha512 (Symfony security config)
+   - The pim:user:create command creates password in bcrypt format
+   - But security.yml is configured for sha512 encoder
+   - Need to match both configurations for login to work
 
 ### Database Configuration
 - MySQL Socket: `/opt/mariadb10.6/mariadb.sock`
