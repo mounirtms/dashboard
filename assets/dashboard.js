@@ -3,6 +3,25 @@ const DASH_API    = '/api/dashboard.php';
 const AUTH_API    = '/api/auth.php';
 let scriptData = {};
 
+// Monkey-patch fetch to handle PHP shebang issue globally
+const originalFetch = window.fetch;
+window.fetch = async function(...args) {
+  const response = await originalFetch.apply(this, args);
+  const originalJson = response.json.bind(response);
+  response.json = async function() {
+    try {
+      const text = await response.text();
+      // Handle case where PHP shebang or other text precedes JSON
+      const jsonStr = text.replace(/^[^{]*/, '').trim();
+      return JSON.parse(jsonStr);
+    } catch(e) {
+      console.error('JSON parse error:', e);
+      return {};
+    }
+  };
+  return response;
+};
+
 // ── Auth ──
 async function checkAuth() {
   try {

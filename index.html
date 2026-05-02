@@ -541,6 +541,24 @@
   </div>
 </div>
 
-<script src="/assets/dashboard.js"></script>
+<script>
+// Monkey-patch fetch to handle PHP shebang globally - inline fix
+(function() {
+  const orig = window.fetch;
+  window.fetch = function(...args) {
+    return orig.apply(this, args).then(r => {
+      const oldJson = r.json;
+      r.json = function() {
+        return r.text().then(t => {
+          const jsonStr = t.replace(/^[^{]*/, '').trim();
+          return JSON.parse(jsonStr);
+        });
+      };
+      return r;
+    });
+  };
+})();
+</script>
+<script src="/assets/dashboard.js?v=20240502"></script>
 </body>
 </html>
