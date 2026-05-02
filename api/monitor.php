@@ -480,6 +480,7 @@ function dbhealth() {
     $dbs = [
         'prod' => 'technadminy7_dBT8x12y22',
         'beta' => 'beta_dBT8x12y22',
+        'pim' => 'akeneo_pim',
     ];
     foreach ($dbs as $env => $dbName) {
         $db = @new mysqli(DB_HOST, DB_USER, DB_PASS, $dbName, DB_PORT);
