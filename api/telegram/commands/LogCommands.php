@@ -317,8 +317,9 @@ class LogCommands {
         if (!in_array($env, ['prod', 'beta', 'dev'])) {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/logs:ai prod|beta|dev [hours]`");
         }
+$bot->sendMessage($chatId, "🤖 Running AI log analysis for *{$env}*...
 
-        $bot->sendMessage($chatId, "🤖 Running AI log analysis for *{$env}*...\n_(This may take 1-2 minutes)_");
+This process can take up to 2 minutes to complete. I will notify you once it's done.");
 
         // Read and analyze logs
         $logs = $this->readLogs($env, $hours);

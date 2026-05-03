@@ -708,11 +708,12 @@ class InfrastructureAuditor {
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         
         $headers = ['Content-Type: application/json'];
-        if (!empty($config['api_token'])) {
-            $headers[] = 'Authorization: Bearer ' . $config['api_token'];
-        } else {
+        // Prioritize Global API Key (no IP restrictions)
+        if (!empty($config['api_key']) && !empty($config['email'])) {
             $headers[] = 'X-Auth-Email: ' . $config['email'];
             $headers[] = 'X-Auth-Key: ' . $config['api_key'];
+        } elseif (!empty($config['api_token'])) {
+            $headers[] = 'Authorization: Bearer ' . $config['api_token'];
         }
         
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -739,11 +740,12 @@ class InfrastructureAuditor {
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         
         $headers = ['Content-Type: application/json'];
-        if (!empty($config['api_token'])) {
-            $headers[] = 'Authorization: Bearer ' . $config['api_token'];
-        } else {
+        // Prioritize Global API Key (no IP restrictions)
+        if (!empty($config['api_key']) && !empty($config['email'])) {
             $headers[] = 'X-Auth-Email: ' . $config['email'];
             $headers[] = 'X-Auth-Key: ' . $config['api_key'];
+        } elseif (!empty($config['api_token'])) {
+            $headers[] = 'Authorization: Bearer ' . $config['api_token'];
         }
         
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -770,45 +772,70 @@ class InfrastructureAuditor {
     }
     
     /**
-     * Get zone analytics (24h)
+     * Get zone analytics (24h) using GraphQL API
      */
     private function getZoneAnalytics($config, $zoneId) {
-        $since = date('Y-m-d\TH:i:s\Z', strtotime('-24 hours'));
-        $until = date('Y-m-d\TH:i:s\Z');
+        // Use GraphQL API (Analytics Dashboard API is deprecated)
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
         
-        $ch = curl_init("https://api.cloudflare.com/client/v4/zones/{$zoneId}/analytics/dashboard?since={$since}&until={$until}");
+        $query = <<<GRAPHQL
+{
+  viewer {
+    zones(filter: {zoneTag: "$zoneId"}) {
+      httpRequests1dGroups(limit: 1, filter: {date_geq: "$yesterday"}) {
+        sum {
+          requests
+          cachedRequests
+          bytes
+          threats
+          pageViews
+        }
+        dimensions {
+          date
+        }
+      }
+    }
+  }
+}
+GRAPHQL;
+        
+        $ch = curl_init('https://api.cloudflare.com/client/v4/graphql');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         
         $headers = ['Content-Type: application/json'];
-        if (!empty($config['api_token'])) {
-            $headers[] = 'Authorization: Bearer ' . $config['api_token'];
-        } else {
+        // Prioritize Global API Key (no IP restrictions)
+        if (!empty($config['api_key']) && !empty($config['email'])) {
             $headers[] = 'X-Auth-Email: ' . $config['email'];
             $headers[] = 'X-Auth-Key: ' . $config['api_key'];
+        } elseif (!empty($config['api_token'])) {
+            $headers[] = 'Authorization: Bearer ' . $config['api_token'];
         }
         
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['query' => $query]));
         
         $response = curl_exec($ch);
         curl_close($ch);
         
         if ($response) {
             $data = json_decode($response, true);
-            if (isset($data['success']) && $data['success'] && isset($data['result'])) {
-                $result = $data['result'];
+            if (isset($data['data']['viewer']['zones'][0]['httpRequests1dGroups'][0])) {
+                $stats = $data['data']['viewer']['zones'][0]['httpRequests1dGroups'][0]['sum'];
                 
-                $requests = $result['totals']['requests']['all'] ?? 0;
-                $cached = $result['totals']['requests']['cached'] ?? 0;
-                $bandwidth = $result['totals']['bandwidth']['all'] ?? 0;
-                $threats = $result['totals']['threats']['all'] ?? 0;
+                $requests = $stats['requests'] ?? 0;
+                $cached = $stats['cachedRequests'] ?? 0;
+                $bandwidth = $stats['bytes'] ?? 0;
+                $threats = $stats['threats'] ?? 0;
                 
                 return [
                     'requests' => $requests,
                     'cached_requests' => $cached,
                     'cache_hit_rate' => $requests > 0 ? ($cached / $requests) * 100 : 0,
                     'bandwidth' => $bandwidth,
-                    'threats' => $threats
+                    'threats' => $threats,
+                    'page_views' => $stats['pageViews'] ?? 0
                 ];
             }
         }
