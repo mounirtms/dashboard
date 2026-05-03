@@ -84,3 +84,33 @@ tr:hover td { background: rgba(59,130,246,0.05); }
 .infra-val.green { color: var(--green); }
 .infra-val.yellow { color: var(--yellow); }
 .infra-val.red { color: var(--red); }
+
+/* Toast notifications */
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.toast {
+  font-size: 14px;
+  font-weight: 500;
+  max-width: 400px;
+  word-wrap: break-word;
+}

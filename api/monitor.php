@@ -45,7 +45,7 @@ header('Cache-Control: no-cache, no-store, must-revalidate');
 // Rate limiting: 120 requests per minute per user (2 per second)
 require_once __DIR__ . '/RateLimiter.php';
 require_once __DIR__ . '/InputValidator.php';
-$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 120, 60);
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 500, 60);
 $userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
 if (!$rateLimiter->checkOrReject($userIdentifier)) {
     error_log("Rate limit exceeded for user: $userIdentifier");
