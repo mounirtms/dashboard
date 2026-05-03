@@ -91,15 +91,22 @@ else
 fi
 echo ""
 
-# Step 4: Varnish ban (soft flush - safe)
-log_info "Banning all Varnish content..."
+# Step 4: Varnish ban (site-specific - safe)
+log_info "Banning Varnish content for BETA site only..."
 if command -v varnishadm &> /dev/null; then
-    varnishadm -T ${VARNISH_ADMIN} "ban req.url ~ .*" 2>&1 | tee -a "$LOG_FILE"
+    # Only purge beta.technostationery.com cache - NOT dashboard or main site
+    varnishadm -T ${VARNISH_ADMIN} "ban req.http.host ~ beta.technostationery.com" 2>&1 | tee -a "$LOG_FILE"
     BAN_RESULT=$?
     if [ $BAN_RESULT -eq 0 ]; then
-        log_info "Varnish ban completed"
+        log_info "Varnish ban completed (beta site only)"
     else
         log_warn "Varnish ban had warnings (non-critical)"
+    fi
+    
+    # Alternative: use the site-specific purge script if available
+    if [ -f "/home/dashboard/public_html/scripts/varnish/purge_site.sh" ]; then
+        bash /home/dashboard/public_html/scripts/varnish/purge_site.sh beta >> "$LOG_FILE" 2>&1
+        log_info "Site-specific purge script executed for beta"
     fi
 else
     log_info "varnishadm not found, skipping Varnish ban"
