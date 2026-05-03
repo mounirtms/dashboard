@@ -1061,17 +1061,34 @@ function varnish_quick_check() {
  */
 // Cloudflare credentials from .env (fallback to defaults for backward compatibility)
 function cf_api($endpoint, $method = 'GET', $data = null) {
-    $token = defined('CF_API_TOKEN') ? CF_API_TOKEN : ($_ENV['CF_API_TOKEN'] ?? '');
+    // Load Cloudflare config - prioritize Global API Key (no IP restrictions)
+    static $cfConfig = null;
+    if ($cfConfig === null) {
+        $cfConfig = @include dirname(__DIR__) . '/config/cloudflare.php';
+    }
+    
     $url = "https://api.cloudflare.com/client/v4{$endpoint}";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bearer " . $token,
-        "Content-Type: application/json"
-    ]);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    
+    // Prioritize Global API Key over Token (no IP restrictions)
+    $headers = ["Content-Type: application/json"];
+    if (!empty($cfConfig['api_key']) && !empty($cfConfig['email'])) {
+        $headers[] = "X-Auth-Email: " . $cfConfig['email'];
+        $headers[] = "X-Auth-Key: " . $cfConfig['api_key'];
+    } elseif (!empty($cfConfig['api_token'])) {
+        $headers[] = "Authorization: Bearer " . $cfConfig['api_token'];
+    } else {
+        // Fallback to environment variables
+        $token = defined('CF_API_TOKEN') ? CF_API_TOKEN : ($_ENV['CF_API_TOKEN'] ?? '');
+        $headers[] = "Authorization: Bearer " . $token;
+    }
+    
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    
     if ($data) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     }
@@ -1082,6 +1099,20 @@ function cf_api($endpoint, $method = 'GET', $data = null) {
 }
 
 function get_cf_constant($name, $default = '') {
+    // Load from config file first
+    $cfConfig = @include dirname(__DIR__) . '/config/cloudflare.php';
+    $configMap = [
+        'CF_ZONE_ID' => 'zone_id',
+        'CF_ACCOUNT_ID' => 'account_id',
+        'CF_API_TOKEN' => 'api_token',
+        'CF_API_KEY' => 'api_key',
+        'CF_EMAIL' => 'email'
+    ];
+    
+    if (isset($configMap[$name]) && !empty($cfConfig[$configMap[$name]])) {
+        return $cfConfig[$configMap[$name]];
+    }
+    
     if (defined($name)) return constant($name);
     return $_ENV[$name] ?? $default;
 }
