@@ -355,23 +355,6 @@ class CommandRouter {
         $this->commands['/mode'] = ['group' => 'magento', 'method' => 'cmd_mode'];
         $this->commands['/config'] = ['group' => 'magento', 'method' => 'cmd_config'];
 
-        // PIM commands
-        $this->commands['/pim'] = ['group' => 'pim', 'method' => 'cmd_pim'];
-        $this->commands['/pimproducts'] = ['group' => 'pim', 'method' => 'cmd_pimproducts'];
-        $this->commands['/pimfamilies'] = ['group' => 'pim', 'method' => 'cmd_pimfamilies'];
-        $this->commands['/pimjobs'] = ['group' => 'pim', 'method' => 'cmd_pimjobs'];
-        $this->commands['/pimapi'] = ['group' => 'pim', 'method' => 'cmd_pimapi'];
-
-        // Queue commands
-        $this->commands['/queues'] = ['group' => 'queue', 'method' => 'cmd_queues'];
-        $this->commands['/queue'] = ['group' => 'queue', 'method' => 'cmd_queues']; // Alias
-        $this->commands['/consumers'] = ['group' => 'queue', 'method' => 'cmd_consumers'];
-
-        // Database commands
-        $this->commands['/dbhealth'] = ['group' => 'database', 'method' => 'cmd_dbhealth'];
-        $this->commands['/db'] = ['group' => 'database', 'method' => 'cmd_dbhealth']; // Alias
-        $this->commands['/slowqueries'] = ['group' => 'database', 'method' => 'cmd_slowqueries'];
-
         // Admin commands
         $this->commands['/auth'] = ['group' => 'admin', 'method' => 'cmd_auth'];
         $this->commands['/alerts'] = ['group' => 'admin', 'method' => 'cmd_alerts'];

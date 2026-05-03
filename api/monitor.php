@@ -1198,9 +1198,9 @@ function cloudflare_stats() {
         orderBy: [date_ASC]
       ) {
         sum {
-          requests pageViews threats uniques
-          bytes bytesAll cachedBytes uncachedBytes
-          cachedRequests uncachedRequests
+          requests pageViews threats
+          bytes cachedBytes
+          cachedRequests
         }
         uniq { uniques }
         dimensions { date }
@@ -1208,46 +1208,11 @@ function cloudflare_stats() {
       # 24-hour hourly breakdown
       hourlyTraffic: httpRequests1hGroups(
         limit: 24
+        filter: {datetime_gt: "{$yesterday}T00:00:00Z"}
         orderBy: [datetime_ASC]
       ) {
-        sum { requests bytes threats cachedRequests uncachedRequests }
+        sum { requests bytes threats cachedRequests }
         dimensions { datetime }
-      }
-      # Top countries by requests
-      countries: httpRequests1dGroups(
-        limit: 10
-        filter: {date_gt: "{$weekAgo}"}
-        orderBy: [requests_DESC]
-      ) {
-        sum { requests bytes threats }
-        dimensions { country }
-      }
-      # HTTP status code distribution
-      statusCodes: httpRequests1dGroups(
-        limit: 5
-        filter: {date_gt: "{$weekAgo}"}
-        orderBy: [requests_DESC]
-      ) {
-        sum { requests }
-        dimensions { responseStatusClass }
-      }
-      # Top 10 URLs by requests
-      topUrls: httpRequests1dGroups(
-        limit: 10
-        filter: {date_gt: "{$weekAgo}"}
-        orderBy: [requests_DESC]
-      ) {
-        sum { requests bytes }
-        dimensions { clientRequestPath }
-      }
-      # Threat types
-      threatTypes: httpRequests1dGroups(
-        limit: 10
-        filter: {date_gt: "{$weekAgo}", threats_gt: 0}
-        orderBy: [threats_DESC]
-      ) {
-        sum { threats }
-        dimensions { threatPathingName }
       }
     }
   }
@@ -1265,11 +1230,12 @@ GRAPHQL;
         $threatTypes = [];
         $totals = [
             'requests' => 0, 'pageViews' => 0, 'threats' => 0, 'uniques' => 0,
-            'bytes' => 0, 'bytesAll' => 0, 'cachedBytes' => 0, 'uncachedBytes' => 0,
+            'bytes' => 0, 'cachedBytes' => 0,
             'cachedRequests' => 0, 'uncachedRequests' => 0,
         ];
 
-        if ($graphql['body']['success'] && isset($graphql['body']['data']['viewer']['zones'][0])) {
+        // GraphQL responses use 'data' key instead of 'success'
+        if (isset($graphql['body']['data']['viewer']['zones'][0])) {
             $data = $graphql['body']['data']['viewer']['zones'][0];
             
             // Daily traffic
@@ -1283,20 +1249,17 @@ GRAPHQL;
                         'uniques' => $day['uniq']['uniques'] ?? 0,
                         'bytes' => $day['sum']['bytes'] ?? 0,
                         'cachedBytes' => $day['sum']['cachedBytes'] ?? 0,
-                        'uncachedBytes' => $day['sum']['uncachedBytes'] ?? 0,
+                        'uncachedBytes' => ($day['sum']['bytes'] ?? 0) - ($day['sum']['cachedBytes'] ?? 0),
                         'cachedRequests' => $day['sum']['cachedRequests'] ?? 0,
-                        'uncachedRequests' => $day['sum']['uncachedRequests'] ?? 0,
+                        'uncachedRequests' => ($day['sum']['requests'] ?? 0) - ($day['sum']['cachedRequests'] ?? 0),
                     ];
                     $totals['requests'] += $day['sum']['requests'] ?? 0;
                     $totals['pageViews'] += $day['sum']['pageViews'] ?? 0;
                     $totals['threats'] += $day['sum']['threats'] ?? 0;
                     $totals['uniques'] += $day['uniq']['uniques'] ?? 0;
                     $totals['bytes'] += $day['sum']['bytes'] ?? 0;
-                    $totals['bytesAll'] += $day['sum']['bytesAll'] ?? 0;
                     $totals['cachedBytes'] += $day['sum']['cachedBytes'] ?? 0;
-                    $totals['uncachedBytes'] += $day['sum']['uncachedBytes'] ?? 0;
                     $totals['cachedRequests'] += $day['sum']['cachedRequests'] ?? 0;
-                    $totals['uncachedRequests'] += $day['sum']['uncachedRequests'] ?? 0;
                 }
             }
 
@@ -1309,7 +1272,7 @@ GRAPHQL;
                         'bytes' => $hour['sum']['bytes'] ?? 0,
                         'threats' => $hour['sum']['threats'] ?? 0,
                         'cachedRequests' => $hour['sum']['cachedRequests'] ?? 0,
-                        'uncachedRequests' => $hour['sum']['uncachedRequests'] ?? 0,
+                        'uncachedRequests' => ($hour['sum']['requests'] ?? 0) - ($hour['sum']['cachedRequests'] ?? 0),
                     ];
                 }
             }
