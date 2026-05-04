@@ -8,7 +8,7 @@ import { formatNumber } from '../utils/formatters';
 
 const COLORS = ['#ef4444', '#eab308', '#f97316', '#a855f7', '#06b6d4', '#22c55e', '#3b82f6', '#ec4899'];
 
-const tooltipStyle = { backgroundColor: '#1e293b', border: '1px solid rgba(30, 41, 59, 0.8)', borderRadius: 8, color: '#e2e8f0' };
+const tooltipStyle = { backgroundColor: '#151c2c', border: '1px solid #2a3548', borderRadius: 10, color: '#f1f5f9' };
 
 export default function SecurityPage() {
   const { data, loading, error } = useCloudflareData();

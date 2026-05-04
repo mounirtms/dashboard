@@ -1,16 +1,24 @@
 <?php
 /**
- * Queue Commands Handler
+ * Queue Commands Handler (Optimized)
  * 
  * Commands: /queues, /consumers
+ * 
+ * Optimizations:
+ * - Command response caching (20s-30s TTL)
+ * - Persistent DB connection
  */
+
+require_once __DIR__ . '/../CommandCache.php';
 
 class QueueCommands {
     private $config;
+    private $cache;
     private $db;
 
     public function __construct(array $config) {
         $this->config = $config;
+        $this->cache = new CommandCache();
     }
 
     /**
@@ -48,6 +56,23 @@ class QueueCommands {
      * /queues - Queue status
      */
     public function cmd_queues(int $chatId, string $args, BotHandler $bot): array {
+        $cacheKey = "queues_status";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            $db = $this->getDb();
+            $totalPending = 0;
+            if ($db) {
+                $r = $db->query("SELECT COUNT(*) as total FROM queue WHERE status='new'");
+                $totalPending = $r ? (int)$r->fetch_assoc()['total'] : 0;
+            }
+            if ($totalPending >= 100) {
+                return $bot->sendMessageWithKeyboard($chatId, $cached, [
+                    [['text' => '🔄 Restart Consumers', 'callback_data' => 'queue:restart_consumers']],
+                ]);
+            }
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         $db = $this->getDb();
         if (!$db) {
             return $bot->sendMessage($chatId, "❌ Cannot connect to database");
@@ -83,12 +108,12 @@ class QueueCommands {
             $text .= "```";
         }
 
+        $this->cache->set($cacheKey, $text, 30);
+
         // Add restart consumers button if queues are high
         if ($totalPending >= 100) {
             $keyboard = [
-                [
-                    ['text' => '🔄 Restart Consumers', 'callback_data' => 'queue:restart_consumers'],
-                ],
+                [['text' => '🔄 Restart Consumers', 'callback_data' => 'queue:restart_consumers']],
             ];
             return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
         }
@@ -100,6 +125,18 @@ class QueueCommands {
      * /consumers - Running consumers
      */
     public function cmd_consumers(int $chatId, string $args, BotHandler $bot): array {
+        $cacheKey = "consumers_status";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            $hasConsumers = strpos($cached, 'No consumers') === false;
+            if (!$hasConsumers) {
+                return $bot->sendMessageWithKeyboard($chatId, $cached, [
+                    [['text' => '🚀 Start Consumers', 'callback_data' => 'queue:start_consumers']],
+                ]);
+            }
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         // Get running consumer processes
         $output = $this->execCommand("ps aux | grep 'messenger:consume' | grep -v grep");
         $consumers = [];
@@ -117,10 +154,9 @@ class QueueCommands {
 
         if (empty($consumers)) {
             $text .= "⚠️ No consumers running";
+            $this->cache->set($cacheKey, $text, 20);
             $keyboard = [
-                [
-                    ['text' => '🚀 Start Consumers', 'callback_data' => 'queue:start_consumers'],
-                ],
+                [['text' => '🚀 Start Consumers', 'callback_data' => 'queue:start_consumers']],
             ];
             return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
         }
@@ -137,6 +173,7 @@ class QueueCommands {
             $text .= "\n*Total Pending:* `$total`";
         }
 
+        $this->cache->set($cacheKey, $text, 20);
         return $bot->sendMessage($chatId, $text);
     }
 

@@ -1,18 +1,31 @@
 <?php
 /**
- * Database Commands Handler
+ * Database Commands Handler (Optimized)
  * 
  * Commands: /dbhealth, /slowqueries, db:size, db:tables, db:connections, db:optimize, db:cleanup
+ * 
+ * Optimizations:
+ * - Command response caching (30s-60s TTL)
+ * - Reuses DB connections
  */
+
+require_once __DIR__ . '/../CommandCache.php';
 
 class DatabaseCommands {
     private $config;
+    private $cache;
+    private $dbConnections = [];
 
     public function __construct(array $config) {
         $this->config = $config;
+        $this->cache = new CommandCache();
     }
 
     private function getDb(string $dbName): ?mysqli {
+        if (isset($this->dbConnections[$dbName])) {
+            return $this->dbConnections[$dbName];
+        }
+
         $dbConfig = $this->config['database'];
         $db = @new mysqli($dbConfig['host'], $dbConfig['user'], $dbConfig['pass'], $dbName, $dbConfig['port']);
 
@@ -20,6 +33,7 @@ class DatabaseCommands {
             return null;
         }
 
+        $this->dbConnections[$dbName] = $db;
         return $db;
     }
 
@@ -42,6 +56,14 @@ class DatabaseCommands {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/dbhealth prod|beta|dev|all`");
         }
 
+        $cacheKey = "dbhealth_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessageWithKeyboard($chatId, $cached, [
+                [['text' => '🔧 Optimize Tables', 'callback_data' => 'database:optimize']],
+            ]);
+        }
+        
         $envs = $env === 'all' ? ['prod', 'beta', 'dev'] : [$env];
         $text = "*💾 Database Health*\n\n";
 
@@ -71,8 +93,6 @@ class DatabaseCommands {
             $r = $db->query("SHOW STATUS LIKE 'Uptime'");
             $uptime = $r ? $this->formatUptime($r->fetch_row()[1]) : 'N/A';
 
-            $db->close();
-
             $icon = $envName === 'prod' ? '🟢' : ($envName === 'beta' ? '🟡' : '🔵');
             $text .= "$icon *$envName*\n";
             $text .= "Size: `{$size['mb']} MB` | Frag: `{$size['frag_mb']} MB`\n";
@@ -93,7 +113,6 @@ class DatabaseCommands {
                         $frags[] = $row;
                     }
                 }
-                $db->close();
 
                 if (!empty($frags)) {
                     $text .= "*⚠️ Top Fragmented Tables:*\n";
@@ -106,10 +125,9 @@ class DatabaseCommands {
             }
         }
 
+        $this->cache->set($cacheKey, $text, 45);
         $keyboard = [
-            [
-                ['text' => '🔧 Optimize Tables', 'callback_data' => 'database:optimize'],
-            ],
+            [['text' => '🔧 Optimize Tables', 'callback_data' => 'database:optimize']],
         ];
 
         return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
@@ -123,6 +141,12 @@ class DatabaseCommands {
         
         if (!in_array($env, ['prod', 'beta', 'dev'])) {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/db:size prod|beta|dev`");
+        }
+
+        $cacheKey = "dbsize_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
         }
 
         $dbName = $this->getEnvDb($env);
@@ -149,8 +173,6 @@ class DatabaseCommands {
             }
         }
 
-        $db->close();
-
         $text = "*📊 Database Size: $env*\n\n";
         $text .= "*Total Size:* `{$sizes['total_mb']} MB`\n";
         $text .= "*Data:* `{$sizes['data_mb']} MB` | *Indexes:* `{$sizes['index_mb']} MB`\n";
@@ -166,6 +188,7 @@ class DatabaseCommands {
             $text .= "```";
         }
 
+        $this->cache->set($cacheKey, $text, 60);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -177,6 +200,12 @@ class DatabaseCommands {
         
         if (!in_array($env, ['prod', 'beta', 'dev'])) {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/db:connections prod|beta|dev`");
+        }
+
+        $cacheKey = "dbconn_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
         }
 
         $dbName = $this->getEnvDb($env);
@@ -218,8 +247,6 @@ class DatabaseCommands {
         $r = $db->query("SELECT COUNT(*) as count FROM information_schema.PROCESSLIST WHERE COMMAND != 'Sleep' AND TIME > 5");
         $longQueries = $r ? $r->fetch_assoc()['count'] : 0;
 
-        $db->close();
-
         $usagePct = $maxConns > 0 ? round(($connected / $maxConns) * 100, 1) : 0;
 
         $text = "*🔌 Connection Analysis: $env*\n\n";
@@ -241,6 +268,7 @@ class DatabaseCommands {
             $text .= "✅ No active processes";
         }
 
+        $this->cache->set($cacheKey, $text, 20);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -252,6 +280,12 @@ class DatabaseCommands {
         
         if (!in_array($env, ['prod', 'beta', 'dev'])) {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/db:tables prod|beta|dev`");
+        }
+
+        $cacheKey = "dbtables_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
         }
 
         $dbName = $this->getEnvDb($env);
@@ -292,8 +326,6 @@ class DatabaseCommands {
             }
         }
 
-        $db->close();
-
         $text = "*📋 Table Statistics: $env*\n\n";
 
         $text .= "*By Engine:*\n";
@@ -324,6 +356,7 @@ class DatabaseCommands {
             $text .= "```";
         }
 
+        $this->cache->set($cacheKey, $text, 60);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -458,6 +491,12 @@ class DatabaseCommands {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/slowqueries prod|beta|dev`");
         }
 
+        $cacheKey = "slowqueries_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         $dbName = $this->getEnvDb($env);
         $db = $this->getDb($dbName);
 
@@ -486,8 +525,6 @@ class DatabaseCommands {
         $r = $db->query("SHOW VARIABLES LIKE 'long_query_time'");
         $slowThreshold = $r ? $r->fetch_row()[1] : 10;
 
-        $db->close();
-
         $text = "*🐌 Slow Query Report: $env*\n\n";
         $text .= "*Slow Query Log:* `$slowLogEnabled`\n";
         $text .= "*Threshold:* `{$slowThreshold}s`\n";
@@ -506,6 +543,7 @@ class DatabaseCommands {
             $text .= "✅ No long running queries";
         }
 
+        $this->cache->set($cacheKey, $text, 30);
         return $bot->sendMessage($chatId, $text);
     }
 

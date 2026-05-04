@@ -1,22 +1,30 @@
 <?php
 /**
- * Magento Commands Handler (Multi-Environment)
+ * Magento Commands Handler (Multi-Environment, Optimized)
  * 
  * Commands: /orders, /online, /inventory, /cache, /indexers, 
  *           /env, /customers, /products, /sales, /mode, /config
  * 
  * All commands support environment parameter: prod|beta|dev (default: prod)
+ * 
+ * Optimizations:
+ * - Command response caching (30s-60s TTL)
+ * - Reuses EnvironmentHelper connections
+ * - Inline button callbacks for quick refresh
  */
 
 require_once __DIR__ . '/../EnvironmentHelper.php';
+require_once __DIR__ . '/../CommandCache.php';
 
 class MagentoCommands {
     private $config;
+    private $cache;
     private $envHelper;
 
     public function __construct(array $config) {
         $this->config = $config;
         $this->envHelper = new EnvironmentHelper($config);
+        $this->cache = new CommandCache();
     }
 
     /**
@@ -51,7 +59,20 @@ class MagentoCommands {
         
         // If no env specified, show all environments
         if (empty(trim($args))) {
-            return $this->showAllEnvironments($chatId, $bot);
+            $cacheKey = "env_all";
+            $cached = $this->cache->get($cacheKey);
+            if ($cached !== null) {
+                return $bot->sendMessage($chatId, $cached);
+            }
+            $result = $this->showAllEnvironments($chatId, $bot);
+            $this->cache->set($cacheKey, $result['message'] ?? '', 60);
+            return $result;
+        }
+
+        $cacheKey = "env_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
         }
 
         $envConfig = $this->envHelper->getEnvConfig($env);
@@ -93,6 +114,7 @@ class MagentoCommands {
             $text .= "Customers: `{$customers['total']}`\n";
         }
 
+        $this->cache->set($cacheKey, $text, 45);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -101,8 +123,13 @@ class MagentoCommands {
      */
     public function cmd_orders(int $chatId, string $args, BotHandler $bot): array {
         $env = $this->parseEnv($args);
-        $envConfig = $this->envHelper->getEnvConfig($env);
+        $cacheKey = "orders_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
 
+        $envConfig = $this->envHelper->getEnvConfig($env);
         if (!$envConfig || $envConfig['type'] !== 'magento') {
             return $bot->sendMessage($chatId, "❌ Invalid environment for orders");
         }
@@ -115,11 +142,9 @@ class MagentoCommands {
         $text .= "*Today:* `{$today['count']}` orders";
         $text .= isset($today['revenue']) ? " | " . number_format($today['revenue'], 2) . ' DZD' : '';
         $text .= "\n\n";
-
         $text .= "*This Week:* `{$week['count']}` orders";
         $text .= isset($week['revenue']) ? " | " . number_format($week['revenue'], 2) . ' DZD' : '';
         $text .= "\n";
-
         $text .= "*This Month:* `{$month['count']}` orders";
         $text .= isset($month['revenue']) ? " | " . number_format($month['revenue'], 2) . ' DZD' : '';
         $text .= "\n\n";
@@ -132,6 +157,7 @@ class MagentoCommands {
             }
         }
 
+        $this->cache->set($cacheKey, $text, 30);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -140,8 +166,13 @@ class MagentoCommands {
      */
     public function cmd_customers(int $chatId, string $args, BotHandler $bot): array {
         $env = $this->parseEnv($args);
-        $envConfig = $this->envHelper->getEnvConfig($env);
+        $cacheKey = "customers_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
 
+        $envConfig = $this->envHelper->getEnvConfig($env);
         if (!$envConfig || $envConfig['type'] !== 'magento') {
             return $bot->sendMessage($chatId, "❌ Invalid environment");
         }
@@ -154,6 +185,7 @@ class MagentoCommands {
         $text .= "*New This Week:* `{$stats['new_week']}`\n";
         $text .= "*Active Sessions:* `{$stats['active_sessions']}`\n";
 
+        $this->cache->set($cacheKey, $text, 30);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -162,8 +194,13 @@ class MagentoCommands {
      */
     public function cmd_products(int $chatId, string $args, BotHandler $bot): array {
         $env = $this->parseEnv($args);
-        $envConfig = $this->envHelper->getEnvConfig($env);
+        $cacheKey = "products_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
 
+        $envConfig = $this->envHelper->getEnvConfig($env);
         if (!$envConfig) {
             return $bot->sendMessage($chatId, "❌ Invalid environment");
         }
@@ -177,6 +214,7 @@ class MagentoCommands {
         $text .= "*Low Stock (<5):* `{$stats['low_stock']}` ⚠️\n";
         $text .= "*Out of Stock:* `{$stats['out_of_stock']}` ❌\n";
 
+        $this->cache->set($cacheKey, $text, 60);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -185,8 +223,13 @@ class MagentoCommands {
      */
     public function cmd_sales(int $chatId, string $args, BotHandler $bot): array {
         $env = $this->parseEnv($args);
-        $envConfig = $this->envHelper->getEnvConfig($env);
+        $cacheKey = "sales_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
 
+        $envConfig = $this->envHelper->getEnvConfig($env);
         if (!$envConfig || $envConfig['type'] !== 'magento') {
             return $bot->sendMessage($chatId, "❌ Invalid environment for sales");
         }
@@ -200,6 +243,7 @@ class MagentoCommands {
         $text .= "*This Week:* " . number_format($week['revenue'] ?? 0, 2) . " DZD ({$week['count']} orders)\n";
         $text .= "*This Month:* " . number_format($month['revenue'] ?? 0, 2) . " DZD ({$month['count']} orders)\n";
 
+        $this->cache->set($cacheKey, $text, 30);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -207,6 +251,12 @@ class MagentoCommands {
      * /online - Users online across all environments or specific env
      */
     public function cmd_online(int $chatId, string $args, BotHandler $bot): array {
+        $cacheKey = "online_" . ($arg === 'all' || $arg === '' ? 'all' : $arg);
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         $arg = trim(strtolower($args));
         
         if ($arg === 'all' || $arg === '') {
@@ -234,6 +284,7 @@ class MagentoCommands {
                 $text .= "\n*Active Carts (30m):* `{$cartStats['active_carts']}`";
             }
             
+            $this->cache->set($cacheKey, $text, 30);
             return $bot->sendMessage($chatId, $text);
         }
         
@@ -252,6 +303,7 @@ class MagentoCommands {
         $text .= "*Total Customers:* `{$stats['total']}`\n";
         $text .= "*New Today:* `{$stats['new_today']}`\n";
 
+        $this->cache->set($cacheKey, $text, 30);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -260,6 +312,14 @@ class MagentoCommands {
      */
     public function cmd_onlineusers(int $chatId, string $args, BotHandler $bot): array {
         $env = $this->parseEnv(trim($args));
+        $cacheKey = "onlineusers_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessageWithKeyboard($chatId, $cached, [
+                [['text' => '🔄 Refresh', 'callback_data' => "magento:onlineusers:{$env}"]],
+            ]);
+        }
+
         $envConfig = $this->envHelper->getEnvConfig($env);
 
         if (!$envConfig || $envConfig['type'] !== 'magento') {
@@ -313,6 +373,7 @@ class MagentoCommands {
             $text .= $pagesText;
         }
 
+        $this->cache->set($cacheKey, $text, 20);
         $keyboard = [
             [['text' => '🔄 Refresh', 'callback_data' => "magento:onlineusers:{$env}"]],
         ];
@@ -333,6 +394,14 @@ class MagentoCommands {
      */
     public function cmd_cache(int $chatId, string $args, BotHandler $bot): array {
         $env = $this->parseEnv($args);
+        $cacheKey = "cache_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessageWithKeyboard($chatId, $cached, [
+                [['text' => '🧹 Flush Cache', 'callback_data' => "magento:flush_cache:$env"]],
+            ]);
+        }
+
         $envConfig = $this->envHelper->getEnvConfig($env);
 
         if (!$envConfig || $envConfig['type'] !== 'magento') {
@@ -347,6 +416,7 @@ class MagentoCommands {
         $text = "🗄️ *{$envConfig['name']} Cache Status*\n\n";
         $text .= "```\n$output```\n";
 
+        $this->cache->set($cacheKey, $text, 60);
         $keyboard = [
             [['text' => '🧹 Flush Cache', 'callback_data' => "magento:flush_cache:$env"]],
         ];
@@ -359,6 +429,12 @@ class MagentoCommands {
      */
     public function cmd_indexers(int $chatId, string $args, BotHandler $bot): array {
         $env = $this->parseEnv($args);
+        $cacheKey = "indexers_{$env}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         $envConfig = $this->envHelper->getEnvConfig($env);
 
         if (!$envConfig || $envConfig['type'] !== 'magento') {
@@ -392,9 +468,11 @@ class MagentoCommands {
             $keyboard = [
                 [['text' => '🔄 Reindex', 'callback_data' => "magento:reindex:$env"]],
             ];
+            $this->cache->set($cacheKey, $text, 60);
             return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
         }
 
+        $this->cache->set($cacheKey, $text, 60);
         return $bot->sendMessage($chatId, $text);
     }
 

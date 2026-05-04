@@ -186,6 +186,16 @@ sub vcl_backend_response {
     # Store URL in object for ban support
     set beresp.http.x-url = bereq.url;
     
+    # Force cache even if backend says no-cache
+    # Remove no-cache headers to allow caching
+    if (beresp.http.Cache-Control ~ "no-cache" || beresp.http.Cache-Control ~ "no-store") {
+        unset beresp.http.Cache-Control;
+        set beresp.http.Cache-Control = "public, max-age=3600";
+    }
+    
+    unset beresp.http.Pragma;
+    unset beresp.http.Expires;
+    
     # ========================================================================
     # STATIC FILES - LONG TTL
     # ========================================================================
@@ -194,32 +204,36 @@ sub vcl_backend_response {
         set beresp.http.Cache-Control = "public, max-age=2592000";
         unset beresp.http.Set-Cookie;
         unset beresp.http.Vary;
+        set beresp.uncacheable = false;
         return (deliver);
     }
     
     # ========================================================================
-    # HTML PAGES - MEDIUM TTL WITH GRACE
+    # HTML PAGES - FORCE CACHING
     # ========================================================================
     if (beresp.http.content-type ~ "text/html") {
-        # Don't cache if user-specific
+        # Don't cache if user-specific cookies set
         if (beresp.http.Set-Cookie ~ "frontend=|adminhtml=") {
             set beresp.ttl = 0s;
             set beresp.uncacheable = true;
             return (deliver);
         }
         
+        # Force cache HTML pages
+        unset beresp.http.Set-Cookie;
+        
         # Cache homepage and category pages longer
-        if (bereq.url ~ "^/$|^/[a-z0-9-]+\.html$") {
+        if (bereq.url ~ "^/$|^/[a-z0-9-]+\.html$|^/[a-z0-9-]+/$") {
+            set beresp.ttl = 2h;
+            set beresp.http.Cache-Control = "public, max-age=7200";
+            set beresp.grace = 24h;
+        } else {
             set beresp.ttl = 1h;
             set beresp.http.Cache-Control = "public, max-age=3600";
-            set beresp.grace = 6h;
-        } else {
-            set beresp.ttl = 15m;
-            set beresp.http.Cache-Control = "public, max-age=900";
-            set beresp.grace = 2h;
+            set beresp.grace = 12h;
         }
         
-        # Enable ESI
+        set beresp.uncacheable = false;
         set beresp.do_esi = true;
     }
     
@@ -227,7 +241,7 @@ sub vcl_backend_response {
     # ERROR HANDLING
     # ========================================================================
     
-    # Don't cache errors
+    # Don't cache errors (but allow grace)
     if (beresp.status >= 500) {
         set beresp.ttl = 0s;
         set beresp.grace = 30s;
@@ -244,10 +258,10 @@ sub vcl_backend_response {
     # GRACE MODE - SERVE STALE CONTENT ON BACKEND FAILURE
     # ========================================================================
     
-    # Default grace period
-    set beresp.grace = 2h;
+    # Default grace period - serve stale content when backend is down
+    set beresp.grace = 24h;
     
-    # Keep objects in cache even after TTL expires (for grace)
+    # Keep objects in cache even after TTL expires
     set beresp.keep = 8h;
     
     return (deliver);

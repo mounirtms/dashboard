@@ -14,7 +14,7 @@ import { Menu as MenuIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
-const DRAWER_WIDTH = 220;
+const DRAWER_WIDTH = 240;
 
 export default function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -32,10 +32,10 @@ export default function AppLayout() {
         position="fixed"
         sx={{
           zIndex: (t) => t.zIndex.drawer + 1,
-          boxShadow: 'none',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ px: { xs: 2, md: 3 } }}>
           {isMobile && (
             <IconButton edge="start" color="inherit" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
               <MenuIcon />
@@ -76,10 +76,11 @@ export default function AppLayout() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3 },
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           mt: 8,
           minHeight: '100vh',
+          backgroundColor: '#0b0f1a',
         }}
       >
         <Outlet />

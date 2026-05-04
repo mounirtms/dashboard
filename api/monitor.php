@@ -260,6 +260,19 @@ function overview() {
         }
     }
 
+    // Quick Varnish stats (non-blocking timeout)
+    $varnish = ['hit_ratio'=>0,'storage_pct'=>0,'status'=>'unknown'];
+    $varnish_json = cmd_line("timeout 1 varnishstat -1 -j", 1);
+    if ($varnish_json && $v = json_decode($varnish_json, true)) {
+        $ch = $v['MAIN.cache_hit']['value'] ?? 0;
+        $cm = $v['MAIN.cache_miss']['value'] ?? 0;
+        $varnish['hit_ratio'] = ($ch + $cm) > 0 ? round($ch / ($ch + $cm) * 100, 1) : 0;
+        $sb = $v['SMA.s0.g_bytes']['value'] ?? 0;
+        $ss = $v['SMA.s0.g_space']['value'] ?? 0;
+        $varnish['storage_pct'] = ($sb + $ss) > 0 ? round($sb / ($sb + $ss) * 100, 1) : 0;
+        $varnish['status'] = 'active';
+    }
+
     echo json_encode([
         'load' => ['1min'=>$load[0],'5min'=>$load[1],'15min'=>$load[2]],
         'memory' => ['total_mb'=>$mem_total,'used_pct'=>$mem_used_pct,'available_mb'=>$mem_avail,'swap_pct'=>$swap_used_pct],
@@ -272,6 +285,7 @@ function overview() {
         'database' => ['connections'=>$db_conns,'running'=>$db_threads,'slow_log'=>$db_slow],
         'services' => $services,
         'http' => ['req_last_100'=>$access_rate,'err_503'=>$error_503,'err_500'=>$error_500],
+        'varnish' => $varnish,
         'top_processes' => $top_procs,
         'timestamp' => date('Y-m-d H:i:s')
     ], JSON_PRETTY_PRINT);

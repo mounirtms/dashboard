@@ -71,22 +71,22 @@ if ($config['alerts']['enabled'] ?? true) {
             }
         }
 
-        // Check CPU load (critical >= 8)
-        if ($load[0] >= 8) {
+        // Check CPU load (critical >= 15)
+        if ($load[0] >= 15) {
             $alertKey = "high_cpu_load";
-            $text = "🔴 *High CPU Load*\n\n1-min load average: `{$load[0]}` (threshold: 8)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
+                 $text = "🔴 *High CPU Load*\n\n1-min load average: `{$load[0]}` (threshold: 4)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'load', $text);
         }
 
-        // Check memory usage (critical >= 85%)
-        if ($mem_used_pct >= 85) {
+        // Check memory usage (critical >= 95%)
+        if ($mem_used_pct >= 95) {
             $alertKey = "high_memory";
             $text = "🔴 *High Memory Usage*\n\nMemory usage: `{$mem_used_pct}%` (threshold: 85%)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'memory', $text);
         }
 
         // Check HTTP 503 errors
-        if ((int)$error_503 > 10) {
+        if ((int)$error_503 > 50) {
             $alertKey = "http_503_errors";
             $text = "🔴 *HTTP 503 Errors*\n\nDetected `$error_503` HTTP 503 errors in access logs\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'http_error', $text);

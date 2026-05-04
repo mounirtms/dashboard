@@ -18,8 +18,17 @@ async function runTest() {
     console.log('\n=== PIM COMPREHENSIVE LOGIN TEST ===\n');
     
     const browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({ ignoreHTTPSErrors: true });
+    const context = await browser.newContext({ ignoreHTTPSErrors: true, userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' });
     const page = await context.newPage();
+
+    // Abort noisy analytics/CDN requests to avoid networkidle stalls
+    await page.route('**/*', route => {
+        const url = route.request().url();
+        if (url.includes('google-analytics') || url.includes('clarity.ms') || url.includes('cdn-cgi') || url.includes('d.clarity.ms') || url.includes('/465q/')) {
+            return route.abort();
+        }
+        return route.continue();
+    });
     
     const issues = [];
     const debug = [];
@@ -43,7 +52,14 @@ async function runTest() {
     for (const user of USERS) {
         console.log(`\n=== Testing: ${user.username} ===`);
         
-        await page.goto(BASE_URL + '/user/login', { waitUntil: 'networkidle', timeout: 30000 });
+        await page.goto(BASE_URL + '/user/login', { waitUntil: 'load', timeout: 45000 });
+        // Prefer waiting for the login form selector rather than networkidle
+        try {
+            await page.waitForSelector('form[action*="login-check"]', { timeout: 15000 });
+            debug.push('Login form visible');
+        } catch (e) {
+            debug.push('Login form not found: ' + e.message);
+        }
         debug.push(`Loaded login page`);
         
         await page.fill('input[name="_username"]', user.username);

@@ -56,9 +56,7 @@ index.html.static.bak
 login.html.bak
 
 # Generated Files
-assets/*.js
-assets/*.css
-assets/*.map
+ 
 cache-buster.js
 version.json
 

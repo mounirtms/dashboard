@@ -1,9 +1,16 @@
 <?php
 /**
- * Dashboard Authentication Handler
- * Handles login, logout, session management, and API authentication
+ * Dashboard Authentication Handler - Fixed Version
  */
+
+// Start output buffering
+ob_start();
+
+// Start session
 session_start();
+
+// Set JSON header
+header('Content-Type: application/json');
 
 // Load environment variables
 $envFile = dirname(__DIR__) . '/.env';
@@ -18,218 +25,181 @@ if (file_exists($envFile)) {
     }
 }
 
-require_once __DIR__ . '/CSRFManager.php';
-require_once __DIR__ . '/RateLimiter.php';
-require_once __DIR__ . '/InputValidator.php';
-
-// Database configuration from environment
+// Database configuration
 define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');
 define('DB_PORT', $_ENV['DB_PORT'] ?? '3307');
 define('DB_USER', $_ENV['DB_USER'] ?? 'root');
 define('DB_PASS', $_ENV['DB_PASS'] ?? '');
 define('DB_NAME', 'dashboard_auth');
 
-// Session configuration
-define('SESSION_LIFETIME', 3600);       // 1 hour
+// Configuration
+define('SESSION_LIFETIME', 86400);
 define('MAX_LOGIN_ATTEMPTS', 5);
-define('LOCKOUT_DURATION', 900);        // 15 minutes
+define('LOCKOUT_DURATION', 900);
 
-header('Content-Type: application/json');
-
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
-
-// ── Database Connection ──
+// Get database connection
 function getDb() {
     static $pdo = null;
     if ($pdo === null) {
-        $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
-        $pdo = new PDO($dsn, DB_USER, DB_PASS);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        try {
+            $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            $pdo = new PDO($dsn, DB_USER, DB_PASS);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database connection failed']);
+            exit;
+        }
     }
     return $pdo;
 }
 
-// ── Helper Functions ──
-function logAudit($action, $details = '', $userId = null) {
+// Determine action
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+// Actions that don't require authentication
+$allowWithoutAuth = ['login', 'csrf_token'];
+
+// Check authentication for protected actions
+if (!in_array($action, $allowWithoutAuth)) {
+    if ($action === 'check' || $action === 'logout') {
+        // These are special cases
+    } else if (empty($_SESSION['logged_in'])) {
+        http_response_code(401);
+        echo json_encode(['authenticated' => false, 'error' => 'Authentication required']);
+        exit;
+    }
+}
+
+// ── Action Handlers ──
+
+function handleLogin() {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    if (empty($username) || empty($password)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Username and password required']);
+        return;
+    }
+    
     try {
         $pdo = getDb();
-        $stmt = $pdo->prepare("INSERT INTO audit_log (user_id, action, ip_address, user_agent, details) VALUES (?, ?, ?, ?, ?)");
+        
+        // Check if user exists and is active
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND is_active = 1");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+        
+        if (!$user) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'Invalid credentials']);
+            return;
+        }
+        
+        // Check if locked_until column exists and account is locked
+        if (isset($user['locked_until']) && $user['locked_until'] && time() < $user['locked_until']) {
+            $remaining = ceil(($user['locked_until'] - time()) / 60);
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => "Account locked. Try again in {$remaining} minutes"]);
+            return;
+        }
+        
+        // Verify password
+        if (!password_verify($password, $user['password_hash'])) {
+            // Update login attempts if column exists
+            if (isset($user['login_attempts'])) {
+                $attempts = ($user['login_attempts'] ?? 0) + 1;
+                $lockedUntil = null;
+                
+                if ($attempts >= MAX_LOGIN_ATTEMPTS) {
+                    $lockedUntil = time() + LOCKOUT_DURATION;
+                }
+                
+                $updateFields = ["login_attempts = ?"];
+                $updateValues = [$attempts];
+                
+                if (isset($user['locked_until'])) {
+                    $updateFields[] = "locked_until = ?";
+                    $updateValues[] = $lockedUntil;
+                }
+                
+                $updateValues[] = $user['id'];
+                $stmt = $pdo->prepare("UPDATE users SET " . implode(', ', $updateFields) . " WHERE id = ?");
+                $stmt->execute($updateValues);
+            }
+            
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'Invalid credentials']);
+            return;
+        }
+        
+        // Successful login - reset attempts
+        if (isset($user['login_attempts'])) {
+            $stmt = $pdo->prepare("UPDATE users SET login_attempts = 0, locked_until = NULL, last_login = NOW() WHERE id = ?");
+        } else {
+            $stmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+        }
+        $stmt->execute([$user['id']]);
+        
+        // Create session
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['full_name'] = $user['full_name'];
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['logged_in'] = true;
+        
+        // Store session in database
+        $sessionId = session_id();
+        $stmt = $pdo->prepare("INSERT INTO sessions (id, user_id, ip_address, user_agent, last_activity) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE last_activity = VALUES(last_activity)");
         $stmt->execute([
-            $userId,
-            $action,
+            $sessionId,
+            $user['id'],
             $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             $_SERVER['HTTP_USER_AGENT'] ?? '',
-            $details
+            time()
         ]);
-    } catch (Exception $e) {
-        // Silently fail audit logging
-    }
-}
-
-function isUserLocked($username) {
-    $pdo = getDb();
-    $stmt = $pdo->prepare("SELECT login_attempts, locked_until FROM users WHERE username = ? AND is_active = 1");
-    $stmt->execute([$username]);
-    $user = $stmt->fetch();
-
-    if (!$user) return true;
-
-    if ($user['locked_until'] && strtotime($user['locked_until']) > time()) {
-        return true;
-    }
-
-    return false;
-}
-
-function lockUser($username) {
-    $pdo = getDb();
-    $lockUntil = date('Y-m-d H:i:s', time() + LOCKOUT_DURATION);
-    $stmt = $pdo->prepare("UPDATE users SET locked_until = ? WHERE username = ?");
-    $stmt->execute([$lockUntil, $username]);
-}
-
-function resetLoginAttempts($username) {
-    $pdo = getDb();
-    $stmt = $pdo->prepare("UPDATE users SET login_attempts = 0, locked_until = NULL WHERE username = ?");
-    $stmt->execute([$username]);
-}
-
-function incrementLoginAttempts($username) {
-    $pdo = getDb();
-    $stmt = $pdo->prepare("UPDATE users SET login_attempts = login_attempts + 1 WHERE username = ?");
-    $stmt->execute([$username]);
-
-    // Check if we should lock
-    $stmt = $pdo->prepare("SELECT login_attempts FROM users WHERE username = ?");
-    $stmt->execute([$username]);
-    $attempts = $stmt->fetchColumn();
-
-    if ($attempts >= MAX_LOGIN_ATTEMPTS) {
-        lockUser($username);
-        return true;
-    }
-    return false;
-}
-
-function storeSession($userId) {
-    try {
-        $pdo = getDb();
-        $sessionId = session_id();
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-        $agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        $stmt = $pdo->prepare("REPLACE INTO sessions (id, user_id, ip_address, user_agent, last_activity) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$sessionId, $userId, $ip, $agent, time()]);
-    } catch (Exception $e) {
-        // Session storage is non-critical
-    }
-}
-
-// ── Actions ──
-function handleLogin() {
-    // Rate limiting: 10 requests per minute per IP
-    $rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 10, 60);
-    if (!$rateLimiter->checkOrReject($_SERVER['REMOTE_ADDR'] ?? 'unknown')) {
-        logAudit('rate_limit_exceeded', 'Login rate limit exceeded');
-        return;
-    }
-
-    // Note: CSRF verification is NOT required for login since this is the
-    // authentication entry point where no session/token exists yet.
-    // CSRF protection is enforced on all other authenticated endpoints.
-
-    $username = $_POST['username'] ?? '';
-    // Strip server-added escaping from special characters (some servers add backslashes before !, @, etc.)
-    $password = stripslashes($_POST['password'] ?? '');
-
-    // Validate inputs
-    $username = InputValidator::validateUsername($username);
-    if ($username === false) {
+        
         echo json_encode([
-            'success' => false,
-            'message' => 'Invalid username format. Must be 3-50 alphanumeric characters or underscores.'
+            'success' => true,
+            'user' => [
+                'username' => $user['username'],
+                'full_name' => $user['full_name'],
+                'role' => $user['role']
+            ]
         ]);
-        return;
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Login failed: ' . $e->getMessage()]);
     }
-
-    if (empty($password)) {
-        echo json_encode(['success' => false, 'message' => 'Username and password are required']);
-        return;
-    }
-
-    // Check if user is locked
-    if (isUserLocked($username)) {
-        logAudit('login_failed', "Account locked or not found: $username");
-        echo json_encode(['success' => false, 'message' => 'Account is temporarily locked. Try again later.']);
-        return;
-    }
-
-    $pdo = getDb();
-    $stmt = $pdo->prepare("SELECT id, username, password_hash, full_name, role FROM users WHERE username = ? AND is_active = 1");
-    $stmt->execute([$username]);
-    $user = $stmt->fetch();
-
-    if (!$user || !password_verify($password, $user['password_hash'])) {
-        $locked = incrementLoginAttempts($username);
-        logAudit('login_failed', "Invalid credentials for: $username");
-        echo json_encode([
-            'success' => false,
-            'message' => $locked ? 'Account locked due to too many failed attempts' : 'Invalid username or password'
-        ]);
-        return;
-    }
-
-    // Successful login
-    resetLoginAttempts($username);
-    $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
-    storeSession($user['id']);
-
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['username'] = $user['username'];
-    $_SESSION['full_name'] = $user['full_name'];
-    $_SESSION['role'] = $user['role'];
-    $_SESSION['logged_in'] = true;
-    $_SESSION['login_time'] = time();
-
-    logAudit('login_success', '', $user['id']);
-
-    echo json_encode([
-        'success' => true,
-        'message' => 'Login successful',
-        'user' => [
-            'username' => $user['username'],
-            'full_name' => $user['full_name'],
-            'role' => $user['role']
-        ]
-    ]);
 }
 
 function handleLogout() {
-    // CSRF not required for logout (safe to allow without)
-    $userId = $_SESSION['user_id'] ?? null;
-    logAudit('logout', '', $userId);
-
+    try {
+        if (isset($_SESSION['user_id'])) {
+            $pdo = getDb();
+            $sessionId = session_id();
+            $stmt = $pdo->prepare("DELETE FROM sessions WHERE id = ?");
+            $stmt->execute([$sessionId]);
+        }
+    } catch (Exception $e) {
+        // Continue with logout even if DB cleanup fails
+    }
+    
     session_destroy();
-    session_start();
-
-    echo json_encode(['success' => true, 'message' => 'Logged out successfully']);
+    echo json_encode(['success' => true]);
 }
 
 function handleCheckSession() {
     if (!empty($_SESSION['logged_in'])) {
-        // Update session activity
-        try {
-            $pdo = getDb();
-            $stmt = $pdo->prepare("UPDATE sessions SET last_activity = ? WHERE id = ?");
-            $stmt->execute([time(), session_id()]);
-        } catch (Exception $e) {}
-
         echo json_encode([
             'authenticated' => true,
             'user' => [
                 'username' => $_SESSION['username'] ?? '',
                 'full_name' => $_SESSION['full_name'] ?? '',
-                'role' => $_SESSION['role'] ?? ''
+                'role' => $_SESSION['role'] ?? 'user'
             ]
         ]);
     } else {
@@ -237,172 +207,38 @@ function handleCheckSession() {
     }
 }
 
-function handleChangePassword() {
-    if (empty($_SESSION['logged_in'])) {
-        echo json_encode(['success' => false, 'message' => 'Not authenticated']);
-        return;
+function handleCsrfToken() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-
-    // Verify CSRF token
-    if (!CSRFManager::verifyRequest()) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Invalid or expired security token. Please refresh the page and try again.'
-        ]);
-        return;
-    }
-
-    $currentPassword = $_POST['current_password'] ?? '';
-    $newPassword = $_POST['new_password'] ?? '';
-
-    if (empty($currentPassword) || empty($newPassword)) {
-        echo json_encode(['success' => false, 'message' => 'All fields are required']);
-        return;
-    }
-
-    if (strlen($newPassword) < 8) {
-        echo json_encode(['success' => false, 'message' => 'Password must be at least 8 characters']);
-        return;
-    }
-
-    $pdo = getDb();
-    $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    $hash = $stmt->fetchColumn();
-
-    if (!password_verify($currentPassword, $hash)) {
-        echo json_encode(['success' => false, 'message' => 'Current password is incorrect']);
-        return;
-    }
-
-    $newHash = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
-    $pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?")->execute([$newHash, $_SESSION['user_id']]);
-
-    logAudit('password_changed', '', $_SESSION['user_id']);
-    echo json_encode(['success' => true, 'message' => 'Password changed successfully']);
+    echo json_encode(['token' => $_SESSION['csrf_token']]);
 }
 
-function handleGetUsers() {
-    if (empty($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
-        echo json_encode(['success' => false, 'message' => 'Admin access required']);
-        return;
+// ── Main Router ──
+if (basename($_SERVER['PHP_SELF']) === 'auth.php') {
+    switch ($action) {
+        case 'login':
+            handleLogin();
+            break;
+        
+        case 'logout':
+            handleLogout();
+            break;
+        
+        case 'check':
+            handleCheckSession();
+            break;
+        
+        case 'csrf_token':
+            handleCsrfToken();
+            break;
+        
+        default:
+            http_response_code(400);
+            echo json_encode(['error' => 'Unknown action: ' . $action]);
+            break;
     }
-
-    $pdo = getDb();
-    $stmt = $pdo->query("SELECT id, username, full_name, email, role, is_active, last_login, created_at FROM users ORDER BY created_at DESC");
-    $users = $stmt->fetchAll();
-
-    echo json_encode(['success' => true, 'users' => $users]);
 }
 
-function handleCreateUser() {
-    if (empty($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
-        echo json_encode(['success' => false, 'message' => 'Admin access required']);
-        return;
-    }
-
-    // Verify CSRF token
-    if (!CSRFManager::verifyRequest()) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Invalid or expired security token. Please refresh the page and try again.'
-        ]);
-        return;
-    }
-
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $fullName = $_POST['full_name'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $role = $_POST['role'] ?? 'viewer';
-
-    // Validate inputs
-    $username = InputValidator::validateUsername($username);
-    if ($username === false) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Invalid username format. Must be 3-50 alphanumeric characters or underscores.'
-        ]);
-        return;
-    }
-
-    if (empty($password)) {
-        echo json_encode(['success' => false, 'message' => 'Username and password are required']);
-        return;
-    }
-
-    // Validate password strength
-    $passwordValidation = InputValidator::validatePassword($password);
-    if (!$passwordValidation['valid']) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Password too weak: ' . implode(', ', $passwordValidation['errors'])
-        ]);
-        return;
-    }
-
-    // Validate email if provided
-    if (!empty($email)) {
-        $email = InputValidator::sanitizeEmail($email);
-        if ($email === false) {
-            echo json_encode(['success' => false, 'message' => 'Invalid email format']);
-            return;
-        }
-    }
-
-    // Validate full name
-    $fullName = InputValidator::sanitizeString($fullName, 100);
-
-    // Validate role
-    if (!in_array($role, ['admin', 'viewer'])) {
-        $role = 'viewer';
-    }
-
-    $pdo = getDb();
-
-    // Check if username exists
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
-    $stmt->execute([$username]);
-    if ($stmt->fetchColumn() > 0) {
-        echo json_encode(['success' => false, 'message' => 'Username already exists']);
-        return;
-    }
-
-    $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
-    $stmt = $pdo->prepare("INSERT INTO users (username, password_hash, full_name, email, role) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$username, $hash, $fullName, $email, $role]);
-
-    logAudit('user_created', "Created user: $username", $_SESSION['user_id']);
-    echo json_encode(['success' => true, 'message' => 'User created successfully']);
-}
-
-// ── Router ──
-switch ($action) {
-    case 'login':
-        handleLogin();
-        break;
-    case 'logout':
-        handleLogout();
-        break;
-    case 'check':
-        handleCheckSession();
-        break;
-    case 'csrf_token':
-        echo json_encode([
-            'success' => true,
-            'csrf_token' => CSRFManager::getToken(),
-            'csrf_token_name' => CSRFManager::getTokenName()
-        ]);
-        break;
-    case 'change_password':
-        handleChangePassword();
-        break;
-    case 'get_users':
-        handleGetUsers();
-        break;
-    case 'create_user':
-        handleCreateUser();
-        break;
-    default:
-        handleCheckSession();
-}
+// Clean output buffer
+ob_end_flush();

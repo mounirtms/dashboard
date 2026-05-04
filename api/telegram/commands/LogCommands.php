@@ -1,24 +1,32 @@
 <?php
 /**
- * Log Analysis Commands Handler
+ * Log Analysis Commands Handler (Optimized)
  * 
  * Commands: /logs:summary, /logs:critical, /logs:errors, /logs:ai
  * Analyzes Magento logs and provides AI-powered summaries with actionable recommendations
+ * 
+ * Optimizations:
+ * - Command response caching (60s TTL for summaries)
+ * - Reduced default maxLines from 5000 to 2000
+ * - Uses tail -n for faster reading
+ * - Pre-computed pattern analysis cached
  */
+
+require_once __DIR__ . '/../CommandCache.php';
 
 class LogCommands {
     private $config;
+    private $cache;
     private $logPaths = [
         'prod' => '/home/technadminy7/public_html/var/log',
         'beta' => '/home/beta/public_html/var/log',
         'dev' => '/home/dev/public_html/var/log',
     ];
-    private $maxLines = 5000; // Max lines to read per log file
-    private $cacheDir = __DIR__ . '/../data/log_cache';
+    private $maxLines = 2000; // Reduced from 5000 for faster reading
 
     public function __construct(array $config) {
         $this->config = $config;
-        $this->ensureCacheDir();
+        $this->cache = new CommandCache();
     }
 
     /**
@@ -31,6 +39,20 @@ class LogCommands {
 
         if (!in_array($env, ['prod', 'beta', 'dev'])) {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/logs:summary prod|beta|dev [hours]`");
+        }
+
+        $cacheKey = "logsummary_{$env}_{$hours}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessageWithKeyboard($chatId, $cached, [
+                [
+                    ['text' => '🤖 AI Detailed Analysis', 'callback_data' => "logs:ai:{$env}:{$hours}"],
+                ],
+                [
+                    ['text' => '🔴 Show Critical', 'callback_data' => "logs:critical:{$env}:{$hours}"],
+                    ['text' => '🟠 Show Errors', 'callback_data' => "logs:errors:{$env}:{$hours}"],
+                ],
+            ]);
         }
 
         $bot->sendMessage($chatId, "📊 Analyzing logs for *{$env}* (last {$hours}h)...\n_(This may take a moment)_");
@@ -83,6 +105,7 @@ class LogCommands {
             ],
         ];
 
+        $this->cache->set($cacheKey, $text, 60);
         return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
     }
 
@@ -98,12 +121,20 @@ class LogCommands {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/logs:critical prod|beta|dev [hours]`");
         }
 
+        $cacheKey = "logcrit_{$env}_{$hours}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         $bot->sendMessage($chatId, "🔴 Fetching critical errors for *{$env}*...\n_(Last {$hours}h)_");
 
         $logs = $this->readLogs($env, $hours, ['CRITICAL', 'FATAL', 'EMERGENCY']);
         
         if (empty($logs['critical']) && empty($logs['fatal']) && empty($logs['emergency'])) {
-            return $bot->sendMessage($chatId, "✅ No critical errors found in *{$env}* (last {$hours}h)");
+            $msg = "✅ No critical errors found in *{$env}* (last {$hours}h)";
+            $this->cache->set($cacheKey, $msg, 30);
+            return $bot->sendMessage($chatId, $msg);
         }
 
         $text = "*🔴 Critical Errors: {$env} ({$hours}h)*\n\n";
@@ -127,6 +158,7 @@ class LogCommands {
             $text .= "\n_... and " . (count($allCritical) - 20) . " more critical errors_";
         }
 
+        $this->cache->set($cacheKey, $text, 30);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -142,12 +174,20 @@ class LogCommands {
             return $bot->sendMessage($chatId, "❌ Invalid environment.\n\n*Usage:* `/logs:errors prod|beta|dev [hours]`");
         }
 
+        $cacheKey = "logerr_{$env}_{$hours}";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         $bot->sendMessage($chatId, "🟠 Fetching errors for *{$env}*...\n_(Last {$hours}h)_");
 
         $logs = $this->readLogs($env, $hours, ['ERROR']);
         
         if (empty($logs['error'])) {
-            return $bot->sendMessage($chatId, "✅ No errors found in *{$env}* (last {$hours}h)");
+            $msg = "✅ No errors found in *{$env}* (last {$hours}h)";
+            $this->cache->set($cacheKey, $msg, 30);
+            return $bot->sendMessage($chatId, $msg);
         }
 
         $text = "*🟠 Errors: {$env} ({$hours}h)*\n\n";
@@ -165,6 +205,7 @@ class LogCommands {
             $text .= "\n_... and " . (count($patterns) - 15) . " more error patterns_";
         }
 
+        $this->cache->set($cacheKey, $text, 30);
         return $bot->sendMessage($chatId, $text);
     }
 
@@ -592,12 +633,6 @@ Provide a comprehensive analysis with:
 Format as markdown with clear sections. Be specific and actionable.";
     }
 
-    private function ensureCacheDir(): void {
-        if (!is_dir($this->cacheDir)) {
-            @mkdir($this->cacheDir, 0755, true);
-        }
-    }
-
     /**
      * Get log file path for a given type and environment
      */
@@ -627,13 +662,11 @@ Format as markdown with clear sections. Be specific and actionable.";
     // ── Callback Handlers ──
 
     public function callback_ai(int $chatId, int $messageId, array $params, BotHandler $bot): array {
-        // params: [env, hours]
         $env = $params[0] ?? 'prod';
         $hours = intval($params[1] ?? 24);
         
         $bot->editMessageText($chatId, $messageId, "🤖 Running AI analysis... (this may take 1-2 minutes)");
         
-        // Re-use cmd_ai logic
         return $this->cmd_ai($chatId, "{$env} {$hours}", $bot);
     }
 
@@ -649,5 +682,16 @@ Format as markdown with clear sections. Be specific and actionable.";
         $hours = intval($params[1] ?? 24);
         
         return $this->cmd_errors($chatId, "{$env} {$hours}", $bot);
+    }
+
+    public function callback_refresh(int $chatId, int $messageId, array $params, BotHandler $bot): array {
+        $type = $params[0] ?? 'system';
+        $lines = intval($params[1] ?? 50);
+        $env = $params[2] ?? 'prod';
+        
+        // Invalidate cache for this log type
+        $this->cache->delete("logtail_{$type}_{$lines}_{$env}");
+        
+        return $this->cmd_tail($chatId, "{$type} {$lines} {$env}", $bot);
     }
 }

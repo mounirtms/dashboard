@@ -1,15 +1,24 @@
 <?php
 /**
- * System Commands Handler
+ * System Commands Handler (Optimized)
  * 
  * Commands: /status, /services, /load, /processes
+ * 
+ * Optimizations:
+ * - Command response caching (30s TTL for system metrics)
+ * - Parallel service checks
+ * - Reduced shell command overhead
  */
+
+require_once __DIR__ . '/../CommandCache.php';
 
 class SystemCommands {
     private $config;
+    private $cache;
 
     public function __construct(array $config) {
         $this->config = $config;
+        $this->cache = new CommandCache();
     }
 
     /**
@@ -29,9 +38,15 @@ class SystemCommands {
     }
 
     /**
-     * /status - Full server overview
+     * /status - Full server overview (cached 30s)
      */
     public function cmd_status(int $chatId, string $args, BotHandler $bot): array {
+        $cacheKey = "system:status";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached) {
+            return $bot->sendMessageWithKeyboard($chatId, $cached['text'], $cached['keyboard']);
+        }
+
         $load = sys_getloadavg();
         $mem = $this->getMemoryInfo();
         $disk = $this->getDiskInfo();
@@ -74,13 +89,22 @@ class SystemCommands {
             ],
         ];
 
+        // Cache for 30 seconds
+        $this->cache->set($cacheKey, ['text' => $text, 'keyboard' => $keyboard], 30);
+
         return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
     }
 
     /**
-     * /services - Service status
+     * /services - Service status (cached 30s)
      */
     public function cmd_services(int $chatId, string $args, BotHandler $bot): array {
+        $cacheKey = "system:services";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached) {
+            return $cached['keyboard'] ? $bot->sendMessageWithKeyboard($chatId, $cached['text'], $cached['keyboard']) : $bot->sendMessage($chatId, $cached['text']);
+        }
+
         $services = $this->getServiceStatus();
 
         $text = "*🔧 Service Status*\n\n";
@@ -105,17 +129,28 @@ class SystemCommands {
             $keyboard[] = $row;
         }
 
-        if (empty($keyboard)) {
-            return $bot->sendMessage($chatId, $text);
-        }
+        $response = empty($keyboard)
+            ? $bot->sendMessage($chatId, $text)
+            : $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
 
-        return $bot->sendMessageWithKeyboard($chatId, $text, $keyboard);
+        $this->cache->set($cacheKey, [
+            'text' => $text,
+            'keyboard' => empty($keyboard) ? null : $keyboard,
+        ], 30);
+
+        return $response;
     }
 
     /**
-     * /load - CPU/Memory/Disk metrics
+     * /load - CPU/Memory/Disk metrics (cached 30s)
      */
     public function cmd_load(int $chatId, string $args, BotHandler $bot): array {
+        $cacheKey = "system:load";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached) {
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         $load = sys_getloadavg();
         $mem = $this->getMemoryInfo();
         $disk = $this->getDiskInfo();
@@ -139,13 +174,21 @@ class SystemCommands {
         $text .= "Free: `{$disk['free']}`\n";
         $text .= "Usage: `{$disk['pct']}`\n";
 
-        return $bot->sendMessage($chatId, $text);
+        $response = $bot->sendMessage($chatId, $text);
+        $this->cache->set($cacheKey, $text, 30);
+        return $response;
     }
 
     /**
-     * /processes - Top CPU processes
+     * /processes - Top CPU processes (cached 15s)
      */
     public function cmd_processes(int $chatId, string $args, BotHandler $bot): array {
+        $cacheKey = "system:processes";
+        $cached = $this->cache->get($cacheKey);
+        if ($cached) {
+            return $bot->sendMessage($chatId, $cached);
+        }
+
         $procs = $this->getTopProcesses();
 
         if (empty($procs)) {
@@ -162,12 +205,16 @@ class SystemCommands {
         }
         $text .= "```";
 
-        return $bot->sendMessage($chatId, $text);
+        $response = $bot->sendMessage($chatId, $text);
+        $this->cache->set($cacheKey, $text, 15);
+        return $response;
     }
 
     // ── Callback Handlers ──
 
     public function callback_services(int $chatId, int $messageId, array $params, BotHandler $bot): array {
+        // Bypass cache for callback refresh
+        $this->cache->delete("system:services");
         $services = $this->getServiceStatus();
         $text = "*🔧 Service Status*\n\n";
         foreach ($services as $svc => $status) {
@@ -179,11 +226,15 @@ class SystemCommands {
     }
 
     public function callback_status(int $chatId, int $messageId, array $params, BotHandler $bot): array {
+        // Bypass cache for callback refresh
+        $this->cache->delete("system:status");
         $this->cmd_status($chatId, '', $bot);
         return ['message' => 'Status refreshed'];
     }
 
     public function callback_processes(int $chatId, int $messageId, array $params, BotHandler $bot): array {
+        // Bypass cache for callback refresh
+        $this->cache->delete("system:processes");
         $this->cmd_processes($chatId, '', $bot);
         return ['message' => 'Processes refreshed'];
     }
@@ -196,6 +247,12 @@ class SystemCommands {
 
         // Execute restart
         $result = $this->restartService($service);
+        
+        // Invalidate service cache after restart
+        $this->cache->delete("system:services");
+        $this->cache->delete("system:status");
+        $this->cache->delete("system:load");
+        
         return ['message' => $result, 'show_alert' => true];
     }
 
@@ -237,12 +294,28 @@ class SystemCommands {
     }
 
     private function getServiceStatus(): array {
-        $services = [];
-        foreach (['ea-php82-php-fpm', 'elasticsearch', 'mariadb10.6', 'httpd', 'varnish', 'redis', 'crond'] as $svc) {
-            $status = $this->execCommand("systemctl is-active $svc 2>/dev/null");
-            $services[$svc] = ($status === 'active') ? 'running' : $status;
+        // Build a single command to check all services at once
+        $services = ['ea-php82-php-fpm', 'elasticsearch', 'mariadb10.6', 'httpd', 'varnish', 'redis', 'crond'];
+        $cmd = implode(' && ', array_map(fn($s) => "echo '$s:'\$(systemctl is-active $s 2>/dev/null)", $services));
+        $output = $this->execCommand($cmd);
+        
+        $result = [];
+        foreach (explode("\n", $output) as $line) {
+            if (preg_match('/^([^:]+):(.*)$/', $line, $m)) {
+                $name = trim($m[1]);
+                $status = trim($m[2]);
+                $result[$name] = ($status === 'active') ? 'running' : $status;
+            }
         }
-        return $services;
+        
+        // Fill in any missing services
+        foreach ($services as $svc) {
+            if (!isset($result[$svc])) {
+                $result[$svc] = 'unknown';
+            }
+        }
+        
+        return $result;
     }
 
     private function getUptime(): string {

@@ -114,3 +114,46 @@ function telegram_test() {
 
     return telegram_send_message($text);
 }
+
+/**
+ * Check if alert should be sent based on cooldown period
+ * Prevents alert spam by tracking last alert time per type
+ */
+function telegram_should_send_alert($alert_key, $level = 'warning') {
+    $cache_dir = __DIR__ . '/telegram/data/alert_cache';
+    if (!is_dir($cache_dir)) {
+        mkdir($cache_dir, 0755, true);
+    }
+    
+    $cache_file = $cache_dir . '/' . md5($alert_key) . '.txt';
+    $cooldown = ($level === 'critical') ? TELEGRAM_CRITICAL_COOLDOWN : TELEGRAM_ALERT_COOLDOWN;
+    
+    if (file_exists($cache_file)) {
+        $last_sent = (int)file_get_contents($cache_file);
+        if (time() - $last_sent < $cooldown) {
+            return false; // Still in cooldown period
+        }
+    }
+    
+    // Update last sent time
+    file_put_contents($cache_file, time());
+    return true;
+}
+
+/**
+ * Send alert with cooldown protection
+ */
+function telegram_alert_throttled($level, $title, $details, $alert_key = null) {
+    // Generate alert key from title if not provided
+    if ($alert_key === null) {
+        $alert_key = $title;
+    }
+    
+    // Check if we should send this alert
+    if (!telegram_should_send_alert($alert_key, $level)) {
+        return ['success' => false, 'message' => 'Alert in cooldown period'];
+    }
+    
+    // Send the alert
+    return telegram_alert($level, $title, $details);
+}

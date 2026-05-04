@@ -30,10 +30,10 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
-// Rate limiting: 60 requests per minute per user
+// Rate limiting: 500 requests per minute per user
 require_once __DIR__ . '/RateLimiter.php';
 require_once __DIR__ . '/InputValidator.php';
-$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 60, 60);
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 500, 60);
 $userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
 if (!$rateLimiter->checkOrReject($userIdentifier)) {
     error_log("Dashboard API rate limit exceeded for user: $userIdentifier");

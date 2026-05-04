@@ -8,17 +8,26 @@ function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
+  const colors = {
+    success: '#22c55e',
+    error: '#ef4444',
+    warning: '#eab308',
+    info: '#3b82f6'
+  };
+  const bg = colors[type] || colors.info;
   toast.style.cssText = `
     position: fixed;
     top: 20px;
     right: 20px;
-    padding: 12px 24px;
-    background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
-    color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    padding: 14px 24px;
+    background: ${bg};
+    color: ${type === 'warning' ? '#000' : '#fff'};
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     z-index: 10000;
     animation: slideIn 0.3s ease-out;
+    font-weight: 600;
+    letter-spacing: 0.01em;
   `;
   document.body.appendChild(toast);
   setTimeout(() => {
@@ -27,23 +36,51 @@ function showToast(message, type = 'info') {
   }, 3000);
 }
 
-// Monkey-patch fetch to handle PHP shebang issue globally
+// Monkey-patch fetch to handle PHP shebang issue and empty responses
 const originalFetch = window.fetch;
 window.fetch = async function(...args) {
-  const response = await originalFetch.apply(this, args);
-  const originalJson = response.json.bind(response);
-  response.json = async function() {
-    try {
-      const text = await response.text();
-      // Handle case where PHP shebang or other text precedes JSON
-      const jsonStr = text.replace(/^[^{]*/, '').trim();
-      return JSON.parse(jsonStr);
-    } catch(e) {
-      console.error('JSON parse error:', e);
-      return {};
-    }
-  };
-  return response;
+  try {
+    const response = await originalFetch.apply(this, args);
+    const originalJson = response.json.bind(response);
+    response.json = async function() {
+      try {
+        const text = await response.text();
+        if (!text || text.trim() === '') return {};
+        // Handle case where PHP shebang or other text precedes JSON
+        const firstBrace = text.indexOf('{');
+        const firstBracket = text.indexOf('[');
+        let start = -1;
+        if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) start = firstBrace;
+        else if (firstBracket !== -1) start = firstBracket;
+        
+        if (start === -1) return {};
+        const jsonStr = text.substring(start).trim();
+        // If multiple JSON objects are present, try to parse only the first one
+        try {
+            return JSON.parse(jsonStr);
+        } catch(e) {
+            // Try to find the last closing brace/bracket for valid JSON
+            const lastBrace = jsonStr.lastIndexOf('}');
+            const lastBracket = jsonStr.lastIndexOf(']');
+            let end = -1;
+            if (lastBrace !== -1 && (lastBracket === -1 || lastBrace > lastBracket)) end = lastBrace;
+            else if (lastBracket !== -1) end = lastBracket;
+            
+            if (end !== -1) {
+                return JSON.parse(jsonStr.substring(0, end + 1));
+            }
+            throw e;
+        }
+      } catch(e) {
+        console.error('JSON parse error from ' + args[0], e);
+        return {};
+      }
+    };
+    return response;
+  } catch(e) {
+    console.error('Fetch error:', e);
+    throw e;
+  }
 };
 
 // ── Auth ──
@@ -60,22 +97,85 @@ async function checkAuth() {
 }
 
 // ── Tabs ──
+function activateTab(tabName, pushHash = true) {
+  if (!tabName) tabName = 'overview';
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+  const tabBtn = document.querySelector('.tab[data-tab="' + tabName + '"]');
+  const tabContent = document.getElementById('tab-' + tabName);
+  if (tabBtn) tabBtn.classList.add('active');
+  if (tabContent) tabContent.classList.add('active');
+
+  // Update hash for routing
+  if (pushHash) {
+    try { history.replaceState(null, '', '#/' + tabName); } catch(e) { location.hash = '#/' + tabName; }
+  }
+
+  // Lazy-load handlers
+  if (tabName === 'scripts' && Object.keys(scriptData).length === 0) loadScripts();
+  if (tabName === 'dbhealth') loadDbHealth();
+  if (tabName === 'infrastructure') loadInfrastructure();
+  if (tabName === 'commerce') { loadCommerce(); loadVisitorStats(); }
+  if (tabName === 'telegram') { loadTelegramConfig(); loadAlerts(); }
+  if (tabName === 'cloudflare') loadCloudflare();
+  if (tabName === 'push') loadPushEnvironments();
+  if (tabName === 'varnish-monitor') loadVarnishMonitor();
+  if (tabName === 'pim-monitor') loadPimMonitor();
+  if (tabName === 'cicd') loadCicdEnvironments();
+}
+
+// Attach click listeners that route via hash
 document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
-    if (t.dataset.tab === 'scripts' && Object.keys(scriptData).length === 0) loadScripts();
-    if (t.dataset.tab === 'dbhealth') loadDbHealth();
-    if (t.dataset.tab === 'infrastructure') loadInfrastructure();
-    if (t.dataset.tab === 'commerce') loadCommerce();
-    if (t.dataset.tab === 'telegram') {
-      loadTelegramConfig();
-      loadAlerts();
-    }
-  });
+  t.addEventListener('click', () => activateTab(t.dataset.tab, true));
 });
+
+// Activate from hash on load and on hashchange
+function activateFromHash() {
+  const h = location.hash || '';
+  const m = h.match(/^#\/(.+)/);
+  const tab = m ? m[1] : 'processes';
+  activateTab(tab, false);
+}
+window.addEventListener('hashchange', activateFromHash);
+window.addEventListener('DOMContentLoaded', activateFromHash);
+// If script runs after DOMContentLoaded, ensure activation
+if (document.readyState === 'complete' || document.readyState === 'interactive') activateFromHash();
+
+// ── Visitor Stats ──
+async function loadVisitorStats() {
+  try {
+    const r = await fetch('/api/visitors-count.php');
+    if (!r.ok) return;
+    const d = await r.json();
+    
+    const totalVisitors = d.all_sites?.total_visitors || 0;
+    const onlineCustomers = d.all_sites?.online_customers || 0;
+    
+    // Update top metrics
+    const totalEl = document.getElementById('total-visitors-metric');
+    const onlineEl = document.getElementById('online-customers-metric');
+    if (totalEl) totalEl.textContent = totalVisitors.toLocaleString();
+    if (onlineEl) onlineEl.textContent = onlineCustomers.toLocaleString();
+    
+    const prodEl = document.getElementById('prod-visitors');
+    const betaEl = document.getElementById('beta-visitors');
+    if (prodEl) prodEl.textContent = 'Prod: ' + (d.production?.total_visitors || 0);
+    if (betaEl) betaEl.textContent = 'Beta: ' + (d.beta?.total_visitors || 0);
+    
+    // Update commerce tab online customers
+    const commerceOnline = document.getElementById('commerce-online');
+    if (commerceOnline) commerceOnline.textContent = onlineCustomers;
+
+    // Update compact header stats if present
+    const headerVisitors = document.getElementById('header-visitors');
+    const headerOnline = document.getElementById('header-online');
+    if (headerVisitors) headerVisitors.textContent = (d.all_sites?.total_visitors || 0).toLocaleString();
+    if (headerOnline) headerOnline.textContent = (d.all_sites?.online_customers || 0).toLocaleString();
+
+  } catch(e) { 
+    console.error('visitor stats', e); 
+  }
+}
 
 // ── Overview ──
 async function loadOverview() {
@@ -91,8 +191,32 @@ async function loadOverview() {
     else if(l < 8) { dot.className='status-dot yellow'; txt.textContent='Elevated'; }
     else { dot.className='status-dot red'; txt.textContent='High Load: '+l.toFixed(2); }
 
+    // Header quick stats
+    const cpuEl = document.getElementById('header-cpu');
+    const memEl = document.getElementById('header-mem');
+    const swapEl = document.getElementById('header-swap');
+    
+    if (cpuEl) cpuEl.textContent = d.load['1min'].toFixed(2);
+    if (memEl) memEl.textContent = d.memory.used_pct + '%';
+    if (swapEl) swapEl.textContent = d.memory.swap_used_pct + '%';
+
+    // Load visitor stats (will update header visitors/online)
+    loadVisitorStats();
+
     const memClass = d.memory.used_pct > 85 ? 'red' : d.memory.used_pct > 65 ? 'yellow' : 'green';
     document.getElementById('metrics-row').innerHTML = `
+      <div class="card">
+        <h3>🌐 Current Visitors</h3>
+        <div class="metric" id="total-visitors-metric">-</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:5px">
+          <span id="prod-visitors">Prod: -</span> | <span id="beta-visitors">Beta: -</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>👥 Online Customers</h3>
+        <div class="metric" id="online-customers-metric">-</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:5px">Active in last 15 min</div>
+      </div>
       <div class="card">
         <h3>CPU Load (1m / 5m / 15m)</h3>
         <div class="metric">${d.load['1min'].toFixed(2)}</div>
@@ -104,18 +228,18 @@ async function loadOverview() {
         <div class="progress-bar"><div class="fill ${memClass}" style="width:${d.memory.used_pct}%"></div></div>
         <div style="font-size:0.78rem;color:var(--muted);margin-top:5px">${d.memory.available_mb} MB free / ${d.memory.total_mb} MB total${d.memory.swap_pct > 0 ? ' — Swap: '+d.memory.swap_pct+'%' : ''}</div>
       </div>
-      <div class="card">
-        <h3>Disk (/home)</h3>
-        <div class="metric">${d.disk.pct}</div>
-        <div style="font-size:0.78rem;color:var(--muted)">${d.disk.used} used / ${d.disk.total} total — ${d.disk.free} free</div>
-      </div>
-      <div class="card">
-        <h3>Processes &amp; DB</h3>
-        <div style="font-size:0.9rem">PHP-FPM: <strong>${d.processes.php_fpm}</strong> &nbsp; HTTPD: <strong>${d.processes.httpd}</strong></div>
-        <div style="font-size:0.78rem;color:var(--muted);margin-top:4px">Messenger: ${d.processes.messenger} | Zombies: ${d.processes.zombies}</div>
-        <div style="font-size:0.78rem;color:var(--muted)">DB: ${d.database.connections} conn / ${d.database.running} running</div>
-      </div>
     `;
+
+    // Populate dense metrics table for compact mode
+    const denseTable = document.getElementById('metrics-dense-table');
+    if (denseTable) {
+      denseTable.querySelector('tbody').innerHTML = `
+        <tr><td>Visitors</td><td>${d.all_sites?.total_visitors || 0}</td><td>Prod: ${d.production?.total_visitors || 0} • Beta: ${d.beta?.total_visitors || 0}</td></tr>
+        <tr><td>Online</td><td>${d.all_sites?.online_customers || 0}</td><td>15 min window</td></tr>
+        <tr><td>CPU 1m</td><td>${d.load['1min'].toFixed(2)}</td><td>5m: ${d.load['5min'].toFixed(2)}</td></tr>
+        <tr><td>Memory</td><td>${d.memory.used_pct}%</td><td>${d.memory.available_mb} MB free</td></tr>
+      `;
+    }
 
     // Processes table
     let ph = '';
@@ -123,7 +247,11 @@ async function loadOverview() {
       const c = p.cpu > 50 ? 'red' : p.cpu > 20 ? 'yellow' : 'green';
       ph += `<tr><td>${p.pid}</td><td><span class="badge ${c}">${p.cpu}%</span></td><td>${p.mem}%</td><td>${p.time}</td><td style="max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.cmd}</td></tr>`;
     });
-    document.querySelector('#top-proc-table tbody').innerHTML = ph || '<tr><td colspan="5" class="loading">No processes</td></tr>';
+    // Fill both overview and detail processes tables
+    const pOverview = document.querySelector('#top-proc-table-overview tbody');
+    if (pOverview) pOverview.innerHTML = ph || '<tr><td colspan="5" class="loading">No processes</td></tr>';
+    const pDetail = document.querySelector('#top-proc-table tbody');
+    if (pDetail) pDetail.innerHTML = ph || '<tr><td colspan="5" class="loading">No processes</td></tr>';
 
     // Services
     let sh = '';
@@ -131,7 +259,48 @@ async function loadOverview() {
       const cls = v === 'running' ? 'green' : v === 'dead' ? 'red' : 'yellow';
       sh += `<div class="svc-card"><span class="status-dot ${cls}" style="flex-shrink:0"></span><span class="svc-name">${k}</span><span class="badge ${cls}">${v}</span></div>`;
     });
-    document.getElementById('services-list').innerHTML = sh;
+    // Fill both overview and services views
+    const svcOverview = document.getElementById('services-list-overview');
+    if (svcOverview) svcOverview.innerHTML = sh;
+    const svcList = document.getElementById('services-list');
+    if (svcList) svcList.innerHTML = sh;
+
+    // Footer summary with Varnish stats
+    const f = document.getElementById('footer-stats');
+    if (f) {
+      const varnishInfo = d.varnish && d.varnish.status === 'active' 
+        ? ` • Varnish ${d.varnish.hit_ratio}% hits`
+        : '';
+      f.innerHTML = `
+        <div class="footer-stat">
+          <span class="footer-stat-label">CPU</span>
+          <span class="footer-stat-value">${d.load['1min'].toFixed(2)}</span>
+        </div>
+        <div class="footer-stat">
+          <span class="footer-stat-label">Mem</span>
+          <span class="footer-stat-value">${d.memory.used_pct}%</span>
+        </div>
+        ${d.varnish && d.varnish.status === 'active' ? `
+          <div class="footer-stat">
+            <span class="footer-stat-label">Varnish</span>
+            <span class="footer-stat-value">${d.varnish.hit_ratio}%</span>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    // Add Varnish card to metrics if available
+    if (d.varnish && d.varnish.status === 'active') {
+      const card = `
+        <div class="card">
+          <h3>⚡ Varnish Cache</h3>
+          <div class="metric">${d.varnish.hit_ratio}%</div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:5px">Hit Ratio • Storage: ${d.varnish.storage_pct}%</div>
+        </div>
+      `;
+      document.getElementById('metrics-row').innerHTML += card;
+    }
+
   } catch(e) { console.error('overview', e); }
 }
 
@@ -281,6 +450,26 @@ async function loadDbStats() {
     }
   } catch(e) {}
 }
+
+function toggleCompact() {
+  const isCompact = document.body.classList.toggle('compact');
+  try { localStorage.setItem('dashboard_compact', isCompact ? '1' : '0'); } catch(e){}
+  document.getElementById('compact-toggle').textContent = isCompact ? 'Compact ✓' : 'Compact';
+}
+
+// Apply persisted compact mode
+try { if (localStorage.getItem('dashboard_compact') === '1') { document.body.classList.add('compact'); document.getElementById('compact-toggle').textContent = 'Compact ✓'; } } catch(e){}
+
+// Header menu toggle
+window.addEventListener('DOMContentLoaded', function(){
+  const headerMenuBtn = document.getElementById('header-menu-btn');
+  const headerMenu = document.getElementById('header-menu');
+  if (headerMenuBtn && headerMenu) {
+    headerMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); headerMenu.classList.toggle('show'); });
+    document.addEventListener('click', () => headerMenu.classList.remove('show'));
+    headerMenu.addEventListener('click', e => e.stopPropagation());
+  }
+});
 
 async function doLogout() {
   try { await fetch(AUTH_API + '?action=logout', { method: 'POST' }); } catch(e) {}
@@ -668,23 +857,14 @@ function refresh() {
   loadCommerce();
 }
 
-// Background refresh for heavy infrastructure data (every 60 seconds)
-setInterval(() => {
-  loadInfrastructure();
-}, 60000);
-
-// Background refresh for commerce data (every 30 seconds)
-setInterval(() => {
-  loadCommerce();
-}, 30000);
-
 // ── Infrastructure Tab ──
 async function loadInfrastructure() {
   try {
-    const [redisR, esR, varnishR, sysR, phpfpmR, cfR] = await Promise.all([
+    const [redisR, esR, varnishR, varnishStatsR, sysR, phpfpmR, cfR] = await Promise.all([
       fetch(MONITOR_API + '?action=redis'),
       fetch(MONITOR_API + '?action=elasticsearch'),
       fetch(MONITOR_API + '?action=varnish'),
+      fetch('/api/varnish-stats.php'),
       fetch(MONITOR_API + '?action=system_advanced'),
       fetch(MONITOR_API + '?action=phpfpm_pools'),
       fetch(MONITOR_API + '?action=cloudflare')
@@ -693,13 +873,14 @@ async function loadInfrastructure() {
     const redis = redisR.ok ? await redisR.json() : null;
     const es = esR.ok ? await esR.json() : null;
     const varnish = varnishR.ok ? await varnishR.json() : null;
+    const varnishStats = varnishStatsR.ok ? await varnishStatsR.json() : null;
     const sys = sysR.ok ? await sysR.json() : null;
     const phpfpm = phpfpmR.ok ? await phpfpmR.json() : null;
     const cf = cfR.ok ? await cfR.json() : null;
 
     renderRedis(redis);
     renderElasticsearch(es);
-    renderVarnish(varnish);
+    renderVarnish(varnish, varnishStats);
     renderSystemAdvanced(sys);
     renderPhpFPM(phpfpm);
     renderCloudflare(cf);
@@ -771,32 +952,58 @@ function renderElasticsearch(data) {
   el.innerHTML = html;
 }
 
-function renderVarnish(data) {
+function renderVarnish(data, varnishStats) {
   const el = document.getElementById('varnish-content');
-  if (!data || data.error) {
+  
+  // Use enhanced stats API if available, fallback to monitor API
+  const stats = varnishStats?.varnish || data;
+  
+  if (!stats || stats.error || data?.error) {
     el.innerHTML = '<div class="loading">Varnish unavailable</div>';
     return;
   }
 
-  const hitRate = data.hit_ratio || 0;
+  const hitRate = stats.hit_rate || stats.hit_ratio || 0;
   const hitClass = hitRate > 80 ? 'green' : hitRate > 50 ? 'yellow' : 'red';
-  const storagePct = data.storage.total_bytes > 0 ? ((data.storage.used_bytes / data.storage.total_bytes) * 100).toFixed(1) : 0;
+  
+  const hits = stats.cache_hits || stats.hits || 0;
+  const misses = stats.cache_misses || stats.misses || 0;
+  const objects = stats.cached_objects || 0;
+  
+  // Storage metrics
+  const storage = stats.storage || data?.storage || {};
+  const usedMB = storage.used_mb || 0;
+  const availableMB = storage.available_mb || 0;
+  const totalMB = usedMB + availableMB;
+  const storagePct = totalMB > 0 ? ((usedMB / totalMB) * 100).toFixed(1) : 0;
   const storageClass = storagePct > 90 ? 'red' : storagePct > 70 ? 'yellow' : 'green';
 
   let html = `
-    <div class="infra-stat"><span class="infra-label">Hit Ratio</span><span class="infra-val ${hitClass}">${hitRate}%</span></div>
+    <div class="infra-stat"><span class="infra-label">Service Status</span><span class="badge ${stats.service_status === 'running' ? 'green' : 'red'}">${stats.service_status || 'unknown'}</span></div>
+    <div class="infra-stat"><span class="infra-label">Hit Ratio</span><span class="infra-val ${hitClass}">${hitRate.toFixed(1)}%</span></div>
     <div class="progress-bar"><div class="fill ${hitClass}" style="width:${Math.min(hitRate, 100)}%"></div></div>
-    <div class="infra-stat"><span class="infra-label">Hits</span><span class="infra-val green">${(data.hits || 0).toLocaleString()}</span></div>
-    <div class="infra-stat"><span class="infra-label">Misses</span><span class="infra-val yellow">${(data.misses || 0).toLocaleString()}</span></div>
-    <div class="infra-stat"><span class="infra-label">Req/sec</span><span class="infra-val">${(data.req_per_sec || 0).toLocaleString()}</span></div>
-    <div class="infra-stat"><span class="infra-label">Storage</span><span class="infra-val">${data.storage.used || 0} / ${data.storage.total || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Cache Hits</span><span class="infra-val green">${hits.toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Cache Misses</span><span class="infra-val yellow">${misses.toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Cached Objects</span><span class="infra-val cyan">${objects.toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Storage Used</span><span class="infra-val">${usedMB.toFixed(1)} MB / ${totalMB.toFixed(1)} MB</span></div>
     <div class="progress-bar"><div class="fill ${storageClass}" style="width:${Math.min(storagePct, 100)}%"></div></div>
-    <div class="infra-stat"><span class="infra-label">Backend Failures</span><span class="infra-val">${data.backend_failures || 0}</span></div>
-    <div class="infra-stat"><span class="infra-label">Evictions</span><span class="infra-val">${(data.evictions || 0).toLocaleString()}</span></div>
+    <div class="infra-stat"><span class="infra-label">Backend Failures</span><span class="infra-val ${(stats.backend_fail || stats.backend_failures || 0) > 0 ? 'red' : 'green'}">${stats.backend_fail || stats.backend_failures || 0}</span></div>
   `;
 
-  // Device type breakdown
-  if (data.device_types) {
+  // Device type breakdown from enhanced API
+  if (varnishStats?.devices) {
+    const dt = varnishStats.devices;
+    const total = parseInt(dt.total) || 0;
+    html += `
+      <div style="grid-column:1/-1;margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">📱 Device Types (${total.toLocaleString()} tracked)</div>
+        <div class="infra-stat"><span class="infra-label">📱 Mobile</span><span class="infra-val cyan">${(dt.mobile?.percentage || 0).toFixed(1)}% <span style="font-size:0.7rem;color:var(--muted)">(${(dt.mobile?.count || 0).toLocaleString()})</span></span></div>
+        <div class="infra-stat"><span class="infra-label">📟 Tablet</span><span class="infra-val yellow">${(dt.tablet?.percentage || 0).toFixed(1)}% <span style="font-size:0.7rem;color:var(--muted)">(${(dt.tablet?.count || 0).toLocaleString()})</span></span></div>
+        <div class="infra-stat"><span class="infra-label">🖥️ Desktop</span><span class="infra-val green">${(dt.desktop?.percentage || 0).toFixed(1)}% <span style="font-size:0.7rem;color:var(--muted)">(${(dt.desktop?.count || 0).toLocaleString()})</span></span></div>
+      </div>
+    `;
+  } else if (data?.device_types) {
+    // Fallback to old device types format
     const dt = data.device_types;
     html += `
       <div style="grid-column:1/-1;margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px">
@@ -1125,8 +1332,9 @@ function renderCommerce(prod, beta) {
   document.getElementById('commerce-active-carts').textContent = data?.active_carts?.count || 0;
   document.getElementById('commerce-carts-value').textContent = data?.active_carts?.value ? `$${Number(data.active_carts.value).toLocaleString()}` : '$0';
 
-  // Online customers
-  document.getElementById('commerce-online').textContent = data?.online_customers || 0;
+  // Online customers - will be updated by loadVisitorStats
+  const onlineCustomers = data?.online_customers || 0;
+  document.getElementById('commerce-online').textContent = onlineCustomers;
 
   // Recent orders table
   const orders = data?.recent_orders || [];
@@ -1236,9 +1444,948 @@ async function loadAlerts() {
 
 // Update tab click handlers
 
+// ── Cloudflare Analytics ──
+let cfDataCache = null;
+let cfChartsInitialized = false;
+
+async function loadCloudflare() {
+  try {
+    if (cfDataCache) {
+      renderCloudflare(cfDataCache);
+      return;
+    }
+    const r = await fetch(MONITOR_API + '?action=cloudflare');
+    const d = await r.json();
+    if (d.error) {
+      document.getElementById('cf-zone-status').textContent = 'Error';
+      document.getElementById('cf-plan').textContent = d.error;
+      return;
+    }
+    cfDataCache = d;
+    renderCloudflare(d);
+  } catch(e) { console.error('Cloudflare', e); }
+}
+
+function renderCloudflare(d) {
+  const z = d.zone || {};
+  const totals = d.analytics_totals || {};
+  const formatBytes = b => {
+    if (!b) return '0 B';
+    if (b >= 1073741824) return (b / 1073741824).toFixed(1) + ' GB';
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b >= 1024) return (b / 1024).toFixed(1) + ' KB';
+    return b + ' B';
+  };
+  const formatNum = n => (n || 0).toLocaleString();
+
+  // Overview metrics
+  const statusColor = z.status === 'active' ? '🟢' : '🟡';
+  document.getElementById('cf-zone-status').textContent = statusColor + ' ' + (z.status || '-').charAt(0).toUpperCase() + (z.status || '-').slice(1);
+  document.getElementById('cf-plan').textContent = (z.plan || '-') + ' • ' + (z.name || '');
+
+  document.getElementById('cf-requests').textContent = formatNum(totals.requests || 0);
+  const days = (d.analytics || []).length;
+  document.getElementById('cf-requests-sub').textContent = days + ' days tracked';
+
+  document.getElementById('cf-bandwidth').textContent = formatBytes(totals.bytes || 0);
+  const cachedBytes = totals.cachedBytes || 0;
+  document.getElementById('cf-bandwidth-sub').textContent = 'Cached: ' + formatBytes(cachedBytes);
+
+  const cacheRatio = d.cache_hit_ratio || 0;
+  document.getElementById('cf-cache-ratio').textContent = cacheRatio + '%';
+  document.getElementById('cf-cache-sub').textContent = cacheRatio > 80 ? '✅ Excellent' : cacheRatio > 50 ? '⚠️ Fair' : '❌ Poor';
+
+  // SSL
+  const ssl = d.ssl_certificate;
+  const sslSettings = (d.settings || {}).ssl || 'off';
+  let sslHtml = '<div><strong>Mode:</strong> <span style="color:var(--green)">' + sslSettings.toUpperCase() + '</span></div>';
+  if (ssl) {
+    const daysLeft = ssl.days_left;
+    const statusColor = daysLeft < 30 ? 'var(--red)' : 'var(--green)';
+    sslHtml += '<div><strong>Cert:</strong> <span style="color:' + statusColor + '">' + ssl.status + '</span></div>';
+    sslHtml += '<div><strong>Expires:</strong> ' + (ssl.expires_on || '-') + '</div>';
+    if (daysLeft !== null) sslHtml += '<div><strong>Days left:</strong> <span style="color:' + statusColor + '">' + daysLeft + '</span></div>';
+    if (ssl.hostnames && ssl.hostnames.length) sslHtml += '<div style="margin-top:6px;font-size:0.78rem;font-family:monospace">' + ssl.hostnames.join(', ') + '</div>';
+  }
+  document.getElementById('cf-ssl-info').innerHTML = sslHtml;
+
+  // Threats
+  const threats = totals.threats || 0;
+  let threatsHtml = '<div style="font-size:1.5rem;font-weight:700;color:' + (threats > 0 ? 'var(--red)' : 'var(--green)') + '">' + formatNum(threats) + '</div>';
+  threatsHtml += '<div style="color:var(--muted);margin-top:4px">blocked in last ' + days + ' days</div>';
+  const fw = d.firewall || {};
+  if (fw.total) threatsHtml += '<div style="margin-top:8px"><strong>FW events:</strong> ' + formatNum(fw.total) + '</div>';
+  if (fw.blocked) threatsHtml += '<div><strong style="color:var(--red)">Blocked:</strong> ' + formatNum(fw.blocked) + '</div>';
+  if (fw.challenged) threatsHtml += '<div><strong style="color:var(--yellow)">Challenged:</strong> ' + formatNum(fw.challenged) + '</div>';
+  document.getElementById('cf-threats-info').innerHTML = threatsHtml;
+
+  // Settings
+  const s = d.settings || {};
+  const settingItems = [
+    ['Brotli', s.brotli], ['HTTP/2', s.http2], ['HTTP/3', s.http3],
+    ['IPv6', s.ipv6], ['WAF', s.waf], ['Always Online', s.always_online],
+  ];
+  let settingsHtml = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+  settingItems.forEach(([label, val]) => {
+    const color = val === 'on' ? 'var(--green)' : val === 'off' ? 'var(--red)' : 'var(--muted)';
+    settingsHtml += '<div style="font-size:0.82rem">' + label + ': <span style="color:' + color + '">' + val + '</span></div>';
+  });
+  settingsHtml += '</div>';
+  const devMode = z.development_mode || 'off';
+  const devColor = devMode === 'on' ? 'var(--yellow)' : 'var(--muted)';
+  settingsHtml += '<div style="margin-top:10px;font-size:0.82rem">Dev Mode: <span style="color:' + devColor + '">' + devMode + '</span></div>';
+  settingsHtml += '<div style="font-size:0.82rem">Browser TTL: ' + (Math.round((s.browser_cache_ttl || 0) / 3600)) + 'h</div>';
+  document.getElementById('cf-settings-info').innerHTML = settingsHtml;
+
+  // Firewall
+  const fwEvents = (fw.events || []).slice(0, 5);
+  let fwHtml = '';
+  if (fwEvents.length) {
+    fwEvents.forEach(ev => {
+      const actionColor = ev.action === 'block' ? 'var(--red)' : 'var(--yellow)';
+      fwHtml += '<div style="font-size:0.78rem;padding:4px 0;border-bottom:1px solid var(--border)">';
+      fwHtml += '<span style="color:' + actionColor + '">' + ev.action + '</span> ';
+      fwHtml += '<span style="color:var(--muted);font-family:monospace">' + (ev.source || '') + '</span>';
+      fwHtml += '</div>';
+    });
+  } else {
+    fwHtml = '<div style="color:var(--green);font-size:0.82rem">✅ No recent firewall events</div>';
+  }
+  document.getElementById('cf-firewall-info').innerHTML = fwHtml;
+
+  // Charts
+  renderCfDailyChart(d.analytics || []);
+  renderCfHourlyChart(d.hourly_analytics || []);
+  renderCfStatusChart(d.status_codes || []);
+  renderCfCountries(d.countries || []);
+  renderCfTopUrls(d.top_urls || []);
+  renderCfThreatTypes(d.threat_types || []);
+}
+
+function renderCfDailyChart(analytics) {
+  if (!analytics.length) return;
+  const ctx = document.getElementById('cf-daily-chart').getContext('2d');
+  if (cfChartsInitialized && window._cfDailyChart) window._cfDailyChart.destroy();
+  window._cfDailyChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: analytics.map(a => a.date),
+      datasets: [
+        { label: 'Requests', data: analytics.map(a => a.requests), backgroundColor: 'rgba(59,130,246,0.7)', borderRadius: 4 },
+        { label: 'Cached', data: analytics.map(a => a.cachedRequests), backgroundColor: 'rgba(34,197,94,0.7)', borderRadius: 4 },
+        { label: 'Page Views', data: analytics.map(a => a.pageViews || 0), backgroundColor: 'rgba(168,85,247,0.7)', borderRadius: 4 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { color: '#94a3b8' } } }, scales: { x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(148,163,184,0.1)' } }, y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(148,163,184,0.1)' } } } }
+  });
+}
+
+function renderCfHourlyChart(hourly) {
+  if (!hourly.length) return;
+  const ctx = document.getElementById('cf-hourly-chart').getContext('2d');
+  if (cfChartsInitialized && window._cfHourlyChart) window._cfHourlyChart.destroy();
+  window._cfHourlyChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: hourly.map(h => { const dt = new Date(h.datetime); return dt.getHours() + ':00'; }),
+      datasets: [
+        { label: 'Requests', data: hourly.map(h => h.requests), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.4 },
+        { label: 'Cached', data: hourly.map(h => h.cachedRequests), borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.4 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { color: '#94a3b8' } } }, scales: { x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(148,163,184,0.1)' } }, y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(148,163,184,0.1)' } } } }
+  });
+}
+
+function renderCfStatusChart(codes) {
+  if (!codes.length) return;
+  const ctx = document.getElementById('cf-status-chart').getContext('2d');
+  if (cfChartsInitialized && window._cfStatusChart) window._cfStatusChart.destroy();
+  const colors = ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7'];
+  window._cfStatusChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: codes.map(c => c.label),
+      datasets: [{ data: codes.map(c => c.requests), backgroundColor: colors.slice(0, codes.length), borderWidth: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8' } } } }
+  });
+}
+
+function renderCfCountries(countries) {
+  const el = document.getElementById('cf-countries');
+  if (!countries.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem">No country data</div>'; return; }
+  let html = '<table style="width:100%"><thead><tr><th>Country</th><th>Requests</th><th>%</th></tr></thead><tbody>';
+  countries.slice(0, 10).forEach(c => {
+    html += '<tr><td>' + c.flag + ' ' + c.name + '</td><td style="font-family:monospace">' + c.requests.toLocaleString() + '</td><td>' + c.percentage + '%</td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderCfTopUrls(urls) {
+  const el = document.getElementById('cf-top-urls');
+  if (!urls.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem">No URL data</div>'; return; }
+  let html = '<table style="width:100%"><thead><tr><th>URL</th><th>Requests</th><th>Bytes</th></tr></thead><tbody>';
+  urls.slice(0, 10).forEach(u => {
+    const bytes = u.bytes >= 1048576 ? (u.bytes / 1048576).toFixed(1) + ' MB' : (u.bytes / 1024).toFixed(1) + ' KB';
+    html += '<tr><td style="font-family:monospace;font-size:0.78rem">' + (u.path.length > 40 ? u.path.substring(0, 40) + '...' : u.path) + '</td><td style="font-family:monospace">' + u.requests.toLocaleString() + '</td><td>' + bytes + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderCfThreatTypes(threats) {
+  const el = document.getElementById('cf-threat-types');
+  if (!threats.length) { el.innerHTML = '<div style="color:var(--green);font-size:0.82rem">✅ No threats detected</div>'; return; }
+  let html = '<div style="display:flex;flex-direction:column;gap:6px">';
+  threats.forEach(t => {
+    html += '<div style="display:flex;justify-content:space-between;font-size:0.82rem"><span>' + t.type + '</span><span style="font-family:monospace;color:var(--red)">' + t.count.toLocaleString() + '</span></div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+async function cfAction(action) {
+  const output = document.getElementById('cf-action-output');
+  output.style.display = 'block';
+  output.textContent = 'Executing ' + action + '...';
+  try {
+    const formData = new URLSearchParams({ action });
+    const r = await fetch(MONITOR_API + '?action=cloudflare_action', { method: 'POST', body: formData });
+    const d = await r.json();
+    output.textContent = d.message || (d.success ? 'Success' : 'Failed');
+    if (d.success) {
+      cfDataCache = null; // Invalidate cache
+      setTimeout(() => loadCloudflare(), 2000);
+    }
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+}
+
+// ── Load Chart.js dynamically ──
+function loadChartJS() {
+  return new Promise((resolve, reject) => {
+    if (window.Chart) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+// Override loadCloudflare to ensure Chart.js is loaded
+const _origLoadCloudflare = loadCloudflare;
+loadCloudflare = async function() {
+  try {
+    await loadChartJS();
+    cfChartsInitialized = true;
+  } catch(e) { console.error('Chart.js load failed', e); }
+  _origLoadCloudflare();
+};
+
+// ── Push Notifications (Webpushr) ──
+
+async function loadPushEnvironments() {
+  try {
+    const r = await fetch('/api/webpushr.php?action=environments');
+    const d = await r.json();
+    if (!d.success) return;
+    
+    Object.keys(d.environments).forEach(env => {
+      const cfg = d.environments[env];
+      const el = document.getElementById('push-' + (env === 'production' ? 'prod' : env) + '-info');
+      if (el) {
+        el.innerHTML = '<div><strong>URL:</strong> <a href="' + cfg.url + '" target="_blank" style="color:var(--accent)">' + cfg.url + '</a></div>' +
+          '<div style="margin-top:4px"><strong>Key:</strong> <code style="font-size:0.75rem">' + cfg.key_preview + '</code></div>' +
+          '<div><strong>Token:</strong> <code style="font-size:0.75rem">' + cfg.token + '</code></div>';
+      }
+    });
+  } catch(e) { console.error('Push env', e); }
+}
+
+async function pushSend() {
+  const title = document.getElementById('push-title').value;
+  const message = document.getElementById('push-message').value;
+  const env = document.getElementById('push-env').value;
+  const url = document.getElementById('push-url').value;
+  const icon = document.getElementById('push-icon').value;
+  
+  if (!title || !message) { showToast('Title and message required', 'error'); return; }
+  
+  const output = document.getElementById('push-send-output');
+  output.style.display = 'block';
+  output.textContent = 'Sending...';
+  
+  try {
+    const formData = new URLSearchParams({ action: 'send', env, title, message, target_url: url, icon });
+    const r = await fetch('/api/webpushr.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.error) {
+      output.textContent = '❌ Error: ' + d.message;
+    } else {
+      output.textContent = '✅ Sent to ' + d.env + '! ' + JSON.stringify(d.data, null, 2);
+      showToast('Push notification sent!', 'success');
+    }
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+}
+
+async function pushTest(env) {
+  const outputId = 'push-test-' + (env === 'production' ? 'prod' : env);
+  const output = document.getElementById(outputId);
+  output.textContent = 'Sending test...';
+  
+  try {
+    const formData = new URLSearchParams({ action: 'send_test', env, title: '🧪 Test Notification', message: 'This is a test push from the dashboard at ' + new Date().toLocaleTimeString() });
+    const r = await fetch('/api/webpushr.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.error) {
+      output.innerHTML = '<span style="color:var(--red)">❌ ' + d.message + '</span>';
+    } else {
+      output.innerHTML = '<span style="color:var(--green)">✅ Sent at ' + new Date().toLocaleTimeString() + '</span>';
+      showToast('Test push sent to ' + env, 'success');
+    }
+  } catch(e) { output.innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>'; }
+}
+
+async function pushSchedule() {
+  const title = document.getElementById('push-sched-title').value;
+  const message = document.getElementById('push-sched-message').value;
+  const time = document.getElementById('push-sched-time').value;
+  const env = document.getElementById('push-sched-env').value;
+  const url = document.getElementById('push-sched-url').value;
+  
+  if (!title || !message || !time) { showToast('Title, message, and time required', 'error'); return; }
+  
+  const output = document.getElementById('push-sched-output');
+  output.style.display = 'block';
+  output.textContent = 'Scheduling...';
+  
+  const schedTime = new Date(time).toISOString().replace('Z', '').replace('T', ' ').substring(0, 16);
+  
+  try {
+    const formData = new URLSearchParams({ action: 'send_scheduled', env, title, message, scheduled_time: schedTime, target_url: url });
+    const r = await fetch('/api/webpushr.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.error) {
+      output.textContent = '❌ Error: ' + d.message;
+    } else {
+      output.textContent = '✅ Scheduled for ' + schedTime + ' on ' + env;
+      showToast('Notification scheduled!', 'success');
+    }
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+}
+
+async function pushBulk() {
+  const input = document.getElementById('push-bulk-input').value.trim();
+  const env = document.getElementById('push-bulk-env').value;
+  
+  if (!input) { showToast('Enter notifications', 'error'); return; }
+  
+  const notifications = input.split('\n').filter(l => l.trim()).map(line => {
+    const parts = line.split('|');
+    return { title: parts[0] || 'Notification', message: parts[1] || '', target_url: parts[2] || '' };
+  });
+  
+  const output = document.getElementById('push-bulk-output');
+  output.style.display = 'block';
+  output.textContent = 'Sending ' + notifications.length + ' notifications...';
+  
+  try {
+    const formData = new URLSearchParams({ action: 'send_bulk', env, notifications: JSON.stringify(notifications) });
+    const r = await fetch('/api/webpushr.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.error) {
+      output.textContent = '❌ Error: ' + d.message;
+    } else {
+      let text = '✅ Bulk Send Complete\nSent: ' + d.sent + ' | Failed: ' + d.failed + '\n\n';
+      d.results.forEach(res => {
+        text += (res.status === 'sent' ? '✅' : '❌') + ' ' + res.title + (res.error ? ' - ' + res.error : '') + '\n';
+      });
+      output.textContent = text;
+      showToast('Bulk send: ' + d.sent + ' sent, ' + d.failed + ' failed', d.failed > 0 ? 'warning' : 'success');
+    }
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+}
+
+async function pushInstallModule(env) {
+  const output = document.getElementById('push-module-output');
+  output.style.display = 'block';
+  output.textContent = 'Checking module status on ' + env + '...';
+  
+  try {
+    const formData = new URLSearchParams({ action: 'test', env, type: 'module-status' });
+    const r = await fetch('/api/cicd.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.success) {
+      output.textContent = 'Test started. Job ID: ' + d.job_id + '. Check CI/CD tab for output.';
+    } else {
+      output.textContent = 'Error: ' + (d.error || 'Unknown');
+    }
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+}
+
+// ── CI/CD Pipeline ──
+
+function loadCicdEnvironments() {
+  const betaInfo = document.getElementById('cicd-beta-info');
+  const devInfo = document.getElementById('cicd-dev-info');
+  
+  if (betaInfo) {
+    betaInfo.innerHTML = '<div><strong>URL:</strong> <a href="https://beta.technostationery.com" target="_blank" style="color:var(--accent)">beta.technostationery.com</a></div>' +
+      '<div><strong>Path:</strong> <code style="font-size:0.75rem">/home/beta/public_html</code></div>' +
+      '<div><strong>DB:</strong> <code style="font-size:0.75rem">beta_dBT8x12y22</code></div>' +
+      '<div><strong>Redis:</strong> <code style="font-size:0.75rem">db0=cache, db1=FPC, db2=sessions</code></div>';
+  }
+  
+  if (devInfo) {
+    devInfo.innerHTML = '<div><strong>URL:</strong> <a href="https://dev.technostationery.com" target="_blank" style="color:var(--accent)">dev.technostationery.com</a></div>' +
+      '<div><strong>Path:</strong> <code style="font-size:0.75rem">/home/dev/public_html</code></div>' +
+      '<div><strong>DB:</strong> <code style="font-size:0.75rem">dev_dBT8x12y22</code></div>' +
+      '<div><strong>Redis:</strong> <code style="font-size:0.75rem">db5=cache, db6=FPC, db7=sessions</code></div>';
+  }
+}
+
+let cicdCurrentJobId = null;
+let cicdPollInterval = null;
+
+async function cicdBuild(env, type) {
+  try {
+    const formData = new URLSearchParams({ action: 'build', env, type });
+    const r = await fetch('/api/cicd.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.success) {
+      cicdCurrentJobId = d.job_id;
+      document.getElementById('cicd-job-id').value = d.job_id;
+      showToast('Build started on ' + env, 'success');
+      cicdPollJob(d.job_id);
+    } else {
+      showToast('Error: ' + d.error, 'error');
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function cicdTest(env, type) {
+  try {
+    const formData = new URLSearchParams({ action: 'test', env, type });
+    const r = await fetch('/api/cicd.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.success) {
+      cicdCurrentJobId = d.job_id;
+      document.getElementById('cicd-job-id').value = d.job_id;
+      showToast('Test started on ' + env, 'success');
+      cicdPollJob(d.job_id);
+    } else {
+      showToast('Error: ' + d.error, 'error');
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function cicdMigrateDB(mode) {
+  const source = document.getElementById('cicd-db-source').value;
+  const target = document.getElementById('cicd-db-target').value;
+  
+  if (source === target) { showToast('Source and target must be different', 'error'); return; }
+  
+  try {
+    const formData = new URLSearchParams({ action: 'migrate_db', source, target, mode });
+    const r = await fetch('/api/cicd.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.success) {
+      cicdCurrentJobId = d.job_id;
+      document.getElementById('cicd-job-id').value = d.job_id;
+      showToast('DB migration started: ' + source + ' → ' + target, 'success');
+      cicdPollJob(d.job_id);
+    } else {
+      showToast('Error: ' + d.error, 'error');
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function cicdMigrateCode(scope) {
+  const source = document.getElementById('cicd-code-source').value;
+  const target = document.getElementById('cicd-code-target').value;
+  
+  if (source === target) { showToast('Source and target must be different', 'error'); return; }
+  
+  try {
+    const formData = new URLSearchParams({ action: 'migrate_code', source, target, scope });
+    const r = await fetch('/api/cicd.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.success) {
+      cicdCurrentJobId = d.job_id;
+      document.getElementById('cicd-job-id').value = d.job_id;
+      showToast('Code migration started: ' + source + ' → ' + target, 'success');
+      cicdPollJob(d.job_id);
+    } else {
+      showToast('Error: ' + d.error, 'error');
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function cicdReindex(env) {
+  try {
+    const formData = new URLSearchParams({ action: 'reindex', env });
+    const r = await fetch('/api/cicd.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.success) {
+      cicdCurrentJobId = d.job_id;
+      document.getElementById('cicd-job-id').value = d.job_id;
+      showToast('Reindex started on ' + env, 'success');
+      cicdPollJob(d.job_id);
+    } else {
+      showToast('Error: ' + d.error, 'error');
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function cicdHealth(env) {
+  try {
+    const formData = new URLSearchParams({ action: 'health', env });
+    const r = await fetch('/api/cicd.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.success) {
+      cicdCurrentJobId = d.job_id;
+      document.getElementById('cicd-job-id').value = d.job_id;
+      showToast('Health check started on ' + env, 'success');
+      cicdPollJob(d.job_id);
+    } else {
+      showToast('Error: ' + d.error, 'error');
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function cicdModuleToggle(actionType) {
+  const env = document.getElementById('cicd-module-env').value;
+  const module = document.getElementById('cicd-module-name').value;
+  
+  if (!module) { showToast('Enter module name', 'error'); return; }
+  
+  try {
+    const formData = new URLSearchParams({ action: 'module_toggle', env, module, action_type: actionType });
+    const r = await fetch('/api/cicd.php', { method: 'POST', body: formData });
+    const d = await r.json();
+    
+    if (d.success) {
+      cicdCurrentJobId = d.job_id;
+      document.getElementById('cicd-job-id').value = d.job_id;
+      showToast('Module ' + actionType + ' started', 'success');
+      cicdPollJob(d.job_id);
+    } else {
+      showToast('Error: ' + d.error, 'error');
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function cicdLoadJobs() {
+  try {
+    const r = await fetch('/api/cicd.php?action=jobs');
+    const d = await r.json();
+    if (!d.success) return;
+    
+    const container = document.getElementById('cicd-active-jobs');
+    if (!d.jobs.length) {
+      container.innerHTML = '<div style="color:var(--muted);font-size:0.82rem">No recent jobs</div>';
+      return;
+    }
+    
+    let html = '';
+    d.jobs.slice(0, 15).forEach(j => {
+      const statusColor = j.status === 'running' ? 'var(--yellow)' : j.status === 'success' ? 'var(--green)' : j.status === 'failed' ? 'var(--red)' : 'var(--muted)';
+      const statusIcon = j.status === 'running' ? '🔄' : j.status === 'success' ? '✅' : j.status === 'failed' ? '❌' : '⏹️';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:0.78rem" onclick="document.getElementById(\'cicd-job-id\').value=\'' + j.id + '\';cicdViewJob()">' +
+        '<span>' + statusIcon + ' <strong>' + (j.type || '') + '</strong> - ' + (j.env || '') + (j.subtype ? '/' + j.subtype : '') + '</span>' +
+        '<span style="color:' + statusColor + '">' + j.status + '</span>' +
+        '<span style="color:var(--muted)">' + (j.timestamp || '') + '</span>' +
+        '</div>';
+    });
+    container.innerHTML = html;
+  } catch(e) { console.error('Jobs', e); }
+}
+
+async function cicdViewJob() {
+  const jobId = document.getElementById('cicd-job-id').value;
+  if (!jobId) return;
+  cicdCurrentJobId = jobId;
+  await cicdFetchJob(jobId);
+}
+
+async function cicdRefreshLog() {
+  if (cicdCurrentJobId) await cicdFetchJob(cicdCurrentJobId);
+}
+
+async function cicdFetchJob(jobId) {
+  try {
+    const r = await fetch('/api/cicd.php?action=job_status&job_id=' + jobId);
+    const d = await r.json();
+    
+    if (d.error) {
+      document.getElementById('cicd-job-status').textContent = d.error;
+      return;
+    }
+    
+    const statusEl = document.getElementById('cicd-job-status');
+    const statusColor = d.status === 'running' ? 'var(--yellow)' : d.status === 'success' ? 'var(--green)' : d.status === 'failed' ? 'var(--red)' : 'var(--muted)';
+    statusEl.innerHTML = '<strong>Status:</strong> <span style="color:' + statusColor + '">' + d.status + '</span> | <strong>Type:</strong> ' + (d.type || '') + ' | <strong>Env:</strong> ' + (d.env || '') + ' | <strong>Log lines:</strong> ' + (d.log_total || 0);
+    
+    if (d.log && d.log.length) {
+      document.getElementById('cicd-job-log').textContent = d.log.join('\n');
+      const logEl = document.getElementById('cicd-job-log');
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    
+    if (d.running) {
+      if (!cicdPollInterval) {
+        cicdPollInterval = setInterval(() => cicdFetchJob(jobId), 3000);
+      }
+    } else {
+      if (cicdPollInterval) {
+        clearInterval(cicdPollInterval);
+        cicdPollInterval = null;
+      }
+    }
+  } catch(e) { console.error('Job fetch', e); }
+}
+
+function cicdPollJob(jobId) {
+  cicdCurrentJobId = jobId;
+  cicdFetchJob(jobId);
+  if (cicdPollInterval) clearInterval(cicdPollInterval);
+  cicdPollInterval = setInterval(() => cicdFetchJob(jobId), 3000);
+  setTimeout(() => {
+    if (cicdPollInterval) { clearInterval(cicdPollInterval); cicdPollInterval = null; }
+  }, 600000);
+}
+
 (async function init() {
   const auth = await checkAuth();
   if (!auth) return;
   refresh();
   setInterval(refresh, 30000);
+  // Refresh visitor stats every 30 seconds
+  setInterval(loadVisitorStats, 30000);
 })();
+
+
+// ============================================================
+// VARNISH MULTI-SITE MONITOR
+// ============================================================
+async function loadVarnishMonitor() {
+  try {
+    const r = await fetch('/api/varnish-persite.php?' + Date.now());
+    const d = await r.json();
+    renderVarnishMonitor(d);
+  } catch(e) {
+    document.getElementById('varnish-sites-grid').innerHTML = '<div class="loading">Error loading Varnish stats: ' + e.message + '</div>';
+  }
+}
+
+function renderVarnishMonitor(d) {
+  const g = d.global || {};
+  const backends = d.backends || [];
+  const hourly = d.hourly || [];
+
+  // Global metrics
+  const hr = g.hit_rate ?? 0;
+  const hrClass = hr >= 80 ? 'green' : hr >= 50 ? 'yellow' : 'red';
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+  setEl('v-global-hitrate', `<span class="${hrClass}">${hr.toFixed(1)}%</span>`);
+  setEl('v-global-target', hr >= 80 ? '✅ Meeting 80% target' : `⚠️ Below 80% target (${(80 - hr).toFixed(1)}% gap)`);
+  setEl('v-global-hits', (g.hits || 0).toLocaleString());
+  setEl('v-global-total', `/ ${(g.total || 0).toLocaleString()} total`);
+  setEl('v-global-objects', (g.n_objects || 0).toLocaleString());
+  const st = g.storage || {};
+  setEl('v-global-storage', st.used || '—');
+  setEl('v-global-storage-pct', st.pct_used ? `${st.pct_used}% of ${st.total || '6GB'}` : 'of 6GB');
+
+  // Per-site cards
+  const grid = document.getElementById('varnish-sites-grid');
+  if (!backends.length) { grid.innerHTML = '<div class="loading">No backend data</div>'; return; }
+
+  grid.innerHTML = backends.map(b => {
+    const hr1h = b.hit_rate_1h;
+    const hr24h = b.hit_rate_24h;
+    const hClass = (v) => v == null ? 'muted' : v >= 80 ? 'green' : v >= 50 ? 'yellow' : 'red';
+    const healthy = b.healthy !== false;
+    const cacheable = b.cache !== false;
+    const note = b.note || '';
+    
+    return `<div class="card" style="background:var(--card2);padding:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-weight:600;font-size:0.9rem">${b.emoji || '🌐'} ${b.label || b.backend}</span>
+        <span class="badge ${healthy ? 'green' : 'red'}">${healthy ? 'healthy' : 'down'}</span>
+      </div>
+      ${cacheable ? `
+      <div style="margin-bottom:6px">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px">1h Hit Rate</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="progress-bar" style="flex:1"><div class="fill ${hClass(hr1h)}" style="width:${Math.min(hr1h||0,100)}%"></div></div>
+          <span class="infra-val ${hClass(hr1h)}" style="font-size:0.85rem;min-width:42px;text-align:right">${hr1h != null ? hr1h.toFixed(1)+'%' : '—'}</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px">24h Hit Rate</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="progress-bar" style="flex:1"><div class="fill ${hClass(hr24h)}" style="width:${Math.min(hr24h||0,100)}%"></div></div>
+          <span class="infra-val ${hClass(hr24h)}" style="font-size:0.85rem;min-width:42px;text-align:right">${hr24h != null ? hr24h.toFixed(1)+'%' : '—'}</span>
+        </div>
+      </div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:6px">${(b.req_1h||0).toLocaleString()} req/1h · ${(b.req||0).toLocaleString()} backend req</div>
+      ` : `<div style="text-align:center;padding:10px 0;color:var(--muted);font-size:0.8rem">⏭️ ${note || 'Cache bypassed'}</div>`}
+    </div>`;
+  }).join('');
+
+  // Backend health table
+  const tbody = document.querySelector('#varnish-backends-table tbody');
+  tbody.innerHTML = backends.map(b => {
+    const healthy = b.healthy !== false;
+    const cacheable = b.cache !== false;
+    const hr1h = b.hit_rate_1h;
+    const hr24h = b.hit_rate_24h;
+    const hClass = (v) => v == null ? '' : v >= 80 ? 'green' : v >= 50 ? 'yellow' : 'red';
+    return `<tr>
+      <td>${b.emoji || ''} ${b.label || b.backend}</td>
+      <td><code style="font-size:0.75rem">${b.backend}</code></td>
+      <td><span class="badge ${healthy ? 'green' : 'red'}">${healthy ? '✓ Up' : '✗ Down'}</span></td>
+      <td>${(b.req || 0).toLocaleString()}</td>
+      <td><span class="badge ${cacheable ? 'green' : 'gray'}">${cacheable ? '✓ Cached' : '⏭️ Pass'}</span></td>
+      <td class="${hClass(hr1h)}">${hr1h != null ? hr1h.toFixed(1)+'%' : '—'}</td>
+      <td class="${hClass(hr24h)}">${hr24h != null ? hr24h.toFixed(1)+'%' : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Hourly trend (ASCII-style bar chart in HTML)
+  const chartEl = document.getElementById('varnish-hourly-chart');
+  if (hourly.length) {
+    const maxTotal = Math.max(...hourly.map(h => h.total), 1);
+    chartEl.innerHTML = `<div style="display:flex;align-items:flex-end;gap:3px;height:80px;overflow-x:auto;padding-bottom:4px">
+      ${hourly.map(h => {
+        const pct = h.total > 0 ? (h.hit_rate / 100) : 0;
+        const barH = Math.max(4, Math.round((h.total / maxTotal) * 70));
+        const cls = h.hit_rate >= 80 ? '#4caf50' : h.hit_rate >= 50 ? '#ffc107' : '#f44336';
+        return `<div title="${h.hour}: ${h.hit_rate}% hit rate (${h.total.toLocaleString()} req)" style="flex:1;min-width:18px;display:flex;flex-direction:column;align-items:center;cursor:pointer">
+          <div style="font-size:0.6rem;color:${cls};margin-bottom:2px">${h.total > 0 ? h.hit_rate+'%' : ''}</div>
+          <div style="width:100%;background:${cls};height:${barH}px;border-radius:2px 2px 0 0;opacity:${h.total > 0 ? 0.85 : 0.2}"></div>
+          <div style="font-size:0.6rem;color:var(--muted);margin-top:2px;transform:rotate(-45deg);white-space:nowrap">${h.hour}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-top:18px;display:flex;gap:16px">
+      <span style="color:#4caf50">■ ≥80% (target)</span>
+      <span style="color:#ffc107">■ 50-79%</span>
+      <span style="color:#f44336">■ <50%</span>
+      <span>Bar height = relative traffic volume</span>
+    </div>`;
+  } else {
+    chartEl.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:20px">No log data yet — data accumulates as traffic flows through Varnish</div>';
+  }
+}
+
+async function varnishAction(action) {
+  const outEl = document.getElementById('varnish-action-output');
+  outEl.style.display = 'block';
+  outEl.textContent = 'Running...';
+  
+  try {
+    if (action === 'purge_all') {
+      // Send BAN to Varnish admin
+      const r = await fetch('/api/monitor.php?action=varnish_purge', { method: 'POST' });
+      const d = await r.json();
+      outEl.textContent = d.message || JSON.stringify(d);
+    } else if (action === 'ban_static') {
+      outEl.textContent = 'Banning static file cache (CSS/JS)...';
+      // Use varnishadm ban
+      const r = await fetch('/api/monitor.php?action=varnish_ban_static', { method: 'POST' });
+      const d = await r.json();
+      outEl.textContent = d.message || JSON.stringify(d);
+    }
+    setTimeout(() => loadVarnishMonitor(), 2000);
+  } catch(e) {
+    outEl.textContent = 'Error: ' + e.message;
+  }
+}
+
+// ============================================================
+// AKENEO PIM MONITOR
+// ============================================================
+async function loadPimMonitor() {
+  try {
+    const r = await fetch('/api/akeneo-monitor.php?' + Date.now());
+    const d = await r.json();
+    renderPimMonitor(d);
+  } catch(e) {
+    document.getElementById('pim-consumers-detail').innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+  }
+}
+
+function renderPimMonitor(d) {
+  // Health badge
+  const health = d.health || 'unknown';
+  const healthClass = health === 'healthy' ? 'green' : health === 'warning' ? 'yellow' : 'red';
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+  setEl('pim-health-badge', `<span class="${healthClass}" style="text-transform:uppercase;font-size:1.1rem">${health}</span>`);
+  const issues = d.issues || [];
+  setEl('pim-health-sub', issues.length ? `${issues.length} issue${issues.length>1?'s':''}` : 'All systems normal');
+
+  // Issues card
+  const issuesCard = document.getElementById('pim-issues-card');
+  const issuesList = document.getElementById('pim-issues-list');
+  if (issues.length) {
+    issuesCard.style.display = 'block';
+    issuesList.innerHTML = issues.map(i => `<div style="padding:6px 10px;background:var(--red-glow);border-left:3px solid var(--red);border-radius:0 4px 4px 0;margin-bottom:4px;font-size:0.85rem">⚠️ ${i}</div>`).join('');
+  } else {
+    issuesCard.style.display = 'none';
+  }
+
+  // Consumers
+  const c = d.consumers || {};
+  const consumers = c.consumers || {};
+  const runCount = Object.values(consumers).filter(x => x.running).length;
+  setEl('pim-consumers-count', `<span class="${runCount === 3 ? 'green' : 'red'}">${runCount}</span>`);
+  
+  setEl('pim-consumers-detail', Object.entries(consumers).map(([name, info]) => `
+    <div class="infra-stat" style="margin-bottom:8px">
+      <div style="flex:1">
+        <div style="font-size:0.82rem;font-weight:500">${name.replace('akeneo_','')}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">${info.supervisor_line || 'Transport: ' + info.transport}</div>
+      </div>
+      <span class="badge ${info.running ? 'green' : 'red'}">${info.running ? '✓ Running' : '✗ Down'}</span>
+    </div>
+  `).join(''));
+
+  // Elasticsearch
+  const es = d.es || {};
+  const esClass = es.status === 'green' ? 'green' : es.status === 'yellow' ? 'yellow' : 'red';
+  setEl('pim-es-status', `<span class="${esClass}">${(es.status || 'unknown').toUpperCase()}</span>`);
+  setEl('pim-es-shards', `${es.shards?.active || 0} active, ${es.shards?.unassigned || 0} unassigned`);
+  
+  const pimIndices = es.pim_indices || [];
+  setEl('pim-es-detail', `
+    <div class="infra-stat"><span class="infra-label">Cluster Status</span><span class="badge ${esClass}">${es.status || 'unknown'}</span></div>
+    <div class="infra-stat"><span class="infra-label">Nodes</span><span class="infra-val">${es.nodes || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Active Shards</span><span class="infra-val green">${es.shards?.active || 0}</span></div>
+    <div class="infra-stat"><span class="infra-label">Unassigned</span><span class="infra-val ${(es.shards?.unassigned||0)>0?'red':'green'}">${es.shards?.unassigned || 0}</span></div>
+    ${pimIndices.length ? '<div style="margin-top:8px;font-size:0.75rem;color:var(--muted)">' + pimIndices.map(i => 
+      `<div style="display:flex;justify-content:space-between;padding:2px 0"><span>${i.index?.replace('akeneo_pim_','')}</span><span style="color:${i.health==='green'?'var(--green)':'var(--yellow)'}">${i['docs.count']} docs · ${i['store.size']}</span></div>`
+    ).join('') + '</div>' : ''}
+  `);
+
+  // Web health
+  const web = d.web || {};
+  setEl('pim-web-ms', `<span class="${web.response_ms < 2000 ? 'green' : web.response_ms < 5000 ? 'yellow' : 'red'}">${web.response_ms || '—'}</span>`);
+  setEl('pim-web-status', `HTTP ${web.status_code || '—'} · ${web.ok ? '✓ Online' : '✗ Offline'}`);
+
+  // Queues
+  const queues = d.queues || {};
+  if (queues.available) {
+    const qrows = (queues.queues || []).map(q => 
+      `<div class="infra-stat"><span class="infra-label">${q.queue_name}</span><span class="infra-val ${q.pending>0?'yellow':'green'}">${q.pending} pending · ${q.processing} processing</span></div>`
+    ).join('') || '<div style="color:var(--muted);font-size:0.82rem">No messages in queue</div>';
+    setEl('pim-queues-detail', qrows);
+  } else {
+    setEl('pim-queues-detail', `<div class="loading">${queues.error || 'DB unavailable'}</div>`);
+  }
+
+  // Recent jobs
+  if (queues.available) {
+    const statLabels = {1:'Pending',2:'In Progress',3:'Paused',4:'Completed',5:'Stopped',6:'Failed',7:'Abandoned',8:'Stopping'};
+    const jobs24h = queues.jobs_24h || [];
+    const failed = queues.failed_7d || 0;
+    setEl('pim-jobs-detail', `
+      <div style="margin-bottom:8px">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">24h job breakdown:</div>
+        ${jobs24h.map(j => `<div class="infra-stat"><span class="infra-label">${statLabels[j.status]||'Status '+j.status}</span><span class="infra-val">${j.cnt}</span></div>`).join('') || '<div style="color:var(--muted);font-size:0.82rem">No jobs in last 24h</div>'}
+      </div>
+      <div class="infra-stat"><span class="infra-label">Failed (7d)</span><span class="infra-val ${failed>10?'red':failed>0?'yellow':'green'}">${failed}</span></div>
+      <div style="margin-top:8px;font-size:0.72rem;color:var(--muted)">Recent executions:</div>
+      ${(queues.recent_jobs||[]).slice(0,5).map(j => 
+        `<div style="font-size:0.75rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="color:${j.status==4?'var(--green)':j.status==6?'var(--red)':'var(--yellow)'}">${statLabels[j.status]||j.status}</span> <span style="color:var(--muted)">${j.job_name}</span> <span style="float:right;font-size:0.65rem">${(j.create_time||'').split('T')[0]}</span></div>`
+      ).join('')}
+    `);
+  } else {
+    setEl('pim-jobs-detail', `<div class="loading">${queues.error || 'DB unavailable'}</div>`);
+  }
+
+  // PHP-FPM
+  const fpm = d.fpm || {};
+  if (fpm.available) {
+    setEl('pim-fpm-detail', `
+      <div class="infra-stat"><span class="infra-label">Pool</span><span class="infra-val">${fpm.pool || 'pim'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Active Processes</span><span class="infra-val ${fpm.active_processes>5?'yellow':'green'}">${fpm.active_processes}</span></div>
+      <div class="infra-stat"><span class="infra-label">Idle Processes</span><span class="infra-val">${fpm.idle_processes}</span></div>
+      <div class="infra-stat"><span class="infra-label">Total</span><span class="infra-val">${fpm.total_processes}</span></div>
+      <div class="infra-stat"><span class="infra-label">Slow Requests</span><span class="infra-val ${fpm.slow_requests>0?'yellow':'green'}">${fpm.slow_requests}</span></div>
+    `);
+  } else {
+    setEl('pim-fpm-detail', '<div style="color:var(--muted)">FPM status endpoint not configured</div>');
+  }
+
+  // Cache
+  const cache = d.cache || {};
+  if (cache.available) {
+    const ageH = cache.age_hours;
+    setEl('pim-cache-detail', `
+      <div class="infra-stat"><span class="infra-label">Cache Size</span><span class="infra-val">${cache.size_mb} MB</span></div>
+      <div class="infra-stat"><span class="infra-label">Last Built</span><span class="infra-val ${ageH>24?'yellow':'green'}">${cache.last_built || '—'}</span></div>
+      <div class="infra-stat"><span class="infra-label">Age</span><span class="infra-val ${ageH>48?'red':ageH>24?'yellow':'green'}">${ageH != null ? ageH + 'h ago' : '—'}</span></div>
+    `);
+  } else {
+    setEl('pim-cache-detail', '<div style="color:var(--muted)">Cache directory not found</div>');
+  }
+}
+
+async function pimAction(action) {
+  const card = document.getElementById('pim-action-card');
+  const outEl = document.getElementById('pim-action-output');
+  card.style.display = 'block';
+  outEl.textContent = `Running ${action}... (may take up to 2 minutes)`;
+  
+  try {
+    const r = await fetch('/api/akeneo-monitor.php?action=' + action, { method: 'POST' });
+    const d = await r.json();
+    outEl.textContent = d.output || (d.success ? 'Done' : 'Error: ' + JSON.stringify(d));
+    setTimeout(() => loadPimMonitor(), 3000);
+  } catch(e) {
+    outEl.textContent = 'Error: ' + e.message;
+  }
+}
+
+// Performance monitoring
+async function monitorAPIResponseTimes() {
+  const actions = ['overview', 'varnish', 'redis'];
+  const timings = {};
+  
+  for (const action of actions) {
+    const start = performance.now();
+    try {
+      const r = await fetch(MONITOR_API + '?action=' + action);
+      if (r.ok) await r.json();
+      timings[action] = Math.round(performance.now() - start);
+    } catch(e) {
+      timings[action] = null;
+    }
+  }
+  
+  console.log('API Response Times:', timings);
+  return timings;
+}
+
+// Auto-refresh monitoring data every 5 seconds
+setInterval(() => {
+  if (document.querySelector('.tab-content.active')?.id === 'tab-overview') {
+    loadOverview();
+  }
+}, 5000);

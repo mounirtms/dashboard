@@ -80,6 +80,28 @@ class Config {
             'timeout' => 120,
         ];
 
+        // Webpushr configuration
+        self::$config['webpushr'] = [
+            'production' => [
+                'key' => 'a40b88bbd3c88fe47a03d6fff988d756',
+                'token' => '119340',
+                'url' => 'https://technostationery.com',
+                'label' => 'Production',
+            ],
+            'beta' => [
+                'key' => 'feaeb40a4fd2249e51f5faf74d387668',
+                'token' => '119339',
+                'url' => 'https://beta.technostationery.com',
+                'label' => 'Beta',
+            ],
+            'dev' => [
+                'key' => '55959835165c4a4be195a52e877b4966',
+                'token' => '119338',
+                'url' => 'https://dev.technostationery.com',
+                'label' => 'Dev',
+            ],
+        ];
+
         // Application settings
         self::$config['app'] = [
             'env' => $_ENV['APP_ENV'] ?? 'production',

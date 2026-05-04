@@ -1,5 +1,5 @@
-import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
-import { CloudOutlined, CheckCircle, Warning, Schedule } from '@mui/icons-material';
+import { Grid, Box, Typography, Card, CardContent, Chip, Divider } from '@mui/material';
+import { CloudOutlined, CheckCircle, Warning, Schedule, Shield, Cached, Http } from '@mui/icons-material';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import StatCard from '../components/common/StatCard';
 import LoadingState from '../components/common/LoadingState';
@@ -23,27 +23,33 @@ export default function OverviewPage() {
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 0.5, fontWeight: 700 }}>Overview</Typography>
-      <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>{z.name}</Typography>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
+          Overview
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#94a3b8', fontSize: '0.88rem' }}>
+          {z.name} &middot; {data.account}
+        </Typography>
+      </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Status" value={z.status} color={statusColor} />
+          <StatCard label="Zone Status" value={z.status.charAt(0).toUpperCase() + z.status.slice(1)} color={statusColor} icon={<CheckCircle />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Plan" value={z.plan} color="primary" />
+          <StatCard label="Plan" value={z.plan.charAt(0).toUpperCase() + z.plan.slice(1)} color="primary" icon={<CloudOutlined />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="SSL Mode" value={data.settings.ssl?.toUpperCase() || 'OFF'} color={sslColor} />
+          <StatCard label="SSL Mode" value={data.settings.ssl?.toUpperCase() || 'OFF'} color={sslColor} icon={<Shield />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Cache Level" value={data.settings.cache_level || '-'} color="info" />
+          <StatCard label="Cache Level" value={(data.settings.cache_level || '-').charAt(0).toUpperCase() + (data.settings.cache_level || '-').slice(1)} color="info" icon={<Cached />} />
         </Grid>
       </Grid>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Total Requests (7d)" value={formatNumber(totals.requests)} color="primary" />
+          <StatCard label="Total Requests (7d)" value={formatNumber(totals.requests)} color="primary" icon={<Http />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard label="Bandwidth (7d)" value={data.bandwidth_formatted} color="info" />
@@ -60,18 +66,20 @@ export default function OverviewPage() {
         {sslCert && (
           <Grid size={{ xs: 12, sm: 6 }}>
             <Card>
-              <CardContent>
-                <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>SSL Certificate</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem', mb: 1.5 }}>
+                  SSL Certificate
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                   <StatusBadge label={sslCert.status} color={certColor} />
                   {sslCert.days_left !== null && (
-                    <Typography variant="body2" color={certColor === 'error' ? 'error.main' : 'text.secondary'}>
+                    <Typography variant="body2" sx={{ color: certColor === 'error' ? '#ef4444' : '#94a3b8', fontWeight: 500 }}>
                       {sslCert.days_left} days remaining
                     </Typography>
                   )}
                 </Box>
                 {sslCert.hostnames.length > 0 && (
-                  <Typography variant="caption" color="textSecondary">
+                  <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.82rem', fontFamily: 'monospace' }}>
                     {sslCert.hostnames.join(', ')}
                   </Typography>
                 )}
@@ -79,30 +87,51 @@ export default function OverviewPage() {
             </Card>
           </Grid>
         )}
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid size={{ xs: 12, sm: sslCert ? 6 : 12 }}>
           <Card>
-            <CardContent>
-              <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>Quick Status</Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem', mb: 1.5 }}>
+                Quick Status
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
                 <Chip
-                  icon={<CloudOutlined />}
+                  icon={<CloudOutlined sx={{ fontSize: 18 }} />}
                   label={`Dev Mode: ${z.development_mode}`}
                   size="small"
-                  color={z.development_mode === 'on' ? 'warning' : 'default'}
-                  variant="outlined"
+                  sx={{
+                    backgroundColor: z.development_mode === 'on' ? 'rgba(234, 179, 8, 0.12)' : 'rgba(148, 163, 184, 0.08)',
+                    borderColor: z.development_mode === 'on' ? 'rgba(234, 179, 8, 0.3)' : 'rgba(148, 163, 184, 0.2)',
+                    color: z.development_mode === 'on' ? '#eab308' : '#94a3b8',
+                    fontWeight: 600,
+                    borderWidth: 1,
+                    borderStyle: 'solid',
+                  }}
                 />
                 <Chip
-                  icon={data.settings.brotli === 'on' ? <CheckCircle /> : <Warning />}
+                  icon={data.settings.brotli === 'on' ? <CheckCircle sx={{ fontSize: 18 }} /> : <Warning sx={{ fontSize: 18 }} />}
                   label={`Brotli: ${data.settings.brotli}`}
                   size="small"
-                  color={data.settings.brotli === 'on' ? 'success' : 'default'}
-                  variant="outlined"
+                  sx={{
+                    backgroundColor: data.settings.brotli === 'on' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(148, 163, 184, 0.08)',
+                    borderColor: data.settings.brotli === 'on' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(148, 163, 184, 0.2)',
+                    color: data.settings.brotli === 'on' ? '#22c55e' : '#94a3b8',
+                    fontWeight: 600,
+                    borderWidth: 1,
+                    borderStyle: 'solid',
+                  }}
                 />
                 <Chip
-                  icon={<Schedule />}
+                  icon={<Schedule sx={{ fontSize: 18 }} />}
                   label={`Browser TTL: ${Math.round((Number(data.settings.browser_cache_ttl) || 0) / 3600)}h`}
                   size="small"
-                  variant="outlined"
+                  sx={{
+                    backgroundColor: 'rgba(148, 163, 184, 0.08)',
+                    borderColor: 'rgba(148, 163, 184, 0.2)',
+                    color: '#94a3b8',
+                    fontWeight: 600,
+                    borderWidth: 1,
+                    borderStyle: 'solid',
+                  }}
                 />
               </Box>
             </CardContent>

@@ -4,43 +4,122 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Server Control Center — technostationery.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/dashboard.css">
+<style>
+  .header-link:hover, .btn:hover { text-decoration: none; }
+  .logout-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: var(--transition);
+    font-family: inherit;
+    font-weight: 500;
+  }
+  .logout-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-glow);
+  }
+</style>
 </head>
 <body>
 <div class="header">
-  <div>
-    <h1>🖥️ Server Control Center</h1>
-    <div id="last-update" style="margin-top:2px">Loading...</div>
+  <div class="header-left">
+    <h1>📊 Control Center</h1>
+    <div id="last-update" style="font-size:0.7rem;color:var(--text-muted)">Loading...</div>
+  </div>
+  <div class="header-center">
+    <div class="header-stats">
+      <div class="header-stat">
+        <span class="infra-label">CPU Load</span>
+        <div class="infra-val" id="header-cpu" style="color:#3b82f6">-</div>
+      </div>
+      <div class="header-stat">
+        <span class="infra-label">Memory</span>
+        <div class="infra-val" id="header-mem" style="color:#10b981">-</div>
+      </div>
+      <div class="header-stat">
+        <span class="infra-label">Swap</span>
+        <div class="infra-val" id="header-swap" style="color:#f59e0b">-</div>
+      </div>
+      <div class="header-stat">
+        <span class="infra-label">Status</span>
+        <span style="display:flex;align-items:center;gap:4px">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text" style="font-size:0.75rem;color:var(--text-muted)">—</span>
+        </span>
+      </div>
+    </div>
   </div>
   <div class="header-right">
-    <span><span class="status-dot" id="status-dot"></span><span id="status-text">Checking...</span></span>
-    <a href="/phpmyadmin/" target="_blank" style="background:rgba(34,197,94,0.12);color:var(--green);padding:5px 12px;border-radius:6px;text-decoration:none;font-size:0.8rem;border:1px solid rgba(34,197,94,0.3)">🗄️ phpMyAdmin</a>
-    <a href="/cloudflare/" style="background:rgba(59,130,246,0.12);color:var(--accent);padding:5px 12px;border-radius:6px;text-decoration:none;font-size:0.8rem;border:1px solid rgba(59,130,246,0.3)">☁️ Cloudflare</a>
-    <span id="user-badge" style="font-size:0.78rem;color:var(--muted)"></span>
-    <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem">Logout</button>
+    <button id="compact-toggle" class="btn" onclick="toggleCompact()" title="Toggle compact view">◐</button>
+    <button id="header-menu-btn" class="btn" title="Menu">☰</button>
+    <div id="header-menu" class="header-menu" style="display:none">
+      <a href="/phpmyadmin/" target="_blank" class="header-link">🗄️ phpMyAdmin</a>
+      <a href="/login.html" class="header-link" id="user-badge">👤</a>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
   </div>
 </div>
 
 <div class="container">
-  <div class="grid grid-4" id="metrics-row" style="margin-bottom:16px"></div>
+
 
   <div class="tabs">
-    <div class="tab active" data-tab="processes">⚡ Processes</div>
-    <div class="tab" data-tab="services">🔧 Services</div>
-    <div class="tab" data-tab="sites">🌐 Sites</div>
-    <div class="tab" data-tab="infrastructure">🏗️ Infrastructure</div>
-    <div class="tab" data-tab="commerce">🛒 Commerce</div>
-    <div class="tab" data-tab="crons">⏰ Crons</div>
-    <div class="tab" data-tab="queues">📬 Queues</div>
-    <div class="tab" data-tab="indexers">📊 Indexers</div>
-    <div class="tab" data-tab="scripts">🚀 Scripts</div>
-    <div class="tab" data-tab="dbhealth">💾 DB Health</div>
-    <div class="tab" data-tab="actions">🛠️ Actions</div>
-    <div class="tab" data-tab="telegram">🔔 Notifications</div>
+    <div class="tab active" data-tab="overview" title="Overview"><span class="tab-icon">🏠</span><span class="tab-label">Overview</span></div>
+    <div class="tab" data-tab="processes" title="Processes"><span class="tab-icon">⚡</span><span class="tab-label">Processes</span></div>
+    <div class="tab" data-tab="services" title="Services"><span class="tab-icon">🔧</span><span class="tab-label">Services</span></div>
+    <div class="tab" data-tab="sites" title="Sites"><span class="tab-icon">🌐</span><span class="tab-label">Sites</span></div>
+    <div class="tab" data-tab="infrastructure" title="Infrastructure"><span class="tab-icon">🏗️</span><span class="tab-label">Infra</span></div>
+    <div class="tab" data-tab="commerce" title="Commerce"><span class="tab-icon">🛒</span><span class="tab-label">Commerce</span></div>
+    <div class="tab" data-tab="crons" title="Crons"><span class="tab-icon">⏰</span><span class="tab-label">Crons</span></div>
+    <div class="tab" data-tab="queues" title="Queues"><span class="tab-icon">📬</span><span class="tab-label">Queues</span></div>
+    <div class="tab" data-tab="indexers" title="Indexers"><span class="tab-icon">📊</span><span class="tab-label">Indexers</span></div>
+    <div class="tab" data-tab="scripts" title="Scripts"><span class="tab-icon">🚀</span><span class="tab-label">Scripts</span></div>
+    <div class="tab" data-tab="cicd" title="CI/CD"><span class="tab-icon">🔄</span><span class="tab-label">CI/CD</span></div>
+    <div class="tab" data-tab="dbhealth" title="DB Health"><span class="tab-icon">💾</span><span class="tab-label">DB Health</span></div>
+    <div class="tab" data-tab="actions" title="Actions"><span class="tab-icon">🛠️</span><span class="tab-label">Actions</span></div>
+    <div class="tab" data-tab="telegram" title="Notifications"><span class="tab-icon">🔔</span><span class="tab-label">Notifications</span></div>
+    <div class="tab" data-tab="cloudflare" title="Cloudflare"><span class="tab-icon">☁️</span><span class="tab-label">Cloudflare</span></div>
+    <div class="tab" data-tab="push" title="Push"><span class="tab-icon">📢</span><span class="tab-label">Push</span></div>
+    <div class="tab" data-tab="varnish-monitor" title="Varnish"><span class="tab-icon">🚀</span><span class="tab-label">Varnish</span></div>
+    <div class="tab" data-tab="pim-monitor" title="PIM"><span class="tab-icon">📦</span><span class="tab-label">PIM</span></div>
+  </div>
+
+  <!-- Overview -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="grid grid-4" id="metrics-row" style="margin-bottom:16px"></div>
+    <div class="card" id="metrics-dense" style="display:none;margin-bottom:12px">
+      <h3>Key Metrics</h3>
+      <table id="metrics-dense-table" style="width:100%;font-size:0.85rem">
+        <thead><tr><th>Metric</th><th>Value</th><th>Note</th></tr></thead>
+        <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Top CPU Processes</h3>
+      <table id="top-proc-table-overview">
+        <thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Runtime</th><th>Command</th></tr></thead>
+        <tbody><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h3>Service Status</h3>
+      <div id="services-list-overview" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px"></div>
+    </div>
   </div>
 
   <!-- Processes -->
-  <div class="tab-content active" id="tab-processes">
+  <div class="tab-content" id="tab-processes">
     <div class="card">
       <h3>Top CPU Processes</h3>
       <table id="top-proc-table">
@@ -54,7 +133,7 @@
   <div class="tab-content" id="tab-services">
     <div class="card">
       <h3>Service Status</h3>
-      <div id="services-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px"></div>
+      <div id="services-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px"></div>
     </div>
   </div>
 
@@ -75,33 +154,33 @@
       <!-- Redis Card -->
       <div class="card">
         <h3>🔴 Redis</h3>
-        <div id="redis-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+        <div id="redis-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
       </div>
       <!-- Elasticsearch Card -->
       <div class="card">
         <h3>🟡 Elasticsearch</h3>
-        <div id="elasticsearch-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+        <div id="elasticsearch-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
       </div>
       <!-- Varnish Card -->
       <div class="card">
         <h3>🟢 Varnish</h3>
-        <div id="varnish-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+        <div id="varnish-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
       </div>
       <!-- Cloudflare Card -->
       <div class="card">
         <h3>🔵 Cloudflare</h3>
-        <div id="cloudflare-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+        <div id="cloudflare-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
       </div>
     </div>
     <!-- Network & I/O -->
     <div class="card">
       <h3>📡 Network, I/O &amp; System</h3>
-      <div id="system-advanced-content" style="margin-top:12px" class="grid grid-2"><div class="loading">Loading...</div></div>
+      <div id="system-advanced-content" style="margin-top:14px" class="grid grid-2"><div class="loading">Loading...</div></div>
     </div>
     <!-- PHP-FPM Pools -->
     <div class="card" style="margin-top:20px">
       <h3>🔧 PHP-FPM Pools</h3>
-      <div id="phpfpm-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+      <div id="phpfpm-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
     </div>
   </div>
 
@@ -134,20 +213,20 @@
     <div class="grid grid-2" style="margin-bottom:20px">
       <div class="card">
         <h3>📦 Recent Orders</h3>
-        <table id="recent-orders-table" style="margin-top:12px">
+        <table id="recent-orders-table" style="margin-top:14px">
           <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>
           <tbody><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
         </table>
       </div>
       <div class="card">
         <h3>📊 Product Inventory</h3>
-        <div id="product-stats-content" style="margin-top:12px"><div class="loading">Loading...</div></div>
+        <div id="product-stats-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
       </div>
     </div>
     <!-- Customer Stats -->
     <div class="card">
       <h3>👥 Customer Statistics</h3>
-      <div id="customer-stats-content" style="margin-top:12px" class="grid grid-4"><div class="loading">Loading...</div></div>
+      <div id="customer-stats-content" style="margin-top:14px" class="grid grid-4"><div class="loading">Loading...</div></div>
     </div>
   </div>
 
@@ -202,6 +281,187 @@
       </div>
       <div id="script-cat-tabs" class="tabs" style="margin-bottom:12px"></div>
       <div id="script-list"></div>
+    </div>
+  </div>
+
+
+  <!-- CI/CD Pipeline -->
+  <div class="tab-content" id="tab-cicd">
+    <!-- Environment Status -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card" id="cicd-beta-status">
+        <h3>🟡 Beta Environment</h3>
+        <div id="cicd-beta-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card" id="cicd-dev-status">
+        <h3>🔵 Dev Environment</h3>
+        <div id="cicd-dev-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Build & Deploy -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>🏗️ Build & Deploy</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Full pipeline: clean, upgrade, compile, deploy static, permissions, cache flush, service restart</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Beta</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-warning" onclick="cicdBuild('beta','full')">Full Build</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdBuild('beta','quick')">Quick Build</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdBuild('beta','flush')">Flush All</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('beta','static-only')">Static Only</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('beta','compile-only')">Compile Only</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Dev</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdBuild('dev','full')">Full Build</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdBuild('dev','quick')">Quick Build</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('dev','flush')">Flush All</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('dev','static-only')">Static Only</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('dev','compile-only')">Compile Only</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Runners -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>🧪 Test Runners</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Health checks, HTTP tests, log analysis, module status</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Beta</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','http')">HTTP Check</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','comprehensive')">Full Test</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','logs')">Log Check</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','module-status')">Module Status</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','indexer')">Indexer Status</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Dev</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','http')">HTTP Check</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','comprehensive')">Full Test</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','logs')">Log Check</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','module-status')">Module Status</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','indexer')">Indexer Status</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Migrations -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>🗄️ Database Migrations</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Sync database structure and data between environments</p>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <select id="cicd-db-source" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+              <option value="beta">Beta</option>
+              <option value="dev">Dev</option>
+            </select>
+            <span style="color:var(--muted)">→</span>
+            <select id="cicd-db-target" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+              <option value="dev">Dev</option>
+              <option value="beta">Beta</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdMigrateDB('structure')">Structure Only</button>
+            <button class="btn btn-sm btn-danger" onclick="cicdMigrateDB('structure+data')">Full Migration</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📁 Code Migrations</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Sync code between environments via rsync</p>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <select id="cicd-code-source" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+              <option value="beta">Beta</option>
+              <option value="dev">Dev</option>
+            </select>
+            <span style="color:var(--muted)">→</span>
+            <select id="cicd-code-target" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+              <option value="dev">Dev</option>
+              <option value="beta">Beta</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdMigrateCode('modules')">Modules Only</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdMigrateCode('theme')">Theme Only</button>
+            <button class="btn btn-sm btn-danger" onclick="cicdMigrateCode('full-code')">Full Code</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operations -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>⚡ Operations</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Beta</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-warning" onclick="cicdReindex('beta')">Reindex</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdHealth('beta')">Health Check</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Dev</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdReindex('dev')">Reindex</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdHealth('dev')">Health Check</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module Manager -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>📦 Module Manager</h3>
+      <div style="display:flex;gap:8px;margin-top:10px;margin-bottom:8px">
+        <select id="cicd-module-env" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+          <option value="beta">Beta</option>
+          <option value="dev">Dev</option>
+        </select>
+        <input type="text" id="cicd-module-name" placeholder="Mab_ModuleName" style="flex:2;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem;font-family:monospace">
+        <button class="btn btn-sm btn-success" onclick="cicdModuleToggle('enable')">Enable</button>
+        <button class="btn btn-sm btn-danger" onclick="cicdModuleToggle('disable')">Disable</button>
+      </div>
+    </div>
+
+    <!-- Active Job Monitor -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin:0">📋 Active Jobs</h3>
+        <button class="btn btn-sm btn-secondary" onclick="cicdLoadJobs()">↻ Refresh</button>
+      </div>
+      <div id="cicd-active-jobs" style="max-height:300px;overflow-y:auto">
+        <div style="color:var(--muted);font-size:0.82rem">No active jobs</div>
+      </div>
+    </div>
+
+    <!-- Job Log Viewer -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin:0">📝 Job Output</h3>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="cicd-job-id" placeholder="Job ID" style="width:200px;padding:6px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.78rem;font-family:monospace">
+          <button class="btn btn-sm btn-secondary" onclick="cicdViewJob()">View</button>
+          <button class="btn btn-sm btn-secondary" onclick="cicdRefreshLog()">↻</button>
+        </div>
+      </div>
+      <div id="cicd-job-status" style="font-size:0.78rem;color:var(--muted);margin-bottom:8px"></div>
+      <div id="cicd-job-log" class="logs" style="max-height:500px;overflow-y:auto;font-size:0.78rem">
+        Run a build, test, or migration to see output here.
+      </div>
     </div>
   </div>
 
@@ -281,10 +541,137 @@
           <button class="btn btn-primary" onclick="quickRun('database','cleanup_database.php')">DB Cleanup</button>
         </div>
         <div id="quick-output" class="logs" style="display:none;margin-top:10px"></div>
-      </div>
-
     </div>
   </div>
+
+  <!-- Push Notifications (Webpushr) -->
+  <div class="tab-content" id="tab-push">
+    <!-- Environment Status -->
+    <div class="grid grid-3" style="margin-bottom:20px">
+      <div class="card" id="push-prod-card">
+        <h3>🟢 Production</h3>
+        <div id="push-prod-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card" id="push-beta-card">
+        <h3>🟡 Beta</h3>
+        <div id="push-beta-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card" id="push-dev-card">
+        <h3>🔵 Dev</h3>
+        <div id="push-dev-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Quick Send -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>🚀 Quick Send</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Send a push notification to all subscribers on a specific environment</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:10px">
+        <input type="text" id="push-title" placeholder="Notification Title" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <input type="text" id="push-message" placeholder="Message body..." style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <select id="push-env" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+          <option value="production">Production</option>
+          <option value="beta">Beta</option>
+          <option value="dev">Dev</option>
+        </select>
+        <button class="btn btn-success" onclick="pushSend()">📤 Send</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input type="text" id="push-url" placeholder="Target URL (optional)" style="padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+        <input type="text" id="push-icon" placeholder="Icon URL (optional)" style="padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+      </div>
+      <div id="push-send-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+
+    <!-- Test Notifications -->
+    <div class="grid grid-3" style="margin-bottom:20px">
+      <div class="card">
+        <h3>🧪 Test - Production</h3>
+        <div style="margin-top:10px">
+          <button class="btn btn-sm btn-success" onclick="pushTest('production')">Send Test</button>
+        </div>
+        <div id="push-test-prod" style="margin-top:8px;font-size:0.78rem"></div>
+      </div>
+      <div class="card">
+        <h3>🧪 Test - Beta</h3>
+        <div style="margin-top:10px">
+          <button class="btn btn-sm btn-warning" onclick="pushTest('beta')">Send Test</button>
+        </div>
+        <div id="push-test-beta" style="margin-top:8px;font-size:0.78rem"></div>
+      </div>
+      <div class="card">
+        <h3>🧪 Test - Dev</h3>
+        <div style="margin-top:10px">
+          <button class="btn btn-sm btn-primary" onclick="pushTest('dev')">Send Test</button>
+        </div>
+        <div id="push-test-dev" style="margin-top:8px;font-size:0.78rem"></div>
+      </div>
+    </div>
+
+    <!-- Scheduled Notification -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>📅 Schedule Notification</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Schedule a push notification for future delivery</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:10px">
+        <input type="text" id="push-sched-title" placeholder="Title" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <input type="text" id="push-sched-message" placeholder="Message" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <input type="datetime-local" id="push-sched-time" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <select id="push-sched-env" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+          <option value="production">Production</option>
+          <option value="beta">Beta</option>
+          <option value="dev">Dev</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px">
+        <input type="text" id="push-sched-url" placeholder="Target URL (optional)" style="width:100%;padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+      </div>
+      <button class="btn btn-primary" onclick="pushSchedule()">📅 Schedule</button>
+      <div id="push-sched-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+
+    <!-- Bulk Send -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>📋 Bulk Send</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Send multiple notifications at once (one per line, format: title|message|url)</p>
+      <textarea id="push-bulk-input" rows="5" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem;font-family:monospace;resize:vertical" placeholder="Flash Sale!|Up to 50% off today only|https://technostationery.com/sale&#10;New Products|Check out our latest arrivals|https://technostationery.com/new"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <select id="push-bulk-env" style="flex:0 0 auto;padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+          <option value="production">Production</option>
+          <option value="beta">Beta</option>
+          <option value="dev">Dev</option>
+        </select>
+        <button class="btn btn-warning" onclick="pushBulk()">📤 Send All</button>
+      </div>
+      <div id="push-bulk-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+
+    <!-- Magento Module Info -->
+    <div class="card">
+      <h3>📦 Magento Webpushr Module</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Install the MAB Webpushr module on Magento to enable subscriber management and automated triggers</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Beta (Primary Testing)</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <code>Mab_Webpushr</code> module<br>
+            Path: <code>app/code/Mab/Webpushr</code><br>
+            <button class="btn btn-sm btn-warning" onclick="pushInstallModule('beta')">Check Module Status</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Dev</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <code>Mab_Webpushr</code> module<br>
+            Path: <code>app/code/Mab/Webpushr</code><br>
+            <button class="btn btn-sm btn-primary" onclick="pushInstallModule('dev')">Check Module Status</button>
+          </div>
+        </div>
+      </div>
+      <div id="push-module-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+  </div>
+
+</div>
 
   <!-- Telegram Notifications -->
   <div class="tab-content" id="tab-telegram">
@@ -362,14 +749,14 @@
         <h3>🤖 AI Report Generator</h3>
         <div style="margin-top:12px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-            <select id="ai-report-type" style="padding:7px 10px;background:#0a0e17;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem">
+            <select id="ai-report-type" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem;font-family:inherit">
               <option value="database">Database Analysis</option>
               <option value="performance">Performance Review</option>
               <option value="security">Security Audit</option>
               <option value="infrastructure">Infrastructure</option>
               <option value="orders">Orders Analysis</option>
             </select>
-            <select id="ai-env" style="padding:7px 10px;background:#0a0e17;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem">
+            <select id="ai-env" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem;font-family:inherit">
               <option value="prod">Production</option>
               <option value="beta">Beta</option>
               <option value="dev">Dev</option>
@@ -510,8 +897,8 @@
         <div style="display:grid;grid-template-columns:1fr auto;gap:16px;margin-top:12px">
           <div>
             <div style="display:flex;gap:8px;margin-bottom:12px">
-              <input type="text" id="tg-chat-id-input" placeholder="Chat ID (e.g., 6972138184)" style="flex:1;padding:7px 10px;background:#0a0e17;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;font-family:monospace">
-              <input type="text" id="tg-user-name-input" placeholder="Name" style="width:150px;padding:7px 10px;background:#0a0e17;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem">
+              <input type="text" id="tg-chat-id-input" placeholder="Chat ID (e.g., 6972138184)" style="flex:1;padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem;font-family:monospace">
+              <input type="text" id="tg-user-name-input" placeholder="Name" style="width:150px;padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
               <button class="btn btn-success" onclick="addTelegramUser()">➕ Add User</button>
             </div>
             <div id="authorized-users-list" style="font-size:0.82rem;color:var(--muted)">
@@ -523,11 +910,108 @@
 
       <div class="card" style="grid-column:1/-1">
         <h3>📊 Recent Activity Logs</h3>
-        <div id="telegram-logs" style="margin-top:12px" class="logs" style="max-height:200px">
+        <div id="telegram-logs" class="logs" style="margin-top:14px">
           Loading...
         </div>
       </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Cloudflare Analytics -->
+  <div class="tab-content" id="tab-cloudflare">
+    <!-- Overview Stats -->
+    <div class="grid grid-4" id="cf-overview-stats" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">Zone Status</div>
+        <div class="metric-value" id="cf-zone-status">-</div>
+        <div class="metric-sub" id="cf-plan">-</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Requests (7d)</div>
+        <div class="metric-value" id="cf-requests">-</div>
+        <div class="metric-sub" id="cf-requests-sub"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Bandwidth (7d)</div>
+        <div class="metric-value" id="cf-bandwidth">-</div>
+        <div class="metric-sub" id="cf-bandwidth-sub"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Cache Hit Ratio</div>
+        <div class="metric-value" id="cf-cache-ratio">-</div>
+        <div class="metric-sub" id="cf-cache-sub"></div>
+      </div>
+    </div>
+
+    <!-- Secondary Stats -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card">
+        <h3>🔒 SSL</h3>
+        <div id="cf-ssl-info" style="margin-top:10px;font-size:0.85rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card">
+        <h3>🛡️ Threats (7d)</h3>
+        <div id="cf-threats-info" style="margin-top:10px;font-size:0.85rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card">
+        <h3>⚡ Settings</h3>
+        <div id="cf-settings-info" style="margin-top:10px;font-size:0.85rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card">
+        <h3>🔥 Firewall</h3>
+        <div id="cf-firewall-info" style="margin-top:10px;font-size:0.85rem"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin:0">📈 Daily Traffic (7d)</h3>
+        </div>
+        <div style="position:relative;height:280px"><canvas id="cf-daily-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>📊 Hourly Traffic (24h)</h3>
+        <div style="position:relative;height:280px"><canvas id="cf-hourly-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Countries & URLs -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>🌍 Top Countries</h3>
+        <div id="cf-countries" style="margin-top:10px"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card">
+        <h3>🔗 Top URLs</h3>
+        <div id="cf-top-urls" style="margin-top:10px"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Status Codes & Threat Types -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>📋 Status Codes</h3>
+        <div style="position:relative;height:250px"><canvas id="cf-status-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>🛡️ Threat Types</h3>
+        <div id="cf-threat-types" style="margin-top:10px"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <h3>⚡ Quick Actions</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn btn-danger" onclick="cfAction('purge_all')">🗑️ Purge All Cache</button>
+        <button class="btn btn-warning" onclick="cfAction('toggle_dev_mode')">⚡ Toggle Dev Mode</button>
+        <button class="btn btn-primary" onclick="cfAction('toggle_brotli')">📦 Toggle Brotli</button>
+        <button class="btn btn-secondary" onclick="loadCloudflare()">🔄 Refresh</button>
+      </div>
+      <div id="cf-action-output" class="logs" style="display:none;margin-top:12px"></div>
     </div>
   </div>
 </div>
@@ -559,6 +1043,165 @@
   };
 })();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/assets/dashboard.js?v=20240502"></script>
+
+  <!-- Varnish Multi-Site Monitor -->
+  <div class="tab-content" id="tab-varnish-monitor">
+    <!-- Global Stats Row -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">Global Hit Rate</div>
+        <div class="metric-value" id="v-global-hitrate">—</div>
+        <div class="metric-sub" id="v-global-target">Target: 80%</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Cache Hits</div>
+        <div class="metric-value" id="v-global-hits">—</div>
+        <div class="metric-sub" id="v-global-total">/ — total</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Cached Objects</div>
+        <div class="metric-value" id="v-global-objects">—</div>
+        <div class="metric-sub">in memory</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Storage Used</div>
+        <div class="metric-value" id="v-global-storage">—</div>
+        <div class="metric-sub" id="v-global-storage-pct">of 6GB</div>
+      </div>
+    </div>
+
+    <!-- Per-Site Hit Rates -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Per-Site Hit Rates <span style="font-size:0.72rem;color:var(--muted);font-weight:400;margin-left:8px">🎯 Target: 80%</span></h3>
+      <div id="varnish-sites-grid" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- 24h Hourly Trend Chart -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Hit Rate Trend — Last 24 Hours</h3>
+      <div id="varnish-hourly-chart" style="margin-top:14px;overflow-x:auto">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Per-Backend Health -->
+    <div class="card">
+      <h3>Backend Health</h3>
+      <table id="varnish-backends-table" style="margin-top:10px">
+        <thead><tr><th>Site</th><th>Backend</th><th>Status</th><th>Requests</th><th>Cache</th><th>Hit Rate (1h)</th><th>Hit Rate (24h)</th></tr></thead>
+        <tbody><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Actions -->
+    <div class="card" style="margin-top:20px">
+      <h3>Cache Actions</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn btn-primary" onclick="varnishAction('purge_all')">🗑️ Purge All Cache</button>
+        <button class="btn btn-warning" onclick="varnishAction('ban_static')">🔄 Refresh Static Files</button>
+        <button class="btn" onclick="loadVarnishMonitor()">↺ Refresh Stats</button>
+      </div>
+      <div id="varnish-action-output" class="logs" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Akeneo PIM Monitor -->
+  <div class="tab-content" id="tab-pim-monitor">
+    <!-- PIM Health Row -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">PIM Health</div>
+        <div class="metric-value" id="pim-health-badge">—</div>
+        <div class="metric-sub" id="pim-health-sub">Checking...</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Queue Consumers</div>
+        <div class="metric-value" id="pim-consumers-count">—</div>
+        <div class="metric-sub">of 3 running</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">ES Cluster</div>
+        <div class="metric-value" id="pim-es-status">—</div>
+        <div class="metric-sub" id="pim-es-shards">— shards</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Web Response</div>
+        <div class="metric-value" id="pim-web-ms">—</div>
+        <div class="metric-sub" id="pim-web-status">ms</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <!-- Queue Consumers Detail -->
+      <div class="card">
+        <h3>Queue Consumers</h3>
+        <div id="pim-consumers-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="pimAction('restart_consumers')">↺ Restart All Consumers</button>
+        </div>
+      </div>
+
+      <!-- Elasticsearch -->
+      <div class="card">
+        <h3>Elasticsearch</h3>
+        <div id="pim-es-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-warning" onclick="pimAction('reindex_es')">🔄 Reindex Products</button>
+          <button class="btn" onclick="pimAction('fix_es_replicas')">🔧 Fix Replicas</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <!-- Queue Depth -->
+      <div class="card">
+        <h3>Message Queues</h3>
+        <div id="pim-queues-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+
+      <!-- Recent Jobs -->
+      <div class="card">
+        <h3>Recent Jobs (24h)</h3>
+        <div id="pim-jobs-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- PHP-FPM + Cache -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>PHP-FPM Pool</h3>
+        <div id="pim-fpm-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="card">
+        <h3>Symfony Cache</h3>
+        <div id="pim-cache-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-warning" onclick="pimAction('rebuild_cache')">🔄 Rebuild Cache</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issues / Alerts -->
+    <div class="card" id="pim-issues-card" style="margin-bottom:20px;display:none">
+      <h3 style="color:var(--red)">⚠️ Active Issues</h3>
+      <div id="pim-issues-list" style="margin-top:10px"></div>
+    </div>
+
+    <!-- Action Output -->
+    <div class="card" id="pim-action-card" style="display:none">
+      <h3>Action Output</h3>
+      <div id="pim-action-output" class="logs" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <footer class="footer">
+    <div style="display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto;width:100%;font-size:0.82rem;color:var(--muted)">
+      <div>© TechnoStationery — Server Control Center</div>
+      <div id="footer-stats" style="display:flex;gap:12px;align-items:center"></div>
+    </div>
+  </footer>
 </body>
 </html>
