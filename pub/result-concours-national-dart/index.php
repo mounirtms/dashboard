@@ -217,7 +217,7 @@ if (isset($_GET['export'])) {
         exit('Database not available');
     }
 
-    $formId = 9;
+    $formId = 7;
     if (!empty($_GET['id'])) {
         $id = (int)$_GET['id'];
         $stmt = $pdo->prepare("SELECT a.*, COALESCE(r.rating, 0) as rating FROM amasty_customform_answer a LEFT JOIN amasty_customform_ratings r ON a.answer_id = r.answer_id WHERE a.answer_id = :id AND a.status = 0 {$orderBy}");
@@ -382,6 +382,7 @@ function h($s) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/optimizations.css">
         <!-- Firebase SDK (compat) -->
         <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -439,13 +440,13 @@ function h($s) {
         <div class="controls">
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Rechercher par artiste ou titre...">
+                <input type="text" id="searchInput" placeholder="Rechercher par artiste ou titre..." value="<?php echo h($_GET['search'] ?? ''); ?>">
             </div>
             <div class="filter-box">
                 <select id="wilayaFilter">
                     <option value="">Toutes les wilayas</option>
                     <?php foreach (array_keys($wilayaStats) as $wilaya): ?>
-                        <option value="<?php echo h($wilaya); ?>"><?php echo h($wilaya); ?></option>
+                        <option value="<?php echo h($wilaya); ?>" <?php echo ($filter_wilaya === $wilaya) ? 'selected' : ''; ?>><?php echo h($wilaya); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -453,7 +454,7 @@ function h($s) {
                 <select id="dimensionFilter">
                     <option value="">Toutes les dimensions</option>
                     <?php foreach (array_keys($dimensionStats) as $dim): ?>
-                        <option value="<?php echo h($dim); ?>"><?php echo h($dim); ?></option>
+                        <option value="<?php echo h($dim); ?>" <?php echo ($filter_dimension === $dim) ? 'selected' : ''; ?>><?php echo h($dim); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -461,18 +462,18 @@ function h($s) {
                 <select id="categoryFilter">
                     <option value="">Toutes les catégories</option>
                     <?php foreach (array_keys($categories) as $cat): ?>
-                        <option value="<?php echo h($cat); ?>"><?php echo h($cat); ?></option>
+                        <option value="<?php echo h($cat); ?>" <?php echo ($filter_category === $cat) ? 'selected' : ''; ?>><?php echo h($cat); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div class="filter-box">
                 <select id="ratingFilter">
                     <option value="">Toutes les notes</option>
-                    <option value="5">⭐⭐⭐⭐⭐ 5 étoiles</option>
-                    <option value="4">⭐⭐⭐⭐ 4+ étoiles</option>
-                    <option value="3">⭐⭐⭐ 3+ étoiles</option>
-                    <option value="2">⭐⭐ 2+ étoiles</option>
-                    <option value="1">⭐ 1+ étoile</option>
+                    <option value="5" <?php echo ($min_rating == 5) ? 'selected' : ''; ?>>⭐⭐⭐⭐⭐ 5 étoiles</option>
+                    <option value="4" <?php echo ($min_rating == 4) ? 'selected' : ''; ?>>⭐⭐⭐⭐ 4+ étoiles</option>
+                    <option value="3" <?php echo ($min_rating == 3) ? 'selected' : ''; ?>>⭐⭐⭐ 3+ étoiles</option>
+                    <option value="2" <?php echo ($min_rating == 2) ? 'selected' : ''; ?>>⭐⭐ 2+ étoiles</option>
+                    <option value="1" <?php echo ($min_rating == 1) ? 'selected' : ''; ?>>⭐ 1+ étoile</option>
                 </select>
             </div>
             <div class="sort-box">
@@ -530,14 +531,14 @@ function h($s) {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" id="selectAllCheckbox" title="Sélectionner tout"></th>
-                            <th>#</th><th>Image</th><th>Titre</th><th>Artiste</th><th>Wilaya</th><th>Dimension</th><th>Catégorie</th><th>Note</th><th>Date</th><th>Actions</th>
+                            <th style="<?php echo $isAuthenticated ? '' : 'display:none;'; ?>"><input type="checkbox" id="selectAllCheckbox" title="Sélectionner tout"></th>
+                            <th>#</th><th>Image</th><th>Titre</th><th>Artiste</th><th>Wilaya</th><th>Dimension</th><th>Catégorie</th><th>Note</th><th>Date</th><th style="<?php echo $isAuthenticated ? '' : 'display:none;'; ?>">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php $idx = ($offset ?? 0) + 1; foreach ($pagedAnswers as $answer): ?>
                         <tr data-id="<?php echo $answer['id']; ?>" data-artist="<?php echo h(strtolower($answer['firstname'] . ' ' . $answer['lastname'])); ?>" data-title="<?php echo h(strtolower($answer['title'])); ?>" data-wilaya="<?php echo h($answer['wilaya']); ?>" data-dimension="<?php echo h($answer['dimension']); ?>" data-category="<?php echo h($answer['category']); ?>" data-rating="<?php echo $answer['rating']; ?>" ondblclick="openDetailModal(<?php echo $answer['id']; ?>)" style="cursor:pointer;">
-                                    <td><input type="checkbox" class="row-checkbox" value="<?php echo $answer['id']; ?>" title="Sélectionner"></td>
+                                    <td style="<?php echo $isAuthenticated ? '' : 'display:none;'; ?>"><input type="checkbox" class="row-checkbox" value="<?php echo $answer['id']; ?>" title="Sélectionner"></td>
                                     <td><?php echo $idx++; ?></td>
                             <td>
                                 <?php if (!empty($answer['photo'])): ?>
@@ -670,5 +671,6 @@ function h($s) {
     </script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/app-enhancements.js"></script>
+    <script src="assets/js/ux-enhancements.js"></script>
 </body>
 </html>

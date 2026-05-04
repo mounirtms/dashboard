@@ -1,0 +1,15 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "model": "genspark-llm-proxy/minimax-m2p7",
+  "small_model": "genspark-llm-proxy/claude-haiku-4-5",
+  "permission": {
+    "bash": "allow",
+    "edit": "allow",
+    "read": "allow"
+  },
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 20000
+  }
+}

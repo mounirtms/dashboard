@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participants Gallery</title>
+    <!-- Modern Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css.css">
+
+
+
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Participants Gallery</h1>
+            <p class="subtitle">Techno Competition - April 16, 2026</p>
+        </header>
+
+        <div id="stats" class="stats" style="display: none;">
+            <div class="stat-item">
+                <i class="fas fa-users stat-icon"></i>
+                <span class="stat-number" id="total-count">0</span>
+                <span class="stat-label">Total Entries</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-calendar-check stat-icon"></i>
+                <span class="stat-number" id="year-count">0</span>
+                <span class="stat-label">Entries This Year</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-map-marked-alt stat-icon"></i>
+                <span class="stat-number" id="wilaya-count">0</span>
+                <span class="stat-label">Regions</span>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="year-filter">Year</label>
+                <select id="year-filter">
+                    <option value="">All Years</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="category-filter">Category</label>
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                    <option value="6-8">6 - 8 years</option>
+                    <option value="9-11">9 - 11 years</option>
+                    <option value="12-14">12 - 14 years</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="search-filter">Search</label>
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="search-filter" placeholder="Search by name or region...">
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button id="apply-filters" class="btn-primary">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+                <button id="reset-filters" class="btn-outline">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading"><i class="fas fa-circle-notch fa-spin"></i>
+            <p>Loading data...</p>
+        </div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="album-grid" class="album-grid"></div>
+        <div id="no-results" class="no-results" style="display: none;"><i class="fas fa-search-minus"></i>
+            <p>No matches found.</p>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Participants Gallery - All Rights Reserved</p>
+        </footer>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <span class="modal-close">&times;</span>
+        <img class="modal-content" id="fullImage">
+        <div id="caption"></div>
+    </div>
+    <script src="js.js"></script>
+</body>
+
+</html>

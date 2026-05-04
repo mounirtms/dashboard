@@ -395,3 +395,18 @@ FileETag None
 ## END PERFORMANCE OPTIMIZATIONS
 ############################################
 
+
+# Cloudflare Cache Bypass for Dynamic Pages
+# These headers tell Cloudflare to not cache these paths even with "Cache Everything" rule
+<IfModule mod_headers.c>
+    # Use SetEnvIf + Header setenv approach for .htaccess compatibility
+    SetEnvIf Request_URI ^/checkout NO_CACHE=1
+    SetEnvIf Request_URI ^/cart NO_CACHE=1
+    SetEnvIf Request_URI ^/rest NO_CACHE=1
+    
+    <IfModule mod_setenvif.c>
+        Header set Cache-Control "no-cache, no-store, must-revalidate" env=NO_CACHE
+        Header set Pragma "no-cache" env=NO_CACHE
+        Header set Expires "0" env=NO_CACHE
+    </IfModule>
+</IfModule>
