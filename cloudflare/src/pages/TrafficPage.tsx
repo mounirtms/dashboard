@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, Grid } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, useTheme } from '@mui/material';
 import {
   LineChart,
   Line,
@@ -16,14 +16,8 @@ import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
 import { formatNumber, formatBytes } from '../utils/formatters';
 
-const tooltipStyle = {
-  backgroundColor: '#151c2c',
-  border: '1px solid #2a3548',
-  borderRadius: 10,
-  color: '#f1f5f9',
-};
-
 export default function TrafficPage() {
+  const theme = useTheme();
   const { data, loading, error } = useCloudflareData();
 
   if (loading) return <LoadingState />;
@@ -45,6 +39,7 @@ export default function TrafficPage() {
   }));
 
   const totals = data.analytics_totals;
+  const gridColor = `${theme.palette.divider}99`;
 
   return (
     <Box>
@@ -71,13 +66,13 @@ export default function TrafficPage() {
           <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>Daily Requests (7 Days)</Typography>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(30, 41, 59, 0.6)" />
-              <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <XAxis dataKey="date" stroke={theme.palette.text.secondary} tick={{ fontSize: 12 }} />
+              <YAxis stroke={theme.palette.text.secondary} tick={{ fontSize: 12 }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+              <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 10, color: theme.palette.text.primary }} />
               <Legend />
-              <Line type="monotone" dataKey="requests" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} name="Requests" />
-              <Line type="monotone" dataKey="pageViews" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} name="Page Views" />
+              <Line type="monotone" dataKey="requests" stroke={theme.palette.primary.main} strokeWidth={2} dot={{ r: 4 }} name="Requests" />
+              <Line type="monotone" dataKey="pageViews" stroke={theme.palette.success.main} strokeWidth={2} dot={{ r: 3 }} name="Page Views" />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -88,11 +83,11 @@ export default function TrafficPage() {
           <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>Hourly Traffic (24 Hours)</Typography>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={hourlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(30, 41, 59, 0.6)" />
-              <XAxis dataKey="time" stroke="#94a3b8" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-              <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="requests" fill="rgba(59, 130, 246, 0.6)" radius={[2, 2, 0, 0]} name="Requests" />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <XAxis dataKey="time" stroke={theme.palette.text.secondary} tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+              <YAxis stroke={theme.palette.text.secondary} tick={{ fontSize: 11 }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+              <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 10, color: theme.palette.text.primary }} />
+              <Bar dataKey="requests" fill={`${theme.palette.primary.main}99`} radius={[2, 2, 0, 0]} name="Requests" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

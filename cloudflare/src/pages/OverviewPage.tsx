@@ -1,4 +1,4 @@
-import { Grid, Box, Typography, Card, CardContent, Chip, Divider } from '@mui/material';
+import { Grid, Box, Typography, Card, CardContent, Chip, Divider, useTheme } from '@mui/material';
 import { CloudOutlined, CheckCircle, Warning, Schedule, Shield, Cached, Http } from '@mui/icons-material';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import StatCard from '../components/common/StatCard';
@@ -8,6 +8,7 @@ import { formatNumber, formatBytes } from '../utils/formatters';
 
 export default function OverviewPage() {
   const { data, loading, error } = useCloudflareData();
+  const theme = useTheme();
 
   if (loading) return <LoadingState message="Loading Cloudflare data..." />;
   if (error) return <LoadingState message={`Error: ${error}`} />;
@@ -27,7 +28,7 @@ export default function OverviewPage() {
         <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
           Overview
         </Typography>
-        <Typography variant="body2" sx={{ color: '#94a3b8', fontSize: '0.88rem' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.88rem' }}>
           {z.name} &middot; {data.account}
         </Typography>
       </Box>
@@ -67,19 +68,19 @@ export default function OverviewPage() {
           <Grid size={{ xs: 12, sm: 6 }}>
             <Card>
               <CardContent sx={{ p: 3 }}>
-                <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem', mb: 1.5 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem', mb: 1.5 }}>
                   SSL Certificate
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                   <StatusBadge label={sslCert.status} color={certColor} />
                   {sslCert.days_left !== null && (
-                    <Typography variant="body2" sx={{ color: certColor === 'error' ? '#ef4444' : '#94a3b8', fontWeight: 500 }}>
+                    <Typography variant="body2" sx={{ color: certColor === 'error' ? 'error.main' : 'text.secondary', fontWeight: 500 }}>
                       {sslCert.days_left} days remaining
                     </Typography>
                   )}
                 </Box>
                 {sslCert.hostnames.length > 0 && (
-                  <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.82rem', fontFamily: 'monospace' }}>
+                  <Typography variant="body2" sx={{ color: 'text.disabled', fontSize: '0.82rem', fontFamily: 'monospace' }}>
                     {sslCert.hostnames.join(', ')}
                   </Typography>
                 )}
@@ -90,7 +91,7 @@ export default function OverviewPage() {
         <Grid size={{ xs: 12, sm: sslCert ? 6 : 12 }}>
           <Card>
             <CardContent sx={{ p: 3 }}>
-              <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem', mb: 1.5 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem', mb: 1.5 }}>
                 Quick Status
               </Typography>
               <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
@@ -99,9 +100,9 @@ export default function OverviewPage() {
                   label={`Dev Mode: ${z.development_mode}`}
                   size="small"
                   sx={{
-                    backgroundColor: z.development_mode === 'on' ? 'rgba(234, 179, 8, 0.12)' : 'rgba(148, 163, 184, 0.08)',
-                    borderColor: z.development_mode === 'on' ? 'rgba(234, 179, 8, 0.3)' : 'rgba(148, 163, 184, 0.2)',
-                    color: z.development_mode === 'on' ? '#eab308' : '#94a3b8',
+                    backgroundColor: z.development_mode === 'on' ? `${theme.palette.warning.main}1f` : `${theme.palette.text.secondary}14`,
+                    borderColor: z.development_mode === 'on' ? `${theme.palette.warning.main}4d` : `${theme.palette.text.secondary}33`,
+                    color: z.development_mode === 'on' ? theme.palette.warning.main : theme.palette.text.secondary,
                     fontWeight: 600,
                     borderWidth: 1,
                     borderStyle: 'solid',
@@ -112,9 +113,9 @@ export default function OverviewPage() {
                   label={`Brotli: ${data.settings.brotli}`}
                   size="small"
                   sx={{
-                    backgroundColor: data.settings.brotli === 'on' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(148, 163, 184, 0.08)',
-                    borderColor: data.settings.brotli === 'on' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(148, 163, 184, 0.2)',
-                    color: data.settings.brotli === 'on' ? '#22c55e' : '#94a3b8',
+                    backgroundColor: data.settings.brotli === 'on' ? `${theme.palette.success.main}1f` : `${theme.palette.text.secondary}14`,
+                    borderColor: data.settings.brotli === 'on' ? `${theme.palette.success.main}4d` : `${theme.palette.text.secondary}33`,
+                    color: data.settings.brotli === 'on' ? theme.palette.success.main : theme.palette.text.secondary,
                     fontWeight: 600,
                     borderWidth: 1,
                     borderStyle: 'solid',
@@ -125,9 +126,9 @@ export default function OverviewPage() {
                   label={`Browser TTL: ${Math.round((Number(data.settings.browser_cache_ttl) || 0) / 3600)}h`}
                   size="small"
                   sx={{
-                    backgroundColor: 'rgba(148, 163, 184, 0.08)',
-                    borderColor: 'rgba(148, 163, 184, 0.2)',
-                    color: '#94a3b8',
+                    backgroundColor: `${theme.palette.text.secondary}14`,
+                    borderColor: `${theme.palette.text.secondary}33`,
+                    color: theme.palette.text.secondary,
                     fontWeight: 600,
                     borderWidth: 1,
                     borderStyle: 'solid',

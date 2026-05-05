@@ -56,7 +56,7 @@ class CommandCache {
     /**
      * Store response in cache
      */
-    public function set(string $key, array $data, int $ttl = 60): void {
+    public function set(string $key, $data, int $ttl = 60): void {
         $cacheKey = $this->prefix . md5($key);
         $entry = [
             'data' => $data,

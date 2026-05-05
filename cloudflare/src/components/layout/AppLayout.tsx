@@ -76,11 +76,11 @@ export default function AppLayout() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
+          p: { xs: 2, md: 3 },
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           mt: 8,
           minHeight: '100vh',
-          backgroundColor: '#0b0f1a',
+          backgroundColor: 'background.default',
         }}
       >
         <Outlet />

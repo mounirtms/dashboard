@@ -13,7 +13,7 @@ return [
             'name' => 'ServerNotif205bot',
             'enabled' => true,
             'authorized_chats' => [6972138184], // Mounir's chat ID
-            'commands' => ['system', 'magento', 'queue', 'database', 'admin', 'pim', 'ai', 'cache'],
+            'commands' => ['system', 'magento', 'queue', 'database', 'admin', 'cache', 'log'],
             'alert_types' => ['service', 'load', 'memory', 'queue', 'http_error'],
         ],
         'customer' => [

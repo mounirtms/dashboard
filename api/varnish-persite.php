@@ -13,8 +13,14 @@ if (!isset($_SESSION) || session_status() === PHP_SESSION_NONE) {
 }
 
 function cmd_exec($cmd, $timeout = 8) {
-    $output = shell_exec("timeout {$timeout} {$cmd} 2>/dev/null");
-    return $output ?? '';
+    $handle = @popen("timeout {$timeout} {$cmd} 2>/dev/null", 'r');
+    if (!$handle) return '';
+    $output = '';
+    while (!feof($handle)) {
+        $output .= fread($handle, 8192);
+    }
+    pclose($handle);
+    return $output;
 }
 
 function parse_varnishstat() {
@@ -97,7 +103,6 @@ $sites_config = [
 $per_backend = [];
 if ($varnish) {
     foreach ($varnish as $key => $stat) {
-        // Match VBE.reload_XXXXX.backend_name.metric
         if (preg_match('/^VBE\.[^.]+\.([^.]+)\.(req|happy|unhealthy|fail|conn)$/', $key, $m)) {
             $bname  = $m[1];
             $metric = $m[2];
@@ -124,38 +129,29 @@ foreach ($sites_config as $bname => $cfg) {
 // ============================================================
 $log_file = '/var/log/varnish/access.log';
 $per_site_hits = [];
+$lines = [];
 
-if (file_exists($log_file)) {
-    // Read last 10000 lines efficiently
-    $lines = [];
+if (file_exists($log_file) && filesize($log_file) > 0) {
     $fp = fopen($log_file, 'r');
     if ($fp) {
-        // Seek near end for performance
         fseek($fp, -min(filesize($log_file), 2000000), SEEK_END);
-        fgets($fp); // skip partial line
+        fgets($fp);
         while (($line = fgets($fp)) !== false) {
             $lines[] = trim($line);
         }
         fclose($fp);
     }
 
-    // Parse: timestamp host status X-Cache url
-    // Format set by varnishncsa: %{%Y-%m-%dT%H:%M:%S}t %{Host}i %s %{X-Cache}o %U
     $now = time();
-    $window_1h  = 3600;
-    $window_24h = 86400;
-
     $counts = [];
     foreach (array_slice($lines, -10000) as $line) {
         if (empty($line)) continue;
         $parts = explode(' ', $line, 5);
         if (count($parts) < 4) continue;
         [$ts_str, $host, $status, $xcache] = $parts;
-        
         $ts = strtotime($ts_str);
         $age = $now - $ts;
-        
-        // Normalize host to backend name
+
         $bname = null;
         if (preg_match('/^(www\.)?technostationery\.(com|com\.dz)$/', $host)) $bname = 'prod';
         elseif (strpos($host, 'beta.') === 0) $bname = 'beta';
@@ -171,22 +167,21 @@ if (file_exists($log_file)) {
 
         $is_hit = strtoupper($xcache) === 'HIT';
         $is_miss = strtoupper($xcache) === 'MISS';
-        
+
         if ($is_hit || $is_miss) {
             $counts[$bname]['hit_total'] += $is_hit ? 1 : 0;
             $counts[$bname]['miss_total'] += $is_miss ? 1 : 0;
-            if ($age <= $window_24h) {
+            if ($age <= 86400) {
                 $counts[$bname]['hit_24h'] += $is_hit ? 1 : 0;
                 $counts[$bname]['miss_24h'] += $is_miss ? 1 : 0;
             }
-            if ($age <= $window_1h) {
+            if ($age <= 3600) {
                 $counts[$bname]['hit_1h'] += $is_hit ? 1 : 0;
                 $counts[$bname]['miss_1h'] += $is_miss ? 1 : 0;
             }
         }
     }
 
-    // Calculate hit rates per site
     foreach ($counts as $bname => $c) {
         $t1h  = $c['hit_1h']  + $c['miss_1h'];
         $t24h = $c['hit_24h'] + $c['miss_24h'];
@@ -199,7 +194,6 @@ if (file_exists($log_file)) {
             'req_24h' => $t24h,
             'req_total' => $tot,
         ];
-        // Merge into backends
         if (isset($backends[$bname])) {
             $backends[$bname] = array_merge($backends[$bname], $per_site_hits[$bname]);
         }
@@ -225,13 +219,12 @@ if (!empty($lines)) {
         $bucket = (int)($ts / 3600);
         $age_h = $now_h - $bucket;
         if ($age_h > 24) continue;
-        
+
         $xcache = strtoupper($parts[3]);
         if (!isset($hourly_raw[$bucket])) $hourly_raw[$bucket] = ['hit'=>0,'miss'=>0];
         if ($xcache === 'HIT') $hourly_raw[$bucket]['hit']++;
         elseif ($xcache === 'MISS') $hourly_raw[$bucket]['miss']++;
     }
-    // Fill 24 buckets
     for ($i = 23; $i >= 0; $i--) {
         $bucket = $now_h - $i;
         $h = $hourly_raw[$bucket] ?? ['hit'=>0,'miss'=>0];
@@ -253,4 +246,4 @@ echo json_encode([
     'log_entries' => $log_entries,
     'timestamp'   => time(),
     'datetime'    => date('Y-m-d H:i:s'),
-], JSON_PRETTY_PRINT);
+], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

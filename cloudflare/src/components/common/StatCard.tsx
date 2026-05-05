@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography, Box } from '@mui/material';
+import { Card, CardContent, Typography, Box, useTheme } from '@mui/material';
 
 interface StatCardProps {
   label: string;
@@ -8,17 +8,12 @@ interface StatCardProps {
   icon?: React.ReactNode;
 }
 
-const colorMap: Record<string, { main: string; glow: string; gradient: string }> = {
-  primary: { main: '#3b82f6', glow: 'rgba(59, 130, 246, 0.15)', gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)' },
-  success: { main: '#22c55e', glow: 'rgba(34, 197, 94, 0.15)', gradient: 'linear-gradient(135deg, #16a34a, #22c55e)' },
-  warning: { main: '#eab308', glow: 'rgba(234, 179, 8, 0.15)', gradient: 'linear-gradient(135deg, #ca8a04, #eab308)' },
-  error: { main: '#ef4444', glow: 'rgba(239, 68, 68, 0.15)', gradient: 'linear-gradient(135deg, #dc2626, #ef4444)' },
-  info: { main: '#06b6d4', glow: 'rgba(6, 182, 212, 0.15)', gradient: 'linear-gradient(135deg, #0891b2, #06b6d4)' },
-  default: { main: '#cbd5e1', glow: 'rgba(203, 213, 225, 0.1)', gradient: 'linear-gradient(135deg, #94a3b8, #cbd5e1)' },
-};
-
 export default function StatCard({ label, value, color = 'default', subvalue, icon }: StatCardProps) {
-  const colors = colorMap[color];
+  const theme = useTheme();
+  const isDefault = color === 'default';
+  const mainColor = isDefault ? theme.palette.text.primary : theme.palette[color].main;
+  const darkColor = isDefault ? theme.palette.text.secondary : (theme.palette[color].dark || theme.palette[color].main);
+  const secondaryColor = theme.palette.text.secondary;
 
   return (
     <Card
@@ -33,26 +28,26 @@ export default function StatCard({ label, value, color = 'default', subvalue, ic
           left: 0,
           right: 0,
           height: 3,
-          background: colors.gradient,
+          background: `linear-gradient(135deg, ${darkColor}, ${mainColor})`,
         },
       }}
     >
       <CardContent sx={{ pt: 2.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+          <Typography variant="caption" sx={{ color: secondaryColor, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
             {label}
           </Typography>
           {icon && (
-            <Box sx={{ color: colors.main, opacity: 0.7 }}>
+            <Box sx={{ color: mainColor, opacity: 0.7 }}>
               {icon}
             </Box>
           )}
         </Box>
-        <Typography variant="h4" sx={{ color: colors.main, fontWeight: 800, letterSpacing: '-0.03em', fontSize: '1.6rem', lineHeight: 1.2 }}>
+        <Typography variant="h4" sx={{ color: mainColor, fontWeight: 800, letterSpacing: '-0.03em', fontSize: '1.6rem', lineHeight: 1.2 }}>
           {value}
         </Typography>
         {subvalue && (
-          <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.5, fontSize: '0.72rem' }}>
+          <Typography variant="caption" sx={{ color: secondaryColor, display: 'block', mt: 0.5, fontSize: '0.72rem' }}>
             {subvalue}
           </Typography>
         )}

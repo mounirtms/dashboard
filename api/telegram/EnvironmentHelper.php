@@ -247,6 +247,22 @@ class EnvironmentHelper {
     /**
      * Get environment system info
      */
+    /**
+     * Execute shell command using popen (since shell_exec is disabled)
+     */
+    private function execCommand(string $cmd): string {
+        $handle = @popen($cmd, 'r');
+        if ($handle === false) {
+            return '';
+        }
+        $output = '';
+        while (!feof($handle)) {
+            $output .= fread($handle, 4096);
+        }
+        pclose($handle);
+        return trim($output);
+    }
+
     public function getSystemInfo(string $env): array {
         $envConfig = $this->getEnvConfig($env);
         if (!$envConfig) return [];
@@ -254,11 +270,11 @@ class EnvironmentHelper {
         $path = $envConfig['path'];
 
         // Disk usage
-        $diskUsage = trim(shell_exec("timeout 3 du -sm $path 2>/dev/null | awk '{print \$1}'"));
+        $diskUsage = $this->execCommand("timeout 3 du -sm $path 2>/dev/null | awk '{print \$1}'");
         
         // PHP-FPM workers
         $user = basename($path);
-        $phpFpm = trim(shell_exec("ps aux | grep 'php-fpm: pool.*$user' | grep -v grep | grep -v master | wc -l"));
+        $phpFpm = $this->execCommand("ps aux | grep 'php-fpm: pool.*$user' | grep -v grep | grep -v master | wc -l");
 
         // Magento mode
         $mode = 'unknown';
@@ -279,6 +295,26 @@ class EnvironmentHelper {
             'php_fpm_workers' => (int)$phpFpm,
             'mode' => $mode,
         ];
+    }
+
+    /**
+     * Get MySQLi connection for a given environment
+     */
+    public function getDbConnection(string $env): ?mysqli {
+        $envConfig = $this->getEnvConfig($env);
+        if (!$envConfig) return null;
+
+        $dbConfig = $this->config['database'] ?? [];
+        $host = $dbConfig['host'] ?? '127.0.0.1';
+        $port = $dbConfig['port'] ?? '3307';
+        $user = $dbConfig['user'] ?? 'root';
+        $pass = $dbConfig['pass'] ?? '';
+        $dbName = $envConfig['db'] ?? '';
+
+        if (!$dbName) return null;
+
+        $db = @new mysqli($host, $user, $pass, $dbName, (int)$port);
+        return $db->connect_error ? null : $db;
     }
 
     /**

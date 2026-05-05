@@ -1,8 +1,19 @@
+<?php
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+// Cloudflare cache bypass
+header('CF-Cache-Status: DYNAMIC');
+header('Cloudflare-CDN-Cache-Control: no-cache, no-store, must-revalidate');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Server Control Center — technostationery.com</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,25 +83,41 @@
 <div class="container">
 
 
-  <div class="tabs">
-    <div class="tab active" data-tab="overview" title="Overview"><span class="tab-icon">🏠</span><span class="tab-label">Overview</span></div>
-    <div class="tab" data-tab="processes" title="Processes"><span class="tab-icon">⚡</span><span class="tab-label">Processes</span></div>
-    <div class="tab" data-tab="services" title="Services"><span class="tab-icon">🔧</span><span class="tab-label">Services</span></div>
-    <div class="tab" data-tab="sites" title="Sites"><span class="tab-icon">🌐</span><span class="tab-label">Sites</span></div>
-    <div class="tab" data-tab="infrastructure" title="Infrastructure"><span class="tab-icon">🏗️</span><span class="tab-label">Infra</span></div>
-    <div class="tab" data-tab="commerce" title="Commerce"><span class="tab-icon">🛒</span><span class="tab-label">Commerce</span></div>
-    <div class="tab" data-tab="crons" title="Crons"><span class="tab-icon">⏰</span><span class="tab-label">Crons</span></div>
-    <div class="tab" data-tab="queues" title="Queues"><span class="tab-icon">📬</span><span class="tab-label">Queues</span></div>
-    <div class="tab" data-tab="indexers" title="Indexers"><span class="tab-icon">📊</span><span class="tab-label">Indexers</span></div>
-    <div class="tab" data-tab="scripts" title="Scripts"><span class="tab-icon">🚀</span><span class="tab-label">Scripts</span></div>
-    <div class="tab" data-tab="cicd" title="CI/CD"><span class="tab-icon">🔄</span><span class="tab-label">CI/CD</span></div>
-    <div class="tab" data-tab="dbhealth" title="DB Health"><span class="tab-icon">💾</span><span class="tab-label">DB Health</span></div>
-    <div class="tab" data-tab="actions" title="Actions"><span class="tab-icon">🛠️</span><span class="tab-label">Actions</span></div>
-    <div class="tab" data-tab="telegram" title="Notifications"><span class="tab-icon">🔔</span><span class="tab-label">Notifications</span></div>
-    <div class="tab" data-tab="cloudflare" title="Cloudflare"><span class="tab-icon">☁️</span><span class="tab-label">Cloudflare</span></div>
-    <div class="tab" data-tab="push" title="Push"><span class="tab-icon">📢</span><span class="tab-label">Push</span></div>
-    <div class="tab" data-tab="varnish-monitor" title="Varnish"><span class="tab-icon">🚀</span><span class="tab-label">Varnish</span></div>
-    <div class="tab" data-tab="pim-monitor" title="PIM"><span class="tab-icon">📦</span><span class="tab-label">PIM</span></div>
+  <!-- Category bar -->
+  <div class="cat-bar" id="cat-bar">
+    <div class="cat-pill active" data-cat="system"><span class="tab-icon">🖥️</span><span class="tab-label">System</span></div>
+    <div class="cat-pill" data-cat="web"><span class="tab-icon">🌐</span><span class="tab-label">Web</span></div>
+    <div class="cat-pill" data-cat="infrastructure"><span class="tab-icon">🏗️</span><span class="tab-label">Infra</span></div>
+    <div class="cat-pill" data-cat="business"><span class="tab-icon">🛒</span><span class="tab-label">Business</span></div>
+    <div class="cat-pill" data-cat="development"><span class="tab-icon">🚀</span><span class="tab-label">Dev</span></div>
+    <div class="cat-pill" data-cat="tools"><span class="tab-icon">🛠️</span><span class="tab-label">Tools</span></div>
+  </div>
+
+  <!-- Sub-tab bar (populated by JS) -->
+  <div class="sub-tabs" id="sub-tabs"></div>
+
+  <!-- Hidden legacy tabs for activateTab compatibility -->
+  <div class="tabs" id="legacy-tabs" style="display:none">
+    <div class="tab" data-tab="overview"><span class="tab-icon">🏠</span></div>
+    <div class="tab" data-tab="processes"><span class="tab-icon">⚡</span></div>
+    <div class="tab" data-tab="services"><span class="tab-icon">🔧</span></div>
+    <div class="tab" data-tab="sites"><span class="tab-icon">🌐</span></div>
+    <div class="tab" data-tab="infrastructure"><span class="tab-icon">🏗️</span></div>
+    <div class="tab" data-tab="commerce"><span class="tab-icon">🛒</span></div>
+    <div class="tab" data-tab="crons"><span class="tab-icon">⏰</span></div>
+    <div class="tab" data-tab="queues"><span class="tab-icon">📬</span></div>
+    <div class="tab" data-tab="indexers"><span class="tab-icon">📊</span></div>
+    <div class="tab" data-tab="scripts"><span class="tab-icon">🚀</span></div>
+    <div class="tab" data-tab="cicd"><span class="tab-icon">🔄</span></div>
+    <div class="tab" data-tab="dbhealth"><span class="tab-icon">💾</span></div>
+    <div class="tab" data-tab="actions"><span class="tab-icon">🛠️</span></div>
+    <div class="tab" data-tab="telegram"><span class="tab-icon">🔔</span></div>
+    <div class="tab" data-tab="cloudflare"><span class="tab-icon">☁️</span></div>
+    <div class="tab" data-tab="push"><span class="tab-icon">📢</span></div>
+    <div class="tab" data-tab="varnish-monitor"><span class="tab-icon">🚀</span></div>
+    <div class="tab" data-tab="apache-monitor"><span class="tab-icon">🌐</span></div>
+    <div class="tab" data-tab="environments"><span class="tab-icon">🖥️</span></div>
+    <div class="tab" data-tab="pim-monitor"><span class="tab-icon">📦</span></div>
   </div>
 
   <!-- Overview -->
@@ -112,7 +139,7 @@
       </table>
     </div>
 
-    <div class="card" style="margin-top:12px">
+    <div class="card">
       <h3>Service Status</h3>
       <div id="services-list-overview" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px"></div>
     </div>
@@ -1014,7 +1041,6 @@
       <div id="cf-action-output" class="logs" style="display:none;margin-top:12px"></div>
     </div>
   </div>
-</div>
 
 <!-- Output Modal -->
 <div class="output-modal" id="output-modal">
@@ -1045,6 +1071,93 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/assets/dashboard.js?v=20240502"></script>
+
+  <!-- Apache Monitor -->
+  <div class="tab-content" id="tab-apache-monitor">
+    <!-- Apache Status Row -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">Apache Status</div>
+        <div class="metric-value" id="apache-status-badge">—</div>
+        <div class="metric-sub" id="apache-version">—</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Active Connections</div>
+        <div class="metric-value" id="apache-connections">—</div>
+        <div class="metric-sub" id="apache-workers">— workers</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Processes</div>
+        <div class="metric-value" id="apache-processes">—</div>
+        <div class="metric-sub" id="apache-max-workers">Max: —</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Memory Usage</div>
+        <div class="metric-value" id="apache-memory">—</div>
+        <div class="metric-sub" id="apache-avg-mem">Avg: — per process</div>
+      </div>
+    </div>
+
+    <!-- Ports & MPM Info -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Configuration</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:10px">
+        <div>
+          <div class="metric-label">MPM Module</div>
+          <div class="metric-value" id="apache-mpm" style="font-size:1.2rem;margin-top:6px">—</div>
+        </div>
+        <div>
+          <div class="metric-label">HTTP Port 80</div>
+          <div class="metric-value" id="apache-port-http" style="font-size:1.2rem;margin-top:6px">—</div>
+        </div>
+        <div>
+          <div class="metric-label">HTTPS Port 443</div>
+          <div class="metric-value" id="apache-port-https" style="font-size:1.2rem;margin-top:6px">—</div>
+        </div>
+        <div>
+          <div class="metric-label">Uptime</div>
+          <div class="metric-value" id="apache-uptime" style="font-size:1.2rem;margin-top:6px">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Log Analysis -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Error Log (Recent)</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:10px">
+        <div class="card metric-card">
+          <div class="metric-label">Critical</div>
+          <div class="metric-value" id="apache-errors-crit" style="color:#ef4444">—</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-label">Errors</div>
+          <div class="metric-value" id="apache-errors-error" style="color:#f97316">—</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-label">Warnings</div>
+          <div class="metric-value" id="apache-errors-warn" style="color:#eab308">—</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-label">Notices</div>
+          <div class="metric-value" id="apache-errors-notice" style="color:#3b82f6">—</div>
+        </div>
+      </div>
+      <div id="apache-recent-errors" style="margin-top:14px" class="logs">
+        <div class="loading">No recent errors</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+      <h3>Apache Actions</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn" onclick="loadApacheMonitor()">↺ Refresh Stats</button>
+        <button class="btn btn-warning" onclick="apacheAction('restart')">🔄 Restart Apache</button>
+        <button class="btn btn-danger" onclick="apacheAction('graceful')">⚡ Graceful Reload</button>
+      </div>
+      <div id="apache-action-output" class="logs" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>
 
   <!-- Varnish Multi-Site Monitor -->
   <div class="tab-content" id="tab-varnish-monitor">
@@ -1106,6 +1219,65 @@
         <button class="btn" onclick="loadVarnishMonitor()">↺ Refresh Stats</button>
       </div>
       <div id="varnish-action-output" class="logs" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Environments Monitor -->
+  <div class="tab-content" id="tab-environments">
+    <!-- Environment Overview -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Environment Overview</h3>
+      <div id="env-overview-grid" style="margin-top:14px;display:grid;gap:14px">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Environment Comparison -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Environment Comparison</h3>
+      <table id="env-comparison-table" style="margin-top:10px;width:100%">
+        <thead>
+          <tr>
+            <th>Environment</th>
+            <th>Status</th>
+            <th>PHP-FPM</th>
+            <th>Disk</th>
+            <th>DB Size</th>
+            <th>Mode</th>
+            <th>Cache</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="8" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Cron Jobs by Environment -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>Production Cron Jobs</h3>
+        <div id="env-prod-crons" style="margin-top:10px"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="card">
+        <h3>Beta Cron Jobs</h3>
+        <div id="env-beta-crons" style="margin-top:10px"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- Queue Status -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Queue Status</h3>
+      <div id="env-queues-grid" style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Database Health -->
+    <div class="card">
+      <h3>Database Health</h3>
+      <div id="env-db-health" style="margin-top:10px"><div class="loading">Loading...</div></div>
     </div>
   </div>
 
@@ -1197,6 +1369,7 @@
       <div id="pim-action-output" class="logs" style="margin-top:10px"></div>
     </div>
   </div>
+</div>
   <footer class="footer">
     <div style="display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto;width:100%;font-size:0.82rem;color:var(--muted)">
       <div>© TechnoStationery — Server Control Center</div>

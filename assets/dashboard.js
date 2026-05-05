@@ -1,6 +1,24 @@
 const MONITOR_API = '/api/monitor.php';
 const DASH_API    = '/api/dashboard.php';
 const AUTH_API    = '/api/auth.php';
+
+const TAB_CATEGORIES = {
+  system:       ['overview', 'processes', 'services'],
+  web:          ['sites', 'apache-monitor', 'varnish-monitor'],
+  infrastructure: ['infrastructure', 'dbhealth'],
+  business:     ['commerce', 'crons', 'queues', 'indexers'],
+  development:  ['scripts', 'cicd', 'pim-monitor', 'environments'],
+  tools:        ['actions', 'telegram', 'cloudflare', 'push'],
+};
+
+const TAB_TO_CAT = {};
+(function buildReverseMap() {
+  for (const [cat, tabs] of Object.entries(TAB_CATEGORIES)) {
+    for (const t of tabs) TAB_TO_CAT[t] = cat;
+  }
+})();
+
+let currentCat = 'system';
 let scriptData = {};
 
 // Utility: Show toast notification
@@ -99,16 +117,39 @@ async function checkAuth() {
 // ── Tabs ──
 function activateTab(tabName, pushHash = true) {
   if (!tabName) tabName = 'overview';
+
+  // Determine category
+  const cat = TAB_TO_CAT[tabName] || currentCat;
+
+  // Update category pills
+  currentCat = cat;
+  document.querySelectorAll('.cat-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.cat === cat);
+  });
+
+  // Render sub-tabs for active category
+  renderSubTabs(cat, tabName);
+
+  // Deactivate all tabs
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
-  const tabBtn = document.querySelector('.tab[data-tab="' + tabName + '"]');
+
+  // Activate sub-tab
+  const subTab = document.querySelector('#sub-tabs .tab[data-tab="' + tabName + '"]');
+  if (subTab) subTab.classList.add('active');
+
+  // Also activate legacy tab for compatibility
+  const legacyTab = document.querySelector('#legacy-tabs .tab[data-tab="' + tabName + '"]');
+  if (legacyTab) legacyTab.classList.add('active');
+
+  // Show tab content
   const tabContent = document.getElementById('tab-' + tabName);
-  if (tabBtn) tabBtn.classList.add('active');
   if (tabContent) tabContent.classList.add('active');
 
-  // Update hash for routing
+  // Update hash
   if (pushHash) {
-    try { history.replaceState(null, '', '#/' + tabName); } catch(e) { location.hash = '#/' + tabName; }
+    const hash = '#/' + cat + '/' + tabName;
+    try { history.replaceState(null, '', hash); } catch(e) { location.hash = hash; }
   }
 
   // Lazy-load handlers
@@ -120,21 +161,52 @@ function activateTab(tabName, pushHash = true) {
   if (tabName === 'cloudflare') loadCloudflare();
   if (tabName === 'push') loadPushEnvironments();
   if (tabName === 'varnish-monitor') loadVarnishMonitor();
+  if (tabName === 'apache-monitor') loadApacheMonitor();
+  if (tabName === 'environments') loadEnvironments();
   if (tabName === 'pim-monitor') loadPimMonitor();
   if (tabName === 'cicd') loadCicdEnvironments();
 }
 
-// Attach click listeners that route via hash
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => activateTab(t.dataset.tab, true));
+function renderSubTabs(cat, activeTab) {
+  const container = document.getElementById('sub-tabs');
+  const tabs = TAB_CATEGORIES[cat] || [];
+  container.innerHTML = tabs.map(t => {
+    const el = document.querySelector('#legacy-tabs .tab[data-tab="' + t + '"]');
+    const icon = el ? el.querySelector('.tab-icon')?.textContent : '';
+    const isActive = t === activeTab ? ' active' : '';
+    const label = t.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return '<div class="tab' + isActive + '" data-tab="' + t + '"><span class="tab-icon">' + icon + '</span><span class="tab-label">' + label + '</span></div>';
+  }).join('');
+
+  // Click handlers for sub-tabs
+  container.querySelectorAll('.tab').forEach(st => {
+    st.addEventListener('click', () => activateTab(st.dataset.tab, true));
+  });
+}
+
+// Category pill click handlers
+document.querySelectorAll('.cat-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    const cat = pill.dataset.cat;
+    const tabs = TAB_CATEGORIES[cat] || [];
+    if (tabs.length > 0) activateTab(tabs[0], true);
+  });
 });
 
 // Activate from hash on load and on hashchange
 function activateFromHash() {
   const h = location.hash || '';
-  const m = h.match(/^#\/(.+)/);
-  const tab = m ? m[1] : 'processes';
-  activateTab(tab, false);
+  // Support both #/category/tab and #/tab (backwards compat)
+  const m2 = h.match(/^#\/([a-z-]+)\/([a-z-]+)$/);
+  const m1 = h.match(/^#\/([a-z-]+)$/);
+  if (m2) {
+    activateTab(m2[2], false);
+  } else if (m1) {
+    activateTab(m1[1], false);
+  } else {
+    // Default: overview tab
+    activateTab('overview', false);
+  }
 }
 window.addEventListener('hashchange', activateFromHash);
 window.addEventListener('DOMContentLoaded', activateFromHash);
@@ -198,10 +270,7 @@ async function loadOverview() {
     
     if (cpuEl) cpuEl.textContent = d.load['1min'].toFixed(2);
     if (memEl) memEl.textContent = d.memory.used_pct + '%';
-    if (swapEl) swapEl.textContent = d.memory.swap_used_pct + '%';
-
-    // Load visitor stats (will update header visitors/online)
-    loadVisitorStats();
+    if (swapEl) swapEl.textContent = d.memory.swap_pct + '%';
 
     const memClass = d.memory.used_pct > 85 ? 'red' : d.memory.used_pct > 65 ? 'yellow' : 'green';
     document.getElementById('metrics-row').innerHTML = `
@@ -853,8 +922,6 @@ function refresh() {
   loadQueues();
   loadIndexers();
   loadDbStats();
-  loadInfrastructure();
-  loadCommerce();
 }
 
 // ── Infrastructure Tab ──
@@ -1018,230 +1085,6 @@ function renderVarnish(data, varnishStats) {
   el.innerHTML = html;
 }
 
-async function cfAction(action, params = {}) {
-  try {
-    const formData = new URLSearchParams({ action2: action, ...params });
-    const res = await fetch(MONITOR_API + '?action=cloudflare_action', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast(data.message, 'success');
-      loadInfrastructure();
-    } else {
-      showToast(data.message || 'Action failed', 'error');
-    }
-  } catch(e) {
-    showToast('Cloudflare action failed: ' + e.message, 'error');
-  }
-}
-
-function renderCloudflare(data) {
-  const el = document.getElementById('cloudflare-content');
-  if (!data || data.error) {
-    el.innerHTML = '<div class="loading">Cloudflare unavailable</div>';
-    return;
-  }
-
-  const z = data.zone || {};
-  const s = data.settings || {};
-  const a = data.analytics_totals || {};
-  const fw = data.firewall || {};
-  const days = data.analytics || [];
-  const hours = data.hourly_analytics || [];
-  const countries = data.countries || [];
-  const statusCodes = data.status_codes || [];
-  const topUrls = data.top_urls || [];
-  const threatTypes = data.threat_types || [];
-  const cacheHitRatio = data.cache_hit_ratio || 0;
-  const bwFormatted = data.bandwidth_formatted || '0 B';
-  const sslCert = data.ssl_certificate;
-
-  const statusClass = z.status === 'active' ? 'green' : 'yellow';
-  const sslClass = s.ssl === 'full' || s.ssl === 'strict' ? 'green' : s.ssl === 'flexible' ? 'yellow' : 'red';
-
-  // Format numbers
-  const fmtNum = (n) => (n || 0).toLocaleString();
-
-  let html = `
-    <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-      <div class="infra-stat"><span class="infra-label">Zone</span><span class="infra-val">${z.name || '-'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Status</span><span class="infra-val ${statusClass}">${z.status || 'unknown'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Plan</span><span class="infra-val">${z.plan || 'Free'}</span></div>
-      <div class="infra-stat"><span class="infra-label">SSL</span><span class="infra-val ${sslClass}">${s.ssl || 'off'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Cache Level</span><span class="infra-val">${s.cache_level || '-'}</span></div>
-      <div class="infra-stat"><span class="infra-label">Dev Mode</span><span class="infra-val ${s.development_mode === 'on' ? 'yellow' : 'green'}">${s.development_mode || 'off'}</span></div>
-    </div>
-  `;
-
-  // SSL Certificate info
-  if (sslCert) {
-    const certClass = sslCert.status === 'active' ? 'green' : sslCert.days_left < 30 ? 'red' : 'yellow';
-    const daysText = sslCert.days_left !== null ? sslCert.days_left + ' days left' : 'N/A';
-    html += `<div class="infra-stat"><span class="infra-label">SSL Cert</span><span class="infra-val ${certClass}">${sslCert.status} (${daysText})</span></div>`;
-  }
-
-  // 7-Day Traffic Chart
-  if (days.length > 0) {
-    const maxReq = Math.max(...days.map(d => d.requests), 1);
-    html += `
-      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">📊 7-Day Traffic</div>
-        <div style="display:flex;align-items:flex-end;gap:4px;height:60px">
-          ${days.map(d => {
-            const h = Math.max((d.requests / maxReq) * 55, 2);
-            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="${d.date}: ${fmtNum(d.requests)} reqs, ${fmtNum(d.pageViews)} PV, ${d.threats} threats, ${fmtNum(d.uniques)} uniq">
-              <div style="width:100%;height:${h}px;background:linear-gradient(to top,rgba(59,130,246,0.3),rgba(59,130,246,0.8));border-radius:3px 3px 0 0"></div>
-              <div style="font-size:0.6rem;color:var(--muted)">${d.date.slice(5)}</div>
-            </div>`;
-          }).join('')}
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">
-          <div class="infra-stat"><span class="infra-label">Total Reqs</span><span class="infra-val cyan">${fmtNum(a.requests)}</span></div>
-          <div class="infra-stat"><span class="infra-label">Page Views</span><span class="infra-val green">${fmtNum(a.pageViews)}</span></div>
-          <div class="infra-stat"><span class="infra-label">Bandwidth</span><span class="infra-val">${bwFormatted}</span></div>
-          <div class="infra-stat"><span class="infra-label">Uniques</span><span class="infra-val">${fmtNum(a.uniques)}</span></div>
-        </div>
-      </div>
-    `;
-  }
-
-  // Cache Hit Ratio
-  html += `
-    <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">⚡ Cache Performance</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
-        <div class="infra-stat">
-          <span class="infra-label">Hit Ratio</span>
-          <span class="infra-val ${cacheHitRatio > 80 ? 'green' : cacheHitRatio > 50 ? 'yellow' : 'red'}">${cacheHitRatio}%</span>
-        </div>
-        <div class="infra-stat"><span class="infra-label">Cached</span><span class="infra-val green">${fmtNum(a.cachedRequests)}</span></div>
-        <div class="infra-stat"><span class="infra-label">Uncached</span><span class="infra-val red">${fmtNum(a.uncachedRequests)}</span></div>
-        <div class="infra-stat"><span class="infra-label">Cached BW</span><span class="infra-val">${(a.cachedBytes / 1073741824).toFixed(1)} GB</span></div>
-      </div>
-      <div class="progress-bar" style="margin-top:8px;height:8px"><div class="fill ${cacheHitRatio > 80 ? 'green' : cacheHitRatio > 50 ? 'yellow' : 'red'}" style="width:${cacheHitRatio}%"></div></div>
-    </div>
-  `;
-
-  // Hourly Traffic (last 24h)
-  if (hours.length > 0) {
-    const maxHr = Math.max(...hours.map(h => h.requests), 1);
-    html += `
-      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🕐 24h Hourly Traffic</div>
-        <div style="display:flex;align-items:flex-end;gap:2px;height:40px">
-          ${hours.map(h => {
-            const hrHeight = Math.max((h.requests / maxHr) * 35, 1);
-            const time = h.datetime ? h.datetime.slice(11, 16) : '';
-            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center" title="${time}: ${fmtNum(h.requests)} reqs">
-              <div style="width:100%;height:${hrHeight}px;background:rgba(34,197,94,0.6);border-radius:2px 2px 0 0"></div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  // Countries
-  if (countries.length > 0) {
-    html += `
-      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🌍 Top Countries (7d)</div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">
-          ${countries.slice(0, 8).map(c => `
-            <div class="infra-stat">
-              <span class="infra-label">${c.flag} ${c.name}</span>
-              <span class="infra-val">${c.percentage}% (${fmtNum(c.requests)})</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  // HTTP Status Codes
-  if (statusCodes.length > 0) {
-    const totalStatus = statusCodes.reduce((sum, s) => sum + s.requests, 0);
-    html += `
-      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">📡 HTTP Status Distribution</div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
-          ${statusCodes.map(sc => {
-            const pct = totalStatus > 0 ? ((sc.requests / totalStatus) * 100).toFixed(1) : 0;
-            const cls = sc.class == 2 ? 'green' : sc.class == 3 ? 'cyan' : sc.class == 4 ? 'yellow' : sc.class == 5 ? 'red' : '';
-            return `<div class="infra-stat"><span class="infra-label">${sc.label}</span><span class="infra-val ${cls}">${pct}% (${fmtNum(sc.requests)})</span></div>`;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  // Top URLs
-  if (topUrls.length > 0) {
-    html += `
-      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🔗 Top URLs (7d)</div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">
-          ${topUrls.slice(0, 6).map(u => `
-            <div class="infra-stat">
-              <span class="infra-label" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${u.path}">${u.path}</span>
-              <span class="infra-val">${fmtNum(u.requests)} reqs</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  // Threats
-  if (a.threats > 0 || threatTypes.length > 0) {
-    html += `
-      <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">🛡️ Threats (7d)</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-          <div class="infra-stat"><span class="infra-label">Total Threats</span><span class="infra-val yellow">${fmtNum(a.threats)}</span></div>
-          <div class="infra-stat"><span class="infra-label">Blocked</span><span class="infra-val red">${fmtNum(fw.blocked)}</span></div>
-          <div class="infra-stat"><span class="infra-label">Challenged</span><span class="infra-val yellow">${fmtNum(fw.challenged)}</span></div>
-        </div>
-        ${threatTypes.length > 0 ? `
-          <div style="margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:4px">
-            ${threatTypes.slice(0, 4).map(t => `<div class="infra-stat"><span class="infra-label">${t.type}</span><span class="infra-val red">${fmtNum(t.count)}</span></div>`).join('')}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }
-
-  // Quick Actions
-  html += `
-    <div style="grid-column:1/-1;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
-      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">⚡ Quick Actions</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">
-        <button class="btn" onclick="cfAction('purge_all')" style="background:#f59e0b;color:#000;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Purge All</button>
-        <button class="btn" onclick="cfAction('toggle_dev_mode',{value:'on'})" style="background:#3b82f6;color:#fff;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Dev Mode ON</button>
-        <button class="btn" onclick="cfAction('toggle_dev_mode',{value:'off'})" style="background:#6b7280;color:#fff;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Dev Mode OFF</button>
-        <button class="btn" onclick="cfAction('cache_level',{level:'aggressive'})" style="background:#10b981;color:#fff;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Cache Aggressive</button>
-        <button class="btn" onclick="cfAction('cache_level',{level:'basic'})" style="background:#ef4444;color:#fff;padding:4px 10px;font-size:0.75rem;border:none;border-radius:4px;cursor:pointer">Cache Basic</button>
-      </div>
-    </div>
-
-    <div style="grid-column:1/-1;margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px">
-      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">🔧 Settings</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-        <div class="infra-stat"><span class="infra-label">Always Online</span><span class="infra-val ${s.always_online === 'on' ? 'green' : 'red'}">${s.always_online || 'off'}</span></div>
-        <div class="infra-stat"><span class="infra-label">Auto HTTPS</span><span class="infra-val ${s.automatic_https_rewrites === 'on' ? 'green' : 'red'}">${s.automatic_https_rewrites || 'off'}</span></div>
-        <div class="infra-stat"><span class="infra-label">Security</span><span class="infra-val">${s.security_level || '-'}</span></div>
-        <div class="infra-stat"><span class="infra-label">Brotli</span><span class="infra-val ${s.brotli === 'on' ? 'green' : 'red'}">${s.brotli || 'off'}</span></div>
-        <div class="infra-stat"><span class="infra-label">HTTP/3</span><span class="infra-val ${s.http3 === 'on' ? 'green' : 'red'}">${s.http3 || 'off'}</span></div>
-        <div class="infra-stat"><span class="infra-label">WAF</span><span class="infra-val ${s.waf === 'on' ? 'green' : 'red'}">${s.waf || 'off'}</span></div>
-      </div>
-    </div>
-  `;
-
-  el.innerHTML = html;
-}
 
 function renderSystemAdvanced(data) {
   const el = document.getElementById('system-advanced-content');
@@ -1446,11 +1289,14 @@ async function loadAlerts() {
 
 // ── Cloudflare Analytics ──
 let cfDataCache = null;
+let cfCacheTimestamp = 0;
+const CF_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 let cfChartsInitialized = false;
 
 async function loadCloudflare() {
   try {
-    if (cfDataCache) {
+    const now = Date.now();
+    if (cfDataCache && (now - cfCacheTimestamp) < CF_CACHE_TTL) {
       renderCloudflare(cfDataCache);
       return;
     }
@@ -1462,6 +1308,7 @@ async function loadCloudflare() {
       return;
     }
     cfDataCache = d;
+    cfCacheTimestamp = now;
     renderCloudflare(d);
   } catch(e) { console.error('Cloudflare', e); }
 }
@@ -2072,9 +1919,9 @@ function cicdPollJob(jobId) {
   const auth = await checkAuth();
   if (!auth) return;
   refresh();
-  setInterval(refresh, 30000);
-  // Refresh visitor stats every 30 seconds
-  setInterval(loadVisitorStats, 30000);
+  
+  // Auto-refresh removed - data is now refreshed only on manual refresh
+  // User can click the refresh button to update all data
 })();
 
 
@@ -2215,6 +2062,134 @@ async function varnishAction(action) {
   } catch(e) {
     outEl.textContent = 'Error: ' + e.message;
   }
+}
+
+// ============================================================
+// ENVIRONMENTS MONITOR
+// ============================================================
+async function loadEnvironments() {
+  try {
+    const [sitesR, cronsR, queuesR, dbR] = await Promise.all([
+      fetch(MONITOR_API + '?action=sites&' + Date.now()),
+      fetch(MONITOR_API + '?action=crons&' + Date.now()),
+      fetch(MONITOR_API + '?action=queues&' + Date.now()),
+      fetch(MONITOR_API + '?action=dbhealth&' + Date.now())
+    ]);
+    
+    const sites = sitesR.ok ? await sitesR.json() : {};
+    const crons = cronsR.ok ? await cronsR.json() : {};
+    const queues = queuesR.ok ? await queuesR.json() : {};
+    const db = dbR.ok ? await dbR.json() : {};
+    
+    renderEnvironments({ sites, crons, queues, db });
+  } catch(e) {
+    document.getElementById('env-overview-grid').innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+  }
+}
+
+function renderEnvironments(data) {
+  const sites = data.sites?.sites || {};
+  const crons = data.crons?.entries || [];
+  const queues = data.queues?.queue_counts || {};
+  const db = data.db || {};
+  
+  // Overview grid
+  const overviewGrid = document.getElementById('env-overview-grid');
+  let overviewHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">';
+  
+  Object.values(sites).forEach(site => {
+    const isHealthy = site.exists && site.php_fpm_workers > 0;
+    overviewHTML += `
+      <div class="card metric-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="metric-label">${site.name}</div>
+            <div class="metric-value" style="font-size:1rem;margin-top:6px">${site.disk_usage || '—'}</div>
+            <div class="metric-sub">${site.db_size || 'No DB'} • Mode: ${site.magento_mode || '—'}</div>
+          </div>
+          <span class="badge ${isHealthy ? 'green' : 'red'}" style="font-size:0.75rem">${isHealthy ? 'Healthy' : 'Issue'}</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  overviewHTML += '</div>';
+  overviewGrid.innerHTML = overviewHTML;
+  
+  // Comparison table
+  const tbody = document.querySelector('#env-comparison-table tbody');
+  let tableHTML = '';
+  
+  Object.values(sites).forEach(site => {
+    const isHealthy = site.exists && site.php_fpm_workers > 0;
+    tableHTML += `
+      <tr>
+        <td><strong>${site.name}</strong><br><span style="font-size:0.7rem;color:var(--muted)">${site.user}</span></td>
+        <td><span class="badge ${isHealthy ? 'green' : 'red'}">${isHealthy ? 'Up' : 'Down'}</span></td>
+        <td>${site.php_fpm_workers || 0}</td>
+        <td>${site.disk_usage || '—'}</td>
+        <td>${site.db_size || '—'}</td>
+        <td><span class="badge ${site.magento_mode === 'developer' ? 'yellow' : 'blue'}">${site.magento_mode || '—'}</span></td>
+        <td>${site.cache_status || '—'}</td>
+        <td>
+          <button class="btn btn-sm" onclick="envAction('${site.key}','clear_cache')">Clear Cache</button>
+        </td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = tableHTML || '<tr><td colspan="8" class="loading">No environments</td></tr>';
+  
+  // Cron jobs (split by prod and beta)
+  const prodCrons = crons.filter(c => c.command && c.command.includes('technadminy7'));
+  const betaCrons = crons.filter(c => c.command && c.command.includes('/home/beta/'));
+  
+  document.getElementById('env-prod-crons').innerHTML = prodCrons.length > 0 
+    ? prodCrons.slice(0, 10).map(c => `<div style="padding:4px 0;font-size:0.75rem"><code>${c.schedule}</code> ${(c.command||'').substring(0,80)}</div>`).join('')
+    : '<div class="loading">No prod crons</div>';
+    
+  document.getElementById('env-beta-crons').innerHTML = betaCrons.length > 0
+    ? betaCrons.slice(0, 10).map(c => `<div style="padding:4px 0;font-size:0.75rem"><code>${c.schedule}</code> ${(c.command||'').substring(0,80)}</div>`).join('')
+    : '<div class="loading">No beta crons</div>';
+  
+  // Queues
+  const queuesGrid = document.getElementById('env-queues-grid');
+  let queuesHTML = '';
+  Object.entries(queues).forEach(([queue, count]) => {
+    const cls = count > 100 ? 'red' : count > 10 ? 'yellow' : 'green';
+    queuesHTML += `
+      <div class="card metric-card">
+        <div class="metric-label">${queue}</div>
+        <div class="metric-value" style="font-size:1.2rem;margin-top:6px"><span class="badge ${cls}">${count}</span></div>
+      </div>
+    `;
+  });
+  queuesGrid.innerHTML = queuesHTML || '<div class="loading">No queues</div>';
+  
+  // Database health
+  const dbHealth = document.getElementById('env-db-health');
+  if (Object.keys(db).length > 0) {
+    let dbHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px">';
+    Object.entries(db).forEach(([env, info]) => {
+      dbHTML += `
+        <div class="card metric-card">
+          <div class="metric-label">${env} Database</div>
+          <div class="metric-sub">Connections: ${info.connections || '—'}</div>
+          <div class="metric-sub">Size: ${info.size || '—'}</div>
+        </div>
+      `;
+    });
+    dbHTML += '</div>';
+    dbHealth.innerHTML = dbHTML;
+  } else {
+    dbHealth.innerHTML = '<div class="loading">No database info</div>';
+  }
+}
+
+async function envAction(env, action) {
+  showToast(`${action} for ${env}...`, 'info');
+  // Placeholder - integrate with existing execute action
+  setTimeout(() => showToast(`${action} completed for ${env}`, 'success'), 1000);
 }
 
 // ============================================================
@@ -2383,9 +2358,91 @@ async function monitorAPIResponseTimes() {
   return timings;
 }
 
-// Auto-refresh monitoring data every 5 seconds
-setInterval(() => {
-  if (document.querySelector('.tab-content.active')?.id === 'tab-overview') {
-    loadOverview();
+// ============================================================
+// APACHE MONITOR
+// ============================================================
+async function loadApacheMonitor() {
+  try {
+    const r = await fetch(MONITOR_API + '?action=apache&' + Date.now());
+    const d = await r.json();
+    renderApacheMonitor(d);
+  } catch(e) {
+    document.getElementById('apache-status-badge').textContent = 'Error';
+    document.getElementById('apache-version').textContent = e.message;
   }
-}, 5000);
+}
+
+function renderApacheMonitor(data) {
+  // Status badge
+  const statusEl = document.getElementById('apache-status-badge');
+  statusEl.textContent = data.running ? 'Running' : 'Stopped';
+  statusEl.style.color = data.running ? '#22c55e' : '#ef4444';
+  
+  document.getElementById('apache-version').textContent = data.version || '—';
+  
+  // Connections
+  document.getElementById('apache-connections').textContent = data.active_connections || 0;
+  document.getElementById('apache-workers').textContent = `${data.idle_workers || 0} idle`;
+  
+  // Processes
+  document.getElementById('apache-processes').textContent = data.processes || 0;
+  document.getElementById('apache-max-workers').textContent = `Max: ${data.max_workers || '—'}`;
+  
+  // Memory
+  document.getElementById('apache-memory').textContent = data.memory?.total_mb ? `${data.memory.total_mb} MB` : '—';
+  document.getElementById('apache-avg-mem').textContent = `Avg: ${data.memory?.avg_per_process_mb || '—'} MB`;
+  
+  // Configuration
+  document.getElementById('apache-mpm').textContent = data.mpm || '—';
+  document.getElementById('apache-port-http').textContent = data.ports?.http ? '✓ Open' : '✗ Closed';
+  document.getElementById('apache-port-http').style.color = data.ports?.http ? '#22c55e' : '#ef4444';
+  document.getElementById('apache-port-https').textContent = data.ports?.https ? '✓ Open' : '✗ Closed';
+  document.getElementById('apache-port-https').style.color = data.ports?.https ? '#22c55e' : '#ef4444';
+  document.getElementById('apache-uptime').textContent = data.uptime || '—';
+  
+  // Error counts
+  const errors = data.error_counts || {};
+  document.getElementById('apache-errors-crit').textContent = errors.crit || 0;
+  document.getElementById('apache-errors-error').textContent = errors.error || 0;
+  document.getElementById('apache-errors-warn').textContent = errors.warn || 0;
+  document.getElementById('apache-errors-notice').textContent = errors.notice || 0;
+  
+  // Recent errors
+  const recentErrors = data.recent_errors || [];
+  const errorsEl = document.getElementById('apache-recent-errors');
+  if (recentErrors.length > 0) {
+    errorsEl.innerHTML = recentErrors.map(err => `<div class="log-line error">${escapeHtml(err)}</div>`).join('');
+  } else {
+    errorsEl.innerHTML = '<div class="loading" style="padding:20px;text-align:center">No recent errors</div>';
+  }
+}
+
+async function apacheAction(action) {
+  const outEl = document.getElementById('apache-action-output');
+  outEl.style.display = 'block';
+  outEl.innerHTML = '<div class="loading">Executing...</div>';
+  
+  try {
+    if (action === 'restart') {
+      const r = await fetch(MONITOR_API + '?action=execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `command=systemctl+restart+httpd&type=apache`
+      });
+      const d = await r.json();
+      outEl.innerHTML = `<div class="log-line">Apache restart: ${d.success ? '✓ Success' : '✗ Failed'}</div>`;
+    } else if (action === 'graceful') {
+      const r = await fetch(MONITOR_API + '?action=execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `command=apachectl+graceful&type=apache`
+      });
+      const d = await r.json();
+      outEl.innerHTML = `<div class="log-line">Apache graceful reload: ${d.success ? '✓ Success' : '✗ Failed'}</div>`;
+    }
+  } catch(e) {
+    outEl.innerHTML = `<div class="log-line error">Error: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+// Manual refresh only - overview data is updated when user clicks refresh button

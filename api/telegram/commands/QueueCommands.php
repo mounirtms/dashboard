@@ -79,13 +79,13 @@ class QueueCommands {
         }
 
         // Get pending messages by queue
-        $r = $db->query("SELECT queue_name, COUNT(*) as pending FROM queue WHERE status='new' GROUP BY queue_name ORDER BY pending DESC LIMIT 20");
+        $r = $db->query("SELECT name, COUNT(*) as pending FROM queue WHERE status='new' GROUP BY name ORDER BY pending DESC LIMIT 20");
         $queueCounts = [];
         $totalPending = 0;
 
         if ($r) {
             while ($row = $r->fetch_assoc()) {
-                $queueCounts[$row['queue_name']] = (int)$row['pending'];
+                $queueCounts[$row['name']] = (int)$row['pending'];
                 $totalPending += (int)$row['pending'];
             }
         }
@@ -94,7 +94,7 @@ class QueueCommands {
         $text .= "*Total Pending:* `$totalPending`\n\n";
 
         if (empty($queueCounts)) {
-            $text .= "✅ All queues are empty";
+            $text .= "All queues are empty";
         } else {
             // Sort by pending count
             arsort($queueCounts);
@@ -103,6 +103,8 @@ class QueueCommands {
             foreach ($queueCounts as $name => $count) {
                 $icon = $count >= 100 ? '🔴' : ($count >= 10 ? '🟡' : '🟢');
                 $displayName = strlen($name) > 30 ? substr($name, 0, 30) . '...' : $name;
+                // Escape underscores for Telegram markdown
+                $displayName = str_replace('_', '\\_', $displayName);
                 $text .= sprintf("%s %-30s %d\n", $icon, $displayName, $count);
             }
             $text .= "```";

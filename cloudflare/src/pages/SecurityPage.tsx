@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, useTheme } from '@mui/material';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import LoadingState from '../components/common/LoadingState';
@@ -6,11 +6,8 @@ import StatCard from '../components/common/StatCard';
 import StatusBadge from '../components/common/StatusBadge';
 import { formatNumber } from '../utils/formatters';
 
-const COLORS = ['#ef4444', '#eab308', '#f97316', '#a855f7', '#06b6d4', '#22c55e', '#3b82f6', '#ec4899'];
-
-const tooltipStyle = { backgroundColor: '#151c2c', border: '1px solid #2a3548', borderRadius: 10, color: '#f1f5f9' };
-
 export default function SecurityPage() {
+  const theme = useTheme();
   const { data, loading, error } = useCloudflareData();
 
   if (loading) return <LoadingState />;
@@ -21,6 +18,8 @@ export default function SecurityPage() {
   const fw = data.firewall;
   const threatData = data.threat_types.map((t) => ({ name: t.type || 'Unknown', value: t.count }));
   const wafStatus = data.settings.waf === 'on' ? 'success' : 'error';
+  const gridColor = `${theme.palette.divider}99`;
+  const borderColor = `${theme.palette.divider}4d`;
 
   return (
     <Box>
@@ -64,10 +63,10 @@ export default function SecurityPage() {
                       label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
                     >
                       {threatData.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                        <Cell key={i} fill={theme.palette[i % 2 === 0 ? 'error' : 'warning'].main} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={tooltipStyle} />
+                    <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 10, color: theme.palette.text.primary }} />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -85,7 +84,7 @@ export default function SecurityPage() {
                 <TableContainer component={Paper} sx={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
                   <Table size="small">
                     <TableHead>
-                      <TableRow sx={{ borderBottom: '1px solid rgba(30, 41, 59, 0.6)' }}>
+                      <TableRow sx={{ borderBottom: 1, borderColor: gridColor }}>
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Action</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Source</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Rule ID</TableCell>
@@ -94,7 +93,7 @@ export default function SecurityPage() {
                     </TableHead>
                     <TableBody>
                       {fw.events.slice(0, 10).map((event, i) => (
-                        <TableRow key={i} sx={{ borderBottom: '1px solid rgba(30, 41, 59, 0.3)' }}>
+                        <TableRow key={i} sx={{ borderBottom: 1, borderColor: borderColor }}>
                           <TableCell>
                             <Chip
                               label={event.action}

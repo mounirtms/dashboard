@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Toolbar, Typography, Box } from '@mui/material';
+import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Toolbar, Typography, Box, useTheme } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Dashboard as OverviewIcon,
@@ -23,19 +23,20 @@ interface SidebarProps { onClose?: () => void }
 
 export default function Sidebar({ onClose }: SidebarProps) {
   const location = useLocation();
+  const theme = useTheme();
 
   const getPath = (hash: string) => hash.replace('#', '') || '/';
 
   return (
     <Toolbar sx={{ display: 'flex', flexDirection: 'column', p: 0 }}>
-      <Box sx={{ px: 2, py: 2.5, borderBottom: '1px solid #2a3548' }}>
+      <Box sx={{ px: 2, py: 2.5, borderBottom: 1, borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-          <CloudIcon sx={{ color: '#3b82f6', fontSize: 28 }} />
+          <CloudIcon sx={{ color: theme.palette.primary.main, fontSize: 28 }} />
           <Box>
             <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.88rem', letterSpacing: '-0.01em' }}>
               Cloudflare
             </Typography>
-            <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.68rem', fontWeight: 500 }}>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.68rem', fontWeight: 500 }}>
               Analytics Dashboard
             </Typography>
           </Box>
@@ -67,7 +68,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
                 }}
               >
                 <ListItemIcon sx={{
-                  color: isSelected ? '#60a5fa' : '#94a3b8',
+                  color: isSelected ? theme.palette.primary.light : theme.palette.text.secondary,
                   minWidth: 38,
                   transition: 'color 0.2s ease',
                 }}>
@@ -79,7 +80,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
                     '& .MuiTypography-root': {
                       fontWeight: isSelected ? 600 : 500,
                       fontSize: '0.84rem',
-                      color: isSelected ? '#f1f5f9' : '#cbd5e1',
+                      color: isSelected ? theme.palette.text.primary : theme.palette.text.secondary,
                       transition: 'color 0.2s ease',
                     },
                   }}
@@ -90,13 +91,13 @@ export default function Sidebar({ onClose }: SidebarProps) {
         })}
       </List>
 
-      <Divider sx={{ mx: 2, my: 1.5, borderColor: '#2a3548' }} />
+      <Divider sx={{ mx: 2, my: 1.5, borderColor: 'divider' }} />
 
       <List sx={{ px: 2, pb: 2 }}>
         <ListItem sx={{ px: 0 }}>
           <ListItemText
-            primary={<Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: '#94a3b8' }}>technostationery.com</Typography>}
-            secondary={<Typography sx={{ fontSize: '0.68rem', color: '#64748b' }}>v1.0.0</Typography>}
+            primary={<Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: theme.palette.text.secondary }}>technostationery.com</Typography>}
+            secondary={<Typography sx={{ fontSize: '0.68rem', color: theme.palette.text.disabled }}>v1.0.0</Typography>}
           />
         </ListItem>
       </List>

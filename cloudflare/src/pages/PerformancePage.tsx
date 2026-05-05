@@ -1,10 +1,11 @@
-import { Box, Typography, Card, CardContent, Grid, LinearProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, LinearProgress, useTheme } from '@mui/material';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
 import { formatNumber, formatBytes } from '../utils/formatters';
 
 export default function PerformancePage() {
+  const theme = useTheme();
   const { data, loading, error } = useCloudflareData();
 
   if (loading) return <LoadingState />;
@@ -54,13 +55,13 @@ export default function PerformancePage() {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Cache Hit Ratio</Typography>
-          <Typography variant="h4" sx={{ color: ratio > 80 ? 'success.main' : ratio > 50 ? 'warning.main' : 'error.main', fontWeight: 700, mb: 1 }}>
+          <Typography variant="h4" sx={{ color: ratioColor === 'success' ? 'success.main' : ratioColor === 'warning' ? 'warning.main' : 'error.main', fontWeight: 700, mb: 1 }}>
             {ratio}%
           </Typography>
           <LinearProgress
             variant="determinate"
             value={ratio}
-            sx={{ height: 10, borderRadius: 5, backgroundColor: 'rgba(30, 41, 59, 0.6)' }}
+            sx={{ height: 10, borderRadius: 5, backgroundColor: `${theme.palette.divider}99` }}
             color={ratioColor as any}
           />
           <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
@@ -75,7 +76,7 @@ export default function PerformancePage() {
           <Grid container spacing={1.5}>
             {perfSettings.map((item) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.label}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5, borderBottom: '1px solid rgba(30, 41, 59, 0.4)' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5, borderBottom: 1, borderColor: `${theme.palette.divider}66` }}>
                   <Typography variant="body2" color="textSecondary">{item.label}</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, textTransform: 'capitalize' }}>{item.value}</Typography>
                 </Box>

@@ -1,13 +1,12 @@
-import { Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useTheme } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import LoadingState from '../components/common/LoadingState';
 import { formatNumber, formatBytes } from '../utils/formatters';
 
-const tooltipStyle = { backgroundColor: '#151c2c', border: '1px solid #2a3548', borderRadius: 10, color: '#f1f5f9' };
-
 export default function GeographyPage() {
+  const theme = useTheme();
   const { data, loading, error } = useCloudflareData();
 
   if (loading) return <LoadingState />;
@@ -28,6 +27,9 @@ export default function GeographyPage() {
     requests: c.requests,
   }));
 
+  const gridColor40 = `${theme.palette.divider}66`;
+  const gridColor60 = `${theme.palette.divider}99`;
+
   return (
     <Box>
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: 700 }}>Geography</Typography>
@@ -47,9 +49,9 @@ export default function GeographyPage() {
                   initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
                   disableRowSelectionOnClick
                   sx={{
-                    '& .MuiDataGrid-cell': { borderBottom: '1px solid rgba(30, 41, 59, 0.4)' },
-                    '& .MuiDataGrid-columnHeaders': { borderBottom: '1px solid rgba(30, 41, 59, 0.6)', backgroundColor: 'rgba(30, 41, 59, 0.3)' },
-                    '& .MuiDataGrid-footerContainer': { borderTop: '1px solid rgba(30, 41, 59, 0.6)', backgroundColor: 'rgba(30, 41, 59, 0.2)' },
+                    '& .MuiDataGrid-cell': { borderBottom: `1px solid ${gridColor40}` },
+                    '& .MuiDataGrid-columnHeaders': { borderBottom: `1px solid ${gridColor60}`, backgroundColor: `${theme.palette.divider}4d` },
+                    '& .MuiDataGrid-footerContainer': { borderTop: `1px solid ${gridColor60}`, backgroundColor: `${theme.palette.divider}33` },
                   }}
                 />
               </div>
@@ -63,11 +65,11 @@ export default function GeographyPage() {
               <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>Top Countries Chart</Typography>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(30, 41, 59, 0.6)" />
-                  <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" height={70} />
-                  <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="requests" fill="rgba(34, 197, 94, 0.6)" radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridColor60} />
+                  <XAxis dataKey="name" stroke={theme.palette.text.secondary} tick={{ fontSize: 11 }} angle={-30} textAnchor="end" height={70} />
+                  <YAxis stroke={theme.palette.text.secondary} tick={{ fontSize: 11 }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                  <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 10, color: theme.palette.text.primary }} />
+                  <Bar dataKey="requests" fill={`${theme.palette.success.main}99`} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -81,7 +83,7 @@ export default function GeographyPage() {
               <TableContainer component={Paper} sx={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
                 <Table size="small">
                   <TableHead>
-                    <TableRow sx={{ borderBottom: '1px solid rgba(30, 41, 59, 0.6)' }}>
+                    <TableRow sx={{ borderBottom: 1, borderColor: gridColor60 }}>
                       <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>URL</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Requests</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Bandwidth</TableCell>
@@ -89,7 +91,7 @@ export default function GeographyPage() {
                   </TableHead>
                   <TableBody>
                     {data.top_urls.slice(0, 10).map((url, i) => (
-                      <TableRow key={i} sx={{ borderBottom: '1px solid rgba(30, 41, 59, 0.3)' }}>
+                      <TableRow key={i} sx={{ borderBottom: 1, borderColor: gridColor40 }}>
                         <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'primary.main' }}>{url.path}</TableCell>
                         <TableCell>{formatNumber(url.requests)}</TableCell>
                         <TableCell>{formatBytes(url.bytes)}</TableCell>

@@ -45,11 +45,6 @@ class CommandRouter {
         $command = strtolower($parts[0]);
         $args = isset($parts[1]) ? trim($parts[1]) : '';
 
-        // Handle AI commands with colon syntax: /ai:report, /ai:query, etc.
-        if (strpos($command, '/ai:') === 0 || $command === '/ai') {
-            return $this->routeAICommand($command, $args, $chatId, $bot);
-        }
-
         // Handle cache commands with colon syntax: /cache:flush, /cache:clean, /cache:purge
         if (strpos($command, '/cache:') === 0) {
             return $this->routeCacheCommand($command, $args, $chatId, $bot);
@@ -90,42 +85,6 @@ class CommandRouter {
 
         $bot->sendMessage($chatId, "❌ Command handler not found.");
         return null;
-    }
-
-    /**
-     * Route AI commands (ai:report, ai:query, ai:cache:clear, ai:help)
-     */
-    private function routeAICommand(string $command, string $firstArgs, int $chatId, BotHandler $bot): ?array {
-        // Check if AI commands are enabled
-        $botConfig = $this->config['bots']['server'] ?? [];
-        if (!in_array('ai', $botConfig['commands'] ?? [])) {
-            $bot->sendMessage($chatId, "⛔ AI commands are not enabled for this bot.");
-            return null;
-        }
-
-        // Parse the full command path
-        $fullCommand = substr($command, 1); // Remove leading /
-        $parts = explode(':', $fullCommand);
-        
-        // /ai:report -> parts = ['ai', 'report']
-        // /ai:cache:clear -> parts = ['ai', 'cache', 'clear']
-        
-        $handler = $this->getHandler('ai', $bot);
-        
-        if ($fullCommand === 'ai' || $fullCommand === 'ai:help') {
-            return $handler->cmd_help($chatId, '', $bot);
-        } elseif ($fullCommand === 'ai:report') {
-            return $handler->cmd_report($chatId, $firstArgs, $bot);
-        } elseif ($fullCommand === 'ai:query') {
-            return $handler->cmd_query($chatId, $firstArgs, $bot);
-        } elseif ($fullCommand === 'ai:cache:clear') {
-            return $handler->cmd_cache_clear($chatId, '', $bot);
-        } elseif ($fullCommand === 'ai:cache:stats') {
-            return $handler->cmd_cache_stats($chatId, '', $bot);
-        } else {
-            $bot->sendMessage($chatId, "❓ Unknown AI command: `$command`\n\nSend /ai:help to see available AI commands.");
-            return null;
-        }
     }
 
     /**
@@ -206,9 +165,9 @@ class CommandRouter {
      * Route log commands (logs:summary, logs:critical, logs:errors, logs:ai)
      */
     private function routeLogCommand(string $command, string $firstArgs, int $chatId, BotHandler $bot): ?array {
-        // Check if log commands are enabled (use 'database' group for now)
+        // Check if log commands are enabled
         $botConfig = $this->config['bots']['server'] ?? [];
-        if (!in_array('database', $botConfig['commands'] ?? [])) {
+        if (!in_array('log', $botConfig['commands'] ?? [])) {
             $bot->sendMessage($chatId, "⛔ Log commands are not enabled for this bot.");
             return null;
         }
@@ -265,30 +224,22 @@ class CommandRouter {
     public function getHelpText(): string {
         $help = "*🤖 Server Control Bot*\n\n";
         $help .= "*System:*\n";
-        $help .= "/status - Server overview\n";
+        $help .= "/status - Full server overview\n";
         $help .= "/services - Service status\n";
-        $help .= "/load - CPU/Memory/Disk\n";
-        $help .= "/processes - Top processes\n\n";
+        $help .= "/load - CPU/Memory/Disk metrics\n";
+        $help .= "/processes - Top CPU processes\n";
+        $help .= "/killqoder - Kill all Qoder CLI processes\n";
+        $help .= "/killssh - Close all active SSH sessions\n";
+        $help .= "/cleanup - Kill Qoder + SSH + npm globals\n\n";
 
         $help .= "*Environments:*\n";
-        $help .= "/env - All environments\n";
-        $help .= "/env prod|beta|dev|pim - Env details\n";
-        $help .= "/orders prod|beta|dev - Orders stats\n";
-        $help .= "/sales prod|beta|dev - Revenue stats\n";
-        $help .= "/customers prod|beta|dev - Customer stats\n";
-        $help .= "/products prod|beta|dev|pim - Products\n\n";
-
-        $help .= "*PIM \(Akeneo\):*\n";
-        $help .= "/pim - PIM overview\n";
-        $help .= "/pimproducts - Product list\n";
-        $help .= "/pimfamilies - Families\n";
-        $help .= "/pimjobs - Job status\n\n";
-
-        $help .= "*Magento:*\n";
-        $help .= "/cache prod|beta|dev - Cache status\n";
-        $help .= "/indexers prod|beta|dev - Indexers\n";
-        $help .= "/mode prod|beta|dev - Magento mode\n";
-        $help .= "/config prod|beta|dev - Env config\n\n";
+        $help .= "/env - Environment status\n";
+        $help .= "/orders - Today's orders\n";
+        $help .= "/online - Users online (all envs)\n";
+        $help .= "/onlineusers - Detailed online users\n";
+        $help .= "/inventory - Low stock items\n";
+        $help .= "/cache - Cache status\n";
+        $help .= "/indexers - Indexer status\n\n";
 
         $help .= "*Cache Management:*\n";
         $help .= "/cache:flush prod|beta|dev - Flush all cache\n";
@@ -302,31 +253,25 @@ class CommandRouter {
         $help .= "*Database:*\n";
         $help .= "/dbhealth prod|beta|dev|all - DB health\n";
         $help .= "/slowqueries prod|beta|dev - Slow queries\n";
-        $help .= "/db:size prod|beta|dev - Size breakdown\n";
-        $help .= "/db:tables prod|beta|dev - Table stats\n";
-        $help .= "/db:connections prod|beta|dev - Connections\n";
-        $help .= "/db:optimize prod|beta|dev - Optimize\n";
-        $help .= "/db:cleanup prod|beta|dev - Clean data\n\n";
+        $help .= "/db:size prod|beta|dev - Database size\n";
+        $help .= "/db:tables prod|beta|dev - Table listing\n\n";
 
         $help .= "*Log Analysis:*\n";
-        $help .= "/logs:summary prod [hours] - Log summary\n";
+        $help .= "/logs:summary prod [hours] - Log analysis\n";
         $help .= "/logs:critical prod [hours] - Critical errors\n";
         $help .= "/logs:errors prod [hours] - Error patterns\n";
-        $help .= "/logs:ai prod [hours] - AI analysis\n\n";
-
-        $help .= "*AI Commands:*\n";
-        $help .= "/ai:report database prod - DB analysis\n";
-        $help .= "/ai:report performance prod - Performance\n";
-        $help .= "/ai:report security prod - Security audit\n";
-        $help .= "/ai:query <prompt> - Custom query\n";
-        $help .= "/ai:cache:clear - Clear cache\n";
-        $help .= "/ai:help - AI commands help\n\n";
+        $help .= "/logs:tail prod [lines] - Tail log files\n";
+        $help .= "/logs:search prod <pattern> - Search logs\n";
+        $help .= "/logs:find prod <name> - Find log files\n\n";
 
         $help .= "*Admin:*\n";
-        $help .= "/auth - Manage users\n";
+        $help .= "/start - Welcome message\n";
+        $help .= "/auth - Manage authorized users\n";
         $help .= "/alerts - Alert settings\n";
         $help .= "/stats - Bot statistics\n";
-        $help .= "/help - This message\n";
+        $help .= "/ratelimit - Rate limit status\n";
+        $help .= "/botstatus - Bot health info\n";
+        $help .= "/help - Show this message\n";
 
         return $help;
     }
@@ -336,36 +281,40 @@ class CommandRouter {
     private function registerCommands(): void {
         // System commands
         $this->commands['/status'] = ['group' => 'system', 'method' => 'cmd_status'];
-        $this->commands['/stat'] = ['group' => 'system', 'method' => 'cmd_status']; // Alias
         $this->commands['/services'] = ['group' => 'system', 'method' => 'cmd_services'];
         $this->commands['/load'] = ['group' => 'system', 'method' => 'cmd_load'];
         $this->commands['/processes'] = ['group' => 'system', 'method' => 'cmd_processes'];
+        $this->commands['/killqoder'] = ['group' => 'system', 'method' => 'cmd_killqoder'];
+        $this->commands['/killssh'] = ['group' => 'system', 'method' => 'cmd_killssh'];
+        $this->commands['/cleanup'] = ['group' => 'system', 'method' => 'cmd_cleanup'];
         $this->commands['/start'] = ['group' => 'admin', 'method' => 'cmd_start'];
 
         // Environment commands (Magento multi-env)
         $this->commands['/env'] = ['group' => 'magento', 'method' => 'cmd_env'];
         $this->commands['/orders'] = ['group' => 'magento', 'method' => 'cmd_orders'];
-        $this->commands['/sales'] = ['group' => 'magento', 'method' => 'cmd_sales'];
-        $this->commands['/customers'] = ['group' => 'magento', 'method' => 'cmd_customers'];
-        $this->commands['/products'] = ['group' => 'magento', 'method' => 'cmd_products'];
         $this->commands['/online'] = ['group' => 'magento', 'method' => 'cmd_online'];
+        $this->commands['/onlineusers'] = ['group' => 'magento', 'method' => 'cmd_onlineusers'];
         $this->commands['/inventory'] = ['group' => 'magento', 'method' => 'cmd_inventory'];
         $this->commands['/cache'] = ['group' => 'magento', 'method' => 'cmd_cache'];
         $this->commands['/indexers'] = ['group' => 'magento', 'method' => 'cmd_indexers'];
-        $this->commands['/mode'] = ['group' => 'magento', 'method' => 'cmd_mode'];
-        $this->commands['/config'] = ['group' => 'magento', 'method' => 'cmd_config'];
+
+        // Queue commands
+        $this->commands['/queues'] = ['group' => 'queue', 'method' => 'cmd_queues'];
+        $this->commands['/consumers'] = ['group' => 'queue', 'method' => 'cmd_consumers'];
+
+        // Database commands
+        $this->commands['/dbhealth'] = ['group' => 'database', 'method' => 'cmd_dbhealth'];
+        $this->commands['/slowqueries'] = ['group' => 'database', 'method' => 'cmd_slowqueries'];
+        $this->commands['/db:size'] = ['group' => 'database', 'method' => 'cmd_size'];
+        $this->commands['/db:tables'] = ['group' => 'database', 'method' => 'cmd_tables'];
 
         // Admin commands
         $this->commands['/auth'] = ['group' => 'admin', 'method' => 'cmd_auth'];
         $this->commands['/alerts'] = ['group' => 'admin', 'method' => 'cmd_alerts'];
         $this->commands['/stats'] = ['group' => 'admin', 'method' => 'cmd_stats'];
         $this->commands['/ratelimit'] = ['group' => 'admin', 'method' => 'cmd_ratelimit'];
-        $this->commands['/rl'] = ['group' => 'admin', 'method' => 'cmd_ratelimit']; // Alias
         $this->commands['/botstatus'] = ['group' => 'admin', 'method' => 'cmd_botstatus'];
         $this->commands['/help'] = ['group' => 'admin', 'method' => 'cmd_help'];
-
-        // Magento extended
-        $this->commands['/onlineusers'] = ['group' => 'magento', 'method' => 'cmd_onlineusers'];
     }
 
     private function getHandler(string $group, BotHandler $bot) {

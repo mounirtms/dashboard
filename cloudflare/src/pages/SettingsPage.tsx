@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, Grid, Chip, Divider, Button } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Chip, Divider, Button, useTheme } from '@mui/material';
 import { CheckCircle, Warning, RestartAlt, Cached, Settings, Delete } from '@mui/icons-material';
 import { useState } from 'react';
 import { useCloudflareData } from '../hooks/useCloudflareData';
@@ -8,6 +8,7 @@ import StatusBadge from '../components/common/StatusBadge';
 import { formatNumber } from '../utils/formatters';
 
 export default function SettingsPage() {
+  const theme = useTheme();
   const { data, loading, error, refetch } = useCloudflareData();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
@@ -118,7 +119,7 @@ export default function SettingsPage() {
                   {group.items.map((item) => {
                     const tc = toggleValue(item.label, item.value);
                     return (
-                      <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.75, borderBottom: '1px solid rgba(30, 41, 59, 0.3)' }}>
+                      <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.75, borderBottom: 1, borderColor: `${theme.palette.divider}4d` }}>
                         <Typography variant="body2" color="textSecondary">{item.label}</Typography>
                         <Chip
                           label={item.value}

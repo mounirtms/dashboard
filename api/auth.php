@@ -6,11 +6,10 @@
 // Start output buffering
 ob_start();
 
-// Start session
-session_start();
-
-// Set JSON header
-header('Content-Type: application/json');
+// Configuration (must be defined before use)
+define('SESSION_LIFETIME', 86400);
+define('MAX_LOGIN_ATTEMPTS', 5);
+define('LOCKOUT_DURATION', 900);
 
 // Load environment variables
 $envFile = dirname(__DIR__) . '/.env';
@@ -32,10 +31,50 @@ define('DB_USER', $_ENV['DB_USER'] ?? 'root');
 define('DB_PASS', $_ENV['DB_PASS'] ?? '');
 define('DB_NAME', 'dashboard_auth');
 
-// Configuration
-define('SESSION_LIFETIME', 86400);
-define('MAX_LOGIN_ATTEMPTS', 5);
-define('LOCKOUT_DURATION', 900);
+// Set session cookie params for HTTPS compatibility
+session_set_cookie_params([
+    'lifetime' => SESSION_LIFETIME,
+    'path' => '/',
+    'domain' => '',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
+// Set cache headers BEFORE session_start to prevent session from adding its own
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, private', true);
+header('Pragma: no-cache', true);
+header('Expires: 0', true);
+// Cloudflare-specific cache bypass
+header('CF-Cache-Status: DYNAMIC', true);
+header('CDN-Cache-Control: no-cache, no-store, must-revalidate, private', true);
+header('Cloudflare-CDN-Cache-Control: no-cache, no-store, must-revalidate, private', true);
+
+// Start session
+session_start();
+
+// Set JSON header
+header('Content-Type: application/json', true);
+
+// Load environment variables
+$envFile = dirname(__DIR__) . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
+// Database configuration
+define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');
+define('DB_PORT', $_ENV['DB_PORT'] ?? '3307');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_NAME', 'dashboard_auth');
 
 // Get database connection
 function getDb() {
@@ -211,7 +250,7 @@ function handleCsrfToken() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-    echo json_encode(['token' => $_SESSION['csrf_token']]);
+    echo json_encode(['success' => true, 'csrf_token' => $_SESSION['csrf_token']]);
 }
 
 // ── Main Router ──

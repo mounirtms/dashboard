@@ -8,6 +8,16 @@
 while (ob_get_level()) ob_end_clean();
 ob_start();
 
+// Set session cookie params for HTTPS compatibility
+session_set_cookie_params([
+    'lifetime' => 86400,
+    'path' => '/',
+    'domain' => '',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
 // Set headers first
 header('Content-Type: application/json');
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -78,7 +88,7 @@ $allowedActions = [
     'overview', 'sites', 'crons', 'queues', 'cleanup', 'indexer',
     'execute', 'dbhealth', 'redis', 'elasticsearch', 'varnish',
     'system_advanced', 'phpfpm_pools', 'alerts', 'cloudflare',
-    'cloudflare_action'
+    'cloudflare_action', 'apache'
 ];
 $action = InputValidator::validateAction($action, $allowedActions);
 if ($action === false) {
@@ -157,11 +167,21 @@ function overview() {
     $mem_raw = @file_get_contents('/proc/meminfo');
     preg_match('/MemTotal:\s+(\d+)/', $mem_raw, $mt);
     preg_match('/MemAvailable:\s+(\d+)/', $mem_raw, $ma);
+    preg_match('/MemFree:\s+(\d+)/', $mem_raw, $mf);
+    preg_match('/Buffers:\s+(\d+)/', $mem_raw, $mb);
+    preg_match('/^Cached:\s+(\d+)/m', $mem_raw, $mc);
+    preg_match('/Shmem:\s+(\d+)/', $mem_raw, $ms);
+    preg_match('/SReclaimable:\s+(\d+)/', $mem_raw, $msr);
     preg_match('/SwapTotal:\s+(\d+)/', $mem_raw, $st);
     preg_match('/SwapFree:\s+(\d+)/', $mem_raw, $sf);
     $mem_total = safe_num(($mt[1]??0)/1024);
     $mem_avail = safe_num(($ma[1]??0)/1024);
+    $mem_free = safe_num(($mf[1]??0)/1024);
     $mem_used_pct = $mem_total > 0 ? round((1-$mem_avail/$mem_total)*100,1) : 0;
+    $mem_buffers = safe_num(($mb[1]??0)/1024);
+    $mem_cached = safe_num(($mc[1]??0)/1024);
+    $mem_shmem = safe_num(($ms[1]??0)/1024);
+    $mem_slab = safe_num(($msr[1]??0)/1024);
     $swap_total = safe_num(($st[1]??0)/1024);
     $swap_free = safe_num(($sf[1]??0)/1024);
     $swap_used_pct = $swap_total > 0 ? round((1-$swap_free/$swap_total)*100,1) : 0;
@@ -202,10 +222,10 @@ function overview() {
             $top_procs[]=['pid'=>$m[1],'cpu'=>$m[2],'mem'=>$m[3],'time'=>$m[4],'cmd'=>trim($m[5])];
         }
     }
-    // Recent access log stats
-    $access_rate = cmd_line("tail -100 /etc/apache2/logs/access_log 2>/dev/null | wc -l");
-    $error_503 = cmd_line("grep -c ' 503 ' /etc/apache2/logs/access_log 2>/dev/null || echo 0");
-    $error_500 = cmd_line("grep -c ' 500 ' /etc/apache2/logs/access_log 2>/dev/null || echo 0");
+    // Recent access log stats - use last 1000 lines for actionable error rates
+    $access_rate = (int)cmd_line("tail -1000 /etc/apache2/logs/access_log 2>/dev/null | wc -l");
+    $error_503 = (int)cmd_line("tail -1000 /etc/apache2/logs/access_log 2>/dev/null | grep -c ' 503 ' || echo 0");
+    $error_500 = (int)cmd_line("tail -1000 /etc/apache2/logs/access_log 2>/dev/null | grep -c ' 500 ' || echo 0");
 
     // ── Telegram Alerts (Critical Conditions with Deduplication) ──
     $telegramConfig = require __DIR__ . '/telegram/config.php';
@@ -275,7 +295,7 @@ function overview() {
 
     echo json_encode([
         'load' => ['1min'=>$load[0],'5min'=>$load[1],'15min'=>$load[2]],
-        'memory' => ['total_mb'=>$mem_total,'used_pct'=>$mem_used_pct,'available_mb'=>$mem_avail,'swap_pct'=>$swap_used_pct],
+        'memory' => ['total_mb'=>$mem_total,'used_pct'=>$mem_used_pct,'available_mb'=>$mem_avail,'swap_pct'=>$swap_used_pct,'free_mb'=>$mem_free,'buffers_mb'=>$mem_buffers,'cached_mb'=>$mem_cached,'shmem_mb'=>$mem_shmem,'slab_mb'=>$mem_slab],
         'disk' => ['total'=>$disk_parts[0]??'','used'=>$disk_parts[1]??'','free'=>$disk_parts[2]??'','pct'=>$disk_parts[3]??''],
         'uptime' => $uptime,
         'processes' => [
@@ -297,9 +317,21 @@ function sites() {
     foreach(SITES as $s) {
         $exists = is_dir($s['path']);
         $php_fpm = safe_num(cmd_line("ps aux | grep 'php-fpm: pool.*{$s['user']}' | grep -v grep | grep -v master | wc -l", 2));
-        // Fast disk: use du with --max-depth=0 and timeout, fallback to stat
-        $disk_usage = cmd_line("timeout 3 du -sm {$s['path']} 2>/dev/null | awk '{print \$1\"M\"}'", 4);
-        if(empty($disk_usage)) $disk_usage = '—';
+        // Disk usage: use cached value updated by cron every 5 minutes to avoid expensive du scans
+        $cache_file = "/tmp/disk_usage_{$s['key']}.txt";
+        if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 300) {
+            $disk_usage = trim(file_get_contents($cache_file));
+        } else {
+            // Background: update cache with timeout, use stale value if available
+            $disk_usage = cmd_line("timeout 2 du -sm {$s['path']} 2>/dev/null | awk '{print \$1\"M\"}'", 3);
+            if (!empty($disk_usage)) {
+                file_put_contents($cache_file, $disk_usage);
+            } elseif (file_exists($cache_file)) {
+                $disk_usage = trim(file_get_contents($cache_file)) . ' (cached)';
+            } else {
+                $disk_usage = '—';
+            }
+        }
         $log_count = 0;
         if(is_dir($s['path'].'/var/log')) {
             $log_count = safe_num(cmd_line("timeout 2 find {$s['path']}/var/log -maxdepth 1 -name '*.log' 2>/dev/null | wc -l", 3));
@@ -792,6 +824,134 @@ function varnish_stats() {
 }
 
 /**
+ * Apache statistics: service status, processes, connections, error log, modules
+ */
+function apache_stats() {
+    $result = ['error' => 'Apache not available'];
+    
+    try {
+        // Check Apache service status
+        $apache_status = cmd_line("systemctl is-active httpd 2>/dev/null || systemctl is-active apache2 2>/dev/null");
+        $apache_running = $apache_status === 'active';
+        
+        // Get Apache process count
+        $apache_procs = safe_num(cmd_line("ps aux | grep httpd | grep -v grep | wc -l"), 0);
+        
+        // Get Apache PID and uptime
+        $apache_pid = cmd_line("pidof httpd | awk '{print $1}'");
+        $apache_uptime = '';
+        if ($apache_pid) {
+            $apache_uptime = cmd_line("ps -p $apache_pid -o etime= 2>/dev/null");
+        }
+        
+        // Check port 80 and 443
+        $port_80 = cmd_line("ss -tlnp | grep ':80 ' | wc -l") > 0;
+        $port_443 = cmd_line("ss -tlnp | grep ':443 ' | wc -l") > 0;
+        
+        // Get Apache version
+        $apache_version = cmd_line("httpd -v 2>/dev/null | head -1 | awk -F'/' '{print \$2}' | awk '{print \$1}'");
+        if (!$apache_version) {
+            $apache_version = cmd_line("apache2 -v 2>/dev/null | head -1 | awk -F'/' '{print \$2}' | awk '{print \$1}'");
+        }
+        
+        // Get memory usage
+        $apache_mem_total = 0;
+        $apache_mem_avg = 0;
+        if ($apache_procs > 0) {
+            $apache_mem_total = safe_num(cmd_line("ps aux | grep httpd | grep -v grep | awk '{sum+=\$6} END {print sum}'"), 0);
+            $apache_mem_avg = $apache_procs > 0 ? round($apache_mem_total / $apache_procs / 1024, 1) : 0;
+            $apache_mem_total = round($apache_mem_total / 1024 / 1024, 1);
+        }
+        
+        // Get Apache MPM info
+        $apache_mpm = cmd_line("httpd -V 2>/dev/null | grep 'Server MPM' | awk -F': ' '{print \$2}'");
+        if (!$apache_mpm) {
+            $apache_mpm = cmd_line("apache2 -V 2>/dev/null | grep 'Server MPM' | awk -F': ' '{print \$2}'");
+        }
+        
+        // Get MaxRequestWorkers setting
+        $max_workers = cmd_line("grep -ri 'MaxRequestWorkers\\|MaxClients' /etc/httpd/ 2>/dev/null | grep -v '#' | tail -1 | awk '{print \$2}'");
+        if (!$max_workers) {
+            $max_workers = cmd_line("grep -ri 'MaxRequestWorkers\\|MaxClients' /etc/apache2/ 2>/dev/null | grep -v '#' | tail -1 | awk '{print \$2}'");
+        }
+        $max_workers = $max_workers ? (int)$max_workers : 256;
+        
+        // Error log analysis (last 100 lines)
+        $error_log_path = '/home/dashboard/public_html/logs/apache_error.log';
+        $error_counts = ['error' => 0, 'warn' => 0, 'crit' => 0, 'notice' => 0];
+        $recent_errors = [];
+        
+        // Try common error log locations
+        $log_paths = [
+            '/var/log/httpd/error_log',
+            '/var/log/apache2/error.log',
+            '/home/dashboard/public_html/logs/error.log'
+        ];
+        
+        foreach ($log_paths as $log_path) {
+            if (file_exists($log_path) && is_readable($log_path)) {
+                $error_log_tail = cmd_line("tail -100 $log_path");
+                if ($error_log_tail) {
+                    foreach (explode("\n", $error_log_tail) as $line) {
+                        if (stripos($line, '[error]') !== false || stripos($line, '[error') !== false) $error_counts['error']++;
+                        if (stripos($line, '[warn]') !== false || stripos($line, '[warning') !== false) $error_counts['warn']++;
+                        if (stripos($line, '[crit]') !== false) $error_counts['crit']++;
+                        if (stripos($line, '[notice]') !== false) $error_counts['notice']++;
+                    }
+                    // Get last 5 errors
+                    $recent_errors = array_slice(array_filter(explode("\n", $error_log_tail), function($line) {
+                        return stripos($line, '[error]') !== false || stripos($line, '[crit]') !== false;
+                    }), -5);
+                }
+                break;
+            }
+        }
+        
+        // Connection status from mod_status (if enabled)
+        $active_connections = 0;
+        $idle_workers = 0;
+        $apache_status_url = 'http://localhost/server-status?auto';
+        $status_response = @file_get_contents($apache_status_url, false, stream_context_create(['http' => ['timeout' => 2]]));
+        if ($status_response) {
+            foreach (explode("\n", $status_response) as $line) {
+                if (strpos($line, 'ConnsTotal:') === 0) $active_connections = (int)trim(explode(':', $line)[1]);
+                if (strpos($line, 'BusyWorkers:') === 0) $active_connections = (int)trim(explode(':', $line)[1]);
+                if (strpos($line, 'IdleWorkers:') === 0) $idle_workers = (int)trim(explode(':', $line)[1]);
+            }
+        }
+        
+        // Calculate utilization
+        $utilization_pct = $max_workers > 0 ? round($active_connections / $max_workers * 100, 1) : 0;
+        
+        $result = [
+            'running' => $apache_running,
+            'version' => $apache_version,
+            'mpm' => $apache_mpm ?: 'unknown',
+            'processes' => $apache_procs,
+            'max_workers' => $max_workers,
+            'active_connections' => $active_connections,
+            'idle_workers' => $idle_workers,
+            'utilization_percent' => $utilization_pct,
+            'memory' => [
+                'total_mb' => $apache_mem_total,
+                'avg_per_process_mb' => $apache_mem_avg
+            ],
+            'ports' => [
+                'http' => $port_80,
+                'https' => $port_443
+            ],
+            'uptime' => trim($apache_uptime),
+            'error_counts' => $error_counts,
+            'recent_errors' => array_values($recent_errors)
+        ];
+    } catch (Exception $e) {
+        $result['error'] = $e->getMessage();
+    }
+    
+    echo json_encode($result, JSON_PRETTY_PRINT);
+}
+
+/**
  * System advanced: network, I/O, CPU per-core, uptime, file descriptors
  */
 function system_advanced_stats() {
@@ -818,21 +978,46 @@ function system_advanced_stats() {
             }
         }
         
-        // CPU per-core from /proc/stat
+        // CPU per-core utilization using delta sampling (real-time, not since-boot)
         $cpu_cores = [];
-        $stat_lines = explode("\n", @file_get_contents('/proc/stat'));
-        foreach ($stat_lines as $line) {
-            if (preg_match('/^cpu(\d+)\s+/', $line, $m)) {
-                $parts = preg_split('/\s+/', trim(substr($line, strpos($line, ' '))));
-                if (count($parts) >= 7) {
-                    $user = $parts[0] + $parts[1];
-                    $system = $parts[2] + ($parts[5] ?? 0) + ($parts[6] ?? 0);
-                    $idle = $parts[3];
-                    $total = $user + $system + $idle;
-                    $cpu_cores[] = [
-                        'core' => (int)$m[1],
-                        'utilization' => $total > 0 ? round(($user + $system) / $total * 100, 1) : 0
-                    ];
+        $cpu_snapshot_file = __DIR__ . '/telegram/data/cpu_snapshot.json';
+        
+        function readCpuStat() {
+            $cores = [];
+            $stat_lines = explode("\n", @file_get_contents('/proc/stat'));
+            foreach ($stat_lines as $line) {
+                if (preg_match('/^cpu(\d+)\s+/', $line, $m)) {
+                    $parts = preg_split('/\s+/', trim(substr($line, strpos($line, ' '))));
+                    if (count($parts) >= 7) {
+                        $user = $parts[0] + $parts[1];
+                        $nice = $parts[1];
+                        $system = $parts[2] + ($parts[5] ?? 0) + ($parts[6] ?? 0);
+                        $idle = $parts[3];
+                        $iowait = $parts[4] ?? 0;
+                        $total = $user + $system + $idle + $iowait + $nice;
+                        $cores[(int)$m[1]] = ['user' => $user, 'system' => $system, 'idle' => $idle, 'iowait' => $iowait, 'total' => $total];
+                    }
+                }
+            }
+            return $cores;
+        }
+        
+        // Take two samples 0.5s apart for accurate real-time utilization
+        $sample1 = readCpuStat();
+        usleep(500000); // 500ms
+        $sample2 = readCpuStat();
+        
+        foreach ($sample2 as $core_id => $s2) {
+            if (isset($sample1[$core_id])) {
+                $s1 = $sample1[$core_id];
+                $d_total = $s2['total'] - $s1['total'];
+                $d_idle = $s2['idle'] - $s1['idle'];
+                $d_iowait = $s2['iowait'] - $s1['iowait'];
+                if ($d_total > 0) {
+                    $utilization = round(($d_total - $d_idle - $d_iowait) / $d_total * 100, 1);
+                    $cpu_cores[] = ['core' => $core_id, 'utilization' => max(0, min(100, $utilization))];
+                } else {
+                    $cpu_cores[] = ['core' => $core_id, 'utilization' => 0];
                 }
             }
         }
@@ -854,14 +1039,16 @@ function system_advanced_stats() {
             }
         }
         
-        // Calculate I/O deltas
+        // Calculate I/O deltas with improved timing
         $snapshot_file = __DIR__ . '/telegram/data/io_snapshot.json';
         $prev_snapshot = @json_decode(@file_get_contents($snapshot_file), true);
         $now = time();
         $current_snapshot = ['timestamp' => $now, 'disk' => $disk_io, 'net' => $net_data];
         
         $io_rates = ['read_iops' => 0, 'write_iops' => 0, 'read_mbps' => 0, 'write_mbps' => 0, 'rx_mbps' => 0, 'tx_mbps' => 0];
-        if ($prev_snapshot && ($now - $prev_snapshot['timestamp']) > 0) {
+        $has_valid_snapshot = false;
+        if ($prev_snapshot && isset($prev_snapshot['timestamp']) && ($now - $prev_snapshot['timestamp']) >= 2 && ($now - $prev_snapshot['timestamp']) <= 120) {
+            $has_valid_snapshot = true;
             $delta_t = $now - $prev_snapshot['timestamp'];
             
             // Disk I/O rates
@@ -909,17 +1096,18 @@ function system_advanced_stats() {
                 'tx_packets' => $net_data['tx_packets'],
                 'rx_errors' => $net_data['rx_errors'],
                 'tx_errors' => $net_data['tx_errors'],
-                'rx_rate' => $io_rates['rx_mbps'] > 0 ? round($io_rates['rx_mbps'], 2) . ' MB/s' : '0 B/s',
-                'tx_rate' => $io_rates['tx_mbps'] > 0 ? round($io_rates['tx_mbps'], 2) . ' MB/s' : '0 B/s',
+                'rx_rate' => $has_valid_snapshot && $io_rates['rx_mbps'] > 0 ? round($io_rates['rx_mbps'], 2) . ' MB/s' : ($has_valid_snapshot ? '0 B/s' : 'N/A'),
+                'tx_rate' => $has_valid_snapshot && $io_rates['tx_mbps'] > 0 ? round($io_rates['tx_mbps'], 2) . ' MB/s' : ($has_valid_snapshot ? '0 B/s' : 'N/A'),
                 'total_rx' => $net_data['rx_bytes'] > 0 ? format_bytes($net_data['rx_bytes']) : '0 B',
                 'total_tx' => $net_data['tx_bytes'] > 0 ? format_bytes($net_data['tx_bytes']) : '0 B'
             ],
             'cpu_per_core' => $cpu_cores,
             'io' => [
-                'read_iops' => round($io_rates['read_iops'], 1),
-                'write_iops' => round($io_rates['write_iops'], 1),
-                'read_rate' => $io_rates['read_mbps'] > 0 ? round($io_rates['read_mbps'], 2) . ' MB/s' : '0 B/s',
-                'write_rate' => $io_rates['write_mbps'] > 0 ? round($io_rates['write_mbps'], 2) . ' MB/s' : '0 B/s'
+                'has_data' => $has_valid_snapshot,
+                'read_iops' => $has_valid_snapshot ? round($io_rates['read_iops'], 1) : null,
+                'write_iops' => $has_valid_snapshot ? round($io_rates['write_iops'], 1) : null,
+                'read_rate' => $has_valid_snapshot && $io_rates['read_mbps'] > 0 ? round($io_rates['read_mbps'], 2) . ' MB/s' : ($has_valid_snapshot ? '0 B/s' : 'N/A'),
+                'write_rate' => $has_valid_snapshot && $io_rates['write_mbps'] > 0 ? round($io_rates['write_mbps'], 2) . ' MB/s' : ($has_valid_snapshot ? '0 B/s' : 'N/A')
             ],
             'system' => [
                 'uptime_seconds' => $uptime_seconds,
@@ -1571,6 +1759,7 @@ switch($action) {
     case 'redis': redis_stats(); break;
     case 'elasticsearch': elasticsearch_stats(); break;
     case 'varnish': varnish_stats(); break;
+    case 'apache': apache_stats(); break;
     case 'system_advanced': system_advanced_stats(); break;
     case 'phpfpm_pools': phpfpm_pools_stats(); break;
     case 'alerts': alert_history(); break;

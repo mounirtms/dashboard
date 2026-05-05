@@ -354,4 +354,124 @@ class SystemCommands {
         }
         return "❌ Failed to restart '$service': $status";
     }
+
+    /**
+     * /killqoder - Kill all Qoder CLI processes
+     */
+    public function cmd_killqoder(int $chatId, string $args, BotHandler $bot): array {
+        // Find all qodercli processes
+        $pids = $this->execCommand("ps aux | grep 'qoder' | grep -v grep | awk '{print \$2}' | tr '\n' ' '");
+        
+        if (empty($pids) || trim($pids) === '') {
+            return $bot->sendMessage($chatId, "✅ No Qoder CLI processes found.");
+        }
+
+        $pidCount = count(array_filter(explode(' ', trim($pids))));
+        
+        // Kill all qoder processes
+        $this->execCommand("ps aux | grep 'qoder' | grep -v grep | awk '{print \$2}' | xargs -r kill -9 2>&1");
+        
+        // Verify they're gone
+        $remaining = $this->execCommand("ps aux | grep 'qoder' | grep -v grep | wc -l");
+        
+        $text = "*🔪 Kill Qoder CLI Processes*\n\n";
+        $text .= "Found: `$pidCount` processes\n";
+        $text .= "Killed: `$pidCount` processes\n";
+        $text .= "Remaining: `$remaining`\n\n";
+        $text .= $remaining == '0' ? "✅ All Qoder CLI processes terminated." : "⚠️ Some processes may still be running.";
+
+        return $bot->sendMessage($chatId, $text);
+    }
+
+    /**
+     * /killssh - Close all active SSH sessions
+     */
+    public function cmd_killssh(int $chatId, string $args, BotHandler $bot): array {
+        // Don't kill the current SSH session if running via SSH
+        // Get all SSH sessions except the current one
+        $current_tty = $this->execCommand("tty 2>/dev/null");
+        
+        // Count active SSH sessions
+        $ssh_sessions = $this->execCommand("who | grep ssh | wc -l");
+        
+        if ($ssh_sessions === '0' || empty($ssh_sessions)) {
+            return $bot->sendMessage($chatId, "✅ No active SSH sessions found.");
+        }
+
+        // Get list of SSH PIDs to kill (exclude current session)
+        $ssh_pids = $this->execCommand("ps aux | grep 'sshd:' | grep -v grep | grep -v 'root@' | awk '{print \$2}' | tr '\n' ' '");
+        
+        $pidList = array_filter(explode(' ', trim($ssh_pids)));
+        $killCount = count($pidList);
+
+        // Kill SSH sessions (excluding root/daemon sessions)
+        if ($killCount > 0) {
+            $this->execCommand("ps aux | grep 'sshd:' | grep -v grep | grep -v 'root@' | awk '{print \$2}' | xargs -r kill -9 2>&1");
+        }
+        
+        // Verify
+        $remaining = $this->execCommand("who | grep ssh | wc -l");
+        
+        $text = "*🔒 Close SSH Sessions*\n\n";
+        $text .= "Active sessions: `$ssh_sessions`\n";
+        $text .= "Killed: `$killCount`\n";
+        $text .= "Remaining: `$remaining`\n\n";
+        $text .= $remaining == '0' ? "✅ All SSH sessions closed." : "⚠️ Some sessions may still be active (protected sessions skipped).";
+
+        return $bot->sendMessage($chatId, $text);
+    }
+
+    /**
+     * /cleanup - Combined cleanup: kill Qoder + close SSH + npm globals
+     */
+    public function cmd_cleanup(int $chatId, string $args, BotHandler $bot): array {
+        $text = "*🧹 System Cleanup*\n\n";
+        $text .= "🔄 Running cleanup tasks...\n";
+        $bot->sendMessage($chatId, $text);
+
+        // 1. Kill Qoder CLI processes
+        $qoder_pids = $this->execCommand("ps aux | grep 'qoder' | grep -v grep | awk '{print \$2}' | tr '\n' ' '");
+        $qoderCount = count(array_filter(explode(' ', trim($qoder_pids))));
+        if ($qoderCount > 0) {
+            $this->execCommand("ps aux | grep 'qoder' | grep -v grep | awk '{print \$2}' | xargs -r kill -9 2>&1");
+        }
+        $qoderRemaining = $this->execCommand("ps aux | grep 'qoder' | grep -v grep | wc -l");
+
+        // 2. Close SSH sessions
+        $sshBefore = $this->execCommand("who | grep ssh | wc -l");
+        $sshPids = $this->execCommand("ps aux | grep 'sshd:' | grep -v grep | grep -v 'root@' | awk '{print \$2}' | tr '\n' ' '");
+        $sshKillCount = count(array_filter(explode(' ', trim($sshPids))));
+        if ($sshKillCount > 0) {
+            $this->execCommand("ps aux | grep 'sshd:' | grep -v grep | grep -v 'root@' | awk '{print \$2}' | xargs -r kill -9 2>&1");
+        }
+        $sshAfter = $this->execCommand("who | grep ssh | wc -l");
+
+        // 3. Kill npm global processes (npm, node dev servers, etc.)
+        $npmPids = $this->execCommand("ps aux | grep -E 'npm|node.*dev|vite|webpack' | grep -v grep | awk '{print \$2}' | tr '\n' ' '");
+        $npmCount = count(array_filter(explode(' ', trim($npmPids))));
+        if ($npmCount > 0) {
+            $this->execCommand("ps aux | grep -E 'npm|node.*dev|vite|webpack' | grep -v grep | awk '{print \$2}' | xargs -r kill -9 2>&1");
+        }
+        $npmRemaining = $this->execCommand("ps aux | grep -E 'npm|node.*dev|vite|webpack' | grep -v grep | wc -l");
+
+        // 4. Clean up zombie processes
+        $zombieCount = $this->execCommand("ps aux | awk '\$8~/Z/' | wc -l");
+        if ($zombieCount > '0') {
+            $this->execCommand("ps aux | awk '\$8~/Z/ {print \$2}' | xargs -r kill -9 2>&1");
+        }
+
+        // Summary
+        $summary = "*🧹 Cleanup Complete*\n\n";
+        $summary .= "*Qoder CLI:*\n";
+        $summary .= "  Killed: `$qoderCount` | Remaining: `$qoderRemaining`\n\n";
+        $summary .= "*SSH Sessions:*\n";
+        $summary .= "  Killed: `$sshKillCount` | Remaining: `$sshAfter`\n\n";
+        $summary .= "*NPM/Node Processes:*\n";
+        $summary .= "  Killed: `$npmCount` | Remaining: `$npmRemaining`\n\n";
+        $summary .= "*Zombies:*\n";
+        $summary .= "  Found & killed: `$zombieCount`\n\n";
+        $summary .= "✅ System cleaned up.";
+
+        return $bot->sendMessage($chatId, $summary);
+    }
 }

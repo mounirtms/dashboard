@@ -71,10 +71,10 @@ if ($config['alerts']['enabled'] ?? true) {
             }
         }
 
-        // Check CPU load (critical >= 15)
-        if ($load[0] >= 15) {
+        // Check CPU load (critical >= 8)
+        if ($load[0] >= 8) {
             $alertKey = "high_cpu_load";
-                 $text = "🔴 *High CPU Load*\n\n1-min load average: `{$load[0]}` (threshold: 4)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
+            $text = "🔴 *High CPU Load*\n\n1-min load average: `{$load[0]}` (threshold: 8)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'load', $text);
         }
 
