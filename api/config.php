@@ -18,8 +18,8 @@ class Config {
             return self::$config;
         }
 
-        // Load .env file if exists
-        $envFile = __DIR__ . '/.env';
+        // Load .env file if exists from root directory
+        $envFile = dirname(__DIR__) . '/.env';
         if (file_exists($envFile)) {
             $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             foreach ($lines as $line) {
@@ -44,13 +44,26 @@ class Config {
         // Site paths
         self::$config['paths'] = [
             'prod' => $_ENV['PROD_PATH'] ?? '/home/technadminy7/public_html',
+            'prod_url' => $_ENV['PROD_URL'] ?? 'https://technostationery.com',
             'beta' => $_ENV['BETA_PATH'] ?? '/home/beta/public_html',
+            'beta_url' => $_ENV['BETA_URL'] ?? 'https://beta.technostationery.com',
             'pim' => $_ENV['PIM_PATH'] ?? '/home/pim/public_html',
+            'pim_url' => $_ENV['PIM_URL'] ?? 'https://pim.technostationery.com',
             'dashboard' => $_ENV['DASHBOARD_PATH'] ?? '/home/dashboard/public_html',
             'dev' => $_ENV['DEV_PATH'] ?? '/home/dev/public_html',
+            'dev_url' => $_ENV['DEV_URL'] ?? 'https://dev.technostationery.com',
             'lms' => $_ENV['LMS_PATH'] ?? '/home/lms/public_html',
+            'lms_url' => $_ENV['LMS_URL'] ?? 'https://lms.technostationery.com',
             'scripts' => $_ENV['SCRIPTS_DIR'] ?? '/home/dashboard/public_html/scripts',
             'logs' => $_ENV['LOGS_DIR'] ?? '/home/dashboard/public_html/logs',
+        ];
+
+        // Magento Tokens
+        self::$config['magento'] = [
+            'prod' => ['token' => $_ENV['MAGENTO_TOKEN_PROD'] ?? ''],
+            'beta' => ['token' => $_ENV['MAGENTO_TOKEN_BETA'] ?? ''],
+            'dev' => ['token' => $_ENV['MAGENTO_TOKEN_DEV'] ?? ''],
+            'pim' => ['token' => $_ENV['MAGENTO_TOKEN_PIM'] ?? ''],
         ];
 
         // PHP binary
@@ -68,6 +81,7 @@ class Config {
         // Cloudflare configuration
         self::$config['cloudflare'] = [
             'api_token' => $_ENV['CF_API_TOKEN'] ?? '',
+            'global_key' => $_ENV['CF_GLOBAL_KEY'] ?? '',
             'zone_id' => $_ENV['CF_ZONE_ID'] ?? '',
             'account_id' => $_ENV['CF_ACCOUNT_ID'] ?? '',
             'email' => $_ENV['CF_EMAIL'] ?? '',

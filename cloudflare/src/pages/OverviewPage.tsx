@@ -1,139 +1,134 @@
 import { Grid, Box, Typography, Card, CardContent, Chip, Divider, useTheme } from '@mui/material';
-import { CloudOutlined, CheckCircle, Warning, Schedule, Shield, Cached, Http } from '@mui/icons-material';
+import { CloudOutlined, CheckCircle, Warning, Schedule, Shield, Cached, Http, Public, GppMaybe } from '@mui/icons-material';
 import { useCloudflareData } from '../hooks/useCloudflareData';
-import StatCard from '../components/common/StatCard';
 import LoadingState from '../components/common/LoadingState';
+import StatCard from '../components/common/StatCard';
 import StatusBadge from '../components/common/StatusBadge';
-import { formatNumber, formatBytes } from '../utils/formatters';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function OverviewPage() {
-  const { data, loading, error } = useCloudflareData();
+  const { data, loading, error } = useCloudflareData(30000); // 30s refresh
   const theme = useTheme();
 
-  if (loading) return <LoadingState message="Loading Cloudflare data..." />;
-  if (error) return <LoadingState message={`Error: ${error}`} />;
+  if (loading && !data) return <LoadingState message="Connecting to Cloudflare Edge..." />;
+  if (error) return <LoadingState message={`Cloudflare Error: ${error}`} />;
   if (!data) return null;
-
-  const z = data.zone;
-  const sslCert = data.ssl_certificate;
-  const totals = data.analytics_totals;
-
-  const statusColor = z.status === 'active' ? 'success' : 'warning';
-  const sslColor = ['full', 'strict'].includes(data.settings.ssl) ? 'success' : data.settings.ssl === 'flexible' ? 'warning' : 'error';
-  const certColor = sslCert?.status === 'active' ? 'success' : (sslCert?.days_left ?? 999) < 30 ? 'error' : 'warning';
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
-          Overview
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.88rem' }}>
-          {z.name} &middot; {data.account}
-        </Typography>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
+            Network Overview
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Public sx={{ fontSize: 14 }} /> {data.zone?.name} &middot; {data.zone?.plan} Plan &middot; Last updated: {new Date(data.timestamp * 1000).toLocaleTimeString()}
+          </Typography>
+        </Box>
+        <StatusBadge label={data.zone?.status.toUpperCase()} color={data.zone?.status === 'active' ? 'success' : 'warning'} />
       </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Zone Status" value={z.status.charAt(0).toUpperCase() + z.status.slice(1)} color={statusColor} icon={<CheckCircle />} />
+          <StatCard 
+            label="Requests (24h)" 
+            value={data.analytics_totals?.requests.toLocaleString() || '0'} 
+            color="primary" 
+            icon={<Http />} 
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Plan" value={z.plan.charAt(0).toUpperCase() + z.plan.slice(1)} color="primary" icon={<CloudOutlined />} />
+          <StatCard 
+            label="Cache Hit Ratio" 
+            value={`${data.cache_hit_ratio}%`} 
+            color="success" 
+            icon={<Cached />} 
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="SSL Mode" value={data.settings.ssl?.toUpperCase() || 'OFF'} color={sslColor} icon={<Shield />} />
+          <StatCard 
+            label="Bandwidth" 
+            value={data.bandwidth_formatted || '0 B'} 
+            color="info" 
+            icon={<CloudOutlined />} 
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Cache Level" value={(data.settings.cache_level || '-').charAt(0).toUpperCase() + (data.settings.cache_level || '-').slice(1)} color="info" icon={<Cached />} />
-        </Grid>
-      </Grid>
-
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Total Requests (7d)" value={formatNumber(totals.requests)} color="primary" icon={<Http />} />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Bandwidth (7d)" value={data.bandwidth_formatted} color="info" />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Cache Hit Ratio" value={`${data.cache_hit_ratio}%`} color={data.cache_hit_ratio > 80 ? 'success' : data.cache_hit_ratio > 50 ? 'warning' : 'error'} />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Threats (7d)" value={formatNumber(totals.threats)} color={totals.threats > 0 ? 'error' : 'success'} />
+          <StatCard 
+            label="Threats Blocked" 
+            value={data.analytics_totals?.threats.toLocaleString() || '0'} 
+            color="error" 
+            icon={<Shield />} 
+          />
         </Grid>
       </Grid>
 
       <Grid container spacing={2}>
-        {sslCert && (
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Card>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem', mb: 1.5 }}>
-                  SSL Certificate
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-                  <StatusBadge label={sslCert.status} color={certColor} />
-                  {sslCert.days_left !== null && (
-                    <Typography variant="body2" sx={{ color: certColor === 'error' ? 'error.main' : 'text.secondary', fontWeight: 500 }}>
-                      {sslCert.days_left} days remaining
-                    </Typography>
-                  )}
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>Traffic Trend (Hourly)</Typography>
+              <Box sx={{ height: 300, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data.hourly_analytics}>
+                    <defs>
+                      <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="time" stroke={theme.palette.text.disabled} fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke={theme.palette.text.disabled} fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+                      itemStyle={{ color: '#fff', fontSize: 12 }}
+                    />
+                    <Area type="monotone" dataKey="requests" stroke={theme.palette.primary.main} fillOpacity={1} fill="url(#colorRequests)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Edge Settings</Typography>
+              <Box sx={{ display: 'grid', gap: 2 }}>
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>SSL/TLS Mode</Typography>
+                    <Chip label={data.settings?.ssl.toUpperCase()} size="small" color="success" sx={{ fontSize: '0.65rem', height: 18, fontWeight: 700 }} />
+                  </Box>
+                  <Typography variant="caption" color="text.disabled">Encrypts traffic between edge and origin</Typography>
                 </Box>
-                {sslCert.hostnames.length > 0 && (
-                  <Typography variant="body2" sx={{ color: 'text.disabled', fontSize: '0.82rem', fontFamily: 'monospace' }}>
-                    {sslCert.hostnames.join(', ')}
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
-        <Grid size={{ xs: 12, sm: sslCert ? 6 : 12 }}>
-          <Card>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem', mb: 1.5 }}>
-                Quick Status
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-                <Chip
-                  icon={<CloudOutlined sx={{ fontSize: 18 }} />}
-                  label={`Dev Mode: ${z.development_mode}`}
-                  size="small"
-                  sx={{
-                    backgroundColor: z.development_mode === 'on' ? `${theme.palette.warning.main}1f` : `${theme.palette.text.secondary}14`,
-                    borderColor: z.development_mode === 'on' ? `${theme.palette.warning.main}4d` : `${theme.palette.text.secondary}33`,
-                    color: z.development_mode === 'on' ? theme.palette.warning.main : theme.palette.text.secondary,
-                    fontWeight: 600,
-                    borderWidth: 1,
-                    borderStyle: 'solid',
-                  }}
-                />
-                <Chip
-                  icon={data.settings.brotli === 'on' ? <CheckCircle sx={{ fontSize: 18 }} /> : <Warning sx={{ fontSize: 18 }} />}
-                  label={`Brotli: ${data.settings.brotli}`}
-                  size="small"
-                  sx={{
-                    backgroundColor: data.settings.brotli === 'on' ? `${theme.palette.success.main}1f` : `${theme.palette.text.secondary}14`,
-                    borderColor: data.settings.brotli === 'on' ? `${theme.palette.success.main}4d` : `${theme.palette.text.secondary}33`,
-                    color: data.settings.brotli === 'on' ? theme.palette.success.main : theme.palette.text.secondary,
-                    fontWeight: 600,
-                    borderWidth: 1,
-                    borderStyle: 'solid',
-                  }}
-                />
-                <Chip
-                  icon={<Schedule sx={{ fontSize: 18 }} />}
-                  label={`Browser TTL: ${Math.round((Number(data.settings.browser_cache_ttl) || 0) / 3600)}h`}
-                  size="small"
-                  sx={{
-                    backgroundColor: `${theme.palette.text.secondary}14`,
-                    borderColor: `${theme.palette.text.secondary}33`,
-                    color: theme.palette.text.secondary,
-                    fontWeight: 600,
-                    borderWidth: 1,
-                    borderStyle: 'solid',
-                  }}
-                />
+                <Divider />
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Development Mode</Typography>
+                    <Chip label={data.zone?.development_mode.toUpperCase()} size="small" color={data.zone?.development_mode === 'on' ? 'warning' : 'default'} sx={{ fontSize: '0.65rem', height: 18, fontWeight: 700 }} />
+                  </Box>
+                  <Typography variant="caption" color="text.disabled">Bypass edge cache for real-time debugging</Typography>
+                </Box>
+                <Divider />
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Caching Level</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.light' }}>{data.settings?.cache_level.toUpperCase()}</Typography>
+                  </Box>
+                  <Typography variant="caption" color="text.disabled">Standard caching policy applied at the edge</Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ mt: 4, p: 2, borderRadius: 2, backgroundColor: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                <Typography sx={{ color: 'error.light', fontSize: '0.75rem', fontWeight: 800, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <GppMaybe sx={{ fontSize: 16 }} /> SECURITY ADVISORY
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', fontSize: '0.7rem', lineHeight: 1.4 }}>
+                  There were {data.analytics_totals?.threats} threats mitigated in the last 24 hours. Review WAF logs for details.
+                </Typography>
               </Box>
             </CardContent>
           </Card>

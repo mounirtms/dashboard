@@ -1,0 +1,1380 @@
+<?php
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+// Cloudflare cache bypass
+header('CF-Cache-Status: DYNAMIC');
+header('Cloudflare-CDN-Cache-Control: no-cache, no-store, must-revalidate');
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Server Control Center — technostationery.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/dashboard.css">
+<style>
+  .header-link:hover, .btn:hover { text-decoration: none; }
+  .logout-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: var(--transition);
+    font-family: inherit;
+    font-weight: 500;
+  }
+  .logout-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-glow);
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>📊 Control Center</h1>
+    <div id="last-update" style="font-size:0.7rem;color:var(--text-muted)">Loading...</div>
+  </div>
+  <div class="header-center">
+    <div class="header-stats">
+      <div class="header-stat">
+        <span class="infra-label">CPU Load</span>
+        <div class="infra-val" id="header-cpu" style="color:#3b82f6">-</div>
+      </div>
+      <div class="header-stat">
+        <span class="infra-label">Memory</span>
+        <div class="infra-val" id="header-mem" style="color:#10b981">-</div>
+      </div>
+      <div class="header-stat">
+        <span class="infra-label">Swap</span>
+        <div class="infra-val" id="header-swap" style="color:#f59e0b">-</div>
+      </div>
+      <div class="header-stat">
+        <span class="infra-label">Status</span>
+        <span style="display:flex;align-items:center;gap:4px">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text" style="font-size:0.75rem;color:var(--text-muted)">—</span>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button id="compact-toggle" class="btn" onclick="toggleCompact()" title="Toggle compact view">◐</button>
+    <button id="header-menu-btn" class="btn" title="Menu">☰</button>
+    <div id="header-menu" class="header-menu" style="display:none">
+      <a href="/phpmyadmin/" target="_blank" class="header-link">🗄️ phpMyAdmin</a>
+      <a href="/login.html" class="header-link" id="user-badge">👤</a>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+
+  <!-- Category bar -->
+  <div class="cat-bar" id="cat-bar">
+    <div class="cat-pill active" data-cat="system"><span class="tab-icon">🖥️</span><span class="tab-label">System</span></div>
+    <div class="cat-pill" data-cat="web"><span class="tab-icon">🌐</span><span class="tab-label">Web</span></div>
+    <div class="cat-pill" data-cat="infrastructure"><span class="tab-icon">🏗️</span><span class="tab-label">Infra</span></div>
+    <div class="cat-pill" data-cat="business"><span class="tab-icon">🛒</span><span class="tab-label">Business</span></div>
+    <div class="cat-pill" data-cat="development"><span class="tab-icon">🚀</span><span class="tab-label">Dev</span></div>
+    <div class="cat-pill" data-cat="tools"><span class="tab-icon">🛠️</span><span class="tab-label">Tools</span></div>
+  </div>
+
+  <!-- Sub-tab bar (populated by JS) -->
+  <div class="sub-tabs" id="sub-tabs"></div>
+
+  <!-- Hidden legacy tabs for activateTab compatibility -->
+  <div class="tabs" id="legacy-tabs" style="display:none">
+    <div class="tab" data-tab="overview"><span class="tab-icon">🏠</span></div>
+    <div class="tab" data-tab="processes"><span class="tab-icon">⚡</span></div>
+    <div class="tab" data-tab="services"><span class="tab-icon">🔧</span></div>
+    <div class="tab" data-tab="sites"><span class="tab-icon">🌐</span></div>
+    <div class="tab" data-tab="infrastructure"><span class="tab-icon">🏗️</span></div>
+    <div class="tab" data-tab="commerce"><span class="tab-icon">🛒</span></div>
+    <div class="tab" data-tab="crons"><span class="tab-icon">⏰</span></div>
+    <div class="tab" data-tab="queues"><span class="tab-icon">📬</span></div>
+    <div class="tab" data-tab="indexers"><span class="tab-icon">📊</span></div>
+    <div class="tab" data-tab="scripts"><span class="tab-icon">🚀</span></div>
+    <div class="tab" data-tab="cicd"><span class="tab-icon">🔄</span></div>
+    <div class="tab" data-tab="dbhealth"><span class="tab-icon">💾</span></div>
+    <div class="tab" data-tab="actions"><span class="tab-icon">🛠️</span></div>
+    <div class="tab" data-tab="telegram"><span class="tab-icon">🔔</span></div>
+    <div class="tab" data-tab="cloudflare"><span class="tab-icon">☁️</span></div>
+    <div class="tab" data-tab="push"><span class="tab-icon">📢</span></div>
+    <div class="tab" data-tab="varnish-monitor"><span class="tab-icon">🚀</span></div>
+    <div class="tab" data-tab="apache-monitor"><span class="tab-icon">🌐</span></div>
+    <div class="tab" data-tab="environments"><span class="tab-icon">🖥️</span></div>
+    <div class="tab" data-tab="pim-monitor"><span class="tab-icon">📦</span></div>
+  </div>
+
+  <!-- Overview -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="grid grid-4" id="metrics-row" style="margin-bottom:16px"></div>
+    <div class="card" id="metrics-dense" style="display:none;margin-bottom:12px">
+      <h3>Key Metrics</h3>
+      <table id="metrics-dense-table" style="width:100%;font-size:0.85rem">
+        <thead><tr><th>Metric</th><th>Value</th><th>Note</th></tr></thead>
+        <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Top CPU Processes</h3>
+      <table id="top-proc-table-overview">
+        <thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Runtime</th><th>Command</th></tr></thead>
+        <tbody><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Service Status</h3>
+      <div id="services-list-overview" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Processes -->
+  <div class="tab-content" id="tab-processes">
+    <div class="card">
+      <h3>Top CPU Processes</h3>
+      <table id="top-proc-table">
+        <thead><tr><th>PID</th><th>CPU%</th><th>MEM%</th><th>Runtime</th><th>Command</th></tr></thead>
+        <tbody><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Services -->
+  <div class="tab-content" id="tab-services">
+    <div class="card">
+      <h3>Service Status</h3>
+      <div id="services-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Sites -->
+  <div class="tab-content" id="tab-sites">
+    <div class="card">
+      <h3>All Sites</h3>
+      <table id="sites-table">
+        <thead><tr><th>Site</th><th>User</th><th>PHP-FPM</th><th>Disk</th><th>DB Size</th><th>Mode</th><th>Cache</th><th>Status</th></tr></thead>
+        <tbody><tr><td colspan="8" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Infrastructure -->
+  <div class="tab-content" id="tab-infrastructure">
+    <div class="grid grid-3" style="margin-bottom:20px">
+      <!-- Redis Card -->
+      <div class="card">
+        <h3>🔴 Redis</h3>
+        <div id="redis-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+      <!-- Elasticsearch Card -->
+      <div class="card">
+        <h3>🟡 Elasticsearch</h3>
+        <div id="elasticsearch-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+      <!-- Varnish Card -->
+      <div class="card">
+        <h3>🟢 Varnish</h3>
+        <div id="varnish-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+      <!-- Cloudflare Card -->
+      <div class="card">
+        <h3>🔵 Cloudflare</h3>
+        <div id="cloudflare-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+    <!-- Network & I/O -->
+    <div class="card">
+      <h3>📡 Network, I/O &amp; System</h3>
+      <div id="system-advanced-content" style="margin-top:14px" class="grid grid-2"><div class="loading">Loading...</div></div>
+    </div>
+    <!-- PHP-FPM Pools -->
+    <div class="card" style="margin-top:20px">
+      <h3>🔧 PHP-FPM Pools</h3>
+      <div id="phpfpm-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- Commerce -->
+  <div class="tab-content" id="tab-commerce">
+    <!-- Live Metrics -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">Today's Orders</div>
+        <div class="metric-value" id="commerce-today-orders">-</div>
+        <div class="metric-sub" id="commerce-today-revenue"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Last Hour</div>
+        <div class="metric-value" id="commerce-hour-orders">-</div>
+        <div class="metric-sub" id="commerce-hour-revenue"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Active Carts</div>
+        <div class="metric-value" id="commerce-active-carts">-</div>
+        <div class="metric-sub" id="commerce-carts-value"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Online Customers</div>
+        <div class="metric-value" id="commerce-online">-</div>
+        <div class="metric-sub">(15 min window)</div>
+      </div>
+    </div>
+    <!-- Recent Orders & Product Stats -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>📦 Recent Orders</h3>
+        <table id="recent-orders-table" style="margin-top:14px">
+          <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>
+          <tbody><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>📊 Product Inventory</h3>
+        <div id="product-stats-content" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+    <!-- Customer Stats -->
+    <div class="card">
+      <h3>👥 Customer Statistics</h3>
+      <div id="customer-stats-content" style="margin-top:14px" class="grid grid-4"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- Crons -->
+  <div class="tab-content" id="tab-crons">
+    <div class="card">
+      <h3>Active Cron Jobs (<span id="cron-count">0</span>)</h3>
+      <div id="cron-list" style="max-height:500px;overflow-y:auto;margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- Queues -->
+  <div class="tab-content" id="tab-queues">
+    <div class="card">
+      <h3>Queue Consumers &amp; Pending Messages</h3>
+      <div class="grid grid-2" style="margin-top:8px">
+        <div>
+          <div class="section-title" style="font-size:0.85rem">Consumers</div>
+          <div id="consumer-list"></div>
+        </div>
+        <div>
+          <div class="section-title" style="font-size:0.85rem">Pending by Queue</div>
+          <div id="queue-pending"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Indexers -->
+  <div class="tab-content" id="tab-indexers">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin-bottom:0">Magento Indexers</h3>
+        <div>
+          <button class="btn btn-sm btn-secondary" onclick="loadIndexers('prod')">Production</button>
+          <button class="btn btn-sm btn-secondary" onclick="loadIndexers('beta')" style="margin-left:6px">Beta</button>
+        </div>
+      </div>
+      <table id="indexer-table">
+        <thead><tr><th>Indexer</th><th>Title</th><th>Status</th></tr></thead>
+        <tbody><tr><td colspan="3" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <div class="tab-content" id="tab-scripts">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin-bottom:0">Available Scripts</h3>
+        <button class="btn btn-sm btn-secondary" onclick="loadScripts()">↻ Refresh</button>
+      </div>
+      <div id="script-cat-tabs" class="tabs" style="margin-bottom:12px"></div>
+      <div id="script-list"></div>
+    </div>
+  </div>
+
+
+  <!-- CI/CD Pipeline -->
+  <div class="tab-content" id="tab-cicd">
+    <!-- Environment Status -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card" id="cicd-beta-status">
+        <h3>🟡 Beta Environment</h3>
+        <div id="cicd-beta-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card" id="cicd-dev-status">
+        <h3>🔵 Dev Environment</h3>
+        <div id="cicd-dev-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Build & Deploy -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>🏗️ Build & Deploy</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Full pipeline: clean, upgrade, compile, deploy static, permissions, cache flush, service restart</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Beta</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-warning" onclick="cicdBuild('beta','full')">Full Build</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdBuild('beta','quick')">Quick Build</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdBuild('beta','flush')">Flush All</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('beta','static-only')">Static Only</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('beta','compile-only')">Compile Only</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Dev</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdBuild('dev','full')">Full Build</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdBuild('dev','quick')">Quick Build</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('dev','flush')">Flush All</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('dev','static-only')">Static Only</button>
+            <button class="btn btn-sm btn-secondary" onclick="cicdBuild('dev','compile-only')">Compile Only</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Runners -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>🧪 Test Runners</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Health checks, HTTP tests, log analysis, module status</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Beta</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','http')">HTTP Check</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','comprehensive')">Full Test</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','logs')">Log Check</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','module-status')">Module Status</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdTest('beta','indexer')">Indexer Status</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Dev</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','http')">HTTP Check</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','comprehensive')">Full Test</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','logs')">Log Check</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','module-status')">Module Status</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdTest('dev','indexer')">Indexer Status</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Migrations -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>🗄️ Database Migrations</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Sync database structure and data between environments</p>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <select id="cicd-db-source" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+              <option value="beta">Beta</option>
+              <option value="dev">Dev</option>
+            </select>
+            <span style="color:var(--muted)">→</span>
+            <select id="cicd-db-target" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+              <option value="dev">Dev</option>
+              <option value="beta">Beta</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdMigrateDB('structure')">Structure Only</button>
+            <button class="btn btn-sm btn-danger" onclick="cicdMigrateDB('structure+data')">Full Migration</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📁 Code Migrations</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Sync code between environments via rsync</p>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <select id="cicd-code-source" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+              <option value="beta">Beta</option>
+              <option value="dev">Dev</option>
+            </select>
+            <span style="color:var(--muted)">→</span>
+            <select id="cicd-code-target" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+              <option value="dev">Dev</option>
+              <option value="beta">Beta</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdMigrateCode('modules')">Modules Only</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdMigrateCode('theme')">Theme Only</button>
+            <button class="btn btn-sm btn-danger" onclick="cicdMigrateCode('full-code')">Full Code</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operations -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>⚡ Operations</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Beta</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-warning" onclick="cicdReindex('beta')">Reindex</button>
+            <button class="btn btn-sm btn-warning" onclick="cicdHealth('beta')">Health Check</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Dev</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-primary" onclick="cicdReindex('dev')">Reindex</button>
+            <button class="btn btn-sm btn-primary" onclick="cicdHealth('dev')">Health Check</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module Manager -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>📦 Module Manager</h3>
+      <div style="display:flex;gap:8px;margin-top:10px;margin-bottom:8px">
+        <select id="cicd-module-env" style="flex:1;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+          <option value="beta">Beta</option>
+          <option value="dev">Dev</option>
+        </select>
+        <input type="text" id="cicd-module-name" placeholder="Mab_ModuleName" style="flex:2;padding:8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem;font-family:monospace">
+        <button class="btn btn-sm btn-success" onclick="cicdModuleToggle('enable')">Enable</button>
+        <button class="btn btn-sm btn-danger" onclick="cicdModuleToggle('disable')">Disable</button>
+      </div>
+    </div>
+
+    <!-- Active Job Monitor -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin:0">📋 Active Jobs</h3>
+        <button class="btn btn-sm btn-secondary" onclick="cicdLoadJobs()">↻ Refresh</button>
+      </div>
+      <div id="cicd-active-jobs" style="max-height:300px;overflow-y:auto">
+        <div style="color:var(--muted);font-size:0.82rem">No active jobs</div>
+      </div>
+    </div>
+
+    <!-- Job Log Viewer -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin:0">📝 Job Output</h3>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="cicd-job-id" placeholder="Job ID" style="width:200px;padding:6px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.78rem;font-family:monospace">
+          <button class="btn btn-sm btn-secondary" onclick="cicdViewJob()">View</button>
+          <button class="btn btn-sm btn-secondary" onclick="cicdRefreshLog()">↻</button>
+        </div>
+      </div>
+      <div id="cicd-job-status" style="font-size:0.78rem;color:var(--muted);margin-bottom:8px"></div>
+      <div id="cicd-job-log" class="logs" style="max-height:500px;overflow-y:auto;font-size:0.78rem">
+        Run a build, test, or migration to see output here.
+      </div>
+    </div>
+  </div>
+
+
+  <!-- DB Health -->
+  <div class="tab-content" id="tab-dbhealth">
+    <div class="grid grid-2">
+      <div class="card" id="dbh-prod">
+        <h3>🟢 Production DB — technadminy7_dBT8x12y22</h3>
+        <div id="dbh-prod-stats" class="loading">Loading...</div>
+      </div>
+      <div class="card" id="dbh-beta">
+        <h3>🟡 Beta DB — beta_dBT8x12y22</h3>
+        <div id="dbh-beta-stats" class="loading">Loading...</div>
+      </div>
+      <div class="card" style="grid-column:1/-1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin-bottom:0">⚠️ Fragmented Tables (Production)</h3>
+          <button class="btn btn-sm btn-warning" onclick="runOptimize()">🔧 OPTIMIZE Fragmented</button>
+        </div>
+        <table id="frag-table">
+          <thead><tr><th>Table</th><th>Size</th><th>Frag</th><th>Rows</th><th>Frag%</th></tr></thead>
+          <tbody><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+        </table>
+        <div id="optimize-output" class="logs" style="display:none;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="tab-content" id="tab-actions">
+    <div class="grid grid-2">
+
+      <!-- Database -->
+      <div class="card">
+        <h3>🗄️ Database (MariaDB 10.6 — Port 3307)</h3>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Login with root / YourNewStrongPassword</p>
+        <div class="btn-group">
+          <a class="btn btn-success" href="/phpmyadmin/?db=technadminy7_dBT8x12y22&server=1" target="_blank">🟢 Production DB</a>
+          <a class="btn btn-warning" href="/phpmyadmin/?db=beta_dBT8x12y22&server=1" target="_blank">🟡 Beta DB</a>
+          <a class="btn btn-primary" href="/phpmyadmin/?db=dev_dBT8x12y22&server=1" target="_blank">🔵 Dev DB</a>
+          <a class="btn btn-secondary" href="/phpmyadmin/?db=akeneo_pim&server=1" target="_blank">🟣 PIM DB</a>
+        </div>
+        <div id="db-stats" style="margin-top:12px;font-size:0.78rem;color:var(--muted)">Loading DB stats...</div>
+      </div>
+
+      <!-- CI/CD -->
+      <div class="card">
+        <h3>🚀 CI/CD Pipeline</h3>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Manage deployments across all environments</p>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="window.location.href='/app/#/cicd'">CI/CD Dashboard</button>
+          <button class="btn btn-success" onclick="window.location.href='/app/#/environments'">Environments</button>
+          <button class="btn btn-warning" onclick="window.location.href='/app/#/scripts'">Script Runner</button>
+        </div>
+      </div>
+
+      <!-- Emergency -->
+      <div class="card">
+        <h3>⚠️ Emergency Actions</h3>
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="doCleanup('all')">🔥 Full Cleanup</button>
+          <button class="btn btn-warning" onclick="doCleanup('messenger')">Kill Messenger</button>
+          <button class="btn btn-primary" onclick="doCleanup('phpfpm')">🔄 Restart PHP-FPM</button>
+          <button class="btn btn-success" onclick="doCleanup('cache')">🧹 Flush Cache</button>
+        </div>
+        <div id="action-output" class="logs" style="display:none;margin-top:10px"></div>
+      </div>
+
+      <!-- Quick Commands -->
+      <div class="card">
+        <h3>⚡ Quick Commands</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="quickRun('maintenance','master_cleanup.sh')">Master Cleanup</button>
+          <button class="btn btn-primary" onclick="quickRun('maintenance','nightly_cache_flush.sh')">Cache Flush</button>
+          <button class="btn btn-primary" onclick="quickRun('database','database_health_check.php')">DB Health</button>
+          <button class="btn btn-primary" onclick="quickRun('database','cleanup_database.php')">DB Cleanup</button>
+        </div>
+        <div id="quick-output" class="logs" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Push Notifications (Webpushr) -->
+  <div class="tab-content" id="tab-push">
+    <!-- Environment Status -->
+    <div class="grid grid-3" style="margin-bottom:20px">
+      <div class="card" id="push-prod-card">
+        <h3>🟢 Production</h3>
+        <div id="push-prod-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card" id="push-beta-card">
+        <h3>🟡 Beta</h3>
+        <div id="push-beta-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card" id="push-dev-card">
+        <h3>🔵 Dev</h3>
+        <div id="push-dev-info" style="margin-top:10px;font-size:0.82rem"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Quick Send -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>🚀 Quick Send</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Send a push notification to all subscribers on a specific environment</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:10px">
+        <input type="text" id="push-title" placeholder="Notification Title" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <input type="text" id="push-message" placeholder="Message body..." style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <select id="push-env" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+          <option value="production">Production</option>
+          <option value="beta">Beta</option>
+          <option value="dev">Dev</option>
+        </select>
+        <button class="btn btn-success" onclick="pushSend()">📤 Send</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input type="text" id="push-url" placeholder="Target URL (optional)" style="padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+        <input type="text" id="push-icon" placeholder="Icon URL (optional)" style="padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+      </div>
+      <div id="push-send-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+
+    <!-- Test Notifications -->
+    <div class="grid grid-3" style="margin-bottom:20px">
+      <div class="card">
+        <h3>🧪 Test - Production</h3>
+        <div style="margin-top:10px">
+          <button class="btn btn-sm btn-success" onclick="pushTest('production')">Send Test</button>
+        </div>
+        <div id="push-test-prod" style="margin-top:8px;font-size:0.78rem"></div>
+      </div>
+      <div class="card">
+        <h3>🧪 Test - Beta</h3>
+        <div style="margin-top:10px">
+          <button class="btn btn-sm btn-warning" onclick="pushTest('beta')">Send Test</button>
+        </div>
+        <div id="push-test-beta" style="margin-top:8px;font-size:0.78rem"></div>
+      </div>
+      <div class="card">
+        <h3>🧪 Test - Dev</h3>
+        <div style="margin-top:10px">
+          <button class="btn btn-sm btn-primary" onclick="pushTest('dev')">Send Test</button>
+        </div>
+        <div id="push-test-dev" style="margin-top:8px;font-size:0.78rem"></div>
+      </div>
+    </div>
+
+    <!-- Scheduled Notification -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>📅 Schedule Notification</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Schedule a push notification for future delivery</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:10px">
+        <input type="text" id="push-sched-title" placeholder="Title" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <input type="text" id="push-sched-message" placeholder="Message" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <input type="datetime-local" id="push-sched-time" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+        <select id="push-sched-env" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+          <option value="production">Production</option>
+          <option value="beta">Beta</option>
+          <option value="dev">Dev</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px">
+        <input type="text" id="push-sched-url" placeholder="Target URL (optional)" style="width:100%;padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+      </div>
+      <button class="btn btn-primary" onclick="pushSchedule()">📅 Schedule</button>
+      <div id="push-sched-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+
+    <!-- Bulk Send -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>📋 Bulk Send</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Send multiple notifications at once (one per line, format: title|message|url)</p>
+      <textarea id="push-bulk-input" rows="5" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem;font-family:monospace;resize:vertical" placeholder="Flash Sale!|Up to 50% off today only|https://technostationery.com/sale&#10;New Products|Check out our latest arrivals|https://technostationery.com/new"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <select id="push-bulk-env" style="flex:0 0 auto;padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem">
+          <option value="production">Production</option>
+          <option value="beta">Beta</option>
+          <option value="dev">Dev</option>
+        </select>
+        <button class="btn btn-warning" onclick="pushBulk()">📤 Send All</button>
+      </div>
+      <div id="push-bulk-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+
+    <!-- Magento Module Info -->
+    <div class="card">
+      <h3>📦 Magento Webpushr Module</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin:8px 0 12px">Install the MAB Webpushr module on Magento to enable subscriber management and automated triggers</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Beta (Primary Testing)</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <code>Mab_Webpushr</code> module<br>
+            Path: <code>app/code/Mab/Webpushr</code><br>
+            <button class="btn btn-sm btn-warning" onclick="pushInstallModule('beta')">Check Module Status</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">Dev</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+            <code>Mab_Webpushr</code> module<br>
+            Path: <code>app/code/Mab/Webpushr</code><br>
+            <button class="btn btn-sm btn-primary" onclick="pushInstallModule('dev')">Check Module Status</button>
+          </div>
+        </div>
+      </div>
+      <div id="push-module-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+  </div>
+
+</div>
+
+  <!-- Telegram Notifications -->
+  <div class="tab-content" id="tab-telegram">
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>🤖 Bot Status</h3>
+        <div id="bot-status" style="margin-top:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span class="status-dot green" id="bot-status-dot"></span>
+            <span style="font-size:0.9rem;font-weight:600">@ServerNotif205bot</span>
+          </div>
+          <div style="font-size:0.82rem;color:var(--muted)">
+            <p><strong style="color:var(--text)">Webhook:</strong> <span id="bot-webhook-status">Active</span></p>
+            <p><strong style="color:var(--text)">Authorized Users:</strong> <span id="bot-auth-count">1</span></p>
+            <p><strong style="color:var(--text)">Alerts Enabled:</strong> <span id="bot-alert-status">Yes</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚡ Quick Actions</h3>
+        <div class="btn-group" style="margin-top:12px">
+          <button class="btn btn-success" onclick="testTelegram()">📤 Send Test Message</button>
+          <button class="btn btn-primary" onclick="window.open('/api/telegram/setup.php', '_blank')">🔧 Re-run Setup</button>
+        </div>
+        <div id="tg-output" class="logs" style="display:none;margin-top:12px"></div>
+      </div>
+
+      <div class="card">
+        <h3>🛍️ Customer Bot Status</h3>
+        <div id="customer-bot-status" style="margin-top:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span class="status-dot yellow" id="customer-bot-dot"></span>
+            <span style="font-size:0.9rem;font-weight:600">@TechnoStationeryShopBot</span>
+          </div>
+          <div style="font-size:0.82rem;color:var(--muted)">
+            <p><strong style="color:var(--text)">Status:</strong> <span id="customer-bot-enabled">Disabled</span></p>
+            <p><strong style="color:var(--text)">Environment:</strong> Beta Magento 2.4.6</p>
+            <p><strong style="color:var(--text)">Poller:</strong> <span id="customer-poller-status">Not Running</span></p>
+          </div>
+          <div class="btn-group" style="margin-top:12px">
+            <button class="btn btn-sm btn-primary" onclick="testCustomerBot()">🧪 Test Bot</button>
+            <button class="btn btn-sm btn-success" onclick="enableCustomerBot()">✅ Enable</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>🛒 Customer Bot Commands</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px">
+          <div>
+            <div style="font-size:0.78rem;color:var(--accent);margin-bottom:8px">📱 Customer Commands</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/start</code> - Main menu<br>
+              <code>/browse</code> - Browse products<br>
+              <code>/search</code> - Search products<br>
+              <code>/cart</code> - View cart<br>
+              <code>/orders</code> - Order history
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--green);margin-bottom:8px">🔧 Setup Instructions</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              1. Create bot via @BotFather<br>
+              2. Add token to config.php<br>
+              3. Enable bot in config<br>
+              4. Add cron job for poller<br>
+              5. Test bot functionality
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🤖 AI Report Generator</h3>
+        <div style="margin-top:12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            <select id="ai-report-type" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem;font-family:inherit">
+              <option value="database">Database Analysis</option>
+              <option value="performance">Performance Review</option>
+              <option value="security">Security Audit</option>
+              <option value="infrastructure">Infrastructure</option>
+              <option value="orders">Orders Analysis</option>
+            </select>
+            <select id="ai-env" style="padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem;font-family:inherit">
+              <option value="prod">Production</option>
+              <option value="beta">Beta</option>
+              <option value="dev">Dev</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="generateAIReport()" style="width:100%">🤖 Generate AI Report</button>
+          <div id="ai-report-output" class="logs" style="display:none;margin-top:12px;max-height:300px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>📊 AI Cache Status</h3>
+        <div id="ai-cache-stats" style="margin-top:12px;font-size:0.82rem;color:var(--muted)">
+          <button class="btn btn-primary" onclick="loadAICacheStats()" style="padding:6px 12px;font-size:0.78rem">🔄 Load Cache Stats</button>
+          <button class="btn btn-danger" onclick="clearAICache()" style="padding:6px 12px;font-size:0.78rem;margin-left:8px">🗑️ Clear Cache</button>
+          <div id="ai-cache-output" style="margin-top:12px;display:none"></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>🗄️ Cache Management</h3>
+        <div style="margin-top:12px">
+          <div style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">
+            Execute Magento cache operations across environments. These commands run via CLI with timeout protection.
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px">
+            <div>
+              <div style="font-size:0.78rem;color:var(--accent);margin-bottom:8px">Production</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('flush','prod')">Flush</button>
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('clean','prod')">Clean</button>
+                <button class="btn btn-sm btn-danger" onclick="executeCacheAction('purge','prod')">Purge + CF</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.78rem;color:var(--green);margin-bottom:8px">Beta</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('flush','beta')">Flush</button>
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('clean','beta')">Clean</button>
+                <button class="btn btn-sm btn-danger" onclick="executeCacheAction('purge','beta')">Purge + CF</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">Dev</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('flush','dev')">Flush</button>
+                <button class="btn btn-sm btn-primary" onclick="executeCacheAction('clean','dev')">Clean</button>
+                <button class="btn btn-sm btn-danger" onclick="executeCacheAction('purge','dev')">Purge + CF</button>
+              </div>
+            </div>
+          </div>
+          <div id="cache-execution-output" class="logs" style="display:none;margin-top:12px;max-height:300px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>📋 Available Bot Commands</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px">
+          <div>
+            <div style="font-size:0.78rem;color:var(--accent);margin-bottom:8px">⚡ System</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/status</code> - Server overview<br>
+              <code>/services</code> - Service status<br>
+              <code>/load</code> - CPU/Memory/Disk<br>
+              <code>/processes</code> - Top processes
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--green);margin-bottom:8px">📦 Magento</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/orders</code> - Today's orders<br>
+              <code>/online</code> - Users online<br>
+              <code>/inventory</code> - Low stock<br>
+              <code>/cache</code> - Cache status<br>
+              <code>/indexers</code> - Indexer status
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--yellow);margin-bottom:8px">📬 Queues</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/queues</code> - Queue status<br>
+              <code>/consumers</code> - Running consumers
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--purple);margin-bottom:8px">💾 Database</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/dbhealth prod|beta|dev|all</code> - DB health<br>
+              <code>/slowqueries prod|beta|dev</code> - Slow queries<br>
+              <code>/db:size prod|beta|dev</code> - Size breakdown<br>
+              <code>/db:tables prod|beta|dev</code> - Table stats<br>
+              <code>/db:connections prod|beta|dev</code> - Connections<br>
+              <code>/db:optimize prod|beta|dev</code> - Optimize<br>
+              <code>/db:cleanup prod|beta|dev</code> - Clean data
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--cyan);margin-bottom:8px">🤖 AI Commands</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/ai:report database prod</code> - DB analysis<br>
+              <code>/ai:report performance prod</code> - Performance<br>
+              <code>/ai:report security prod</code> - Security audit<br>
+              <code>/ai:query &lt;prompt&gt;</code> - Custom query<br>
+              <code>/ai:cache:clear</code> - Clear cache
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--pink);margin-bottom:8px">🗄️ Cache Management</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/cache:flush prod|beta|dev</code> - Flush all cache<br>
+              <code>/cache:clean prod|beta|dev</code> - Clean cache<br>
+              <code>/cache:purge prod|beta|dev</code> - Purge + Cloudflare
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--red);margin-bottom:8px">📝 Log Analysis</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/logs:summary prod [h]</code> - Log summary<br>
+              <code>/logs:critical prod [h]</code> - Critical errors<br>
+              <code>/logs:errors prod [h]</code> - Error patterns<br>
+              <code>/logs:ai prod [h]</code> - AI analysis
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--orange);margin-bottom:8px">🔐 Admin</div>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.8">
+              <code>/auth</code> - Manage users<br>
+              <code>/alerts</code> - Alert settings<br>
+              <code>/stats</code> - Bot statistics<br>
+              <code>/help</code> - Show commands
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>🔐 Authorized Users</h3>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:16px;margin-top:12px">
+          <div>
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <input type="text" id="tg-chat-id-input" placeholder="Chat ID (e.g., 6972138184)" style="flex:1;padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem;font-family:monospace">
+              <input type="text" id="tg-user-name-input" placeholder="Name" style="width:150px;padding:9px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.85rem">
+              <button class="btn btn-success" onclick="addTelegramUser()">➕ Add User</button>
+            </div>
+            <div id="authorized-users-list" style="font-size:0.82rem;color:var(--muted)">
+              Loading...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>📊 Recent Activity Logs</h3>
+        <div id="telegram-logs" class="logs" style="margin-top:14px">
+          Loading...
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloudflare Analytics -->
+  <div class="tab-content" id="tab-cloudflare">
+    <!-- Overview Stats -->
+    <div class="grid grid-4" id="cf-overview-stats" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">Zone Status</div>
+        <div class="metric-value" id="cf-zone-status">-</div>
+        <div class="metric-sub" id="cf-plan">-</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Requests (7d)</div>
+        <div class="metric-value" id="cf-requests">-</div>
+        <div class="metric-sub" id="cf-requests-sub"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Bandwidth (7d)</div>
+        <div class="metric-value" id="cf-bandwidth">-</div>
+        <div class="metric-sub" id="cf-bandwidth-sub"></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Cache Hit Ratio</div>
+        <div class="metric-value" id="cf-cache-ratio">-</div>
+        <div class="metric-sub" id="cf-cache-sub"></div>
+      </div>
+    </div>
+
+    <!-- Secondary Stats -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card">
+        <h3>🔒 SSL</h3>
+        <div id="cf-ssl-info" style="margin-top:10px;font-size:0.85rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card">
+        <h3>🛡️ Threats (7d)</h3>
+        <div id="cf-threats-info" style="margin-top:10px;font-size:0.85rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card">
+        <h3>⚡ Settings</h3>
+        <div id="cf-settings-info" style="margin-top:10px;font-size:0.85rem"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card">
+        <h3>🔥 Firewall</h3>
+        <div id="cf-firewall-info" style="margin-top:10px;font-size:0.85rem"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="margin:0">📈 Daily Traffic (7d)</h3>
+        </div>
+        <div style="position:relative;height:280px"><canvas id="cf-daily-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>📊 Hourly Traffic (24h)</h3>
+        <div style="position:relative;height:280px"><canvas id="cf-hourly-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Countries & URLs -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>🌍 Top Countries</h3>
+        <div id="cf-countries" style="margin-top:10px"><span class="loading">Loading...</span></div>
+      </div>
+      <div class="card">
+        <h3>🔗 Top URLs</h3>
+        <div id="cf-top-urls" style="margin-top:10px"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Status Codes & Threat Types -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>📋 Status Codes</h3>
+        <div style="position:relative;height:250px"><canvas id="cf-status-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>🛡️ Threat Types</h3>
+        <div id="cf-threat-types" style="margin-top:10px"><span class="loading">Loading...</span></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <h3>⚡ Quick Actions</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn btn-danger" onclick="cfAction('purge_all')">🗑️ Purge All Cache</button>
+        <button class="btn btn-warning" onclick="cfAction('toggle_dev_mode')">⚡ Toggle Dev Mode</button>
+        <button class="btn btn-primary" onclick="cfAction('toggle_brotli')">📦 Toggle Brotli</button>
+        <button class="btn btn-secondary" onclick="loadCloudflare()">🔄 Refresh</button>
+      </div>
+      <div id="cf-action-output" class="logs" style="display:none;margin-top:12px"></div>
+    </div>
+  </div>
+
+<!-- Output Modal -->
+<div class="output-modal" id="output-modal">
+  <div class="content">
+    <span class="close" onclick="document.getElementById('output-modal').classList.remove('show')">&times;</span>
+    <h3 id="modal-title" style="margin-bottom:12px">Script Output</h3>
+    <div class="logs" id="modal-output"></div>
+  </div>
+</div>
+
+<script>
+// Monkey-patch fetch to handle PHP shebang globally - inline fix
+(function() {
+  const orig = window.fetch;
+  window.fetch = function(...args) {
+    return orig.apply(this, args).then(r => {
+      const oldJson = r.json;
+      r.json = function() {
+        return r.text().then(t => {
+          const jsonStr = t.replace(/^[^{]*/, '').trim();
+          return JSON.parse(jsonStr);
+        });
+      };
+      return r;
+    });
+  };
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/assets/dashboard.js?v=20240502"></script>
+
+  <!-- Apache Monitor -->
+  <div class="tab-content" id="tab-apache-monitor">
+    <!-- Apache Status Row -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">Apache Status</div>
+        <div class="metric-value" id="apache-status-badge">—</div>
+        <div class="metric-sub" id="apache-version">—</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Active Connections</div>
+        <div class="metric-value" id="apache-connections">—</div>
+        <div class="metric-sub" id="apache-workers">— workers</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Processes</div>
+        <div class="metric-value" id="apache-processes">—</div>
+        <div class="metric-sub" id="apache-max-workers">Max: —</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Memory Usage</div>
+        <div class="metric-value" id="apache-memory">—</div>
+        <div class="metric-sub" id="apache-avg-mem">Avg: — per process</div>
+      </div>
+    </div>
+
+    <!-- Ports & MPM Info -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Configuration</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:10px">
+        <div>
+          <div class="metric-label">MPM Module</div>
+          <div class="metric-value" id="apache-mpm" style="font-size:1.2rem;margin-top:6px">—</div>
+        </div>
+        <div>
+          <div class="metric-label">HTTP Port 80</div>
+          <div class="metric-value" id="apache-port-http" style="font-size:1.2rem;margin-top:6px">—</div>
+        </div>
+        <div>
+          <div class="metric-label">HTTPS Port 443</div>
+          <div class="metric-value" id="apache-port-https" style="font-size:1.2rem;margin-top:6px">—</div>
+        </div>
+        <div>
+          <div class="metric-label">Uptime</div>
+          <div class="metric-value" id="apache-uptime" style="font-size:1.2rem;margin-top:6px">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Log Analysis -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Error Log (Recent)</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:10px">
+        <div class="card metric-card">
+          <div class="metric-label">Critical</div>
+          <div class="metric-value" id="apache-errors-crit" style="color:#ef4444">—</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-label">Errors</div>
+          <div class="metric-value" id="apache-errors-error" style="color:#f97316">—</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-label">Warnings</div>
+          <div class="metric-value" id="apache-errors-warn" style="color:#eab308">—</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-label">Notices</div>
+          <div class="metric-value" id="apache-errors-notice" style="color:#3b82f6">—</div>
+        </div>
+      </div>
+      <div id="apache-recent-errors" style="margin-top:14px" class="logs">
+        <div class="loading">No recent errors</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+      <h3>Apache Actions</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn" onclick="loadApacheMonitor()">↺ Refresh Stats</button>
+        <button class="btn btn-warning" onclick="apacheAction('restart')">🔄 Restart Apache</button>
+        <button class="btn btn-danger" onclick="apacheAction('graceful')">⚡ Graceful Reload</button>
+      </div>
+      <div id="apache-action-output" class="logs" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Varnish Multi-Site Monitor -->
+  <div class="tab-content" id="tab-varnish-monitor">
+    <!-- Global Stats Row -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">Global Hit Rate</div>
+        <div class="metric-value" id="v-global-hitrate">—</div>
+        <div class="metric-sub" id="v-global-target">Target: 80%</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Cache Hits</div>
+        <div class="metric-value" id="v-global-hits">—</div>
+        <div class="metric-sub" id="v-global-total">/ — total</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Cached Objects</div>
+        <div class="metric-value" id="v-global-objects">—</div>
+        <div class="metric-sub">in memory</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Storage Used</div>
+        <div class="metric-value" id="v-global-storage">—</div>
+        <div class="metric-sub" id="v-global-storage-pct">of 6GB</div>
+      </div>
+    </div>
+
+    <!-- Per-Site Hit Rates -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Per-Site Hit Rates <span style="font-size:0.72rem;color:var(--muted);font-weight:400;margin-left:8px">🎯 Target: 80%</span></h3>
+      <div id="varnish-sites-grid" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- 24h Hourly Trend Chart -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Hit Rate Trend — Last 24 Hours</h3>
+      <div id="varnish-hourly-chart" style="margin-top:14px;overflow-x:auto">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Per-Backend Health -->
+    <div class="card">
+      <h3>Backend Health</h3>
+      <table id="varnish-backends-table" style="margin-top:10px">
+        <thead><tr><th>Site</th><th>Backend</th><th>Status</th><th>Requests</th><th>Cache</th><th>Hit Rate (1h)</th><th>Hit Rate (24h)</th></tr></thead>
+        <tbody><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Actions -->
+    <div class="card" style="margin-top:20px">
+      <h3>Cache Actions</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn btn-primary" onclick="varnishAction('purge_all')">🗑️ Purge All Cache</button>
+        <button class="btn btn-warning" onclick="varnishAction('ban_static')">🔄 Refresh Static Files</button>
+        <button class="btn" onclick="loadVarnishMonitor()">↺ Refresh Stats</button>
+      </div>
+      <div id="varnish-action-output" class="logs" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Environments Monitor -->
+  <div class="tab-content" id="tab-environments">
+    <!-- Environment Overview -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Environment Overview</h3>
+      <div id="env-overview-grid" style="margin-top:14px;display:grid;gap:14px">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Environment Comparison -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Environment Comparison</h3>
+      <table id="env-comparison-table" style="margin-top:10px;width:100%">
+        <thead>
+          <tr>
+            <th>Environment</th>
+            <th>Status</th>
+            <th>PHP-FPM</th>
+            <th>Disk</th>
+            <th>DB Size</th>
+            <th>Mode</th>
+            <th>Cache</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="8" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Cron Jobs by Environment -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>Production Cron Jobs</h3>
+        <div id="env-prod-crons" style="margin-top:10px"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="card">
+        <h3>Beta Cron Jobs</h3>
+        <div id="env-beta-crons" style="margin-top:10px"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- Queue Status -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Queue Status</h3>
+      <div id="env-queues-grid" style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Database Health -->
+    <div class="card">
+      <h3>Database Health</h3>
+      <div id="env-db-health" style="margin-top:10px"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- Akeneo PIM Monitor -->
+  <div class="tab-content" id="tab-pim-monitor">
+    <!-- PIM Health Row -->
+    <div class="grid grid-4" style="margin-bottom:20px">
+      <div class="card metric-card">
+        <div class="metric-label">PIM Health</div>
+        <div class="metric-value" id="pim-health-badge">—</div>
+        <div class="metric-sub" id="pim-health-sub">Checking...</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Queue Consumers</div>
+        <div class="metric-value" id="pim-consumers-count">—</div>
+        <div class="metric-sub">of 3 running</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">ES Cluster</div>
+        <div class="metric-value" id="pim-es-status">—</div>
+        <div class="metric-sub" id="pim-es-shards">— shards</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-label">Web Response</div>
+        <div class="metric-value" id="pim-web-ms">—</div>
+        <div class="metric-sub" id="pim-web-status">ms</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <!-- Queue Consumers Detail -->
+      <div class="card">
+        <h3>Queue Consumers</h3>
+        <div id="pim-consumers-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="pimAction('restart_consumers')">↺ Restart All Consumers</button>
+        </div>
+      </div>
+
+      <!-- Elasticsearch -->
+      <div class="card">
+        <h3>Elasticsearch</h3>
+        <div id="pim-es-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-warning" onclick="pimAction('reindex_es')">🔄 Reindex Products</button>
+          <button class="btn" onclick="pimAction('fix_es_replicas')">🔧 Fix Replicas</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <!-- Queue Depth -->
+      <div class="card">
+        <h3>Message Queues</h3>
+        <div id="pim-queues-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+
+      <!-- Recent Jobs -->
+      <div class="card">
+        <h3>Recent Jobs (24h)</h3>
+        <div id="pim-jobs-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- PHP-FPM + Cache -->
+    <div class="grid grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>PHP-FPM Pool</h3>
+        <div id="pim-fpm-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="card">
+        <h3>Symfony Cache</h3>
+        <div id="pim-cache-detail" style="margin-top:14px"><div class="loading">Loading...</div></div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-warning" onclick="pimAction('rebuild_cache')">🔄 Rebuild Cache</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issues / Alerts -->
+    <div class="card" id="pim-issues-card" style="margin-bottom:20px;display:none">
+      <h3 style="color:var(--red)">⚠️ Active Issues</h3>
+      <div id="pim-issues-list" style="margin-top:10px"></div>
+    </div>
+
+    <!-- Action Output -->
+    <div class="card" id="pim-action-card" style="display:none">
+      <h3>Action Output</h3>
+      <div id="pim-action-output" class="logs" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+  <footer class="footer">
+    <div style="display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto;width:100%;font-size:0.82rem;color:var(--muted)">
+      <div>© TechnoStationery — Server Control Center</div>
+      <div id="footer-stats" style="display:flex;gap:12px;align-items:center"></div>
+    </div>
+  </footer>
+</body>
+</html>

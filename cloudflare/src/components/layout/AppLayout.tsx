@@ -3,18 +3,15 @@ import { Outlet } from 'react-router-dom';
 import {
   Box,
   Drawer,
-  AppBar,
-  Toolbar,
   CssBaseline,
-  IconButton,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Menu as MenuIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
-import TopBar from './TopBar';
+import Header from './Header';
+import Footer from './Footer';
 
-const DRAWER_WIDTH = 240;
+const DRAWER_WIDTH = 260;
 
 export default function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -26,25 +23,10 @@ export default function AppLayout() {
   const drawer = <Sidebar onClose={() => setMobileOpen(false)} />;
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0a0e18' }}>
       <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (t) => t.zIndex.drawer + 1,
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-        }}
-      >
-        <Toolbar sx={{ px: { xs: 2, md: 3 } }}>
-          {isMobile && (
-            <IconButton edge="start" color="inherit" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
-              <MenuIcon />
-            </IconButton>
-          )}
-          <TopBar />
-        </Toolbar>
-      </AppBar>
-
+      
+      {/* Sidebar Navigation */}
       <Box component="nav" sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}>
         {isMobile ? (
           <Drawer
@@ -54,7 +36,12 @@ export default function AppLayout() {
             ModalProps={{ keepMounted: true }}
             sx={{
               display: { xs: 'block', md: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+              '& .MuiDrawer-paper': { 
+                boxSizing: 'border-box', 
+                width: DRAWER_WIDTH,
+                backgroundColor: '#111827',
+                borderRight: '1px solid #1e293b'
+              },
             }}
           >
             {drawer}
@@ -64,7 +51,16 @@ export default function AppLayout() {
             variant="permanent"
             sx={{
               display: { xs: 'none', md: 'block' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+              '& .MuiDrawer-paper': { 
+                boxSizing: 'border-box', 
+                width: DRAWER_WIDTH,
+                backgroundColor: '#111827',
+                borderRight: '1px solid #1e293b',
+                height: '100vh',
+                position: 'fixed',
+                top: 0,
+                left: 0
+              },
             }}
           >
             {drawer}
@@ -72,18 +68,31 @@ export default function AppLayout() {
         )}
       </Box>
 
+      {/* Main Content Area */}
       <Box
-        component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, md: 3 },
+          display: 'flex',
+          flexDirection: 'column',
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          mt: 8,
           minHeight: '100vh',
-          backgroundColor: 'background.default',
+          position: 'relative'
         }}
       >
-        <Outlet />
+        <Header onMenuClick={handleDrawerToggle} />
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: { xs: 2, md: 3 },
+            pb: '60px' // Spacing for footer
+          }}
+        >
+          <Outlet />
+        </Box>
+
+        <Footer />
       </Box>
     </Box>
   );

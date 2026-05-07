@@ -106,6 +106,7 @@ export interface CloudflareData {
   cache_hit_ratio: number;
   bandwidth_formatted: string;
   firewall: FirewallSummary;
+  timestamp: number;
   error?: string;
 }
 

@@ -1,199 +1,183 @@
-import { Box, Typography, Card, CardContent, Grid, Chip, Divider, Button, useTheme } from '@mui/material';
-import { CheckCircle, Warning, RestartAlt, Cached, Settings, Delete } from '@mui/icons-material';
+import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip } from '@mui/material';
+import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle } from '@mui/icons-material';
 import { useState } from 'react';
-import { useCloudflareData } from '../hooks/useCloudflareData';
-import { performCloudflareAction } from '../api/cloudflare';
-import LoadingState from '../components/common/LoadingState';
-import StatusBadge from '../components/common/StatusBadge';
-import { formatNumber } from '../utils/formatters';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div role="tabpanel" hidden={value !== index} {...other}>
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
-  const theme = useTheme();
-  const { data, loading, error, refetch } = useCloudflareData();
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [actionMessage, setActionMessage] = useState<string | null>(null);
-
-  if (loading) return <LoadingState />;
-  if (error) return <LoadingState message={`Error: ${error}`} />;
-  if (!data) return null;
-
-  const s = data.settings;
-  const sslCert = data.ssl_certificate;
-  const z = data.zone;
-
-  const handleAction = async (action: string, params: Record<string, string> = {}) => {
-    setActionLoading(action);
-    setActionMessage(null);
-    try {
-      const result = await performCloudflareAction(action, params);
-      setActionMessage(result.message || `${action} completed`);
-      setTimeout(() => refetch(), 2000);
-    } catch (e: any) {
-      setActionMessage(`Error: ${e.message}`);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const toggleValue = (key: string, value: string) => {
-    const isOn = value === 'on';
-    return {
-      color: isOn ? 'success' : 'default',
-      icon: isOn ? <CheckCircle fontSize="small" /> : <Warning fontSize="small" />,
-    };
-  };
-
-  const settingGroups = [
-    {
-      title: 'Security',
-      items: [
-        { label: 'WAF', value: s.waf },
-        { label: 'Security Level', value: s.security_level },
-        { label: 'Auto HTTPS Rewrites', value: s.automatic_https_rewrites },
-        { label: 'Always Online', value: s.always_online },
-      ],
-    },
-    {
-      title: 'Performance',
-      items: [
-        { label: 'Cache Level', value: s.cache_level },
-        { label: 'Brotli', value: s.brotli },
-        { label: 'HTTP/2', value: s.http2 },
-        { label: 'HTTP/3', value: s.http3 },
-        { label: 'Rocket Loader', value: s.rocket_loader },
-        { label: 'Minify CSS', value: s.minify_css },
-        { label: 'Minify JS', value: s.minify_js },
-        { label: 'Early Hints', value: s.early_hints },
-        { label: 'Polish', value: s.polish },
-      ],
-    },
-    {
-      title: 'Network',
-      items: [
-        { label: 'IPv6', value: s.ipv6 },
-        { label: 'Browser Cache TTL', value: `${Math.round((Number(s.browser_cache_ttl) || 0) / 3600)}h` },
-      ],
-    },
-  ];
+  const [tab, setTab] = useState(0);
+  const [showKey, setShowKey] = useState(false);
+  const [settings, setSettings] = useState({
+    notifications_enabled: true,
+    auto_refresh: true,
+    refresh_interval: 30,
+    theme: 'dark',
+    debug_mode: false,
+    api_token: '••••••••••••••••••••••••••••••••',
+    telegram_webhook: 'https://dashboard.technostationery.com/api/telegram/webhook.php'
+  });
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 0.5, fontWeight: 700 }}>Settings & Actions</Typography>
-      <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>Zone configuration and quick actions</Typography>
-
-      {sslCert && (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>SSL Certificate</Typography>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 3 }}>
-                <StatusBadge label={sslCert.status} color={sslCert.status === 'active' ? 'success' : 'warning'} />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 3 }}>
-                <Typography variant="body2">
-                  Expires: {sslCert.expires_on || 'N/A'}
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 3 }}>
-                <Typography variant="body2" color={sslCert.days_left !== null && sslCert.days_left < 30 ? 'error.main' : 'text.secondary'}>
-                  {sslCert.days_left} days remaining
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 3 }}>
-                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                  {sslCert.hostnames.slice(0, 2).join(', ')}
-                </Typography>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      )}
-
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        {settingGroups.map((group) => (
-          <Grid size={{ xs: 12, md: 4 }} key={group.title}>
-            <Card>
-              <CardContent>
-                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>{group.title}</Typography>
-                <Box>
-                  {group.items.map((item) => {
-                    const tc = toggleValue(item.label, item.value);
-                    return (
-                      <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.75, borderBottom: 1, borderColor: `${theme.palette.divider}4d` }}>
-                        <Typography variant="body2" color="textSecondary">{item.label}</Typography>
-                        <Chip
-                          label={item.value}
-                          size="small"
-                          icon={tc.icon}
-                          color={tc.color as any}
-                          variant="outlined"
-                          sx={{ textTransform: 'capitalize', minWidth: 60 }}
-                        />
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
+          Global Settings
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          Configure system behavior, API integrations, and personal preferences.
+        </Typography>
+      </Box>
 
       <Card>
-        <CardContent>
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>Quick Actions</Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-            <Button
-              variant="contained"
-              color="warning"
-              startIcon={<Delete />}
-              onClick={() => handleAction('purge_all')}
-              disabled={actionLoading !== null}
-              size="small"
-            >
-              Purge All Cache
-            </Button>
-            <Button
-              variant="contained"
-              color={z.development_mode === 'on' ? 'secondary' : 'primary'}
-              startIcon={<RestartAlt />}
-              onClick={() => handleAction('toggle_dev_mode', { value: z.development_mode === 'on' ? 'off' : 'on' })}
-              disabled={actionLoading !== null}
-              size="small"
-            >
-              {z.development_mode === 'on' ? 'Dev Mode OFF' : 'Dev Mode ON'}
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<Cached />}
-              onClick={() => handleAction('cache_level', { level: 'aggressive' })}
-              disabled={actionLoading !== null}
-              size="small"
-            >
-              Cache: Aggressive
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              startIcon={<Settings />}
-              onClick={() => handleAction('cache_level', { level: 'basic' })}
-              disabled={actionLoading !== null}
-              size="small"
-            >
-              Cache: Basic
-            </Button>
-          </Box>
-          {actionLoading && <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>Executing {actionLoading}...</Typography>}
-          {actionMessage && (
-            <Typography
-              variant="caption"
-              sx={{ display: 'block', mt: 1, color: actionMessage.startsWith('Error') ? 'error.main' : 'success.main', fontWeight: 600 }}
-            >
-              {actionMessage}
-            </Typography>
-          )}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
+          <Tabs value={tab} onChange={(_, v) => setTab(v)}>
+            <Tab icon={<SettingsIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="General" />
+            <Tab icon={<Api sx={{ fontSize: 18 }} />} iconPosition="start" label="API & Integration" />
+            <Tab icon={<Security sx={{ fontSize: 18 }} />} iconPosition="start" label="Access Control" />
+            <Tab icon={<Info sx={{ fontSize: 18 }} />} iconPosition="start" label="About" />
+          </Tabs>
+        </Box>
+        
+        <CardContent sx={{ p: 3 }}>
+          <TabPanel value={tab} index={0}>
+            <Grid container spacing={4}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>User Interface</Typography>
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <FormControlLabel
+                    control={<Switch checked={settings.auto_refresh} onChange={(e) => setSettings({...settings, auto_refresh: e.target.checked})} />}
+                    label={<Box><Typography variant="body2" sx={{ fontWeight: 600 }}>Real-time Data Polling</Typography><Typography variant="caption" color="text.disabled">Automatically refresh stats every X seconds</Typography></Box>}
+                  />
+                  <TextField 
+                    label="Polling Interval (sec)" 
+                    size="small" 
+                    type="number" 
+                    value={settings.refresh_interval}
+                    onChange={(e) => setSettings({...settings, refresh_interval: parseInt(e.target.value)})}
+                    sx={{ width: 160 }}
+                  />
+                  <FormControlLabel
+                    control={<Switch checked={settings.debug_mode} color="warning" onChange={(e) => setSettings({...settings, debug_mode: e.target.checked})} />}
+                    label={<Box><Typography variant="body2" sx={{ fontWeight: 600 }}>Developer Debug Mode</Typography><Typography variant="caption" color="text.disabled">Show raw API responses and console logs</Typography></Box>}
+                  />
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>System Notifications</Typography>
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <FormControlLabel
+                    control={<Switch checked={settings.notifications_enabled} onChange={(e) => setSettings({...settings, notifications_enabled: e.target.checked})} />}
+                    label={<Box><Typography variant="body2" sx={{ fontWeight: 600 }}>Browser Push Alerts</Typography><Typography variant="caption" color="text.disabled">Receive critical server alerts via Webpushr</Typography></Box>}
+                  />
+                  <Button variant="outlined" size="small" sx={{ alignSelf: 'flex-start' }}>Reset Service Worker</Button>
+                </Box>
+              </Grid>
+            </Grid>
+          </TabPanel>
+
+          <TabPanel value={tab} index={1}>
+            <Box sx={{ maxWidth: 600 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>External API Tokens</Typography>
+              <TextField 
+                fullWidth 
+                label="Master Access Token" 
+                size="small" 
+                type={showKey ? 'text' : 'password'}
+                value={settings.api_token}
+                sx={{ mb: 3 }}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowKey(!showKey)} edge="end">
+                          {showKey ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                    sx: { fontFamily: 'monospace' }
+                  }
+                }}
+              />
+              
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Telegram Webhook URL</Typography>
+              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 1 }}>The destination for all Telegram bot events</Typography>
+              <TextField 
+                fullWidth 
+                size="small" 
+                value={settings.telegram_webhook}
+                sx={{ mb: 3, '& .MuiInputBase-input': { fontSize: '0.75rem', fontFamily: 'monospace' } }}
+              />
+              
+              <Button variant="contained">Save Integration Settings</Button>
+            </Box>
+          </TabPanel>
+
+          <TabPanel value={tab} index={2}>
+            <Alert severity="info" sx={{ mb: 3 }}>Session security and IP filtering settings.</Alert>
+            <List sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+              <ListItem divider>
+                <ListItemText primary="Current IP Address" secondary="102.156.42.89 (Algeria)" />
+                <Chip label="WHITELISTED" size="small" color="success" />
+              </ListItem>
+              <ListItem divider>
+                <ListItemText primary="Session Timeout" secondary="Sessions expire after 24 hours of inactivity" />
+                <Button size="small">Edit</Button>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Two-Factor Authentication" secondary="Required for Admin role" />
+                <Chip label="ENABLED" size="small" color="primary" />
+              </ListItem>
+            </List>
+          </TabPanel>
+
+          <TabPanel value={tab} index={3}>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ p: 2, backgroundColor: 'background.default', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>Techno Monitor</Typography>
+                  <Typography variant="body2" sx={{ mb: 2 }}>The comprehensive infrastructure management platform for TechnoStationery e-commerce systems.</Typography>
+                  <Box sx={{ display: 'grid', gap: 0.5 }}>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v3.1.5-TSM</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>rX82jL299a</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>May 6, 2026</strong></Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>System Dependencies</Typography>
+                <List disablePadding>
+                  {['PHP 8.2.30', 'MariaDB 10.6', 'Redis 7.0', 'Varnish 6.0', 'Node.js 20.x'].map(dep => (
+                    <ListItem key={dep} sx={{ py: 0.5, px: 0 }}>
+                      <ListItemText 
+                        primary={<Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>{dep}</Typography>} 
+                      />
+                      <CheckCircle sx={{ color: 'success.main', fontSize: 16 }} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Grid>
+            </Grid>
+          </TabPanel>
         </CardContent>
+        
+        <Divider />
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button variant="outlined" color="inherit">Discard Changes</Button>
+          <Button variant="contained">Apply Global Settings</Button>
+        </Box>
       </Card>
     </Box>
   );

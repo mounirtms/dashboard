@@ -1,3 +1,24 @@
+
+cd /home/beta/public_html
+ 
+rm -rf  var/*  pub/static/frontend/*  pub/static/adminhtml/* generated/*
+php bin/magento maintenance:enable
+php bin/magento setup:upgrade
+php bin/magento setup:di:compile
+php bin/magento setup:static-content:deploy -f
+ 
+chmod -R 777 pub/static/ var/ generated/
+php bin/magento maintenance:disable 
+php bin/magento cache:flush
+php bin/magento cache:clean
+php bin/magento mab:cache:all:purge  
+php bin/magento mab:cloudflare:purge:all 
+chown -R beta:beta .
+chmod -R 775 pub/static/
+chmod -R 775 var/
+chmod -R 775 generated/
+php bin/magento mab:test:full
+
 #!/bin/bash
 ###############################################################################
 # Deploy Multi-Site Varnish Configuration

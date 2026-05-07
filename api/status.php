@@ -9,6 +9,9 @@ header('Content-Type: application/json');
 header('Cache-Control: no-cache, no-store');
 header('Access-Control-Allow-Origin: *');
 
+require_once __DIR__ . '/config.php';
+Config::load();
+
 $load = sys_getloadavg();
 
 // Memory from /proc/meminfo
@@ -27,7 +30,8 @@ $disk_pct   = (int)round((1 - $disk_free / $disk_total) * 100) . '%';
 // Quick DB ping
 $db_ok = false;
 try {
-    $m = @new mysqli('127.0.0.1', 'root', 'YourNewStrongPassword', null, 3307);
+    $dbCfg = Config::get('db');
+    $m = @new mysqli($dbCfg['host'], $dbCfg['user'], $dbCfg['pass'], null, (int)$dbCfg['port']);
     $db_ok = ($m && !$m->connect_error);
     if ($db_ok) $m->close();
 } catch (\Throwable $e) {}

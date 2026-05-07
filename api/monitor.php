@@ -1,43 +1,11 @@
 <?php
 /**
- * Server Monitoring API — Real-time system data
- * All endpoints return live server data for the dashboard
+ * Server Monitoring API — Standardized
  */
 
-// Clean any output that might have been accidentally included
-while (ob_get_level()) ob_end_clean();
-ob_start();
-
-// Set session cookie params for HTTPS compatibility
-session_set_cookie_params([
-    'lifetime' => 86400,
-    'path' => '/',
-    'domain' => '',
-    'secure' => isset($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Lax'
-]);
-
-// Set headers first
-header('Content-Type: application/json');
-header('Cache-Control: no-cache, no-store, must-revalidate');
-error_reporting(0);
-ini_set('display_errors', 0);
-
-session_start();
-
-// Load environment variables
-$envFile = dirname(__DIR__) . '/.env';
-if (file_exists($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        if (strpos($line, '=') !== false) {
-            list($key, $value) = explode('=', $line, 2);
-            $_ENV[trim($key)] = trim($value);
-        }
-    }
-}
+header('Content-Type: application/json', true);
+require_once __DIR__ . '/session_helper.php';
+require_once __DIR__ . '/InputValidator.php';
 
 // Require authentication
 if (empty($_SESSION['logged_in'])) {
@@ -55,6 +23,19 @@ header('Cache-Control: no-cache, no-store, must-revalidate');
 // Rate limiting: 120 requests per minute per user (2 per second)
 require_once __DIR__ . '/RateLimiter.php';
 require_once __DIR__ . '/InputValidator.php';
+require_once __DIR__ . '/CacheManager.php';
+require_once __DIR__ . '/MonitorApi.php';
+require_once __DIR__ . '/config.php';
+
+Config::load();
+
+$cache = new CacheManager(
+    Config::get('redis.host', '127.0.0.1'), 
+    (int)Config::get('redis.port', 6379), 
+    Config::get('redis.pass')
+);
+$monitorApi = new MonitorApi($cache);
+
 $rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 500, 60);
 $userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
 if (!$rateLimiter->checkOrReject($userIdentifier)) {
@@ -509,14 +490,28 @@ function execute() {
     $args = $_GET['args'] ?? '';
     if(empty($script)) { echo json_encode(['error'=>'No script specified']); return; }
     // Validate path — must be under dashboard scripts or site paths
-    $real = realpath($script);
-    if(!$real) { echo json_encode(['error'=>'Script not found']); return; }
-    $allowed_prefixes = ['/home/dashboard/public_html/scripts','/home/beta/public_html/scripts','/home/technadminy7/public_html/scripts'];
+    $base_scripts = '/home/dashboard/public_html/scripts';
+    // If script contains subdirectories, ensure it stays within base
+    $real = realpath($base_scripts . '/' . $script);
+    if(!$real) {
+        // Try absolute path if provided and allowed
+        $real = realpath($script);
+    }
+    
+    if(!$real) { echo json_encode(['error'=>'Script not found: ' . $script]); return; }
+    
+    $allowed_prefixes = [$base_scripts, '/home/beta/public_html/scripts', '/home/technadminy7/public_html/scripts'];
     $allowed = false;
     foreach($allowed_prefixes as $p) { if(strpos($real,$p)===0) { $allowed=true; break; } }
     if(!$allowed) { echo json_encode(['error'=>'Script not in allowed paths']); return; }
+    
+    // Sanitize arguments to prevent command injection
+    // If multiple args are passed, they should be escaped individually if possible, 
+    // but here we escape the whole string as a shell command safely.
+    $safe_args = escapeshellcmd($args);
+    
     $ext = pathinfo($real,PATHINFO_EXTENSION);
-    $cmd = $ext==='php' ? "/opt/cpanel/ea-php82/root/usr/bin/php '$real' $args 2>&1" : "bash '$real' $args 2>&1";
+    $cmd = $ext==='php' ? "/opt/cpanel/ea-php82/root/usr/bin/php '$real' $safe_args 2>&1" : "bash '$real' $safe_args 2>&1";
     $desc = [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']];
     $proc = @proc_open($cmd, $desc, $pipes);
     $out = []; $ret = 1;
@@ -1747,23 +1742,128 @@ function cloudflare_action() {
 }
 
 // ── Router ──
-switch($action) {
-    case 'overview': overview(); break;
-    case 'sites': sites(); break;
-    case 'crons': crons(); break;
-    case 'queues': queues(); break;
-    case 'cleanup': cleanup($_GET['type']??'all'); break;
-    case 'indexer': indexer($_GET['env']??'prod'); break;
-    case 'execute': execute(); break;
-    case 'dbhealth': dbhealth(); break;
-    case 'redis': redis_stats(); break;
-    case 'elasticsearch': elasticsearch_stats(); break;
-    case 'varnish': varnish_stats(); break;
-    case 'apache': apache_stats(); break;
-    case 'system_advanced': system_advanced_stats(); break;
-    case 'phpfpm_pools': phpfpm_pools_stats(); break;
-    case 'alerts': alert_history(); break;
-    case 'cloudflare': cloudflare_stats(); break;
-    case 'cloudflare_action': cloudflare_action(); break;
-    default: overview();
+$cacheableActions = [
+    'overview' => 15,
+    'sites' => 30,
+    'crons' => 30,
+    'queues' => 15,
+    'dbhealth' => 60,
+    'redis' => 15,
+    'elasticsearch' => 30,
+    'varnish' => 15,
+    'apache' => 15,
+    'system_advanced' => 60,
+    'phpfpm_pools' => 15,
+    'alerts' => 60,
+    'cloudflare' => 60
+];
+
+$cacheKey = $action . ($site ? "_$site" : "");
+if (isset($cacheableActions[$action]) && $cachedData = $cache->get($cacheKey)) {
+    header('X-Cache: HIT');
+    echo json_encode($cachedData);
+    exit;
+}
+
+header('X-Cache: MISS');
+
+try {
+    ob_start();
+    $data = null;
+
+    switch($action) {
+        case 'master_stats':
+            $data = $monitorApi->getMasterStats();
+            break;
+        case 'overview': 
+            $data = $monitorApi->getOverview(); 
+            break;
+        case 'sites': 
+            $data = $monitorApi->getSites(); 
+            break;
+        case 'logs':
+            $data = $monitorApi->getLogs();
+            break;
+        case 'processes':
+            $data = $monitorApi->getProcesses();
+            break;
+        case 'audit':
+            require_once __DIR__ . '/AuditLogger.php';
+            $data = ['entries' => AuditLogger::getEntries()];
+            break;
+        case 'cache_manage':
+            $data = $monitorApi->manageCache();
+            break;
+        case 'crons': 
+            $data = $monitorApi->getCrons(); 
+            break;
+        case 'queues': 
+            $data = $monitorApi->getQueues(); 
+            break;
+        case 'cleanup': cleanup($_GET['type']??'all'); break;
+        case 'indexer': indexer($_GET['env']??'prod'); break;
+        case 'execute': 
+            if (isset($_GET['list'])) {
+                $data = $monitorApi->getScripts();
+            } else {
+                require_once __DIR__ . '/AuditLogger.php';
+                AuditLogger::log('EXECUTE', $_GET['script'] ?? 'unknown', "Args: " . ($_GET['args'] ?? 'none'));
+                execute(); 
+            }
+            break;
+        case 'dbhealth': 
+            $data = $monitorApi->getDbHealth(); 
+            break;
+        case 'redis': 
+            $data = $monitorApi->getRedisStats(); 
+            break;
+        case 'elasticsearch': 
+            $data = $monitorApi->getElasticsearchStats(); 
+            break;
+        case 'varnish': 
+            $data = $monitorApi->getVarnishStats(); 
+            break;
+        case 'apache': 
+            $data = $monitorApi->getApacheStats(); 
+            break;
+        case 'system_advanced': 
+            $data = $monitorApi->getSystemAdvancedStats(); 
+            break;
+        case 'phpfpm_pools': 
+            $data = $monitorApi->getPhpFpmPoolsStats(); 
+            break;
+        case 'alerts': 
+            $data = $monitorApi->getAlertHistory(); 
+            break;
+        case 'cloudflare': 
+            $data = $monitorApi->getCloudflareStats(); 
+            break;
+        case 'cloudflare_action': cloudflare_action(); break;
+        default: 
+            $data = $monitorApi->getOverview(); 
+    }
+
+    if ($data !== null) {
+        ob_end_clean();
+        echo json_encode($data);
+        $output = json_encode($data);
+    } else {
+        $output = ob_get_clean();
+        echo $output;
+    }
+
+    if (isset($cacheableActions[$action])) {
+        $data = json_decode($output, true);
+        if ($data) {
+            $cache->set($cacheKey, $data, $cacheableActions[$action]);
+        }
+    }
+} catch (Exception $e) {
+    if (ob_get_level()) ob_end_clean();
+    http_response_code(500);
+    echo json_encode([
+        'error' => true,
+        'message' => $e->getMessage(),
+        'code' => 'API_ERROR'
+    ]);
 }

@@ -8,6 +8,7 @@ class RateLimiter {
     private $storagePath;
     private $maxRequests;
     private $windowSeconds;
+    private $redis;
 
     /**
      * Constructor
@@ -21,8 +22,20 @@ class RateLimiter {
         $this->maxRequests = $maxRequests;
         $this->windowSeconds = $windowSeconds;
 
-        // Create storage directory if it doesn't exist
-        if (!is_dir($this->storagePath)) {
+        // Try to connect to Redis
+        try {
+            if (class_exists('Redis')) {
+                $this->redis = new Redis();
+                if (!$this->redis->connect('127.0.0.1', 6379)) {
+                    $this->redis = null;
+                }
+            }
+        } catch (Exception $e) {
+            $this->redis = null;
+        }
+
+        // Create storage directory if it doesn't exist and Redis is not available
+        if (!$this->redis && !is_dir($this->storagePath)) {
             mkdir($this->storagePath, 0755, true);
         }
     }
@@ -34,8 +47,31 @@ class RateLimiter {
      * @return array ['allowed' => bool, 'remaining' => int, 'reset' => int]
      */
     public function check($identifier) {
+        if ($this->redis) {
+            $key = 'rate_limit:' . $this->getCacheKey($identifier);
+            $current = $this->redis->get($key);
+            
+            if ($current === false) {
+                $this->redis->setex($key, $this->windowSeconds, 1);
+                $current = 1;
+            } else {
+                $current = $this->redis->incr($key);
+            }
+            
+            $remaining = max(0, $this->maxRequests - $current);
+            $reset = time() + $this->redis->ttl($key);
+            
+            return [
+                'allowed' => $current <= $this->maxRequests,
+                'remaining' => $remaining,
+                'reset' => $reset,
+                'limit' => $this->maxRequests
+            ];
+        }
+
         $key = $this->getCacheKey($identifier);
         $now = time();
+        // ... rest of file-based logic
 
         // Get or create rate limit data
         $data = $this->load($key);

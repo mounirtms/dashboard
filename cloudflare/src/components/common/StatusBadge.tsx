@@ -3,9 +3,10 @@ import { Chip, useTheme } from '@mui/material';
 interface StatusBadgeProps {
   label: string;
   color: 'success' | 'warning' | 'error' | 'default' | 'info';
+  icon?: React.ReactNode;
 }
 
-export default function StatusBadge({ label, color }: StatusBadgeProps) {
+export default function StatusBadge({ label, color, icon }: StatusBadgeProps) {
   const theme = useTheme();
   const isDefault = color === 'default';
   const paletteColor = isDefault ? theme.palette.text.secondary : theme.palette[color].main;
@@ -16,6 +17,7 @@ export default function StatusBadge({ label, color }: StatusBadgeProps) {
     <Chip
       label={label}
       size="small"
+      icon={icon as any}
       sx={{
         fontWeight: 600,
         textTransform: 'capitalize',
@@ -25,6 +27,11 @@ export default function StatusBadge({ label, color }: StatusBadgeProps) {
         color: paletteColor,
         borderWidth: 1,
         borderStyle: 'solid',
+        '& .MuiChip-icon': {
+          color: 'inherit',
+          fontSize: 14,
+          ml: 0.5
+        }
       }}
     />
   );

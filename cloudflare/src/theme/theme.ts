@@ -19,16 +19,16 @@ export const darkTheme = createTheme({
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h6: { fontSize: '0.95rem', fontWeight: 700, letterSpacing: '-0.02em' },
-    h5: { fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.02em' },
-    h4: { fontSize: '1.3rem', fontWeight: 800, letterSpacing: '-0.03em' },
-    body1: { fontSize: '0.88rem' },
-    body2: { fontSize: '0.82rem' },
-    caption: { fontSize: '0.72rem', fontWeight: 500 },
-    button: { fontWeight: 600, textTransform: 'none' },
+    h6: { fontSize: '0.88rem', fontWeight: 700, letterSpacing: '-0.01em' },
+    h5: { fontSize: '1.0rem', fontWeight: 700, letterSpacing: '-0.01em' },
+    h4: { fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.02em' },
+    body1: { fontSize: '0.82rem' },
+    body2: { fontSize: '0.78rem' },
+    caption: { fontSize: '0.70rem', fontWeight: 500 },
+    button: { fontWeight: 600, textTransform: 'none', fontSize: '0.8rem' },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 8,
   },
   components: {
     MuiCssBaseline: {
@@ -47,19 +47,19 @@ export const darkTheme = createTheme({
         root: {
           backgroundImage: 'none',
           border: '1px solid #2a3548',
-          borderRadius: 14,
+          borderRadius: 8,
           backgroundColor: '#151c2c',
           transition: 'all 0.2s ease',
           '&:hover': {
             borderColor: '#334155',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
           },
         },
       },
     },
     MuiCardContent: {
       styleOverrides: {
-        root: { padding: '18px 20px', '&:last-child': { paddingBottom: 18 } },
+        root: { padding: '12px 16px', '&:last-child': { paddingBottom: 12 } },
       },
     },
     MuiPaper: {
@@ -90,16 +90,17 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           borderBottom: '1px solid rgba(42, 53, 72, 0.6)',
-          fontSize: '0.82rem',
-          padding: '10px 14px',
+          fontSize: '0.78rem',
+          padding: '6px 10px',
         },
         head: {
           backgroundColor: '#1a2235',
-          fontWeight: 600,
+          fontWeight: 700,
           textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          fontSize: '0.75rem',
+          letterSpacing: '0.04em',
+          fontSize: '0.7rem',
           color: '#94a3b8',
+          padding: '8px 10px',
         },
       },
     },

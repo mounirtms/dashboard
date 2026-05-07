@@ -1,93 +1,30 @@
 <?php
 /**
- * Dashboard Authentication Handler - Fixed Version
+ * Dashboard Authentication Handler - Standardized
  */
 
-// Start output buffering
-ob_start();
+header('Content-Type: application/json', true);
+require_once __DIR__ . '/session_helper.php';
+require_once __DIR__ . '/config.php';
+Config::load();
 
 // Configuration (must be defined before use)
-define('SESSION_LIFETIME', 86400);
 define('MAX_LOGIN_ATTEMPTS', 5);
 define('LOCKOUT_DURATION', 900);
-
-// Load environment variables
-$envFile = dirname(__DIR__) . '/.env';
-if (file_exists($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        if (strpos($line, '=') !== false) {
-            list($key, $value) = explode('=', $line, 2);
-            $_ENV[trim($key)] = trim($value);
-        }
-    }
-}
-
-// Database configuration
-define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');
-define('DB_PORT', $_ENV['DB_PORT'] ?? '3307');
-define('DB_USER', $_ENV['DB_USER'] ?? 'root');
-define('DB_PASS', $_ENV['DB_PASS'] ?? '');
-define('DB_NAME', 'dashboard_auth');
-
-// Set session cookie params for HTTPS compatibility
-session_set_cookie_params([
-    'lifetime' => SESSION_LIFETIME,
-    'path' => '/',
-    'domain' => '',
-    'secure' => isset($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Lax'
-]);
-
-// Set cache headers BEFORE session_start to prevent session from adding its own
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, private', true);
-header('Pragma: no-cache', true);
-header('Expires: 0', true);
-// Cloudflare-specific cache bypass
-header('CF-Cache-Status: DYNAMIC', true);
-header('CDN-Cache-Control: no-cache, no-store, must-revalidate, private', true);
-header('Cloudflare-CDN-Cache-Control: no-cache, no-store, must-revalidate, private', true);
-
-// Start session
-session_start();
-
-// Set JSON header
-header('Content-Type: application/json', true);
-
-// Load environment variables
-$envFile = dirname(__DIR__) . '/.env';
-if (file_exists($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        if (strpos($line, '=') !== false) {
-            list($key, $value) = explode('=', $line, 2);
-            $_ENV[trim($key)] = trim($value);
-        }
-    }
-}
-
-// Database configuration
-define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');
-define('DB_PORT', $_ENV['DB_PORT'] ?? '3307');
-define('DB_USER', $_ENV['DB_USER'] ?? 'root');
-define('DB_PASS', $_ENV['DB_PASS'] ?? '');
-define('DB_NAME', 'dashboard_auth');
 
 // Get database connection
 function getDb() {
     static $pdo = null;
     if ($pdo === null) {
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
-            $pdo = new PDO($dsn, DB_USER, DB_PASS);
+            $db = Config::get('db');
+            $dsn = "mysql:host=" . $db['host'] . ";port=" . $db['port'] . ";dbname=dashboard_auth;charset=utf8mb4";
+            $pdo = new PDO($dsn, $db['user'], $db['pass']);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             http_response_code(500);
-            echo json_encode(['error' => 'Database connection failed']);
+            echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
             exit;
         }
     }
@@ -98,11 +35,11 @@ function getDb() {
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // Actions that don't require authentication
-$allowWithoutAuth = ['login', 'csrf_token'];
+$allowWithoutAuth = ['login', 'csrf_token', 'status'];
 
 // Check authentication for protected actions
 if (!in_array($action, $allowWithoutAuth)) {
-    if ($action === 'check' || $action === 'logout') {
+    if ($action === 'check' || $action === 'logout' || $action === 'status') {
         // These are special cases
     } else if (empty($_SESSION['logged_in'])) {
         http_response_code(401);
@@ -114,12 +51,34 @@ if (!in_array($action, $allowWithoutAuth)) {
 // ── Action Handlers ──
 
 function handleLogin() {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+    // Support both $_POST and JSON input
+    $rawInput = file_get_contents('php://input');
+    $input = json_decode($rawInput, true);
+    
+    $username = $_POST['username'] ?? $input['username'] ?? '';
+    $password = $_POST['password'] ?? $input['password'] ?? '';
+    $csrfToken = $_POST['csrf_token'] ?? $input['csrf_token'] ?? '';
     
     if (empty($username) || empty($password)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Username and password required']);
+        return;
+    }
+
+    // CSRF Verification
+    if (empty($csrfToken) || empty($_SESSION['csrf_token']) || $csrfToken !== $_SESSION['csrf_token']) {
+        http_response_code(403);
+        $reason = empty($csrfToken) ? 'Token missing in request' : (empty($_SESSION['csrf_token']) ? 'Token missing in session' : 'Token mismatch');
+        
+        $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Fail: $reason | Request: $csrfToken | Session: " . ($_SESSION['csrf_token'] ?? 'none') . " | SID: " . session_id() . "\n";
+        @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
+
+        echo json_encode([
+            'success' => false, 
+            'error' => 'Invalid CSRF token', 
+            'reason' => $reason,
+            'session_id' => session_id()
+        ]);
         return;
     }
     
@@ -250,7 +209,11 @@ function handleCsrfToken() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-    echo json_encode(['success' => true, 'csrf_token' => $_SESSION['csrf_token']]);
+    echo json_encode([
+        'success' => true, 
+        'csrf_token' => $_SESSION['csrf_token'],
+        'session_id' => session_id()
+    ]);
 }
 
 // ── Main Router ──
@@ -265,6 +228,7 @@ if (basename($_SERVER['PHP_SELF']) === 'auth.php') {
             break;
         
         case 'check':
+        case 'status':
             handleCheckSession();
             break;
         

@@ -1,15 +1,10 @@
 <?php
 /**
- * Magento REST API Proxy
- * 
- * Provides authenticated access to Magento REST API endpoints
- * Supports all 5 environments with configurable credentials
- * 
- * Usage: /api/magento.php?action=products&env=prod&method=GET&endpoint=/V1/products
+ * Magento REST API Proxy - Standardized
  */
 
-session_start();
-header('Content-Type: application/json');
+header('Content-Type: application/json', true);
+require_once __DIR__ . '/session_helper.php';
 
 // Authentication check
 if (empty($_SESSION['logged_in'])) {
@@ -18,54 +13,36 @@ if (empty($_SESSION['logged_in'])) {
     exit;
 }
 
-// Error handling
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
+// Require configuration
+require_once __DIR__ . '/config.php';
+Config::load();
 
 // Environment configurations
 $environments = [
     'prod' => [
         'name' => 'Production',
-        'base_url' => 'https://technostationery.com',
-        'api_url' => 'https://technostationery.com/rest/V1',
-        'token' => '', // Set via admin or env var
-        'username' => '',
-        'password' => '',
+        'base_url' => Config::get('paths.prod_url', 'https://technostationery.com'),
+        'api_url' => Config::get('paths.prod_url', 'https://technostationery.com') . '/rest/V1',
+        'token' => Config::get('magento.prod.token', ''),
     ],
     'beta' => [
         'name' => 'Beta',
-        'base_url' => 'https://beta.technostationery.com',
-        'api_url' => 'https://beta.technostationery.com/rest/V1',
-        'token' => '',
-        'username' => '',
-        'password' => '',
+        'base_url' => Config::get('paths.beta_url', 'https://beta.technostationery.com'),
+        'api_url' => Config::get('paths.beta_url', 'https://beta.technostationery.com') . '/rest/V1',
+        'token' => Config::get('magento.beta.token', ''),
     ],
     'dev' => [
         'name' => 'Development',
-        'base_url' => 'https://dev.technostationery.com',
-        'api_url' => 'https://dev.technostationery.com/rest/V1',
-        'token' => '',
-        'username' => '',
-        'password' => '',
+        'base_url' => Config::get('paths.dev_url', 'https://dev.technostationery.com'),
+        'api_url' => Config::get('paths.dev_url', 'https://dev.technostationery.com') . '/rest/V1',
+        'token' => Config::get('magento.dev.token', ''),
     ],
     'pim' => [
         'name' => 'PIM (Akeneo)',
-        'base_url' => 'https://pim.technostationery.com',
-        'api_url' => 'https://pim.technostationery.com/api/rest/v1',
-        'token' => '',
-        'username' => '',
-        'password' => '',
+        'base_url' => Config::get('paths.pim_url', 'https://pim.technostationery.com'),
+        'api_url' => Config::get('paths.pim_url', 'https://pim.technostationery.com') . '/api/rest/v1',
+        'token' => Config::get('magento.pim.token', ''),
         'type' => 'akeneo',
-    ],
-    'lms' => [
-        'name' => 'LMS',
-        'base_url' => 'https://lms.technostationery.com',
-        'api_url' => 'https://lms.technostationery.com/api',
-        'token' => '',
-        'username' => '',
-        'password' => '',
-        'type' => 'lms',
     ],
 ];
 
