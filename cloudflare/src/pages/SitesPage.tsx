@@ -32,9 +32,9 @@ export default function SitesPage() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, height: '100%' }}>
           <Language sx={{ color: 'primary.main', fontSize: 18 }} />
           <Box>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>{params.value}</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 700 }}> {params.row.key}</Typography>
             <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: 'monospace', display: 'block', lineHeight: 1 }}>
-              {params.row.key}
+              {params.value}
             </Typography>
           </Box>
         </Box>
