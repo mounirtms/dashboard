@@ -1,7 +1,7 @@
 import { Box, Typography, Button, IconButton, useTheme } from '@mui/material';
 import { Menu as MenuIcon, ExitToApp, CloudDone, Warning, Speed, Memory, Storage } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth.tsx';
-import { useSystemOverview } from '../../hooks/useSystemData';
+import { useSystemOverview } from '../../hooks/useSystemData.ts';
 
 interface HeaderProps {
   onMenuClick: () => void;

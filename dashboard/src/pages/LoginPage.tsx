@@ -3,7 +3,7 @@ import { Box, Typography, TextField, Button, Checkbox, FormControlLabel, Card, C
 import { Person, Lock, CheckCircle, Warning } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../api/client';
+import apiClient from '../api/client.ts';
 
 export default function LoginPage() {
   const [username, setUsername] = useState(localStorage.getItem('dashboard_username') || '');
