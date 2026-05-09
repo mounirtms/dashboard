@@ -199,6 +199,27 @@ class MonitorApi extends BaseApi {
         });
     }
 
+    public function cronAction() {
+        $cmd = $_POST['command'] ?? $_GET['command'] ?? '';
+        if (!$cmd) return ['success' => false, 'message' => 'Command required'];
+
+        // Security check: only allow commands that are already in the crontab
+        $crons = $this->getCrons()['entries'];
+        $allowed = false;
+        foreach ($crons as $c) {
+            if ($c['command'] === $cmd) {
+                $allowed = true;
+                break;
+            }
+        }
+
+        if (!$allowed) return ['success' => false, 'message' => 'Command not in crontab'];
+
+        // Execute in background
+        $output = $this->cmd($cmd . " > /dev/null 2>&1 & echo $!");
+        return ['success' => true, 'message' => 'Cron job started in background', 'pid' => trim(implode('', $output['output']))];
+    }
+
     public function getQueues() {
         return $this->cache->remember('queues', 15, function() {
             $prodPath = Config::get('paths.prod');
@@ -558,38 +579,140 @@ class MonitorApi extends BaseApi {
     }
 
     public function getDbHealth() {
-        return $this->cache->remember('dbhealth', 60, function() {
-            $results = [];
+        return $this->cache->remember('db_health_comprehensive', 60, function() {
+            $db = $this->getDb();
+            
+            // Server Global Stats
+            $status = [];
+            $res = $db->query("SHOW GLOBAL STATUS WHERE Variable_name IN ('Uptime', 'Threads_connected', 'Max_used_connections', 'Slow_queries', 'Questions', 'Bytes_received', 'Bytes_sent')");
+            while ($row = $res->fetch_assoc()) $status[$row['Variable_name']] = $row['Value'];
+
+            $vars = [];
+            $res2 = $db->query("SHOW GLOBAL VARIABLES WHERE Variable_name IN ('max_connections', 'version', 'innodb_buffer_pool_size')");
+            while ($row = $res2->fetch_assoc()) $vars[$row['Variable_name']] = $row['Value'];
+
+            // Fragmented Tables across all relevant DBs
+            $fragmented = [];
             $dbs = ['prod' => Config::get('db.prod'), 'beta' => Config::get('db.beta'), 'pim' => 'akeneo_pim'];
             foreach ($dbs as $env => $dbName) {
                 if (!$dbName) continue;
-                try {
-                    $db = $this->getDb();
-                    $db->select_db($dbName);
-                    
-                    $r = $db->query("SELECT ROUND(SUM(data_length+index_length)/1024/1024,1) as mb, ROUND(SUM(data_free)/1024/1024,1) as frag_mb FROM information_schema.TABLES WHERE table_schema='$dbName'");
-                    $size = $r ? $r->fetch_assoc() : [];
-                    
-                    $r2 = $db->query("SELECT table_name, ROUND((data_length+index_length)/1024/1024,1) as size_mb, ROUND(data_free/1024/1024,1) as frag_mb, table_rows FROM information_schema.TABLES WHERE table_schema='$dbName' AND data_free > 10485760 ORDER BY data_free DESC LIMIT 10");
-                    $frags = [];
-                    if ($r2) while ($row = $r2->fetch_assoc()) $frags[] = $row;
-                    
-                    $r3 = $db->query("SHOW STATUS LIKE 'Threads_connected'");
-                    $conns = $r3 ? $r3->fetch_row()[1] : 0;
-                    
-                    $results[$env] = [
-                        'db' => $dbName,
-                        'size_mb' => floatval($size['mb'] ?? 0),
-                        'frag_mb' => floatval($size['frag_mb'] ?? 0),
-                        'connections' => intval($conns),
-                        'fragmented_tables' => $frags,
-                    ];
-                } catch (Exception $e) {
-                    $results[$env] = ['error' => $e->getMessage()];
+                $res3 = $db->query("SELECT TABLE_NAME, ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 1) AS size_mb, ROUND(DATA_FREE / 1024 / 1024, 1) AS frag_mb, TABLE_ROWS FROM information_schema.TABLES WHERE TABLE_SCHEMA = '$dbName' AND DATA_FREE > 0 ORDER BY DATA_FREE DESC LIMIT 10");
+                if ($res3) {
+                    while ($row = $res3->fetch_assoc()) {
+                        $row['db'] = $dbName;
+                        $row['env'] = $env;
+                        $fragmented[] = $row;
+                    }
                 }
             }
-            return ['databases' => $results, 'timestamp' => date('Y-m-d H:i:s')];
+
+            return [
+                'uptime' => (int)$status['Uptime'],
+                'uptime_formatted' => $this->format_uptime((int)$status['Uptime']),
+                'connections' => [
+                    'active' => (int)$status['Threads_connected'],
+                    'max' => (int)$vars['max_connections'],
+                    'peak' => (int)$status['Max_used_connections'],
+                    'percentage' => round(((int)$status['Threads_connected'] / (int)$vars['max_connections']) * 100, 1)
+                ],
+                'slow_queries' => (int)$status['Slow_queries'],
+                'version' => $vars['version'],
+                'fragmented_tables' => $fragmented,
+                'timestamp' => time()
+            ];
         });
+    }
+
+    public function getSites() {
+        return $this->cache->remember('sites_status', 30, function() {
+            $results = [];
+            foreach (SITES as $s) {
+                $path = $s['path'];
+                $exists = is_dir($path);
+                $is_magento = file_exists("$path/bin/magento");
+                
+                // Check maintenance mode
+                $maintenance = false;
+                if ($is_magento) {
+                    $maintenance = file_exists("$path/var/.maintenance.flag");
+                }
+                
+                $results[] = [
+                    'key' => $s['key'],
+                    'name' => $s['name'],
+                    'exists' => $exists,
+                    'is_magento' => $is_magento,
+                    'maintenance' => $maintenance,
+                    'php_fpm' => $this->safe_num($this->cmd_line("ps aux | grep 'php-fpm: pool " . ($s['user'] ?? 'unknown') . "' | grep -v grep | wc -l"), 0),
+                    'disk' => $exists ? $this->cmd_line("du -sh $path | awk '{print $1}'") : '0',
+                    'timestamp' => time()
+                ];
+            }
+            return $results;
+        });
+    }
+
+    public function siteAction() {
+        $site = $_POST['site'] ?? $_GET['site'] ?? '';
+        $op = $_POST['op'] ?? $_GET['op'] ?? '';
+
+        if (!$site) return ['success' => false, 'message' => 'Site required'];
+
+        $path = '';
+        foreach (SITES as $s) if ($s['key'] === $site) { $path = $s['path']; break; }
+        if (!$path || !is_dir($path)) return ['success' => false, 'message' => 'Site path not found'];
+
+        $php = Config::get('php_bin');
+
+        switch ($op) {
+            case 'maint_on':
+                if (file_exists("$path/bin/magento")) {
+                    $res = $this->cmd("cd $path && $php bin/magento maintenance:enable 2>&1");
+                    $this->cache->forget('sites_status');
+                    return ['success' => true, 'message' => 'Maintenance enabled', 'output' => $res['output']];
+                }
+                return ['success' => false, 'message' => 'Not a Magento site'];
+            case 'maint_off':
+                if (file_exists("$path/bin/magento")) {
+                    $res = $this->cmd("cd $path && $php bin/magento maintenance:disable 2>&1");
+                    $this->cache->forget('sites_status');
+                    return ['success' => true, 'message' => 'Maintenance disabled', 'output' => $res['output']];
+                }
+                return ['success' => false, 'message' => 'Not a Magento site'];
+            default:
+                return ['success' => false, 'message' => "Unknown site operation: $op"];
+        }
+    }
+
+    public function dbAction() {
+        $op = $_POST['op'] ?? $_GET['op'] ?? '';
+        $dbName = $_POST['db'] ?? $_GET['db'] ?? '';
+        $table = $_POST['table'] ?? $_GET['table'] ?? '';
+
+        if (!$dbName || !$table) return ['success' => false, 'message' => 'DB and Table required'];
+
+        $db = $this->getDb();
+        $db->select_db($dbName);
+
+        switch ($op) {
+            case 'optimize':
+                $res = $db->query("OPTIMIZE TABLE `" . $db->real_escape_string($table) . "`");
+                $this->cache->forget('db_health_comprehensive');
+                return ['success' => true, 'message' => "Table $table optimized"];
+            case 'repair':
+                $res = $db->query("REPAIR TABLE `" . $db->real_escape_string($table) . "`");
+                return ['success' => true, 'message' => "Table $table repaired"];
+            default:
+                return ['success' => false, 'message' => "Unknown DB operation: $op"];
+        }
+    }
+
+    private function format_uptime($seconds) {
+        $days = floor($seconds / 86400);
+        $hours = floor(($seconds % 86400) / 3600);
+        $mins = floor(($seconds % 3600) / 60);
+        if ($days > 0) return "{$days}d {$hours}h";
+        return "{$hours}h {$mins}m";
     }
 
     public function manageCache() {
@@ -660,6 +783,24 @@ class MonitorApi extends BaseApi {
         
         $results['success'] = true;
         return $results;
+    }
+
+    public function processAction() {
+        $pid = (int)($_POST['pid'] ?? $_GET['pid'] ?? 0);
+        $op = $_POST['op'] ?? $_GET['op'] ?? 'kill';
+
+        if (!$pid) return ['success' => false, 'message' => 'PID required'];
+
+        // Prevent killing essential processes (basic safety)
+        if ($pid <= 10) return ['success' => false, 'message' => 'Cannot kill system kernel processes'];
+
+        switch ($op) {
+            case 'kill':
+                $output = $this->cmd("kill -9 $pid 2>&1");
+                return ['success' => empty($output['output']), 'message' => empty($output['output']) ? "Process $pid killed" : implode("\n", $output['output'])];
+            default:
+                return ['success' => false, 'message' => "Unknown operation: $op"];
+        }
     }
 
     public function getScripts() {

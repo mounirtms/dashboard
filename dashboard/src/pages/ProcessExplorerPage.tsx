@@ -1,4 +1,4 @@
-import { Box, Typography, Card, Button, IconButton, Tooltip, Chip, TextField, InputAdornment } from '@mui/material';
+import { Box, Typography, Card, Button, IconButton, Tooltip, Chip, TextField, InputAdornment, Alert, Snackbar } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { Refresh, Search, Dangerous, PowerSettingsNew, Terminal } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
@@ -9,6 +9,7 @@ export default function ProcessExplorerPage() {
   const [procs, setProcs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
 
   const loadData = () => {
     setLoading(true);
@@ -27,15 +28,18 @@ export default function ProcessExplorerPage() {
   const handleKill = async (pid: string) => {
     if (!confirm(`Are you sure you want to kill PID ${pid}?`)) return;
     try {
-      await apiClient.get(`/api/monitor.php?action=execute&script=emergency/kill_process.sh&args=name ${pid}`);
-      loadData();
-    } catch (e) {}
+      const { data } = await apiClient.get(`/api/monitor.php?action=process_action&op=kill&pid=${pid}`);
+      setNotify({ open: true, message: data.message || 'Action executed', severity: data.success ? 'success' : 'error' });
+      if (data.success) loadData();
+    } catch (e: any) {
+      setNotify({ open: true, message: e.message, severity: 'error' });
+    }
   };
 
   const filtered = procs.filter(p => 
     p.cmd.toLowerCase().includes(search.toLowerCase()) || 
     p.user.toLowerCase().includes(search.toLowerCase()) ||
-    p.pid.includes(search)
+    p.pid.toString().includes(search)
   );
 
   const columns: GridColDef[] = [
@@ -107,6 +111,15 @@ export default function ProcessExplorerPage() {
           sx={{ border: 'none' }}
         />
       </Card>
+
+      <Snackbar 
+        open={notify.open} 
+        autoHideDuration={4000} 
+        onClose={() => setNotify({ ...notify, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity={notify.severity} variant="filled" sx={{ width: '100%' }}>{notify.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }

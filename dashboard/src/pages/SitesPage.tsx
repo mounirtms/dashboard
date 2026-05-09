@@ -1,27 +1,42 @@
-import { Box, Typography, Button, IconButton, Tooltip, Chip, Card } from '@mui/material';
+import { Box, Typography, Button, IconButton, Tooltip, Chip, Card, Snackbar, Alert, CircularProgress } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { Language, Refresh, OpenInNew, Delete, Settings, Storage } from '@mui/icons-material';
+import { Language, Refresh, OpenInNew, Delete, Settings, Storage, PowerSettingsNew, VisibilityOff } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
-import { fetchSites, SiteInfo } from '../api/system';
+import { fetchSites, performSiteAction, SiteInfo } from '../api/system';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
 
 export default function SitesPage() {
   const [sites, setSites] = useState<SiteInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [executing, setExecuting] = useState<string | null>(null);
+  const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
 
   const loadData = () => {
     setLoading(true);
     fetchSites()
       .then(setSites)
-      .catch((e) => setError(e.message))
+      .catch((e) => setNotify({ open: true, message: e.message, severity: 'error' }))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleMaintenance = async (site: string, current: boolean) => {
+    const op = current ? 'maint_off' : 'maint_on';
+    setExecuting(`${site}-${op}`);
+    try {
+      const res = await performSiteAction(site, op);
+      setNotify({ open: true, message: res.message, severity: res.success ? 'success' : 'error' });
+      if (res.success) loadData();
+    } catch (e: any) {
+      setNotify({ open: true, message: e.message, severity: 'error' });
+    } finally {
+      setExecuting(null);
+    }
+  };
 
   const columns: GridColDef[] = [
     { 
@@ -52,6 +67,22 @@ export default function SitesPage() {
       )
     },
     { 
+      field: 'maintenance', 
+      headerName: 'Maint. Mode', 
+      width: 120,
+      renderCell: (params: GridRenderCellParams) => (
+        params.row.is_magento ? (
+          <Chip 
+            label={params.value ? 'ENABLED' : 'DISABLED'} 
+            size="small" 
+            color={params.value ? 'warning' : 'default'}
+            variant={params.value ? 'filled' : 'outlined'}
+            sx={{ fontWeight: 700, fontSize: '0.65rem' }}
+          />
+        ) : <Typography variant="caption" sx={{ color: 'text.disabled' }}>N/A</Typography>
+      )
+    },
+    { 
       field: 'php_fpm', 
       headerName: 'PHP-FPM', 
       width: 110,
@@ -66,40 +97,35 @@ export default function SitesPage() {
     },
     { 
       field: 'disk', 
-      headerName: 'Disk Usage', 
-      width: 100,
+      headerName: 'Disk', 
+      width: 80,
       renderCell: (params: GridRenderCellParams) => (
         <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
           {params.value}
         </Typography>
       )
     },
-    { 
-      field: 'is_magento', 
-      headerName: 'Platform', 
-      width: 120,
-      renderCell: (params: GridRenderCellParams) => (
-        params.value ? (
-          <Chip 
-            label="Magento 2" 
-            size="small" 
-            sx={{ backgroundColor: '#f263221a', color: '#f26322', fontWeight: 700, border: '1px solid #f2632233' }}
-          />
-        ) : <Typography variant="caption" sx={{ color: 'text.disabled' }}>Generic PHP</Typography>
-      )
-    },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 150,
+      width: 180,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', height: '100%' }}>
+          {params.row.is_magento && (
+            <Tooltip title={params.row.maintenance ? "Disable Maintenance" : "Enable Maintenance"}>
+              <IconButton 
+                size="small" 
+                color={params.row.maintenance ? "success" : "warning"}
+                onClick={() => handleMaintenance(params.row.key, params.row.maintenance)}
+                disabled={!!executing}
+              >
+                {executing?.startsWith(params.row.key) ? <CircularProgress size={16} color="inherit" /> : <PowerSettingsNew sx={{ fontSize: 18 }} />}
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="View Logs">
-            <IconButton size="small"><Storage sx={{ fontSize: 16 }} /></IconButton>
-          </Tooltip>
-          <Tooltip title="Settings">
-            <IconButton size="small"><Settings sx={{ fontSize: 16 }} /></IconButton>
+            <IconButton size="small" href={`/#/logs?site=${params.row.key}`}><Storage sx={{ fontSize: 16 }} /></IconButton>
           </Tooltip>
           <Tooltip title="Open Website">
             <IconButton size="small" href={`https://${params.row.name}`} target="_blank"><OpenInNew sx={{ fontSize: 16 }} /></IconButton>
@@ -145,6 +171,15 @@ export default function SitesPage() {
           }}
         />
       </Card>
+
+      <Snackbar 
+        open={notify.open} 
+        autoHideDuration={4000} 
+        onClose={() => setNotify({ ...notify, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity={notify.severity} variant="filled" sx={{ width: '100%' }}>{notify.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }

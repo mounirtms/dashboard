@@ -53,9 +53,8 @@ export interface SiteInfo {
   exists: boolean;
   php_fpm: number;
   disk: string;
-  db_size: string;
-  mode: string;
   is_magento: boolean;
+  maintenance?: boolean;
 }
 
 export interface CronEntry {
@@ -155,6 +154,27 @@ export async function fetchVarnishStats(): Promise<VarnishStats> {
 export async function fetchApacheStats(): Promise<ApacheStats> {
   const { data } = await apiClient.get('/api/monitor.php?action=apache');
   if (data.error) throw new Error(data.message || data.error);
+  return data;
+}
+
+export async function fetchDbHealth(): Promise<any> {
+  const { data } = await apiClient.get('/api/monitor.php?action=dbhealth');
+  if (data.error) throw new Error(data.message || data.error);
+  return data;
+}
+
+export async function performDbAction(op: string, db: string, table: string): Promise<any> {
+  const { data } = await apiClient.get(`/api/monitor.php?action=db_action&op=${op}&db=${db}&table=${table}`);
+  return data;
+}
+
+export async function runCron(command: string): Promise<any> {
+  const { data } = await apiClient.get(`/api/monitor.php?action=cron_action&command=${encodeURIComponent(command)}`);
+  return data;
+}
+
+export async function performSiteAction(site: string, op: string): Promise<any> {
+  const { data } = await apiClient.get(`/api/monitor.php?action=site_action&site=${site}&op=${op}`);
   return data;
 }
 

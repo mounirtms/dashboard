@@ -1849,6 +1849,18 @@ try {
         case 'processes': 
             $data = $monitorApi->getProcesses(); 
             break;
+        case 'db_action': 
+            $data = $monitorApi->dbAction(); 
+            break;
+        case 'cron_action': 
+            $data = $monitorApi->cronAction(); 
+            break;
+        case 'process_action': 
+            $data = $monitorApi->processAction(); 
+            break;
+        case 'site_action': 
+            $data = $monitorApi->siteAction(); 
+            break;
         default: 
             $data = $monitorApi->getOverview(); 
     }

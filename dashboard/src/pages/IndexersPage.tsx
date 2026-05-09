@@ -1,5 +1,5 @@
-import { Box, Typography, Card, CardContent, Button, Chip, Select, MenuItem, FormControl, InputLabel, Tooltip, IconButton, LinearProgress, Divider, Grid } from '@mui/material';
-import { Refresh, PlayArrow, CheckCircle, Error, Warning, HourglassEmpty } from '@mui/icons-material';
+import { Box, Typography, Card, CardContent, Button, Chip, Select, MenuItem, FormControl, InputLabel, Tooltip, IconButton, LinearProgress, Divider, Grid, Snackbar, Alert } from '@mui/material';
+import { Refresh, PlayArrow, CheckCircle, Error, Warning, HourglassEmpty, Autorenew } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { fetchMagentoIndexers, runMagentoIndexer } from '../api/magento';
 import LoadingState from '../components/common/LoadingState';
@@ -10,12 +10,13 @@ export default function IndexersPage() {
   const [loading, setLoading] = useState(true);
   const [env, setEnv] = useState('prod');
   const [processing, setProcessing] = useState<string | null>(null);
+  const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
 
   const loadData = () => {
     setLoading(true);
     fetchMagentoIndexers(env)
       .then(setIndexers)
-      .catch((e) => console.error(e))
+      .catch((e) => setNotify({ open: true, message: e.message, severity: 'error' }))
       .finally(() => setLoading(false));
   };
 
@@ -27,9 +28,23 @@ export default function IndexersPage() {
     setProcessing(id);
     try {
       await runMagentoIndexer(env, id);
+      setNotify({ open: true, message: `Reindex of ${id} completed`, severity: 'success' });
       loadData();
     } catch (e: any) {
-      alert('Indexer failed: ' + e.message);
+      setNotify({ open: true, message: 'Indexer failed: ' + e.message, severity: 'error' });
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleReindexAll = async () => {
+    setProcessing('all');
+    try {
+      await runMagentoIndexer(env, 'all');
+      setNotify({ open: true, message: 'Full reindex triggered', severity: 'success' });
+      loadData();
+    } catch (e: any) {
+      setNotify({ open: true, message: 'Reindex all failed: ' + e.message, severity: 'error' });
     } finally {
       setProcessing(null);
     }
@@ -68,6 +83,15 @@ export default function IndexersPage() {
             </Select>
           </FormControl>
           <Button variant="outlined" startIcon={<Refresh />} onClick={loadData}>Refresh</Button>
+          <Button 
+            variant="contained" 
+            color="secondary" 
+            startIcon={<Autorenew />} 
+            onClick={handleReindexAll} 
+            disabled={!!processing}
+          >
+            Reindex All
+          </Button>
         </Box>
       </Box>
 
@@ -103,6 +127,15 @@ export default function IndexersPage() {
           );
         })}
       </Grid>
+
+      <Snackbar 
+        open={notify.open} 
+        autoHideDuration={4000} 
+        onClose={() => setNotify({ ...notify, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity={notify.severity} variant="filled" sx={{ width: '100%' }}>{notify.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }

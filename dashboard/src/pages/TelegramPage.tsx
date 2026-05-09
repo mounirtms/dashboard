@@ -1,4 +1,4 @@
-import { Box, Typography, Grid, Card, CardContent, Button, Divider, List, ListItem, ListItemText, Chip } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, Button, Divider, List, ListItem, ListItemText, Chip, Snackbar, Alert } from '@mui/material';
 import { SmartToy, Send, Settings, Security, History, Bolt } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { fetchTelegramStats, sendTelegramTest, TelegramStats } from '../api/notifications';
@@ -9,6 +9,7 @@ export default function TelegramPage() {
   const [stats, setStats] = useState<TelegramStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
 
   useEffect(() => {
     fetchTelegramStats()
@@ -20,9 +21,9 @@ export default function TelegramPage() {
     setSending(true);
     try {
       await sendTelegramTest();
-      alert('Test message sent!');
+      setNotify({ open: true, message: 'Test message sent successfully!', severity: 'success' });
     } catch (e: any) {
-      alert('Failed to send: ' + e.message);
+      setNotify({ open: true, message: 'Failed to send: ' + e.message, severity: 'error' });
     } finally {
       setSending(false);
     }
@@ -132,6 +133,15 @@ export default function TelegramPage() {
           </Card>
         </Grid>
       </Grid>
+
+      <Snackbar 
+        open={notify.open} 
+        autoHideDuration={4000} 
+        onClose={() => setNotify({ ...notify, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity={notify.severity} variant="filled" sx={{ width: '100%' }}>{notify.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }
