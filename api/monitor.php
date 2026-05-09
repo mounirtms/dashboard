@@ -9,9 +9,8 @@ require_once __DIR__ . '/InputValidator.php';
 
 // Require authentication
 if (empty($_SESSION['logged_in'])) {
-    header('Content-Type: application/json');
-    header('HTTP/1.1 401 Unauthorized');
-    echo json_encode(['error' => 'Authentication required']);
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required', 'session_id' => session_id()]);
     exit;
 }
 
@@ -1838,7 +1837,9 @@ try {
         case 'cloudflare': 
             $data = $monitorApi->getCloudflareStats(); 
             break;
-        case 'cloudflare_action': cloudflare_action(); break;
+        case 'cloudflare_action': 
+            $data = $monitorApi->cloudflareAction(); 
+            break;
         default: 
             $data = $monitorApi->getOverview(); 
     }

@@ -23,14 +23,16 @@ export default function Footer() {
     <Box sx={{
       height: 40,
       mt: 'auto',
-      background: 'rgba(10, 14, 24, 0.7)',
+      background: 'rgba(10, 14, 24, 0.9)',
       borderTop: '1px solid #1e293b',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       px: 3,
-      zIndex: 90,
+      zIndex: 100,
       backdropFilter: 'blur(12px)',
+      position: 'sticky',
+      bottom: 0,
     }}>
       <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
         <Typography sx={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>

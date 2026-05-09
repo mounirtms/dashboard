@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "algeria-map-ts": "^0.1.5",
     "jsonwebtoken": "^9.0.3",
     "node-cron": "^4.2.1",
     "playwright": "^1.59.1",

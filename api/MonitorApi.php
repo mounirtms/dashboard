@@ -22,20 +22,24 @@ class MonitorApi extends BaseApi {
             ];
 
             // Database count
-            $db = $this->getDb();
-            $db->select_db(Config::get('db.prod'));
-            $res = $db->query("SELECT COUNT(*) as total FROM sales_order WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
-            $orders_24h = $res ? $res->fetch_assoc()['total'] : 0;
+            try {
+                $db = $this->getDb();
+                $db->select_db(Config::get('db.prod'));
+                $res = $db->query("SELECT COUNT(*) as total FROM sales_order WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+                $orders_24h = $res ? $res->fetch_assoc()['total'] : 0;
+            } catch (Exception $e) {
+                $orders_24h = 0;
+            }
 
             // Service health summary
-            $down_services = array_filter($sys['services'], fn($s) => $s !== 'running' && $s !== 'active');
+            $down_services = array_filter($sys['services'] ?? [], fn($s) => $s !== 'running' && $s !== 'active');
 
             return [
                 'system' => [
-                    'load' => $sys['load']['1min'],
-                    'mem_pct' => $sys['memory']['used_pct'],
-                    'disk_pct' => $sys['disk']['pct'],
-                    'uptime_short' => explode(',', $sys['uptime'])[0]
+                    'load' => $sys['load']['1min'] ?? 0,
+                    'mem_pct' => $sys['memory']['used_pct'] ?? 0,
+                    'disk_pct' => $sys['disk']['pct'] ?? '0%',
+                    'uptime_short' => isset($sys['uptime']) ? explode(',', $sys['uptime'])[0] : 'N/A'
                 ],
                 'network' => $cf_summary,
                 'commerce' => [
@@ -116,13 +120,13 @@ class MonitorApi extends BaseApi {
                 // Disk usage cache logic
                 $cache_file = "/tmp/disk_usage_{$key}.txt";
                 if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 300) {
-                    $disk_usage = trim(file_get_contents($cache_file));
+                    $disk_usage = trim(@file_get_contents($cache_file));
                 } else {
                     $disk_usage = $this->cmd_line("timeout 2 du -sm $path 2>/dev/null | awk '{print \$1\"M\"}'", 3);
                     if (!empty($disk_usage)) {
-                        file_put_contents($cache_file, $disk_usage);
+                        @file_put_contents($cache_file, $disk_usage);
                     } elseif (file_exists($cache_file)) {
-                        $disk_usage = trim(file_get_contents($cache_file)) . ' (cached)';
+                        $disk_usage = trim(@file_get_contents($cache_file)) . ' (cached)';
                     } else {
                         $disk_usage = '—';
                     }
@@ -236,6 +240,7 @@ class MonitorApi extends BaseApi {
             $misses = $get_val('MAIN.cache_miss');
             $total = $hits + $misses;
             
+            // Device statistics
             $devices = ['mobile' => 0, 'tablet' => 0, 'desktop' => 0];
             $device_total = 0;
             $device_raw = $this->cmd_line("timeout 1s varnishlog -d -i RespHeader -I 'X-Device:' 2>/dev/null | grep 'X-Device:' | tail -200 | awk '{print \$NF}' | sort | uniq -c", 2);
@@ -273,7 +278,8 @@ class MonitorApi extends BaseApi {
 
     public function getCloudflareStats() {
         return $this->cache->remember('cloudflare', 60, function() {
-            $zoneId = Config::get('cloudflare.zone_id');
+            $cf = Config::get('cloudflare');
+            $zoneId = $cf['zone_id'];
             if (!$zoneId) return ['error' => 'Cloudflare zone_id not configured in .env'];
 
             $zoneRes = $this->cfApi("/zones/$zoneId");
@@ -283,57 +289,272 @@ class MonitorApi extends BaseApi {
             }
             $z = $zoneRes['body']['result'];
 
-            $since = date('Y-m-d\TH:i:s\Z', strtotime("-24 hours"));
+            // GraphQL Analytics for last 7 days and last 24 hours
+            $weekAgo = date('Y-m-d', strtotime('-7 days'));
+            $yesterday = date('Y-m-d', strtotime('-1 day'));
+            $today = date('Y-m-d');
+            $since24h = date('Y-m-d\TH:i:s\Z', strtotime("-24 hours"));
+
             $query = [
                 'query' => "{
                     viewer {
                         zones(filter: {zoneTag: \"$zoneId\"}) {
-                            httpRequests1dGroups(limit: 1, filter: {date_geq: \"" . date('Y-m-d', strtotime("-1 day")) . "\"}) {
-                                sum { requests cachedRequests bytes threats pageViews }
+                            # 7-day daily traffic
+                            dailyTraffic: httpRequests1dGroups(
+                                limit: 7
+                                filter: {date_gt: \"$weekAgo\", date_lt: \"$today\"}
+                                orderBy: [date_ASC]
+                            ) {
+                                sum { requests pageViews threats bytes cachedBytes cachedRequests }
+                                uniq { uniques }
+                                dimensions { date }
                             }
-                            httpRequests1hGroups(limit: 24, filter: {datetime_geq: \"$since\"}) {
-                                sum { requests threats }
+                            # 24-hour hourly breakdown
+                            hourlyTraffic: httpRequests1hGroups(
+                                limit: 24
+                                filter: {datetime_gt: \"$since24h\"}
+                                orderBy: [datetime_ASC]
+                            ) {
+                                sum { requests threats bytes cachedRequests }
                                 dimensions { datetime }
+                            }
+                            # Top Countries (last 7 days)
+                            countries: httpRequests1dGroups(
+                                limit: 20
+                                filter: {date_gt: \"$weekAgo\"}
+                                orderBy: [sum_requests_DESC]
+                            ) {
+                                sum { requests bytes threats }
+                                dimensions { country }
+                            }
+                            # Top URLs (last 7 days)
+                            topUrls: httpRequests1dGroups(
+                                limit: 20
+                                filter: {date_gt: \"$weekAgo\"}
+                                orderBy: [sum_requests_DESC]
+                            ) {
+                                sum { requests bytes }
+                                dimensions { clientRequestPath }
+                            }
+                            # Status Codes
+                            statusCodes: httpRequests1dGroups(
+                                limit: 10
+                                filter: {date_gt: \"$weekAgo\"}
+                            ) {
+                                sum { requests }
+                                dimensions { responseStatusClass }
+                            }
+                            # Threats breakdown
+                            threatTypes: httpRequests1dGroups(
+                                limit: 10
+                                filter: {date_gt: \"$weekAgo\"}
+                                orderBy: [sum_threats_DESC]
+                            ) {
+                                sum { threats }
+                                dimensions { threatPathingName }
                             }
                         }
                     }
                 }"
             ];
-            
+
             $gqlRes = $this->cfApiGraphQL($query);
-            $analytics = $gqlRes['data']['viewer']['zones'][0]['httpRequests1dGroups'][0]['sum'] ?? null;
-            $hourly = $gqlRes['data']['viewer']['zones'][0]['httpRequests1hGroups'] ?? [];
+            $data = $gqlRes['data']['viewer']['zones'][0] ?? null;
+
+            $analytics = [];
+            $hourlyAnalytics = [];
+            $countries = [];
+            $topUrls = [];
+            $statusCodes = [];
+            $threatTypes = [];
+            $totals = [
+                'requests' => 0, 'pageViews' => 0, 'threats' => 0, 'uniques' => 0, 
+                'bytes' => 0, 'cachedBytes' => 0, 'cachedRequests' => 0,
+                'uncachedRequests' => 0, 'uncachedBytes' => 0
+            ];
+
+            if ($data) {
+                // Parse Daily
+                foreach ($data['dailyTraffic'] ?? [] as $day) {
+                    $analytics[] = [
+                        'date' => $day['dimensions']['date'],
+                        'requests' => $day['sum']['requests'] ?? 0,
+                        'pageViews' => $day['sum']['pageViews'] ?? 0,
+                        'threats' => $day['sum']['threats'] ?? 0,
+                        'bytes' => $day['sum']['bytes'] ?? 0,
+                        'cachedBytes' => $day['sum']['cachedBytes'] ?? 0,
+                        'cachedRequests' => $day['sum']['cachedRequests'] ?? 0,
+                        'uniques' => $day['uniq']['uniques'] ?? 0,
+                    ];
+                    $totals['requests'] += $day['sum']['requests'] ?? 0;
+                    $totals['pageViews'] += $day['sum']['pageViews'] ?? 0;
+                    $totals['threats'] += $day['sum']['threats'] ?? 0;
+                    $totals['bytes'] += $day['sum']['bytes'] ?? 0;
+                    $totals['cachedBytes'] += $day['sum']['cachedBytes'] ?? 0;
+                    $totals['cachedRequests'] += $day['sum']['cachedRequests'] ?? 0;
+                    $totals['uniques'] += $day['uniq']['uniques'] ?? 0;
+                }
+                $totals['uncachedRequests'] = $totals['requests'] - $totals['cachedRequests'];
+                $totals['uncachedBytes'] = $totals['bytes'] - $totals['cachedBytes'];
+
+                // Parse Hourly
+                foreach ($data['hourlyTraffic'] ?? [] as $hour) {
+                    $hourlyAnalytics[] = [
+                        'datetime' => $hour['dimensions']['datetime'],
+                        'requests' => $hour['sum']['requests'] ?? 0,
+                        'threats' => $hour['sum']['threats'] ?? 0,
+                        'bytes' => $hour['sum']['bytes'] ?? 0,
+                        'cachedRequests' => $hour['sum']['cachedRequests'] ?? 0,
+                        'uncachedRequests' => ($hour['sum']['requests'] ?? 0) - ($hour['sum']['cachedRequests'] ?? 0),
+                    ];
+                }
+
+                // Parse Countries
+                $countryNames = [
+                    'DZ' => ['name' => 'Algeria', 'flag' => '🇩🇿'],
+                    'FR' => ['name' => 'France', 'flag' => '🇫🇷'],
+                    'US' => ['name' => 'United States', 'flag' => '🇺🇸'],
+                    'MA' => ['name' => 'Morocco', 'flag' => '🇲🇦'],
+                    'TN' => ['name' => 'Tunisia', 'flag' => '🇹🇳'],
+                ];
+                foreach ($data['countries'] ?? [] as $c) {
+                    $code = $c['dimensions']['country'] ?? '??';
+                    $info = $countryNames[$code] ?? ['name' => $code, 'flag' => '🌐'];
+                    $countries[] = [
+                        'code' => $code,
+                        'name' => $info['name'],
+                        'flag' => $info['flag'],
+                        'requests' => $c['sum']['requests'] ?? 0,
+                        'bytes' => $c['sum']['bytes'] ?? 0,
+                        'threats' => $c['sum']['threats'] ?? 0,
+                        'percentage' => $totals['requests'] > 0 ? round(($c['sum']['requests'] / $totals['requests']) * 100, 1) : 0
+                    ];
+                }
+
+                // Parse Top URLs
+                foreach ($data['topUrls'] ?? [] as $u) {
+                    $topUrls[] = [
+                        'path' => $u['dimensions']['clientRequestPath'] ?? '/',
+                        'requests' => $u['sum']['requests'] ?? 0,
+                        'bytes' => $u['sum']['bytes'] ?? 0,
+                    ];
+                }
+
+                // Parse Status Codes
+                foreach ($data['statusCodes'] ?? [] as $s) {
+                    $statusCodes[] = [
+                        'class' => $s['dimensions']['responseStatusClass'] . 'xx',
+                        'requests' => $s['sum']['requests'] ?? 0,
+                    ];
+                }
+                // Parse Threat Types
+                foreach ($data['threatTypes'] ?? [] as $t) {
+                    $threatTypes[] = [
+                        'type' => $t['dimensions']['threatPathingName'] ?? 'unknown',
+                        'count' => $t['sum']['threats'] ?? 0,
+                    ];
+                }
+            }
+
+            // Firewall events (last 10)
+            $fw = $this->cfApi("/zones/$zoneId/firewall/events");
+            $firewall = ['blocked' => 0, 'challenged' => 0, 'total' => 0, 'events' => []];
+            if ($fw['body']['success']) {
+                $events = $fw['body']['result'] ?? [];
+                $firewall['total'] = count($events);
+                foreach (array_slice($events, 0, 15) as $e) {
+                    $firewall['events'][] = [
+                        'action' => $e['action'] ?? 'unknown',
+                        'source' => $e['source'] ?? '',
+                        'rule_id' => $e['rule_id'] ?? '',
+                        'datetime' => $e['occurred_at'] ?? $e['datetime'] ?? ''
+                    ];
+                    if ($e['action'] === 'block') $firewall['blocked']++;
+                    if (strpos($e['action'], 'challenge') !== false) $firewall['challenged']++;
+                }
+            }
+
+            // SSL Certificate
+            $sslCert = $this->cfApi("/zones/$zoneId/ssl/certificate_statuses");
+            $sslInfo = null;
+            if ($sslCert['body']['success'] && !empty($sslCert['body']['result'])) {
+                $cert = $sslCert['body']['result'][0];
+                $expiry = $cert['expires_on'] ?? null;
+                $sslInfo = [
+                    'status' => $cert['status'] ?? 'unknown',
+                    'expires_on' => $expiry,
+                    'days_left' => $expiry ? round((strtotime($expiry) - time()) / 86400) : null,
+                    'hostnames' => $cert['hostnames'] ?? []
+                ];
+            }
 
             $ssl = $this->cfApi("/zones/$zoneId/settings/ssl");
             $cacheSetting = $this->cfApi("/zones/$zoneId/settings/cache_level");
+            $waf = $this->cfApi("/zones/$zoneId/settings/waf");
 
             return [
                 'zone' => [
                     'name' => $z['name'],
                     'status' => $z['status'],
                     'plan' => $z['plan']['name'] ?? 'Unknown',
-                    'development_mode' => $z['development_mode'] > 0 ? 'on' : 'off',
+                    'development_mode' => ($z['development_mode'] ?? 0) > 0 ? 'on' : 'off',
                 ],
+                'account' => Config::get('cloudflare.email', ''),
+                'ssl_certificate' => $sslInfo,
                 'settings' => [
                     'ssl' => $ssl['body']['result']['value'] ?? 'off',
-                    'cache_level' => $cacheSetting['body']['result']['value'] ?? 'standard'
+                    'cache_level' => $cacheSetting['body']['result']['value'] ?? 'standard',
+                    'waf' => $waf['body']['result']['value'] ?? 'off'
                 ],
-                'analytics_totals' => [
-                    'requests' => $analytics['requests'] ?? 0,
-                    'threats' => $analytics['threats'] ?? 0,
-                    'pageViews' => $analytics['pageViews'] ?? 0,
-                    'bytes' => $analytics['bytes'] ?? 0,
-                    'cachedRequests' => $analytics['cachedRequests'] ?? 0
-                ],
-                'cache_hit_ratio' => ($analytics['requests'] ?? 0) > 0 ? round(($analytics['cachedRequests'] / $analytics['requests']) * 100, 1) : 0,
-                'bandwidth_formatted' => $this->format_bytes($analytics['bytes'] ?? 0),
-                'hourly_analytics' => array_map(fn($h) => [
-                    'time' => date('H:i', strtotime($h['dimensions']['datetime'])),
-                    'requests' => $h['sum']['requests']
-                ], $hourly),
+                'analytics' => $analytics,
+                'hourly_analytics' => $hourlyAnalytics,
+                'countries' => $countries,
+                'top_urls' => $topUrls,
+                'status_codes' => $statusCodes,
+                'threat_types' => $threatTypes,
+                'analytics_totals' => $totals,
+                'cache_hit_ratio' => $totals['requests'] > 0 ? round(($totals['cachedRequests'] / $totals['requests']) * 100, 1) : 0,
+                'bandwidth_formatted' => $this->format_bytes($totals['bytes']),
+                'firewall' => $firewall,
                 'timestamp' => time()
             ];
         });
+    }
+
+    public function cloudflareAction() {
+        $action = $_POST['action'] ?? $_GET['action2'] ?? '';
+        $cf = Config::get('cloudflare');
+        $zoneId = $cf['zone_id'];
+        
+        if (!$zoneId) return ['success' => false, 'message' => 'Cloudflare zone_id not configured'];
+
+        try {
+            switch ($action) {
+                case 'purge_all':
+                    $res = $this->cfApi("/zones/$zoneId/purge_cache", 'POST', ['purge_everything' => true]);
+                    if ($res['body']['success']) return ['success' => true, 'message' => 'Cache purged successfully'];
+                    return ['success' => false, 'message' => $res['body']['errors'][0]['message'] ?? 'Purge failed'];
+
+                case 'purge_url':
+                    $url = $_POST['url'] ?? '';
+                    if (!$url) return ['success' => false, 'message' => 'URL required'];
+                    $urls = array_map('trim', explode("\n", $url));
+                    $res = $this->cfApi("/zones/$zoneId/purge_cache", 'POST', ['files' => $urls]);
+                    if ($res['body']['success']) return ['success' => true, 'message' => 'URLs purged successfully'];
+                    return ['success' => false, 'message' => $res['body']['errors'][0]['message'] ?? 'Purge failed'];
+
+                case 'toggle_dev_mode':
+                    $value = $_POST['value'] ?? 'off';
+                    $res = $this->cfApi("/zones/$zoneId/settings/development_mode", 'POST', ['value' => $value]);
+                    if ($res['body']['success']) return ['success' => true, 'message' => "Development mode $value"];
+                    return ['success' => false, 'message' => $res['body']['errors'][0]['message'] ?? 'Failed'];
+
+                default:
+                    return ['success' => false, 'message' => "Unknown action: $action"];
+            }
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
     }
 
     public function getDbHealth() {
@@ -376,42 +597,43 @@ class MonitorApi extends BaseApi {
         $site = $_GET['site'] ?? '';
         $op = $_GET['op'] ?? '';
         
-        if (!$site || !$op) return ['error' => 'Missing site or operation'];
-        
         AuditLogger::log('CACHE', "$site:$op", "User triggered cache operation");
         
         $paths = Config::get('paths');
         $sitePath = $paths[$site] ?? null;
-        if (!$sitePath || !is_dir($sitePath)) return ['error' => 'Invalid site path'];
         
         $results = ['site' => $site, 'operation' => $op, 'output' => []];
         $php = Config::get('php_bin');
 
         switch ($op) {
             case 'magento_flush':
+                if (!$sitePath) return ['error' => 'Invalid site path'];
                 $results['output'] = $this->cmd("cd $sitePath && $php bin/magento cache:flush 2>&1")['output'];
                 break;
             case 'magento_clean':
+                if (!$sitePath) return ['error' => 'Invalid site path'];
                 $results['output'] = $this->cmd("cd $sitePath && $php bin/magento cache:clean 2>&1")['output'];
                 break;
             case 'mab_purge':
+                if (!$sitePath) return ['error' => 'Invalid site path'];
                 $results['output'] = $this->cmd("cd $sitePath && $php bin/magento mab:cache:all:purge 2>&1")['output'];
                 break;
             case 'mab_cf_purge':
+                if (!$sitePath) return ['error' => 'Invalid site path'];
                 $results['output'] = $this->cmd("cd $sitePath && $php bin/magento mab:cloudflare:purge:all 2>&1")['output'];
                 break;
+            case 'cf_global_purge':
+                return $this->cloudflareAction();
             case 'varnish_purge':
-                $host = Config::get("paths.{$site}_url");
-                if ($host) {
-                    $host = parse_url($host, PHP_URL_HOST);
+                $url = Config::get("paths.{$site}_url");
+                if ($url) {
+                    $host = parse_url($url, PHP_URL_HOST);
                     $results['output'] = $this->cmd("varnishadm \"ban req.http.host ~ $host\" 2>&1")['output'];
                 } else {
-                    return ['error' => 'Site URL not configured for Varnish purge'];
+                    $results['output'] = $this->cmd("varnishadm \"ban req.http.host ~ .*\" 2>&1")['output'];
                 }
                 break;
             case 'opcache_reset':
-                // For per-site OPcache we use a remote HTTP call to a script on that site if it exists
-                // or global reset if it's the same pool
                 if (function_exists('opcache_reset')) {
                     opcache_reset();
                     $results['output'] = ["Local OPcache reset successful"];
@@ -446,7 +668,6 @@ class MonitorApi extends BaseApi {
             }
         }
 
-        // Add root scripts as general maintenance
         foreach (glob("$baseDir/*.{sh,php}", GLOB_BRACE) as $file) {
             $scripts[] = [
                 'name' => basename($file),
@@ -471,15 +692,17 @@ class MonitorApi extends BaseApi {
     }
 
     public function getProcesses() {
-        $lines = $this->cmd("ps -eo pid,user,%cpu,%mem,etime,cmd --sort=-%cpu | head -100");
+        // Use args instead of cmd for full command line, and ensure header is handled
+        $lines = $this->cmd("ps -eo pid,user,%cpu,%mem,etime,args --sort=-%cpu | head -100");
         $procs = [];
         foreach(array_slice($lines['output'], 1) as $l) {
+            // Robust regex to handle various ps output formats
             if(preg_match('/^\s*(\d+)\s+(\S+)\s+([\d.]+)\s+([\d.]+)\s+(\S+)\s+(.*)$/', $l, $m)) {
                 $procs[] = [
                     'pid' => $m[1],
                     'user' => $m[2],
-                    'cpu' => $m[3],
-                    'mem' => $m[4],
+                    'cpu' => floatval($m[3]),
+                    'mem' => floatval($m[4]),
                     'time' => $m[5],
                     'cmd' => trim($m[6])
                 ];
@@ -494,24 +717,31 @@ class MonitorApi extends BaseApi {
         $site = $_GET['site'] ?? '';
         
         $logMap = [
-            'apache_error' => '/var/log/apache2/error_log',
-            'apache_access' => '/var/log/apache2/access_log',
+            'apache_error' => '/etc/apache2/logs/error_log',
+            'apache_access' => '/etc/apache2/logs/access_log',
             'varnish' => '/var/log/messages', 
             'mariadb' => '/var/log/mariadb/mariadb.log',
             'php_fpm' => '/opt/cpanel/ea-php82/root/usr/var/log/php-fpm/error.log',
             'system' => '/var/log/messages',
-            'magento_prod_system' => '/home/technadminy7/public_html/var/log/system.log',
-            'magento_prod_exception' => '/home/technadminy7/public_html/var/log/exception.log'
         ];
 
-        // Fallbacks for different OS layouts
-        if (!is_file($logMap['apache_error'])) {
-            $fallbacks = ['/etc/httpd/logs/error_log', '/var/log/httpd/error_log', '/var/log/apache2/error.log'];
-            foreach($fallbacks as $f) if(is_file($f)) { $logMap['apache_error'] = $f; break; }
-        }
-        if (!is_file($logMap['mariadb'])) {
-            $fallbacks = ['/var/lib/mysql/' . gethostname() . '.err', '/var/log/mysqld.log', '/var/lib/mysql/error.log'];
-            foreach($fallbacks as $f) if(is_file($f)) { $logMap['mariadb'] = $f; break; }
+        // Dynamic detection for common log paths
+        $fallbacks = [
+            'apache_error' => ['/var/log/apache2/error_log', '/etc/httpd/logs/error_log', '/var/log/httpd/error_log', '/usr/local/apache/logs/error_log'],
+            'apache_access' => ['/var/log/apache2/access_log', '/etc/httpd/logs/access_log', '/var/log/httpd/access_log', '/usr/local/apache/logs/access_log'],
+            'mariadb' => ['/var/lib/mysql/' . gethostname() . '.err', '/var/log/mysqld.log', '/var/lib/mysql/error.log', '/var/log/mariadb/mariadb.log'],
+            'php_fpm' => ['/opt/cpanel/ea-php82/root/usr/var/log/php-fpm/error.log', '/var/log/php-fpm.log', '/usr/local/cpanel/logs/php-fpm.log']
+        ];
+
+        foreach ($fallbacks as $key => $paths) {
+            if (!isset($logMap[$key]) || !is_file($logMap[$key])) {
+                foreach ($paths as $p) {
+                    if (is_file($p)) {
+                        $logMap[$key] = $p;
+                        break;
+                    }
+                }
+            }
         }
 
         if ($site) {
@@ -519,32 +749,23 @@ class MonitorApi extends BaseApi {
             if (isset($paths[$site])) {
                 $logMap['site_exception'] = $paths[$site] . '/var/log/exception.log';
                 $logMap['site_system'] = $paths[$site] . '/var/log/system.log';
-                $type = $_GET['type'] ?? 'site_exception';
+                if ($type === 'system') $type = 'site_system';
             }
         }
 
         $logPath = $logMap[$type] ?? $logMap['system'];
         
         if (!is_file($logPath)) {
-            return [
-                'error' => "Log file not found: $logPath", 
-                'available_types' => array_keys($logMap),
-                'debug_info' => "Attempted to read $type"
-            ];
+            return ['error' => "Log file not found: $logPath", 'available_types' => array_keys($logMap)];
         }
 
-        // Use shell tail for all logs to bypass PHP open_basedir or permission issues
         $cmd = "tail -n $lines " . escapeshellarg($logPath) . " 2>&1";
         $output = $this->cmd($cmd);
-
-        if (empty($output['output']) && !is_readable($logPath)) {
-            return ['error' => "Log file not readable: $logPath", 'permissions' => substr(sprintf('%o', fileperms($logPath)), -4)];
-        }
 
         return [
             'type' => $type,
             'path' => $logPath,
-            'lines' => $output['output'],
+            'lines' => $output['output'] ?? [],
             'timestamp' => time()
         ];
     }
@@ -556,7 +777,7 @@ class MonitorApi extends BaseApi {
             $apache_procs = $this->safe_num($this->cmd_line("ps aux | grep httpd | grep -v grep | wc -l"), 0);
             
             $port_80 = $this->cmd_line("ss -tlnp | grep ':80 ' | wc -l") > 0;
-            $port_443 = $this->cmd_line("ss -tlnp | grep ':443 ' | wc -l") > 0;
+            $port_8080 = $this->cmd_line("ss -tlnp | grep ':8080 ' | wc -l") > 0;
             
             $apache_version = $this->cmd_line("httpd -v 2>/dev/null | head -1 | awk -F'/' '{print \$2}' | awk '{print \$1}'") 
                 ?: $this->cmd_line("apache2 -v 2>/dev/null | head -1 | awk -F'/' '{print \$2}' | awk '{print \$1}'");
@@ -565,7 +786,7 @@ class MonitorApi extends BaseApi {
                 'running' => $apache_running,
                 'version' => $apache_version,
                 'processes' => $apache_procs,
-                'ports' => ['http' => $port_80, 'https' => $port_443],
+                'ports' => ['http' => $port_80, 'varnish_backend' => $port_8080],
                 'timestamp' => time()
             ];
         });

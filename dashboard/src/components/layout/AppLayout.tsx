@@ -76,6 +76,7 @@ export default function AppLayout() {
           flexDirection: 'column',
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           minHeight: '100vh',
+          backgroundColor: '#0a0e18',
           position: 'relative'
         }}
       >
@@ -86,7 +87,8 @@ export default function AppLayout() {
           sx={{
             flexGrow: 1,
             p: { xs: 2, md: 3 },
-            pb: '60px' // Spacing for footer
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
           <Outlet />

@@ -7,7 +7,7 @@
 $sitemapUrl = "https://technostationery.com/sitemap.xml";
 $varnishUrl = "http://127.0.0.1:80"; // Varnish port 80
 $hostHeader = "technostationery.com";
-$maxUrls = 500; // Limit for now
+$maxUrls = 1000; 
 
 echo "Fetching sitemap: $sitemapUrl\n";
 $xmlContent = @file_get_contents($sitemapUrl);
@@ -15,11 +15,8 @@ if (!$xmlContent) {
     die("Error: Could not fetch sitemap.\n");
 }
 
-$xml = new SimpleXMLElement($xmlContent);
-$urls = [];
-foreach ($xml->url as $url) {
-    $urls[] = (string)$url->loc;
-}
+preg_match_all('/<loc>(.*?)<\/loc>/', $xmlContent, $matches);
+$urls = $matches[1] ?? [];
 
 echo "Found " . count($urls) . " URLs. Warming up top $maxUrls...\n";
 
@@ -30,9 +27,13 @@ foreach (array_slice($urls, 0, $maxUrls) as $url) {
     $requestUrl = $varnishUrl . $path . ($query ? "?$query" : "");
     
     $ch = curl_init($requestUrl);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Host: $hostHeader"]);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Host: $hostHeader",
+        "User-Agent: TechnoMonitor-Warmup/1.0",
+        "Accept-Encoding: gzip"
+    ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     
     $start = microtime(true);

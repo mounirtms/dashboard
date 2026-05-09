@@ -24,16 +24,16 @@ export default function TrafficPage() {
   if (error) return <LoadingState message={`Error: ${error}`} />;
   if (!data) return null;
 
-  const dailyData = data.analytics.map((d) => ({
-    date: d.date.slice(5),
+  const dailyData = (data.analytics || []).map((d) => ({
+    date: d.date ? d.date.slice(5) : '?',
     requests: d.requests,
     pageViews: d.pageViews,
     threats: d.threats,
     uniques: d.uniques,
   }));
 
-  const hourlyData = data.hourly_analytics.map((h) => ({
-    time: h.datetime.slice(11, 16),
+  const hourlyData = (data.hourly_analytics || []).map((h) => ({
+    time: h.datetime ? h.datetime.slice(11, 16) : '?',
     requests: h.requests,
     bytes: h.bytes,
   }));

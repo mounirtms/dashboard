@@ -1,7 +1,8 @@
-import { Box, Typography, Grid, Card, CardContent, Button, Tabs, Tab, List, ListItem, ListItemText, ListItemSecondaryAction, Paper, IconButton, CircularProgress, TextField } from '@mui/material';
-import { Terminal, PlayArrow, DeleteSweep, Restore, LocalFireDepartment, ContentCopy } from '@mui/icons-material';
+import { Box, Typography, Grid, Card, CardContent, Button, Tabs, Tab, List, ListItem, ListItemText, ListItemSecondaryAction, Paper, IconButton, CircularProgress, TextField, Alert, Snackbar } from '@mui/material';
+import { Terminal, PlayArrow, DeleteSweep, Restore, LocalFireDepartment, ContentCopy, CloudQueue, CleaningServices } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { fetchScripts, executeScript, runEmergencyCleanup } from '../api/system';
+import { performCloudflareAction } from '../api/cloudflare';
 import LoadingState from '../components/common/LoadingState';
 
 export default function ActionsPage() {
@@ -11,6 +12,7 @@ export default function ActionsPage() {
   const [args, setArgs] = useState<string>('');
   const [output, setOutput] = useState<string>('');
   const [executing, setExecuting] = useState<string | null>(null);
+  const [notify, setNotify] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     fetchScripts()
@@ -37,6 +39,25 @@ export default function ActionsPage() {
     try {
       const res = await runEmergencyCleanup(type);
       setOutput(prev => prev + JSON.stringify(res, null, 2));
+    } catch (e: any) {
+      setOutput(prev => prev + `Error: ${e.message}`);
+    } finally {
+      setExecuting(null);
+    }
+  };
+
+  const handleCfPurge = async () => {
+    setExecuting('cf_purge');
+    setOutput(`> Purging Cloudflare Cache (Everything)...\n`);
+    try {
+      const res = await performCloudflareAction('purge_all');
+      if (res.success) {
+        setNotify({ open: true, message: 'Cloudflare Cache Purged Successfully', severity: 'success' });
+        setOutput(prev => prev + 'Success: Cache Purged.');
+      } else {
+        setNotify({ open: true, message: res.message, severity: 'error' });
+        setOutput(prev => prev + `Error: ${res.message}`);
+      }
     } catch (e: any) {
       setOutput(prev => prev + `Error: ${e.message}`);
     } finally {
@@ -98,6 +119,17 @@ export default function ActionsPage() {
                   disabled={!!executing}
                 >
                   Flush All Caches
+                </Button>
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  fullWidth 
+                  startIcon={<CloudQueue />}
+                  onClick={handleCfPurge}
+                  disabled={!!executing}
+                  sx={{ mt: 1, backgroundColor: '#f38020', '&:hover': { backgroundColor: '#e2741d' } }}
+                >
+                  Purge Cloudflare Cache
                 </Button>
               </Box>
             </CardContent>
@@ -169,6 +201,17 @@ export default function ActionsPage() {
           </Typography>
         </Paper>
       )}
+
+      <Snackbar 
+        open={notify.open} 
+        autoHideDuration={6000} 
+        onClose={() => setNotify({ ...notify, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity={notify.severity} sx={{ width: '100%' }}>
+          {notify.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

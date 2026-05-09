@@ -35,6 +35,15 @@ export interface SystemOverview {
   uptime: string;
   services: Record<string, string>;
   top_procs: ProcessInfo[];
+  varnish?: {
+    hit_ratio: number;
+    storage_pct: number;
+    status: string;
+  };
+  redis?: {
+    connected: boolean;
+    keys: number;
+  };
   timestamp: number;
 }
 

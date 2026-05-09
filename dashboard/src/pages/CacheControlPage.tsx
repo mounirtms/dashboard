@@ -1,7 +1,9 @@
-import { Box, Typography, Grid, Card, CardContent, Button, Divider, Alert, CircularProgress, Paper, Chip } from '@mui/material';
-import { Cached, CleaningServices, LocalFireDepartment, Hub, Bolt, History } from '@mui/icons-material';
-import { useState } from 'react';
+import { Box, Typography, Grid, Card, CardContent, Button, Divider, Alert, CircularProgress, Paper, Chip, LinearProgress } from '@mui/material';
+import { Cached, CleaningServices, LocalFireDepartment, Hub, Bolt, History, Storage, Speed } from '@mui/icons-material';
+import { useState, useEffect } from 'react';
 import apiClient from '../api/client';
+import { useSystemOverview } from '../hooks/useSystemData';
+import { formatBytes } from '../utils/formatters';
 
 const SITES = [
   { key: 'prod', name: 'Production', url: 'technostationery.com' },
@@ -12,6 +14,7 @@ const SITES = [
 export default function CacheControlPage() {
   const [executing, setExecuting] = useState<string | null>(null);
   const [output, setOutput] = useState<string>('');
+  const { data: sysData } = useSystemOverview(15000);
 
   const handleCacheOp = async (site: string, op: string) => {
     const actionKey = `${site}-${op}`;
@@ -20,10 +23,10 @@ export default function CacheControlPage() {
     
     try {
       const { data } = await apiClient.get(`/api/monitor.php?action=cache_manage&site=${site}&op=${op}`);
-      if (data.success) {
+      if (data.success || data.purge_everything) {
         setOutput(prev => prev + (data.output?.join('\n') || 'Operation completed successfully.') + '\n');
       } else {
-        setOutput(prev => prev + `Error: ${data.error}\n`);
+        setOutput(prev => prev + `Error: ${data.error || data.message}\n`);
       }
     } catch (e: any) {
       setOutput(prev => prev + `Request Failed: ${e.message}\n`);
@@ -32,15 +35,29 @@ export default function CacheControlPage() {
     }
   };
 
+  const varnish = sysData?.varnish || { hit_ratio: 0, storage_pct: 0 };
+
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
-          Cache Control Center
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Flush, clean, and purge caches across all environments.
-        </Typography>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
+            Cache Control Center
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            Flush, clean, and purge caches across all environments.
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Card variant="outlined" sx={{ px: 2, py: 1, backgroundColor: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.2)' }}>
+            <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700, display: 'block' }}>VARNISH HIT RATIO</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>{varnish.hit_ratio}%</Typography>
+          </Card>
+          <Card variant="outlined" sx={{ px: 2, py: 1, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderColor: 'rgba(59, 130, 246, 0.2)' }}>
+            <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700, display: 'block' }}>VARNISH STORAGE</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>{varnish.storage_pct}%</Typography>
+          </Card>
+        </Box>
       </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>

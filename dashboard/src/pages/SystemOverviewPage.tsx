@@ -1,13 +1,16 @@
-import { Grid, Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from '@mui/material';
-import { Memory, Storage, Speed, Timer, CheckCircle, Warning } from '@mui/icons-material';
+import { Grid, Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Divider, Alert, useTheme } from '@mui/material';
+import { Memory, Storage, Speed, Timer, CheckCircle, Warning, TipsAndUpdates, Refresh, CleaningServices, LocalFireDepartment } from '@mui/icons-material';
 import { useSystemOverview } from '../hooks/useSystemData';
 import StatCard from '../components/common/StatCard';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
+import { runEmergencyCleanup } from '../api/system';
+import { useState } from 'react';
 
 export default function SystemOverviewPage() {
-  const { data, loading, error } = useSystemOverview();
+  const { data, loading, error, refetch } = useSystemOverview();
   const theme = useTheme();
+  const [cleaning, setCleaning] = useState(false);
 
   if (loading && !data) return <LoadingState message="Loading system data..." />;
   if (error) return <LoadingState message={`Error: ${error}`} />;
@@ -18,15 +21,36 @@ export default function SystemOverviewPage() {
   const diskPct = parseInt(data.disk.pct.replace('%', ''));
   const diskColor = diskPct > 90 ? 'error' : diskPct > 80 ? 'warning' : 'success';
 
+  const handleQuickCleanup = async () => {
+    setCleaning(true);
+    try {
+      await runEmergencyCleanup('all');
+      refetch();
+    } catch (e) {}
+    setCleaning(false);
+  };
+
+  const insights = [];
+  if (data.load['1min'] > 6) insights.push({ type: 'warning', text: 'CPU Load is high. Consider cleaning PHP-FPM workers.' });
+  if (data.memory.used_pct > 80) insights.push({ type: 'error', text: 'RAM usage is critical. Flush caches or restart services.' });
+  if (diskPct > 85) insights.push({ type: 'error', text: 'Disk space is running low. Check log file sizes.' });
+  if (Object.values(data.services).some(s => s !== 'running')) insights.push({ type: 'error', text: 'Some critical services are down!' });
+  if (insights.length === 0) insights.push({ type: 'success', text: 'System is running optimally. No immediate action required.' });
+
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
-          System Overview
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.88rem' }}>
-          {data.uptime} &middot; Last updated: {new Date(data.timestamp * 1000).toLocaleTimeString()}
-        </Typography>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
+            System Overview
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.88rem' }}>
+            {data.uptime} &middot; Last updated: {new Date(data.timestamp * 1000).toLocaleTimeString()}
+          </Typography>
+        </Box>
+        <Button startIcon={<Refresh />} variant="outlined" size="small" onClick={() => refetch()} disabled={loading}>
+          Refresh
+        </Button>
       </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -101,23 +125,51 @@ export default function SystemOverviewPage() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Service Status</Typography>
-              <Box sx={{ display: 'grid', gap: 1.5 }}>
-                {Object.entries(data.services).map(([name, status]) => (
-                  <Box key={name} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, borderRadius: 1, backgroundColor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>{name}</Typography>
-                    <StatusBadge 
-                      label={status.toUpperCase()} 
-                      color={status === 'running' ? 'success' : 'error'} 
-                      icon={status === 'running' ? <CheckCircle sx={{ fontSize: 14 }} /> : <Warning sx={{ fontSize: 14 }} />}
-                    />
-                  </Box>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
+          <Box sx={{ display: 'grid', gap: 2 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TipsAndUpdates color="primary" /> Smart Insights
+                </Typography>
+                <Box sx={{ display: 'grid', gap: 1 }}>
+                  {insights.map((insight, i) => (
+                    <Alert key={i} severity={insight.type as any} sx={{ '& .MuiAlert-message': { fontSize: '0.75rem' }, py: 0 }}>
+                      {insight.text}
+                    </Alert>
+                  ))}
+                </Box>
+                <Divider sx={{ my: 2 }} />
+                <Button 
+                  fullWidth 
+                  variant="contained" 
+                  color="error" 
+                  startIcon={<LocalFireDepartment />}
+                  onClick={handleQuickCleanup}
+                  disabled={cleaning}
+                >
+                  {cleaning ? 'Cleaning...' : 'Run Quick Cleanup'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Service Status</Typography>
+                <Box sx={{ display: 'grid', gap: 1.5 }}>
+                  {Object.entries(data.services).map(([name, status]) => (
+                    <Box key={name} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, borderRadius: 1, backgroundColor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>{name}</Typography>
+                      <StatusBadge 
+                        label={status.toUpperCase()} 
+                        color={status === 'running' ? 'success' : 'error'} 
+                        icon={status === 'running' ? <CheckCircle sx={{ fontSize: 14 }} /> : <Warning sx={{ fontSize: 14 }} />}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
         </Grid>
       </Grid>
     </Box>

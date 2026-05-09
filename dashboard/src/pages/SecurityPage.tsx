@@ -15,9 +15,9 @@ export default function SecurityPage() {
   if (!data) return null;
 
   const totals = data.analytics_totals;
-  const fw = data.firewall;
-  const threatData = data.threat_types.map((t) => ({ name: t.type || 'Unknown', value: t.count }));
-  const wafStatus = data.settings.waf === 'on' ? 'success' : 'error';
+  const fw = data.firewall || { blocked: 0, challenged: 0, total: 0, events: [] };
+  const threatData = (data.threat_types || []).map((t) => ({ name: t.type || 'Unknown', value: t.count }));
+  const wafStatus = data.settings?.waf === 'on' ? 'success' : 'error';
   const gridColor = `${theme.palette.divider}99`;
   const borderColor = `${theme.palette.divider}4d`;
 
