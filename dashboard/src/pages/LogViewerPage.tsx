@@ -5,6 +5,7 @@ import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 
 export default function LogViewerPage() {
+  const [site, setSite] = useState('');
   const [type, setType] = useState('system');
   const [lines, setLines] = useState(100);
   const [logData, setLogData] = useState<any>(null);
@@ -12,9 +13,17 @@ export default function LogViewerPage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
 
+  const SITES = [
+    { key: '', name: 'Global / Server' },
+    { key: 'prod', name: 'Production' },
+    { key: 'beta', name: 'Beta Store' },
+    { key: 'dev', name: 'Development' },
+    { key: 'pim', name: 'PIM Akeneo' },
+  ];
+
   const fetchLogs = () => {
     setLoading(true);
-    apiClient.get(`/api/monitor.php?action=logs&type=${type}&lines=${lines}`)
+    apiClient.get(`/api/monitor.php?action=logs&type=${type}&lines=${lines}&site=${site}`)
       .then(({ data }) => setLogData(data))
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
@@ -22,7 +31,7 @@ export default function LogViewerPage() {
 
   useEffect(() => {
     fetchLogs();
-  }, [type]);
+  }, [type, site]);
 
   useEffect(() => {
     let timer: any;
@@ -48,16 +57,36 @@ export default function LogViewerPage() {
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+          <FormControl size="small" sx={{ minWidth: 160 }}>
+            <InputLabel>Target Site</InputLabel>
+            <Select value={site} label="Target Site" onChange={(e) => setSite(e.target.value)}>
+              {SITES.map(s => <MenuItem key={s.key} value={s.key}>{s.name}</MenuItem>)}
+            </Select>
+          </FormControl>
+
           <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>Log Source</InputLabel>
             <Select value={type} label="Log Source" onChange={(e) => setType(e.target.value)}>
-              <MenuItem value="system">System Messages</MenuItem>
-              <MenuItem value="apache_error">Apache Error Log</MenuItem>
-              <MenuItem value="apache_access">Apache Access Log</MenuItem>
-              <MenuItem value="varnish">Varnish Log</MenuItem>
-              <MenuItem value="php_fpm">PHP-FPM Log</MenuItem>
-              <MenuItem value="mariadb">MariaDB Error Log</MenuItem>
+              {site ? (
+                <>
+                  <MenuItem value="system">Magento System</MenuItem>
+                  <MenuItem value="exception">Magento Exception</MenuItem>
+                  <MenuItem value="debug">Magento Debug</MenuItem>
+                  <MenuItem value="cron">Magento Cron</MenuItem>
+                </>
+              ) : (
+                <>
+                  <MenuItem value="system">System Messages</MenuItem>
+                  <MenuItem value="apache_error">Apache Error Log</MenuItem>
+                  <MenuItem value="apache_access">Apache Access Log</MenuItem>
+                  <MenuItem value="varnish">Varnish Log</MenuItem>
+                  <MenuItem value="php_fpm">PHP-FPM Log</MenuItem>
+                  <MenuItem value="mariadb">MariaDB Error Log</MenuItem>
+                  <MenuItem value="cron">System Cron</MenuItem>
+                  <MenuItem value="auth">Auth / Security</MenuItem>
+                </>
+              )}
             </Select>
           </FormControl>
           

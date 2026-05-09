@@ -3,6 +3,7 @@ import { Terminal, PlayArrow, DeleteSweep, Restore, LocalFireDepartment, Content
 import { useState, useEffect } from 'react';
 import { fetchScripts, executeScript, runEmergencyCleanup } from '../api/system';
 import { performCloudflareAction } from '../api/cloudflare';
+import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 
 export default function ActionsPage() {
@@ -39,6 +40,19 @@ export default function ActionsPage() {
     try {
       const res = await runEmergencyCleanup(type);
       setOutput(prev => prev + JSON.stringify(res, null, 2));
+    } catch (e: any) {
+      setOutput(prev => prev + `Error: ${e.message}`);
+    } finally {
+      setExecuting(null);
+    }
+  };
+
+  const handleCacheAction = async (op: string) => {
+    setExecuting(op);
+    setOutput(`> Initiating Global Cache Operation: ${op}...\n`);
+    try {
+      const { data } = await apiClient.get(`/api/monitor.php?action=cache_manage&op=${op}`);
+      setOutput(prev => prev + (data.output?.join('\n') || data.message || 'Operation completed.'));
     } catch (e: any) {
       setOutput(prev => prev + `Error: ${e.message}`);
     } finally {
@@ -119,6 +133,26 @@ export default function ActionsPage() {
                   disabled={!!executing}
                 >
                   Flush All Caches
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  color="secondary" 
+                  fullWidth 
+                  startIcon={<CleaningServices />}
+                  onClick={() => handleCacheAction('varnish_purge_all')}
+                  disabled={!!executing}
+                >
+                  Purge All Varnish
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  color="warning" 
+                  fullWidth 
+                  startIcon={<DeleteSweep />}
+                  onClick={() => handleCacheAction('cleanup_logs')}
+                  disabled={!!executing}
+                >
+                  Truncate Huge Logs
                 </Button>
                 <Button 
                   variant="contained" 

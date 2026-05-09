@@ -624,7 +624,20 @@ class MonitorApi extends BaseApi {
                 break;
             case 'cf_global_purge':
                 return $this->cloudflareAction();
+
+            case 'varnish_purge_all':
+                $results['output'] = $this->cmd("varnishadm \"ban req.http.host ~ .*\" 2>&1")['output'];
+                $results['success'] = true;
+                return $results;
+
+            case 'cleanup_logs':
+                $cmd = "find /var/log -type f -name \"*.log\" -size +100M -exec truncate -s 0 {} \\; 2>&1";
+                $results['output'] = $this->cmd($cmd)['output'];
+                $results['success'] = true;
+                return $results;
+
             case 'varnish_purge':
+
                 $url = Config::get("paths.{$site}_url");
                 if ($url) {
                     $host = parse_url($url, PHP_URL_HOST);
@@ -723,14 +736,17 @@ class MonitorApi extends BaseApi {
             'mariadb' => '/var/log/mariadb/mariadb.log',
             'php_fpm' => '/opt/cpanel/ea-php82/root/usr/var/log/php-fpm/error.log',
             'system' => '/var/log/messages',
+            'cron' => '/var/log/cron',
+            'auth' => '/var/log/secure'
         ];
 
         // Dynamic detection for common log paths
         $fallbacks = [
             'apache_error' => ['/var/log/apache2/error_log', '/etc/httpd/logs/error_log', '/var/log/httpd/error_log', '/usr/local/apache/logs/error_log'],
             'apache_access' => ['/var/log/apache2/access_log', '/etc/httpd/logs/access_log', '/var/log/httpd/access_log', '/usr/local/apache/logs/access_log'],
-            'mariadb' => ['/var/lib/mysql/' . gethostname() . '.err', '/var/log/mysqld.log', '/var/lib/mysql/error.log', '/var/log/mariadb/mariadb.log'],
-            'php_fpm' => ['/opt/cpanel/ea-php82/root/usr/var/log/php-fpm/error.log', '/var/log/php-fpm.log', '/usr/local/cpanel/logs/php-fpm.log']
+            'mariadb' => ['/var/lib/mysql/' . gethostname() . '.err', '/var/log/mysqld.log', '/var/lib/mysql/error.log', '/var/log/mariadb/mariadb.log', '/var/log/mysql/error.log'],
+            'php_fpm' => ['/opt/cpanel/ea-php82/root/usr/var/log/php-fpm/error.log', '/var/log/php-fpm.log', '/usr/local/cpanel/logs/php-fpm.log'],
+            'auth' => ['/var/log/auth.log', '/var/log/secure']
         ];
 
         foreach ($fallbacks as $key => $paths) {
@@ -747,16 +763,18 @@ class MonitorApi extends BaseApi {
         if ($site) {
             $paths = Config::get('paths');
             if (isset($paths[$site])) {
-                $logMap['site_exception'] = $paths[$site] . '/var/log/exception.log';
-                $logMap['site_system'] = $paths[$site] . '/var/log/system.log';
-                if ($type === 'system') $type = 'site_system';
+                $siteBase = rtrim($paths[$site], '/');
+                $logMap['exception'] = $siteBase . '/var/log/exception.log';
+                $logMap['system'] = $siteBase . '/var/log/system.log';
+                $logMap['debug'] = $siteBase . '/var/log/debug.log';
+                $logMap['cron'] = $siteBase . '/var/log/magento.cron.log';
             }
         }
 
         $logPath = $logMap[$type] ?? $logMap['system'];
         
         if (!is_file($logPath)) {
-            return ['error' => "Log file not found: $logPath", 'available_types' => array_keys($logMap)];
+            return ['error' => "Log file not found: $logPath", 'available_types' => array_keys($logMap), 'path' => $logPath];
         }
 
         $cmd = "tail -n $lines " . escapeshellarg($logPath) . " 2>&1";
@@ -764,6 +782,7 @@ class MonitorApi extends BaseApi {
 
         return [
             'type' => $type,
+            'site' => $site,
             'path' => $logPath,
             'lines' => $output['output'] ?? [],
             'timestamp' => time()

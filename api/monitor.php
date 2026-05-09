@@ -68,7 +68,7 @@ $allowedActions = [
     'overview', 'sites', 'crons', 'queues', 'cleanup', 'indexer',
     'execute', 'dbhealth', 'redis', 'elasticsearch', 'varnish',
     'system_advanced', 'phpfpm_pools', 'alerts', 'cloudflare',
-    'cloudflare_action', 'apache'
+    'cloudflare_action', 'apache', 'cache_manage', 'logs', 'processes'
 ];
 $action = InputValidator::validateAction($action, $allowedActions);
 if ($action === false) {
@@ -1839,6 +1839,15 @@ try {
             break;
         case 'cloudflare_action': 
             $data = $monitorApi->cloudflareAction(); 
+            break;
+        case 'cache_manage': 
+            $data = $monitorApi->manageCache(); 
+            break;
+        case 'logs': 
+            $data = $monitorApi->getLogs(); 
+            break;
+        case 'processes': 
+            $data = $monitorApi->getProcesses(); 
             break;
         default: 
             $data = $monitorApi->getOverview(); 

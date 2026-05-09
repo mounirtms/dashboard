@@ -45,12 +45,17 @@ if (!function_exists('start_secure_session')) {
             // Set session cookie params
             $secure = isset($_SERVER['HTTPS']) || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') || (isset($_SERVER['HTTP_CF_VISITOR']) && strpos($_SERVER['HTTP_CF_VISITOR'], 'https') !== false);
             
+            // Get current domain for cookie scope
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+            $domain = (strpos($host, 'technostationery.com') !== false) ? '.technostationery.com' : '';
+
             session_set_cookie_params([
                 'lifetime' => 86400,
                 'path' => '/',
-                'domain' => '', 
+                'domain' => $domain, 
                 'secure' => $secure,
-                'httponly' => true
+                'httponly' => true,
+                'samesite' => 'Lax'
             ]);
 
             session_start();

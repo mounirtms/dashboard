@@ -31,11 +31,12 @@ export default function SystemOverviewPage() {
   };
 
   const insights = [];
-  if (data.load['1min'] > 6) insights.push({ type: 'warning', text: 'CPU Load is high. Consider cleaning PHP-FPM workers.' });
-  if (data.memory.used_pct > 80) insights.push({ type: 'error', text: 'RAM usage is critical. Flush caches or restart services.' });
-  if (diskPct > 85) insights.push({ type: 'error', text: 'Disk space is running low. Check log file sizes.' });
-  if (Object.values(data.services).some(s => s !== 'running')) insights.push({ type: 'error', text: 'Some critical services are down!' });
-  if (insights.length === 0) insights.push({ type: 'success', text: 'System is running optimally. No immediate action required.' });
+  if (data.load['1min'] > 6) insights.push({ type: 'warning', text: 'CPU Load is high. Check for rogue PHP processes in Process Explorer.' });
+  if (data.memory.used_pct > 80) insights.push({ type: 'error', text: 'RAM usage is critical. Consider flushing Varnish or Magento caches.' });
+  if (diskPct > 85) insights.push({ type: 'error', text: 'Disk space is critical! Truncate large log files immediately.' });
+  if (data.load['1min'] < 2 && data.memory.used_pct < 50) insights.push({ type: 'info', text: 'System load is very low. Good time for indexing or backups.' });
+  if (Object.values(data.services).some(s => s !== 'running')) insights.push({ type: 'error', text: 'Service alert: One or more critical services are offline!' });
+  if (insights.length === 0) insights.push({ type: 'success', text: 'All systems green. No immediate actions required.' });
 
   return (
     <Box>
