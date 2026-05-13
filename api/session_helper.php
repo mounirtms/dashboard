@@ -41,15 +41,20 @@ if (!function_exists('start_secure_session')) {
 
             $secure = isset($_SERVER['HTTPS']) || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') || (isset($_SERVER['HTTP_CF_VISITOR']) && strpos($_SERVER['HTTP_CF_VISITOR'], 'https') !== false);
             $host = $_SERVER['HTTP_HOST'] ?? '';
-            $domain = (strpos($host, 'technostationery.com') !== false) ? '.technostationery.com' : '';
+            
+            // Only set domain cookie for subdomain access, otherwise leave empty for same-host
+            $domain = '';
+            if (strpos($host, 'technostationery.com') !== false && strpos($host, 'dashboard.') !== false) {
+                $domain = '.technostationery.com';
+            }
 
             session_set_cookie_params([
                 'lifetime' => $sessionLifetime,
                 'path' => '/',
                 'domain' => $domain,
-                'secure' => true,
+                'secure' => $secure,
                 'httponly' => true,
-                'samesite' => 'None'
+                'samesite' => $secure ? 'None' : 'Lax'
             ]);
 
             session_start();

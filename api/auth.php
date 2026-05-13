@@ -116,7 +116,7 @@ function handleLogin() {
         http_response_code(403);
         $reason = empty($csrfToken) ? 'Token missing in request' : (empty($_SESSION['csrf_token']) ? 'Token missing in session' : 'Token mismatch');
         
-        $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Fail: $reason | Request: $csrfToken | Session: " . ($_SESSION['csrf_token'] ?? 'none') . " | SID: " . session_id() . "\n";
+        $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Fail: $reason | Request: " . substr($csrfToken ?? 'none', 0, 10) . " | Session: " . substr($_SESSION['csrf_token'] ?? 'none', 0, 10) . " | SID: " . session_id() . " | Session Data: " . json_encode($_SESSION) . "\n";
         @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
 
         echo json_encode([
@@ -361,9 +361,19 @@ function handleCheckSession() {
 }
 
 function handleCsrfToken() {
+    // Ensure session is started
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
+    
+    // Log session info for debugging
+    $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Token Generated | SID: " . session_id() . " | Token: " . substr($_SESSION['csrf_token'], 0, 10) . "...\n";
+    @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
+    
     echo json_encode([
         'success' => true, 
         'csrf_token' => $_SESSION['csrf_token'],
