@@ -33,6 +33,10 @@ import CacheControlPage from './pages/CacheControlPage.tsx';
 import ProcessExplorerPage from './pages/ProcessExplorerPage.tsx';
 import AuditTrailPage from './pages/AuditTrailPage.tsx';
 import TerminalAiPage from './pages/TerminalAiPage.tsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.tsx';
+import TasksPage from './pages/TasksPage.tsx';
+import TaskDetailPage from './pages/TaskDetailPage.tsx';
+import PermissionsPage from './pages/PermissionsPage.tsx';
 
 export default function App() {
   return (
@@ -41,7 +45,23 @@ export default function App() {
       <AuthProvider>
         <HashRouter>
           <Routes>
+            {/* Public routes */}
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/login" element={<LoginPage />} />
+
+            {/* Admin-only routes */}
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
+              <Route path="/" element={<AppLayout />}>
+                <Route path="tools/users" element={<UsersPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="tools/actions" element={<ActionsPage />} />
+                <Route path="cache-control" element={<CacheControlPage />} />
+                <Route path="process-explorer" element={<ProcessExplorerPage />} />
+                <Route path="tools/permissions" element={<PermissionsPage />} />
+              </Route>
+            </Route>
+
+            {/* All authenticated routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<AppLayout />}>
                 <Route index element={<MasterDashboardPage />} />
@@ -50,8 +70,6 @@ export default function App() {
                 <Route path="system-overview" element={<SystemOverviewPage />} />
                 <Route path="sites" element={<SitesPage />} />
                 <Route path="infrastructure" element={<InfrastructurePage />} />
-                <Route path="cache-control" element={<CacheControlPage />} />
-                <Route path="process-explorer" element={<ProcessExplorerPage />} />
                 <Route path="log-explorer" element={<LogViewerPage />} />
                 <Route path="terminal-ai" element={<TerminalAiPage />} />
                 
@@ -79,19 +97,20 @@ export default function App() {
                 <Route path="geography" element={<GeographyPage />} />
                 <Route path="security" element={<SecurityPage />} />
                 
-                {/* Tools */}
+                {/* Tools (non-admin) */}
                 <Route path="tools/db-health" element={<DbHealthPage />} />
-                <Route path="tools/users" element={<UsersPage />} />
                 <Route path="tools/audit" element={<AuditTrailPage />} />
-                <Route path="tools/actions" element={<ActionsPage />} />
-                <Route path="settings" element={<SettingsPage />} />
+                <Route path="tasks" element={<TasksPage />} />
+                <Route path="tasks/:id" element={<TaskDetailPage />} />
                 
                 {/* ETL */}
                 <Route path="etl/status" element={<EtlStatusPage />} />
                 <Route path="etl/logs" element={<PlaceholderPage title="ETL Execution Logs" />} />
               </Route>
             </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
+
+            {/* Catch-all: redirect to login for unauthenticated, home for authenticated */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </HashRouter>
       </AuthProvider>

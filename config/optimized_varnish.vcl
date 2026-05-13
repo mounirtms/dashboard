@@ -68,6 +68,14 @@ sub vcl_recv {
             unset req.http.Accept-Encoding;
         }
     }
+
+    # ============================================
+    # DEVICE DETECTION
+    # ============================================
+    set req.http.X-Device = "desktop";
+    if (req.http.User-Agent ~ "(?i)mobile|android|iphone|ipad|ipod|blackberry|opera mini|iemobile") {
+        set req.http.X-Device = "mobile";
+    }
     
     # ============================================
     # DASHBOARD CACHE POLICY

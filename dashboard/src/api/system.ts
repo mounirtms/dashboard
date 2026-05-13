@@ -55,6 +55,7 @@ export interface SiteInfo {
   disk: string;
   is_magento: boolean;
   maintenance?: boolean;
+  is_suspended?: boolean;
 }
 
 export interface CronEntry {
@@ -63,6 +64,10 @@ export interface CronEntry {
   comment: string;
   active: boolean;
   running: number;
+  source?: 'system' | 'magento';
+  magento_status?: string;
+  job_code?: string;
+  color?: string;
 }
 
 export interface CronData {
@@ -127,8 +132,10 @@ export async function fetchSites(): Promise<SiteInfo[]> {
   return data;
 }
 
-export async function fetchCrons(): Promise<CronData> {
-  const { data } = await apiClient.get('/api/monitor.php?action=crons');
+export async function fetchCrons(site?: string): Promise<CronData> {
+  const params = new URLSearchParams({ action: 'crons' });
+  if (site) params.set('site', site);
+  const { data } = await apiClient.get(`/api/monitor.php?${params.toString()}`);
   if (data.error) throw new Error(data.message || data.error);
   return data;
 }

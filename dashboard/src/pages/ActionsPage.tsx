@@ -1,10 +1,11 @@
-import { Box, Typography, Grid, Card, CardContent, Button, Tabs, Tab, List, ListItem, ListItemText, ListItemSecondaryAction, Paper, IconButton, CircularProgress, TextField, Alert, Snackbar } from '@mui/material';
-import { Terminal, PlayArrow, DeleteSweep, Restore, LocalFireDepartment, ContentCopy, CloudQueue, CleaningServices } from '@mui/icons-material';
+import { Box, Typography, Grid, Card, CardContent, Button, Tabs, Tab, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, CircularProgress, TextField, Alert, Snackbar } from '@mui/material';
+import { Terminal, PlayArrow, DeleteSweep, Restore, LocalFireDepartment, CloudQueue, CleaningServices } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { fetchScripts, executeScript, runEmergencyCleanup } from '../api/system';
 import { performCloudflareAction } from '../api/cloudflare';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
+import ConsoleOutput from '../components/common/ConsoleOutput';
 
 export default function ActionsPage() {
   const [data, setData] = useState<any>(null);
@@ -214,26 +215,12 @@ export default function ActionsPage() {
       </Grid>
 
       {output && (
-        <Paper sx={{ p: 2, background: '#000', border: '1px solid #334155', borderRadius: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography sx={{ color: 'success.main', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Terminal sx={{ fontSize: 16 }} /> CONSOLE OUTPUT
-            </Typography>
-            <IconButton size="small" onClick={() => setOutput('')} sx={{ color: 'text.disabled' }}>
-              <DeleteSweep sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Box>
-          <Typography component="pre" sx={{ 
-            color: '#fff', 
-            fontFamily: 'monospace', 
-            fontSize: '0.75rem', 
-            whiteSpace: 'pre-wrap',
-            maxHeight: 400,
-            overflowY: 'auto'
-          }}>
-            {output}
-          </Typography>
-        </Paper>
+        <ConsoleOutput
+          text={output}
+          onClear={() => setOutput('')}
+          title="SCRIPT OUTPUT"
+          autoScroll
+        />
       )}
 
       <Snackbar 

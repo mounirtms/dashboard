@@ -1,7 +1,8 @@
-import { Box, Typography, Grid, Card, CardContent, Button, Divider, List, ListItem, ListItemText, Chip, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, Button, Divider, List, ListItem, ListItemText, Chip, Snackbar, Alert, CircularProgress } from '@mui/material';
 import { SmartToy, Send, Settings, Security, History, Bolt } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { fetchTelegramStats, sendTelegramTest, TelegramStats } from '../api/notifications';
+import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
 
@@ -9,6 +10,7 @@ export default function TelegramPage() {
   const [stats, setStats] = useState<TelegramStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [cmdLoading, setCmdLoading] = useState<string | null>(null);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
 
   useEffect(() => {
@@ -26,6 +28,21 @@ export default function TelegramPage() {
       setNotify({ open: true, message: 'Failed to send: ' + e.message, severity: 'error' });
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleQuickCommand = async (cmd: string) => {
+    setCmdLoading(cmd);
+    try {
+      const { data } = await apiClient.post('/api/monitor.php?action=cloudflare_action', {
+        action: 'test_telegram',
+        command: cmd
+      });
+      setNotify({ open: true, message: `Command "${cmd}" dispatched: ${data.message || 'OK'}`, severity: 'success' });
+    } catch (e: any) {
+      setNotify({ open: true, message: `Failed: ${e.response?.data?.message || e.message}`, severity: 'error' });
+    } finally {
+      setCmdLoading(null);
     }
   };
 
@@ -113,7 +130,15 @@ export default function TelegramPage() {
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {['/status', '/services', '/load', '/processes', '/orders', '/online', '/cache:flush'].map(cmd => (
-                  <Chip key={cmd} label={cmd} clickable sx={{ fontFamily: 'monospace', fontWeight: 600 }} />
+                  <Chip 
+                    key={cmd} 
+                    label={cmd} 
+                    clickable 
+                    onClick={() => handleQuickCommand(cmd)}
+                    disabled={cmdLoading !== null}
+                    icon={cmdLoading === cmd ? <CircularProgress size={12} /> : undefined}
+                    sx={{ fontFamily: 'monospace', fontWeight: 600 }} 
+                  />
                 ))}
               </Box>
             </CardContent>
@@ -128,7 +153,14 @@ export default function TelegramPage() {
               <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
                 Current webhook: https://dashboard.technostationery.com/api/telegram/webhook.php
               </Typography>
-              <Button size="small" variant="outlined" startIcon={<Settings />}>Re-configure Webhook</Button>
+              <Button 
+                size="small" 
+                variant="outlined" 
+                startIcon={<Settings />}
+                onClick={() => setNotify({ open: true, message: 'Webhook configuration: Use /services command to check bot status', severity: 'info' })}
+              >
+                Re-configure Webhook
+              </Button>
             </CardContent>
           </Card>
         </Grid>

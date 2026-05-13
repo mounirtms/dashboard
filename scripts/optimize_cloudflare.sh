@@ -7,7 +7,7 @@ echo "════════════════════════�
 echo ""
 
 # Load credentials
-CF_EMAIL="amine.bo@techno-dz.com"
+CF_EMAIL="webmaster@techno-dz.com"
 CF_KEY="35d8fd4b1a5d27eabbce73c6753978fc350bc"
 
 # Zone IDs

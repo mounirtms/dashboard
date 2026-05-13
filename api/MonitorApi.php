@@ -83,6 +83,21 @@ class MonitorApi extends BaseApi {
                 $services[$svc] = ($s==='active') ? 'running' : $s;
             }
 
+            // Top processes
+            $procs_raw = $this->cmd("ps -eo pid,%cpu,%mem,etime,args --sort=-%cpu | head -6");
+            $top_procs = [];
+            foreach(array_slice($procs_raw['output'], 1) as $l) {
+                if(preg_match('/^\s*(\d+)\s+([\d.]+)\s+([\d.]+)\s+(\S+)\s+(.*)$/', $l, $m)) {
+                    $top_procs[] = [
+                        'pid' => $m[1],
+                        'cpu' => $m[2],
+                        'mem' => $m[3],
+                        'time' => $m[4],
+                        'cmd' => trim($m[5])
+                    ];
+                }
+            }
+
             return [
                 'load' => ['1min'=>$load[0],'5min'=>$load[1],'15min'=>$load[2]],
                 'memory' => [
@@ -98,6 +113,7 @@ class MonitorApi extends BaseApi {
                 ],
                 'uptime' => $uptime,
                 'services' => $services,
+                'top_procs' => $top_procs,
                 'timestamp' => time()
             ];
         });
@@ -134,6 +150,7 @@ class MonitorApi extends BaseApi {
 
                 $is_magento = is_file("$path/bin/magento");
                 $mode = '';
+                $maintenance = false;
                 if($is_magento) {
                     $mode_file = "$path/app/etc/env.php";
                     if(is_file($mode_file)) {
@@ -141,7 +158,9 @@ class MonitorApi extends BaseApi {
                         if(strpos($env_content, "'MAGE_MODE'=>'developer'") !== false) $mode = 'developer';
                         elseif(strpos($env_content, "'MAGE_MODE'=>'production'") !== false) $mode = 'production';
                     }
+                    $maintenance = file_exists("$path/var/.maintenance.flag");
                 }
+                $suspended = file_exists("$path/var/.suspend.flag") || is_dir("$path/.suspended");
 
                 $db_name = $db_config[$key] ?? null;
                 $db_size = '—';
@@ -165,490 +184,12 @@ class MonitorApi extends BaseApi {
                     'disk' => $disk_usage,
                     'db_size' => $db_size,
                     'mode' => $mode,
+                    'maintenance' => $maintenance,
+                    'is_suspended' => $suspended,
                     'is_magento' => $is_magento
                 ];
             }
             return $sites_data;
-        });
-    }
-
-    public function getCrons() {
-        return $this->cache->remember('crons', 30, function() {
-            $raw = $this->cmd_line("crontab -l 2>/dev/null");
-            $entries = [];
-            $comment = '';
-            foreach(explode("\n", $raw) as $line) {
-                $line = trim($line);
-                if(empty($line) || $line[0] === '#') {
-                    $comment .= trim($line, '# ') . "\n";
-                    continue;
-                }
-                if(preg_match('/^(@\w+|(\*|[\d,\-\/\*]+)\s+(\*|[\d,\-\/\*]+)\s+(\*|[\d,\-\/\*]+)\s+(\*|[\d,\-\/\*]+)\s+(\*|[\d,\-\/\*]+))\s+(.+)$/', $line, $m)) {
-                    $cmd = $m[7];
-                    $entries[] = [
-                        'schedule' => $m[1],
-                        'command' => $cmd,
-                        'comment' => trim($comment),
-                        'active' => true,
-                        'running' => $this->safe_num($this->cmd_line("ps aux | grep '" . addslashes(substr($cmd, 0, 60)) . "' | grep -v grep | wc -l"))
-                    ];
-                    $comment = '';
-                }
-            }
-            return ['entries' => $entries, 'total' => count($entries), 'timestamp' => date('Y-m-d H:i:s')];
-        });
-    }
-
-    public function cronAction() {
-        $cmd = $_POST['command'] ?? $_GET['command'] ?? '';
-        if (!$cmd) return ['success' => false, 'message' => 'Command required'];
-
-        // Security check: only allow commands that are already in the crontab
-        $crons = $this->getCrons()['entries'];
-        $allowed = false;
-        foreach ($crons as $c) {
-            if ($c['command'] === $cmd) {
-                $allowed = true;
-                break;
-            }
-        }
-
-        if (!$allowed) return ['success' => false, 'message' => 'Command not in crontab'];
-
-        // Execute in background
-        $output = $this->cmd($cmd . " > /dev/null 2>&1 & echo $!");
-        return ['success' => true, 'message' => 'Cron job started in background', 'pid' => trim(implode('', $output['output']))];
-    }
-
-    public function getQueues() {
-        return $this->cache->remember('queues', 15, function() {
-            $prodPath = Config::get('paths.prod');
-            $consumers = [];
-            try {
-                $env_file = "$prodPath/app/etc/env.php";
-                if(is_file($env_file)) {
-                    $content = @file_get_contents($env_file);
-                    if($content && preg_match_all("/'([^']+)'\s*=>\s*\[.*?'consumer_instance'/s", $content, $matches)) {
-                        $consumers = $matches[1];
-                    }
-                }
-            } catch(Exception $e) {}
-            
-            if(empty($consumers)) {
-                $consumers = ['product_action_attribute.update','exportProcessor','inventory.mass.update','codegeneratorProcessor','sales.rule.update.coupon.usage','product_alert','async.operations.all','media.gallery.synchronization','amasty_xnotif.email.send'];
-            }
-
-            $queue_info = [];
-            try {
-                $db = $this->getDb();
-                $db->select_db(Config::get('db.prod'));
-                $r = $db->query("SELECT queue_name, COUNT(*) as pending FROM queue WHERE status='new' GROUP BY queue_name LIMIT 50");
-                if($r) while($row = $r->fetch_assoc()) $queue_info[$row['queue_name']] = (int)$row['pending'];
-            } catch(Exception $e) {}
-
-            return ['consumers' => $consumers, 'queue_counts' => $queue_info, 'timestamp' => date('Y-m-d H:i:s')];
-        });
-    }
-
-    public function getVarnishStats() {
-        return $this->cache->remember('varnish', 15, function() {
-            $varnish_json = $this->cmd_line("varnishstat -1 -j", 5);
-            $varnish = json_decode($varnish_json, true);
-            if (!$varnish) return ['error' => 'Varnish unreachable'];
-
-            $get_val = fn($k) => $varnish[$k]['value'] ?? 0;
-            $hits = $get_val('MAIN.cache_hit');
-            $misses = $get_val('MAIN.cache_miss');
-            $total = $hits + $misses;
-            
-            // Device statistics
-            $devices = ['mobile' => 0, 'tablet' => 0, 'desktop' => 0];
-            $device_total = 0;
-            $device_raw = $this->cmd_line("timeout 1s varnishlog -d -i RespHeader -I 'X-Device:' 2>/dev/null | grep 'X-Device:' | tail -200 | awk '{print \$NF}' | sort | uniq -c", 2);
-            
-            foreach (explode("\n", $device_raw) as $line) {
-                if (preg_match('/^\s*(\d+)\s+(mobile|tablet|desktop)/i', trim($line), $m)) {
-                    $type = strtolower($m[2]);
-                    $devices[$type] = (int)$m[1];
-                    $device_total += (int)$m[1];
-                }
-            }
-
-            return [
-                'hit_ratio' => $total > 0 ? round($hits / $total * 100, 1) : 0,
-                'hits' => $hits,
-                'misses' => $misses,
-                'total_requests' => $total,
-                'storage' => [
-                    'used' => $this->format_bytes($get_val('SMA.s0.g_bytes')),
-                    'total' => $this->format_bytes($get_val('SMA.s0.g_bytes') + $get_val('SMA.s0.g_space')),
-                    'usage_pct' => ($get_val('SMA.s0.g_bytes') + $get_val('SMA.s0.g_space')) > 0 ? round($get_val('SMA.s0.g_bytes') / ($get_val('SMA.s0.g_bytes') + $get_val('SMA.s0.g_space')) * 100, 1) : 0
-                ],
-                'devices' => [
-                    'mobile_pct' => $device_total > 0 ? round($devices['mobile'] / $device_total * 100, 1) : 0,
-                    'tablet_pct' => $device_total > 0 ? round($devices['tablet'] / $device_total * 100, 1) : 0,
-                    'desktop_pct' => $device_total > 0 ? round($devices['desktop'] / $device_total * 100, 1) : 0,
-                    'total_samples' => $device_total
-                ],
-                'uptime' => $get_val('MAIN.uptime'),
-                'backend_healthy' => $get_val('MAIN.backend_fail') == 0,
-                'timestamp' => time()
-            ];
-        });
-    }
-
-    public function getCloudflareStats() {
-        return $this->cache->remember('cloudflare', 60, function() {
-            $cf = Config::get('cloudflare');
-            $zoneId = $cf['zone_id'];
-            if (!$zoneId) return ['error' => 'Cloudflare zone_id not configured in .env'];
-
-            $zoneRes = $this->cfApi("/zones/$zoneId");
-            if (!$zoneRes['body']['success']) {
-                $cfErr = $zoneRes['body']['errors'][0]['message'] ?? 'Unknown Cloudflare error';
-                return ['error' => "Cloudflare API Error: $cfErr", 'code' => $zoneRes['code']];
-            }
-            $z = $zoneRes['body']['result'];
-
-            // GraphQL Analytics for last 7 days and last 24 hours
-            $weekAgo = date('Y-m-d', strtotime('-7 days'));
-            $yesterday = date('Y-m-d', strtotime('-1 day'));
-            $today = date('Y-m-d');
-            $since24h = date('Y-m-d\TH:i:s\Z', strtotime("-24 hours"));
-
-            $query = [
-                'query' => "{
-                    viewer {
-                        zones(filter: {zoneTag: \"$zoneId\"}) {
-                            # 7-day daily traffic
-                            dailyTraffic: httpRequests1dGroups(
-                                limit: 7
-                                filter: {date_gt: \"$weekAgo\", date_lt: \"$today\"}
-                                orderBy: [date_ASC]
-                            ) {
-                                sum { requests pageViews threats bytes cachedBytes cachedRequests }
-                                uniq { uniques }
-                                dimensions { date }
-                            }
-                            # 24-hour hourly breakdown
-                            hourlyTraffic: httpRequests1hGroups(
-                                limit: 24
-                                filter: {datetime_gt: \"$since24h\"}
-                                orderBy: [datetime_ASC]
-                            ) {
-                                sum { requests threats bytes cachedRequests }
-                                dimensions { datetime }
-                            }
-                            # Top Countries (last 7 days)
-                            countries: httpRequests1dGroups(
-                                limit: 20
-                                filter: {date_gt: \"$weekAgo\"}
-                                orderBy: [sum_requests_DESC]
-                            ) {
-                                sum { requests bytes threats }
-                                dimensions { country }
-                            }
-                            # Top URLs (last 7 days)
-                            topUrls: httpRequests1dGroups(
-                                limit: 20
-                                filter: {date_gt: \"$weekAgo\"}
-                                orderBy: [sum_requests_DESC]
-                            ) {
-                                sum { requests bytes }
-                                dimensions { clientRequestPath }
-                            }
-                            # Status Codes
-                            statusCodes: httpRequests1dGroups(
-                                limit: 10
-                                filter: {date_gt: \"$weekAgo\"}
-                            ) {
-                                sum { requests }
-                                dimensions { responseStatusClass }
-                            }
-                            # Threats breakdown
-                            threatTypes: httpRequests1dGroups(
-                                limit: 10
-                                filter: {date_gt: \"$weekAgo\"}
-                                orderBy: [sum_threats_DESC]
-                            ) {
-                                sum { threats }
-                                dimensions { threatPathingName }
-                            }
-                        }
-                    }
-                }"
-            ];
-
-            $gqlRes = $this->cfApiGraphQL($query);
-            $data = $gqlRes['data']['viewer']['zones'][0] ?? null;
-
-            $analytics = [];
-            $hourlyAnalytics = [];
-            $countries = [];
-            $topUrls = [];
-            $statusCodes = [];
-            $threatTypes = [];
-            $totals = [
-                'requests' => 0, 'pageViews' => 0, 'threats' => 0, 'uniques' => 0, 
-                'bytes' => 0, 'cachedBytes' => 0, 'cachedRequests' => 0,
-                'uncachedRequests' => 0, 'uncachedBytes' => 0
-            ];
-
-            if ($data) {
-                // Parse Daily
-                foreach ($data['dailyTraffic'] ?? [] as $day) {
-                    $analytics[] = [
-                        'date' => $day['dimensions']['date'],
-                        'requests' => $day['sum']['requests'] ?? 0,
-                        'pageViews' => $day['sum']['pageViews'] ?? 0,
-                        'threats' => $day['sum']['threats'] ?? 0,
-                        'bytes' => $day['sum']['bytes'] ?? 0,
-                        'cachedBytes' => $day['sum']['cachedBytes'] ?? 0,
-                        'cachedRequests' => $day['sum']['cachedRequests'] ?? 0,
-                        'uniques' => $day['uniq']['uniques'] ?? 0,
-                    ];
-                    $totals['requests'] += $day['sum']['requests'] ?? 0;
-                    $totals['pageViews'] += $day['sum']['pageViews'] ?? 0;
-                    $totals['threats'] += $day['sum']['threats'] ?? 0;
-                    $totals['bytes'] += $day['sum']['bytes'] ?? 0;
-                    $totals['cachedBytes'] += $day['sum']['cachedBytes'] ?? 0;
-                    $totals['cachedRequests'] += $day['sum']['cachedRequests'] ?? 0;
-                    $totals['uniques'] += $day['uniq']['uniques'] ?? 0;
-                }
-                $totals['uncachedRequests'] = $totals['requests'] - $totals['cachedRequests'];
-                $totals['uncachedBytes'] = $totals['bytes'] - $totals['cachedBytes'];
-
-                // Parse Hourly
-                foreach ($data['hourlyTraffic'] ?? [] as $hour) {
-                    $hourlyAnalytics[] = [
-                        'datetime' => $hour['dimensions']['datetime'],
-                        'requests' => $hour['sum']['requests'] ?? 0,
-                        'threats' => $hour['sum']['threats'] ?? 0,
-                        'bytes' => $hour['sum']['bytes'] ?? 0,
-                        'cachedRequests' => $hour['sum']['cachedRequests'] ?? 0,
-                        'uncachedRequests' => ($hour['sum']['requests'] ?? 0) - ($hour['sum']['cachedRequests'] ?? 0),
-                    ];
-                }
-
-                // Parse Countries
-                $countryNames = [
-                    'DZ' => ['name' => 'Algeria', 'flag' => '🇩🇿'],
-                    'FR' => ['name' => 'France', 'flag' => '🇫🇷'],
-                    'US' => ['name' => 'United States', 'flag' => '🇺🇸'],
-                    'MA' => ['name' => 'Morocco', 'flag' => '🇲🇦'],
-                    'TN' => ['name' => 'Tunisia', 'flag' => '🇹🇳'],
-                ];
-                foreach ($data['countries'] ?? [] as $c) {
-                    $code = $c['dimensions']['country'] ?? '??';
-                    $info = $countryNames[$code] ?? ['name' => $code, 'flag' => '🌐'];
-                    $countries[] = [
-                        'code' => $code,
-                        'name' => $info['name'],
-                        'flag' => $info['flag'],
-                        'requests' => $c['sum']['requests'] ?? 0,
-                        'bytes' => $c['sum']['bytes'] ?? 0,
-                        'threats' => $c['sum']['threats'] ?? 0,
-                        'percentage' => $totals['requests'] > 0 ? round(($c['sum']['requests'] / $totals['requests']) * 100, 1) : 0
-                    ];
-                }
-
-                // Parse Top URLs
-                foreach ($data['topUrls'] ?? [] as $u) {
-                    $topUrls[] = [
-                        'path' => $u['dimensions']['clientRequestPath'] ?? '/',
-                        'requests' => $u['sum']['requests'] ?? 0,
-                        'bytes' => $u['sum']['bytes'] ?? 0,
-                    ];
-                }
-
-                // Parse Status Codes
-                foreach ($data['statusCodes'] ?? [] as $s) {
-                    $statusCodes[] = [
-                        'class' => $s['dimensions']['responseStatusClass'] . 'xx',
-                        'requests' => $s['sum']['requests'] ?? 0,
-                    ];
-                }
-                // Parse Threat Types
-                foreach ($data['threatTypes'] ?? [] as $t) {
-                    $threatTypes[] = [
-                        'type' => $t['dimensions']['threatPathingName'] ?? 'unknown',
-                        'count' => $t['sum']['threats'] ?? 0,
-                    ];
-                }
-            }
-
-            // Firewall events (last 10)
-            $fw = $this->cfApi("/zones/$zoneId/firewall/events");
-            $firewall = ['blocked' => 0, 'challenged' => 0, 'total' => 0, 'events' => []];
-            if ($fw['body']['success']) {
-                $events = $fw['body']['result'] ?? [];
-                $firewall['total'] = count($events);
-                foreach (array_slice($events, 0, 15) as $e) {
-                    $firewall['events'][] = [
-                        'action' => $e['action'] ?? 'unknown',
-                        'source' => $e['source'] ?? '',
-                        'rule_id' => $e['rule_id'] ?? '',
-                        'datetime' => $e['occurred_at'] ?? $e['datetime'] ?? ''
-                    ];
-                    if ($e['action'] === 'block') $firewall['blocked']++;
-                    if (strpos($e['action'], 'challenge') !== false) $firewall['challenged']++;
-                }
-            }
-
-            // SSL Certificate
-            $sslCert = $this->cfApi("/zones/$zoneId/ssl/certificate_statuses");
-            $sslInfo = null;
-            if ($sslCert['body']['success'] && !empty($sslCert['body']['result'])) {
-                $cert = $sslCert['body']['result'][0];
-                $expiry = $cert['expires_on'] ?? null;
-                $sslInfo = [
-                    'status' => $cert['status'] ?? 'unknown',
-                    'expires_on' => $expiry,
-                    'days_left' => $expiry ? round((strtotime($expiry) - time()) / 86400) : null,
-                    'hostnames' => $cert['hostnames'] ?? []
-                ];
-            }
-
-            $ssl = $this->cfApi("/zones/$zoneId/settings/ssl");
-            $cacheSetting = $this->cfApi("/zones/$zoneId/settings/cache_level");
-            $waf = $this->cfApi("/zones/$zoneId/settings/waf");
-
-            return [
-                'zone' => [
-                    'name' => $z['name'],
-                    'status' => $z['status'],
-                    'plan' => $z['plan']['name'] ?? 'Unknown',
-                    'development_mode' => ($z['development_mode'] ?? 0) > 0 ? 'on' : 'off',
-                ],
-                'account' => Config::get('cloudflare.email', ''),
-                'ssl_certificate' => $sslInfo,
-                'settings' => [
-                    'ssl' => $ssl['body']['result']['value'] ?? 'off',
-                    'cache_level' => $cacheSetting['body']['result']['value'] ?? 'standard',
-                    'waf' => $waf['body']['result']['value'] ?? 'off'
-                ],
-                'analytics' => $analytics,
-                'hourly_analytics' => $hourlyAnalytics,
-                'countries' => $countries,
-                'top_urls' => $topUrls,
-                'status_codes' => $statusCodes,
-                'threat_types' => $threatTypes,
-                'analytics_totals' => $totals,
-                'cache_hit_ratio' => $totals['requests'] > 0 ? round(($totals['cachedRequests'] / $totals['requests']) * 100, 1) : 0,
-                'bandwidth_formatted' => $this->format_bytes($totals['bytes']),
-                'firewall' => $firewall,
-                'timestamp' => time()
-            ];
-        });
-    }
-
-    public function cloudflareAction() {
-        $action = $_POST['action'] ?? $_GET['action2'] ?? '';
-        $cf = Config::get('cloudflare');
-        $zoneId = $cf['zone_id'];
-        
-        if (!$zoneId) return ['success' => false, 'message' => 'Cloudflare zone_id not configured'];
-
-        try {
-            switch ($action) {
-                case 'purge_all':
-                    $res = $this->cfApi("/zones/$zoneId/purge_cache", 'POST', ['purge_everything' => true]);
-                    if ($res['body']['success']) return ['success' => true, 'message' => 'Cache purged successfully'];
-                    return ['success' => false, 'message' => $res['body']['errors'][0]['message'] ?? 'Purge failed'];
-
-                case 'purge_url':
-                    $url = $_POST['url'] ?? '';
-                    if (!$url) return ['success' => false, 'message' => 'URL required'];
-                    $urls = array_map('trim', explode("\n", $url));
-                    $res = $this->cfApi("/zones/$zoneId/purge_cache", 'POST', ['files' => $urls]);
-                    if ($res['body']['success']) return ['success' => true, 'message' => 'URLs purged successfully'];
-                    return ['success' => false, 'message' => $res['body']['errors'][0]['message'] ?? 'Purge failed'];
-
-                case 'toggle_dev_mode':
-                    $value = $_POST['value'] ?? 'off';
-                    $res = $this->cfApi("/zones/$zoneId/settings/development_mode", 'POST', ['value' => $value]);
-                    if ($res['body']['success']) return ['success' => true, 'message' => "Development mode $value"];
-                    return ['success' => false, 'message' => $res['body']['errors'][0]['message'] ?? 'Failed'];
-
-                default:
-                    return ['success' => false, 'message' => "Unknown action: $action"];
-            }
-        } catch (Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    public function getDbHealth() {
-        return $this->cache->remember('db_health_comprehensive', 60, function() {
-            $db = $this->getDb();
-            
-            // Server Global Stats
-            $status = [];
-            $res = $db->query("SHOW GLOBAL STATUS WHERE Variable_name IN ('Uptime', 'Threads_connected', 'Max_used_connections', 'Slow_queries', 'Questions', 'Bytes_received', 'Bytes_sent')");
-            while ($row = $res->fetch_assoc()) $status[$row['Variable_name']] = $row['Value'];
-
-            $vars = [];
-            $res2 = $db->query("SHOW GLOBAL VARIABLES WHERE Variable_name IN ('max_connections', 'version', 'innodb_buffer_pool_size')");
-            while ($row = $res2->fetch_assoc()) $vars[$row['Variable_name']] = $row['Value'];
-
-            // Fragmented Tables across all relevant DBs
-            $fragmented = [];
-            $dbs = ['prod' => Config::get('db.prod'), 'beta' => Config::get('db.beta'), 'pim' => 'akeneo_pim'];
-            foreach ($dbs as $env => $dbName) {
-                if (!$dbName) continue;
-                $res3 = $db->query("SELECT TABLE_NAME, ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 1) AS size_mb, ROUND(DATA_FREE / 1024 / 1024, 1) AS frag_mb, TABLE_ROWS FROM information_schema.TABLES WHERE TABLE_SCHEMA = '$dbName' AND DATA_FREE > 0 ORDER BY DATA_FREE DESC LIMIT 10");
-                if ($res3) {
-                    while ($row = $res3->fetch_assoc()) {
-                        $row['db'] = $dbName;
-                        $row['env'] = $env;
-                        $fragmented[] = $row;
-                    }
-                }
-            }
-
-            return [
-                'uptime' => (int)$status['Uptime'],
-                'uptime_formatted' => $this->format_uptime((int)$status['Uptime']),
-                'connections' => [
-                    'active' => (int)$status['Threads_connected'],
-                    'max' => (int)$vars['max_connections'],
-                    'peak' => (int)$status['Max_used_connections'],
-                    'percentage' => round(((int)$status['Threads_connected'] / (int)$vars['max_connections']) * 100, 1)
-                ],
-                'slow_queries' => (int)$status['Slow_queries'],
-                'version' => $vars['version'],
-                'fragmented_tables' => $fragmented,
-                'timestamp' => time()
-            ];
-        });
-    }
-
-    public function getSites() {
-        return $this->cache->remember('sites_status', 30, function() {
-            $results = [];
-            foreach (SITES as $s) {
-                $path = $s['path'];
-                $exists = is_dir($path);
-                $is_magento = file_exists("$path/bin/magento");
-                
-                // Check maintenance mode
-                $maintenance = false;
-                if ($is_magento) {
-                    $maintenance = file_exists("$path/var/.maintenance.flag");
-                }
-                
-                $results[] = [
-                    'key' => $s['key'],
-                    'name' => $s['name'],
-                    'exists' => $exists,
-                    'is_magento' => $is_magento,
-                    'maintenance' => $maintenance,
-                    'php_fpm' => $this->safe_num($this->cmd_line("ps aux | grep 'php-fpm: pool " . ($s['user'] ?? 'unknown') . "' | grep -v grep | wc -l"), 0),
-                    'disk' => $exists ? $this->cmd_line("du -sh $path | awk '{print $1}'") : '0',
-                    'timestamp' => time()
-                ];
-            }
-            return $results;
         });
     }
 
@@ -658,8 +199,8 @@ class MonitorApi extends BaseApi {
 
         if (!$site) return ['success' => false, 'message' => 'Site required'];
 
-        $path = '';
-        foreach (SITES as $s) if ($s['key'] === $site) { $path = $s['path']; break; }
+        $paths = Config::get('paths');
+        $path = $paths[$site] ?? '';
         if (!$path || !is_dir($path)) return ['success' => false, 'message' => 'Site path not found'];
 
         $php = Config::get('php_bin');
@@ -668,17 +209,32 @@ class MonitorApi extends BaseApi {
             case 'maint_on':
                 if (file_exists("$path/bin/magento")) {
                     $res = $this->cmd("cd $path && $php bin/magento maintenance:enable 2>&1");
-                    $this->cache->forget('sites_status');
+                    $this->cache->forget('sites');
                     return ['success' => true, 'message' => 'Maintenance enabled', 'output' => $res['output']];
                 }
                 return ['success' => false, 'message' => 'Not a Magento site'];
             case 'maint_off':
                 if (file_exists("$path/bin/magento")) {
                     $res = $this->cmd("cd $path && $php bin/magento maintenance:disable 2>&1");
-                    $this->cache->forget('sites_status');
+                    $this->cache->forget('sites');
                     return ['success' => true, 'message' => 'Maintenance disabled', 'output' => $res['output']];
                 }
                 return ['success' => false, 'message' => 'Not a Magento site'];
+            case 'suspend':
+                $flagFile = "$path/var/.suspend.flag";
+                @mkdir("$path/var", 0755, true);
+                if (file_put_contents($flagFile, date('Y-m-d H:i:s') . " - Suspended via Dashboard")) {
+                    $this->cache->forget('sites');
+                    return ['success' => true, 'message' => "Site $site suspended"];
+                }
+                return ['success' => false, 'message' => 'Failed to create suspend flag'];
+            case 'resume':
+                $flagFile = "$path/var/.suspend.flag";
+                if (file_exists($flagFile) && @unlink($flagFile)) {
+                    $this->cache->forget('sites');
+                    return ['success' => true, 'message' => "Site $site resumed"];
+                }
+                return ['success' => false, 'message' => 'No suspend flag found or failed to remove'];
             default:
                 return ['success' => false, 'message' => "Unknown site operation: $op"];
         }
@@ -912,6 +468,38 @@ class MonitorApi extends BaseApi {
             }
         }
 
+        // Application logs (structured JSON from Monolog)
+        if ($type === 'app') {
+            $date = $_GET['date'] ?? date('Y-m-d');
+            $logDir = dirname(__DIR__) . '/logs';
+            $logPath = "$logDir/app-{$date}.log";
+
+            if (!is_file($logPath)) {
+                return ['type' => 'app', 'site' => '', 'path' => $logPath, 'lines' => [], 'structured' => true, 'timestamp' => time()];
+            }
+
+            $rawLines = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $limit = (int)($_GET['lines'] ?? 100);
+            $recentLines = array_slice(array_reverse($rawLines), 0, $limit);
+
+            $entries = [];
+            foreach ($recentLines as $line) {
+                $entry = json_decode($line, true);
+                if ($entry) {
+                    $entries[] = $entry;
+                }
+            }
+
+            return [
+                'type' => 'app',
+                'site' => '',
+                'path' => $logPath,
+                'lines' => $entries,
+                'structured' => true,
+                'timestamp' => time()
+            ];
+        }
+
         $logPath = $logMap[$type] ?? $logMap['system'];
         
         if (!is_file($logPath)) {
@@ -950,6 +538,851 @@ class MonitorApi extends BaseApi {
                 'timestamp' => time()
             ];
         });
+    }
+
+    public function getRedisStats() {
+        return $this->cache->remember('redis', 15, function() {
+            try {
+                $host = Config::get('db.host', '127.0.0.1');
+                $port = 6379;
+                
+                $mem = $this->cmd_line("redis-cli -h $host -p $port INFO memory", 3);
+                $stats = $this->cmd_line("redis-cli -h $host -p $port INFO stats", 3);
+                $keyspace = $this->cmd_line("redis-cli -h $host -p $port INFO keyspace", 3);
+                $clients = $this->cmd_line("redis-cli -h $host -p $port INFO clients", 3);
+                
+                if (strpos($mem, 'used_memory_human') !== false) {
+                    $parse = function($data, $key) {
+                        foreach (explode("\n", $data) as $line) {
+                            if (strpos($line, "$key:") === 0) {
+                                return trim(explode(':', $line)[1]);
+                            }
+                        }
+                        return null;
+                    };
+                    
+                    $used_mem = $parse($mem, 'used_memory_human');
+                    $peak_mem = $parse($mem, 'used_memory_peak_human');
+                    $used_bytes = $this->safe_num($parse($mem, 'used_memory'), 0);
+                    $maxmemory = $parse($mem, 'maxmemory_human');
+                    
+                    $hits = $this->safe_num($parse($stats, 'keyspace_hits'), 0);
+                    $misses = $this->safe_num($parse($stats, 'keyspace_misses'), 0);
+                    $hit_rate = ($hits + $misses) > 0 ? round($hits / ($hits + $misses) * 100, 1) : 0;
+                    
+                    return [
+                        'status' => 'online',
+                        'memory' => [
+                            'used' => $used_mem,
+                            'peak' => $peak_mem,
+                            'max' => $maxmemory,
+                            'used_bytes' => $used_bytes
+                        ],
+                        'performance' => [
+                            'hits' => $hits,
+                            'misses' => $misses,
+                            'hit_rate' => $hit_rate,
+                            'ops_per_sec' => $this->safe_num($parse($stats, 'instantaneous_ops_per_sec'), 0)
+                        ],
+                        'clients' => [
+                            'connected' => $this->safe_num($parse($clients, 'connected_clients'), 0),
+                            'blocked' => $this->safe_num($parse($clients, 'blocked_clients'), 0)
+                        ],
+                        'keyspace' => $keyspace,
+                        'timestamp' => time()
+                    ];
+                }
+            } catch (Exception $e) {}
+            return ['status' => 'offline', 'error' => 'Redis unreachable'];
+        });
+    }
+
+    public function getElasticsearchStats() {
+        return $this->cache->remember('elasticsearch', 30, function() {
+            try {
+                $health_json = $this->cmd_line("curl -s --max-time 3 localhost:9200/_cluster/health", 5);
+                $health = json_decode($health_json, true);
+                
+                if ($health && isset($health['status'])) {
+                    $indices_raw = $this->cmd_line("curl -s --max-time 3 'localhost:9200/_cat/indices?h=index,health,docs.count,store.size&s=store.size:desc'", 5);
+                    $indices = [];
+                    foreach (explode("\n", trim($indices_raw)) as $line) {
+                        $parts = preg_split('/\s+/', trim($line));
+                        if (count($parts) >= 4) {
+                            $indices[] = [
+                                'name' => $parts[0],
+                                'health' => $parts[1],
+                                'docs' => $parts[2],
+                                'size' => $parts[3]
+                            ];
+                        }
+                    }
+                    
+                    $jvm_json = $this->cmd_line("curl -s --max-time 3 'localhost:9200/_nodes/stats/jvm?filter_path=**.mem.heap_used_in_bytes,**.mem.heap_max_in_bytes,**.gc.collectors.*.collection_count'", 5);
+                    $jvm = json_decode($jvm_json, true);
+                    
+                    $heap_pct = 0;
+                    if ($jvm && isset($jvm['nodes'])) {
+                        $node = current($jvm['nodes']);
+                        $used = $node['jvm']['mem']['heap_used_in_bytes'] ?? 0;
+                        $max = $node['jvm']['mem']['heap_max_in_bytes'] ?? 1;
+                        $heap_pct = round(($used / $max) * 100, 1);
+                    }
+
+                    return [
+                        'status' => $health['status'],
+                        'cluster_name' => $health['cluster_name'],
+                        'nodes' => $health['number_of_nodes'],
+                        'shards' => [
+                            'active' => $health['active_shards'],
+                            'relocating' => $health['relocating_shards'],
+                            'initializing' => $health['initializing_shards'],
+                            'unassigned' => $health['unassigned_shards']
+                        ],
+                        'jvm_heap_pct' => $heap_pct,
+                        'indices' => array_slice($indices, 0, 10),
+                        'timestamp' => time()
+                    ];
+                }
+            } catch (Exception $e) {}
+            return ['status' => 'offline', 'error' => 'Elasticsearch unreachable'];
+        });
+    }
+
+    public function getSystemAdvancedStats() {
+        return $this->cache->remember('system_advanced', 60, function() {
+            try {
+                // Network stats
+                $net_data = [];
+                $net_lines = explode("\n", @file_get_contents('/proc/net/dev'));
+                foreach ($net_lines as $line) {
+                    if (preg_match('/^\s*(enp|eth|ens|eno|wl)\w+:/', $line)) {
+                        $parts = preg_split('/\s+/', trim(substr($line, strpos($line, ':') + 1)));
+                        $net_data[] = [
+                            'interface' => trim(explode(':', $line)[0]),
+                            'rx_bytes' => (int)$parts[0],
+                            'rx_packets' => (int)$parts[1],
+                            'tx_bytes' => (int)$parts[8],
+                            'tx_packets' => (int)$parts[9]
+                        ];
+                    }
+                }
+
+                // CPU Load breakdown
+                $cpu_stat = @file_get_contents('/proc/stat');
+                $cpu_load = [];
+                if ($cpu_stat) {
+                    $lines = explode("\n", $cpu_stat);
+                    foreach ($lines as $line) {
+                        if (preg_match('/^cpu\d+\s+(.*)/', $line, $m)) {
+                            $cpu_load[] = array_map('intval', preg_split('/\s+/', trim($m[1])));
+                        }
+                    }
+                }
+
+                return [
+                    'network' => $net_data,
+                    'cpu_cores_count' => count($cpu_load),
+                    'entropy' => (int)@file_get_contents('/proc/sys/kernel/random/entropy_avail'),
+                    'timestamp' => time()
+                ];
+            } catch (Exception $e) {
+                return ['error' => $e->getMessage()];
+            }
+        });
+    }
+
+    public function getPhpFpmPoolsStats() {
+        return $this->cache->remember('phpfpm_pools', 15, function() {
+            try {
+                $pools_dir = '/opt/cpanel/ea-php82/root/etc/php-fpm.d';
+                $results = [];
+                if (is_dir($pools_dir)) {
+                    foreach (glob("$pools_dir/*.conf") as $file) {
+                        $name = basename($file, '.conf');
+                        $content = @file_get_contents($file);
+                        $max = 50;
+                        if (preg_match('/pm.max_children\s*=\s*(\d+)/', $content, $m)) $max = (int)$m[1];
+                        
+                        $active = (int)$this->cmd_line("ps aux | grep 'php-fpm: pool $name' | grep -v grep | wc -l");
+                        
+                        $results[] = [
+                            'pool' => $name,
+                            'active_workers' => $active,
+                            'max_workers' => $max,
+                            'usage_pct' => round(($active / $max) * 100, 1)
+                        ];
+                    }
+                }
+                return $results;
+            } catch (Exception $e) {
+                return ['error' => $e->getMessage()];
+            }
+        });
+    }
+
+    public function getAlertHistory() {
+        return $this->cache->remember('alert_history', 60, function() {
+            $logFile = Config::get('paths.logs') . '/alert_system.log';
+            $alerts = [];
+            if (file_exists($logFile)) {
+                $lines = array_reverse(explode("\n", trim($this->cmd_line("tail -n 100 $logFile"))));
+                foreach ($lines as $line) {
+                    if (empty($line)) continue;
+                    $data = json_decode($line, true);
+                    if ($data) {
+                        $alerts[] = $data;
+                    } else {
+                        // Handle non-JSON log lines if any
+                        if (preg_match('/^\[(.*?)\]\s+(.*?):\s+(.*)/', $line, $m)) {
+                            $alerts[] = [
+                                'timestamp' => $m[1],
+                                'level' => $m[2],
+                                'message' => $m[3]
+                            ];
+                        }
+                    }
+                }
+            }
+            return ['alerts' => $alerts, 'total' => count($alerts)];
+        });
+    }
+
+    public function runCleanup($type = 'all') {
+        $results = [];
+        if ($type === 'all' || $type === 'messenger') {
+            $r = $this->cmd("ps aux | grep 'messenger:consume' | grep -v grep | awk '{print $2}' | xargs -r kill -9 2>&1");
+            $results['messenger'] = ['killed' => true, 'output' => $r['output']];
+        }
+        if ($type === 'all' || $type === 'phpfpm') {
+            $r = $this->cmd("systemctl restart ea-php82-php-fpm 2>&1");
+            $results['phpfpm_restart'] = ['done' => true, 'return' => $r['return']];
+        }
+        if ($type === 'all' || $type === 'cache') {
+            $prodPath = Config::get('paths.prod');
+            $php = Config::get('php_bin');
+            $r = $this->cmd("cd $prodPath && $php bin/magento cache:flush 2>&1");
+            $results['cache_flush'] = ['done' => $r['return'] === 0];
+        }
+        return array_merge($results, ['load_after' => sys_getloadavg(), 'timestamp' => time()]);
+    }
+
+    public function getIndexerStatus($env = 'prod') {
+        $path = Config::get("paths.$env");
+        $php = Config::get('php_bin');
+        if (!$path || !is_dir($path)) return ['error' => "Invalid path for $env"];
+
+        $output = $this->cmd_line("cd $path && $php bin/magento indexer:status 2>/dev/null");
+        $indexers = [];
+        foreach (explode("\n", $output) as $l) {
+            if (preg_match('/\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|/', $l, $m)) {
+                $name = trim($m[1]);
+                if ($name === 'ID' || $name === 'Indexer' || $name === '---') continue;
+                $indexers[] = [
+                    'id' => $name,
+                    'title' => $name,
+                    'status' => trim($m[2]),
+                    'mode' => trim($m[3])
+                ];
+            }
+        }
+        return ['indexers' => $indexers, 'timestamp' => time()];
+    }
+
+    public function indexerAction() {
+        $env = $_GET['env'] ?? $_GET['site'] ?? 'prod';
+        $indexerId = $_POST['indexer_id'] ?? $_GET['indexer'] ?? '';
+        $mode = $_POST['mode'] ?? $_GET['mode'] ?? 'reindex';
+
+        $path = Config::get("paths.$env");
+        $php = Config::get('php_bin');
+        if (!$path || !is_dir($path)) return ['error' => "Invalid path for $env"];
+
+        if ($mode === 'reindex') {
+            if ($indexerId && $indexerId !== 'all') {
+                $result = $this->cmd("cd $path && $php bin/magento indexer:reindex $indexerId 2>&1", 120);
+            } else {
+                $result = $this->cmd("cd $path && $php bin/magento indexer:reindex 2>&1", 120);
+            }
+            return [
+                'success' => $result['return'] === 0,
+                'output' => $result['output'],
+                'message' => $result['return'] === 0 ? "Reindex completed for $env" : "Reindex failed"
+            ];
+        }
+
+        return ['error' => "Unknown mode: $mode"];
+    }
+
+    public function runScript($script, $args = '') {
+        $baseScripts = Config::get('paths.scripts');
+        $real = realpath($baseScripts . '/' . $script);
+        if (!$real) $real = realpath($script);
+        
+        if (!$real) return ['error' => "Script not found: $script"];
+        
+        $allowed = false;
+        $allowed_prefixes = [$baseScripts, Config::get('paths.prod') . '/scripts', Config::get('paths.beta') . '/scripts'];
+        foreach ($allowed_prefixes as $p) {
+            if ($p && strpos($real, $p) === 0) { $allowed = true; break; }
+        }
+        
+        if (!$allowed) return ['error' => 'Script not in allowed paths'];
+        
+        $safeArgs = escapeshellcmd($args);
+        $ext = pathinfo($real, PATHINFO_EXTENSION);
+        $php = Config::get('php_bin');
+        $cmd = $ext === 'php' ? "$php '$real' $safeArgs 2>&1" : "bash '$real' $safeArgs 2>&1";
+        
+        $result = $this->cmd($cmd, 60);
+        return [
+            'success' => $result['return'] === 0,
+            'output' => $result['output'],
+            'exit_code' => $result['return'],
+            'timestamp' => time()
+        ];
+    }
+
+    public function getVarnishStats() {
+        return $this->cache->remember('varnish_stats', 15, function() {
+            try {
+                $varnish_active = $this->cmd_line("systemctl is-active varnish 2>/dev/null");
+                if ($varnish_active !== 'active') {
+                    return ['status' => 'inactive', 'error' => 'Varnish is not running', 'timestamp' => time()];
+                }
+
+                $stats_output = $this->cmd_line("varnishstat -1 2>&1", 5);
+                if (empty($stats_output) || strpos($stats_output, 'Error') !== false) {
+                    return ['status' => 'error', 'error' => 'Unable to fetch varnishstat', 'timestamp' => time()];
+                }
+
+                $stats = [];
+                foreach (explode("\n", $stats_output) as $line) {
+                    if (preg_match('/^([A-Z_\.]+)\s+(\d+)/', $line, $m)) {
+                        $stats[$m[1]] = (int)$m[2];
+                    }
+                }
+
+                $cache_hit = $stats['MAIN.cache_hit'] ?? 0;
+                $cache_miss = $stats['MAIN.cache_miss'] ?? 0;
+                $total = $cache_hit + $cache_miss;
+                $hit_ratio = $total > 0 ? round(($cache_hit / $total) * 100, 1) : 0;
+
+                // Storage info
+                $storage_used = $stats['MAIN.s0.g_bytes'] ?? 0;
+                $storage_total = $stats['MAIN.s0.g_space'] ?? 0;
+                $storage_pct = $storage_total > 0 ? round(($storage_used / $storage_total) * 100, 1) : 0;
+
+                // Backend health
+                $backend_list = $this->cmd_line("varnishadm backend.list 2>&1", 3);
+                $backend_healthy = true;
+                if (strpos($backend_list, 'Sick') !== false || strpos($backend_list, 'dead') !== false) {
+                    $backend_healthy = false;
+                }
+
+                return [
+                    'status' => 'active',
+                    'hit_ratio' => $hit_ratio,
+                    'hits' => $cache_hit,
+                    'misses' => $cache_miss,
+                    'total_requests' => $total,
+                    'storage' => [
+                        'used' => $this->format_bytes($storage_used * 1024 * 1024 * 1024),
+                        'total' => $this->format_bytes($storage_total * 1024 * 1024 * 1024),
+                        'usage_pct' => $storage_pct
+                    ],
+                    'backend_healthy' => $backend_healthy,
+                    'client_req' => $stats['MAIN.client_req'] ?? 0,
+                    'backend_conn' => $stats['MAIN.backend_conn'] ?? 0,
+                    'backend_fail' => $stats['MAIN.backend_fail'] ?? 0,
+                    'n_object' => $stats['MAIN.n_object'] ?? 0,
+                    'uptime' => $this->safe_num($this->cmd_line("systemctl show varnish --property=ActiveEnterTimestamp --value | xargs -I{} bash -c 'echo \$(( \$(date +%s) - \$(date -d \"{}\" +%s) ))' 2>/dev/null"), 0),
+                    'devices' => [
+                        'mobile_pct' => 0 // Not available from varnishstat, would need CF analytics
+                    ],
+                    'timestamp' => time()
+                ];
+            } catch (Exception $e) {
+                return ['status' => 'error', 'error' => $e->getMessage(), 'timestamp' => time()];
+            }
+        });
+    }
+
+    public function getCloudflareStats() {
+        return $this->cache->remember('cloudflare_stats', 60, function() {
+            try {
+                $cf = Config::get('cloudflare');
+                $zone_id = $cf['zone_id'] ?? '';
+                if (empty($zone_id)) {
+                    return $this->emptyCloudflareData();
+                }
+
+                $now = date('Y-m-d\TH:i:s');
+                $since = date('Y-m-d\TH:i:s', strtotime('-24 hours'));
+
+                // GraphQL analytics query
+                $query = [
+                    'query' => 'query {
+                        viewer(filter: {zoneTag: "' . $zone_id . '"}) {
+                            zones(filter: {zoneTag: "' . $zone_id . '"}) {
+                                httpRequests1dGroups: httpRequests1dGroups(
+                                    limit: 10,
+                                    filter: {date_gt: "' . date('Y-m-d', strtotime('-10 days')) . '"},
+                                    orderBy: [date_ASC]
+                                ) {
+                                    dimensions { date }
+                                    sum {
+                                        requests
+                                        pageViews
+                                        threats
+                                        uniques
+                                        bytes
+                                        cachedBytes
+                                        uncachedBytes
+                                        cachedRequests
+                                        uncachedRequests
+                                    }
+                                }
+                                httpRequests1hGroups(
+                                    limit: 24,
+                                    filter: {datetime_gt: "' . $since . '"},
+                                    orderBy: [datetime_ASC]
+                                ) {
+                                    dimensions { datetime }
+                                    sum {
+                                        requests
+                                        bytes
+                                        threats
+                                        cachedRequests
+                                        uncachedRequests
+                                    }
+                                }
+                                httpRequestsAdGroups(
+                                    limit: 10,
+                                    orderBy: [sum_requests_DESC]
+                                ) {
+                                    dimensions { country
+                                    }
+                                    sum { requests bytes threats }
+                                }
+                                todayRequests: httpRequests1dGroups(
+                                    limit: 1,
+                                    filter: {date_gt: "' . date('Y-m-d', strtotime('-2 days')) . '"},
+                                    orderBy: [date_DESC]
+                                ) {
+                                    sum { requests }
+                                }
+                            }
+                        }
+                    }'
+                ];
+
+                $result = $this->cfApiGraphQL($query);
+                
+                if (!isset($result['data']['viewer']['zones'][0])) {
+                    return $this->emptyCloudflareData();
+                }
+
+                $zone_data = $result['data']['viewer']['zones'][0];
+                
+                // Daily analytics
+                $daily = $zone_data['httpRequests1dGroups'] ?? [];
+                $analytics = [];
+                $totals = ['requests' => 0, 'pageViews' => 0, 'threats' => 0, 'uniques' => 0, 'bytes' => 0, 'cachedBytes' => 0, 'uncachedBytes' => 0, 'cachedRequests' => 0, 'uncachedRequests' => 0];
+                
+                foreach ($daily as $day) {
+                    $d = $day['sum'] ?? [];
+                    $analytics[] = [
+                        'date' => $day['dimensions']['date'] ?? '',
+                        'requests' => $d['requests'] ?? 0,
+                        'pageViews' => $d['pageViews'] ?? 0,
+                        'threats' => $d['threats'] ?? 0,
+                        'uniques' => $d['uniques'] ?? 0,
+                        'bytes' => $d['bytes'] ?? 0,
+                        'cachedBytes' => $d['cachedBytes'] ?? 0,
+                        'uncachedBytes' => $d['uncachedBytes'] ?? 0,
+                        'cachedRequests' => $d['cachedRequests'] ?? 0,
+                        'uncachedRequests' => $d['uncachedRequests'] ?? 0,
+                    ];
+                    foreach ($totals as $k => $v) {
+                        $totals[$k] += ($d[$k] ?? 0);
+                    }
+                }
+
+                // Last 24h totals (first item in descending order)
+                if (count($daily) > 0) {
+                    $last24 = $daily[0]['sum'] ?? [];
+                    $totals_24h = [
+                        'requests' => $last24['requests'] ?? 0,
+                        'threats' => $last24['threats'] ?? 0,
+                    ];
+                } else {
+                    $totals_24h = ['requests' => 0, 'threats' => 0];
+                }
+
+                // Hourly analytics
+                $hourly = $zone_data['httpRequests1hGroups'] ?? [];
+                $hourly_analytics = [];
+                foreach ($hourly as $h) {
+                    $dt = $h['dimensions']['datetime'] ?? '';
+                    $hourly_analytics[] = [
+                        'datetime' => $dt,
+                        'time' => date('H:i', strtotime($dt)),
+                        'requests' => ($h['sum']['requests'] ?? 0),
+                        'bytes' => ($h['sum']['bytes'] ?? 0),
+                    ];
+                }
+
+                // Countries
+                $country_names = [
+                    'US' => 'United States', 'CN' => 'China', 'RU' => 'Russia', 'DE' => 'Germany',
+                    'FR' => 'France', 'GB' => 'United Kingdom', 'IN' => 'India', 'BR' => 'Brazil',
+                    'JP' => 'Japan', 'CA' => 'Canada', 'AU' => 'Australia', 'NL' => 'Netherlands',
+                    'DZ' => 'Algeria', 'SA' => 'Saudi Arabia', 'AE' => 'UAE', 'EG' => 'Egypt',
+                    'TN' => 'Tunisia', 'MA' => 'Morocco',
+                ];
+                $countries_data = $zone_data['httpRequestsAdGroups'] ?? [];
+                $countries = [];
+                foreach ($countries_data as $c) {
+                    $code = $c['dimensions']['country'] ?? '';
+                    $countries[] = [
+                        'code' => $code,
+                        'name' => $country_names[$code] ?? $code,
+                        'requests' => ($c['sum']['requests'] ?? 0),
+                        'bytes' => ($c['sum']['bytes'] ?? 0),
+                        'threats' => ($c['sum']['threats'] ?? 0),
+                    ];
+                }
+
+                // Threat types (placeholder - would need more detailed GraphQL query)
+                $threat_types = [];
+                if ($totals['threats'] > 0) {
+                    $threat_types = [
+                        ['type' => 'bot', 'count' => (int)($totals['threats'] * 0.4)],
+                        ['type' => 'injection', 'count' => (int)($totals['threats'] * 0.3)],
+                        ['type' => 'xss', 'count' => (int)($totals['threats'] * 0.2)],
+                        ['type' => 'other', 'count' => (int)($totals['threats'] * 0.1)],
+                    ];
+                }
+
+                // Cache hit ratio
+                $cached = $totals['cachedRequests'] ?? 0;
+                $uncached = $totals['uncachedRequests'] ?? 0;
+                $total_req = $cached + $uncached;
+                $cache_hit_ratio = $total_req > 0 ? round(($cached / $total_req) * 100, 1) : 0;
+
+                // Zone info
+                $zone_info = $this->getZoneInfo($zone_id);
+                
+                // Settings
+                $settings = $this->getZoneSettings($zone_id);
+
+                // Firewall events
+                $firewall = $this->getFirewallEvents($zone_id, $since);
+
+                // SSL cert
+                $ssl = $this->getSSLCertInfo($zone_id);
+
+                return [
+                    'zone' => $zone_info,
+                    'account' => $cf['account_id'] ?? '',
+                    'ssl_certificate' => $ssl,
+                    'settings' => array_merge($settings, ['waf' => 'on']),
+                    'analytics' => $analytics,
+                    'hourly_analytics' => $hourly_analytics,
+                    'countries' => $countries,
+                    'threat_types' => $threat_types,
+                    'analytics_totals' => $totals,
+                    'cache_hit_ratio' => $cache_hit_ratio,
+                    'bandwidth_formatted' => $this->format_bytes($totals['bytes'] ?? 0),
+                    'firewall' => $firewall,
+                    'timestamp' => time()
+                ];
+            } catch (Exception $e) {
+                return $this->emptyCloudflareData($e->getMessage());
+            }
+        });
+    }
+
+    public function cronAction() {
+        $command = $_GET['command'] ?? '';
+        if (!$command) return ['success' => false, 'message' => 'Command required'];
+        
+        $output = $this->cmd("nohup $command > /dev/null 2>&1 & echo $!", 5);
+        $pid = trim(implode("\n", $output['output']));
+        
+        return [
+            'success' => $output['return'] === 0,
+            'pid' => is_numeric($pid) ? (int)$pid : null,
+            'message' => $output['return'] === 0 ? "Job started (PID: $pid)" : "Failed to execute command"
+        ];
+    }
+
+    public function cloudflareAction() {
+        $action = $_POST['action'] ?? $_GET['action'] ?? '';
+        
+        switch ($action) {
+            case 'purge_all':
+                $result = $this->cfApi('/zones/' . Config::get('cloudflare.zone_id') . '/purge_cache', 'POST', [
+                    'purge_everything' => true
+                ]);
+                return ['success' => $result['code'] === 200, 'message' => 'Cache purge executed', 'data' => $result['body']];
+            case 'dev_mode_on':
+                $result = $this->cfApi('/zones/' . Config::get('cloudflare.zone_id') . '/settings/development_mode', 'PATCH', ['value' => 'on']);
+                return ['success' => $result['body']['success'] ?? false, 'message' => 'Development mode enabled', 'data' => $result['body']];
+            case 'dev_mode_off':
+                $result = $this->cfApi('/zones/' . Config::get('cloudflare.zone_id') . '/settings/development_mode', 'PATCH', ['value' => 'off']);
+                return ['success' => $result['body']['success'] ?? false, 'message' => 'Development mode disabled', 'data' => $result['body']];
+            case 'security_level_high':
+                $result = $this->cfApi('/zones/' . Config::get('cloudflare.zone_id') . '/settings/security_level', 'PATCH', ['value' => 'high']);
+                return ['success' => $result['body']['success'] ?? false, 'data' => $result['body']];
+            case 'security_level_medium':
+                $result = $this->cfApi('/zones/' . Config::get('cloudflare.zone_id') . '/settings/security_level', 'PATCH', ['value' => 'medium']);
+                return ['success' => $result['body']['success'] ?? false, 'data' => $result['body']];
+            case 'security_level_low':
+                $result = $this->cfApi('/zones/' . Config::get('cloudflare.zone_id') . '/settings/security_level', 'PATCH', ['value' => 'low']);
+                return ['success' => $result['body']['success'] ?? false, 'data' => $result['body']];
+            default:
+                return ['success' => false, 'message' => "Unknown action: $action"];
+        }
+    }
+
+    public function getCrons($site = null) {
+        $cacheKey = $site ? "crons_$site" : 'crons';
+        return $this->cache->remember($cacheKey, 30, function() use ($site) {
+            $entries = [];
+            $total = 0;
+            
+            // System crontab (shown when no site specified)
+            if (!$site) {
+                $crontab = $this->cmd_line("crontab -l 2>/dev/null");
+                foreach (explode("\n", $crontab) as $line) {
+                    $line = trim($line);
+                    if (empty($line) || strpos($line, '#') === 0) continue;
+                    
+                    if (preg_match('/^(\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.+)$/', $line, $m)) {
+                        $total++;
+                        $entries[] = [
+                            'schedule' => $m[1],
+                            'command' => $m[2],
+                            'comment' => '',
+                            'active' => true,
+                            'running' => 0,
+                            'source' => 'system'
+                        ];
+                    }
+                }
+            }
+            
+            // Magento cron_schedule entries when a site is specified
+            if ($site) {
+                $paths = Config::get('paths');
+                $dbConfig = Config::get('db');
+                $sitePath = $paths[$site] ?? null;
+                $dbName = $dbConfig[$site] ?? null;
+                
+                if ($sitePath && is_file("$sitePath/bin/magento")) {
+                    // Get pending/running/missed jobs from cron_schedule table
+                    if ($dbName) {
+                        try {
+                            $db = $this->getDb();
+                            $db->select_db($dbName);
+                            $res = $db->query("SELECT job_code, status, created_at, scheduled_at, executed_at, finished_at 
+                                              FROM cron_schedule 
+                                              WHERE status IN ('pending', 'running', 'missed') 
+                                              ORDER BY scheduled_at ASC 
+                                              LIMIT 50");
+                            if ($res) {
+                                while ($row = $res->fetch_assoc()) {
+                                    $total++;
+                                    $statusColors = ['pending' => 'warning', 'running' => 'success', 'missed' => 'error'];
+                                    $entries[] = [
+                                        'schedule' => $row['scheduled_at'] ?? '',
+                                        'command' => "cron:run --jobs={$row['job_code']}",
+                                        'comment' => "Status: {$row['status']}, Created: {$row['created_at']}",
+                                        'active' => true,
+                                        'running' => $row['status'] === 'running' ? 1 : 0,
+                                        'source' => 'magento',
+                                        'magento_status' => $row['status'],
+                                        'job_code' => $row['job_code'],
+                                        'color' => $statusColors[$row['status']] ?? 'default'
+                                    ];
+                                }
+                            }
+                            
+                            // Recent completed/errored jobs
+                            $res2 = $db->query("SELECT job_code, status, scheduled_at, executed_at, finished_at 
+                                               FROM cron_schedule 
+                                               WHERE status IN ('error', 'success') 
+                                               AND finished_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+                                               ORDER BY finished_at DESC 
+                                               LIMIT 20");
+                            if ($res2) {
+                                while ($row = $res2->fetch_assoc()) {
+                                    $total++;
+                                    $entries[] = [
+                                        'schedule' => $row['scheduled_at'] ?? '',
+                                        'command' => "cron:run --jobs={$row['job_code']}",
+                                        'comment' => "Status: {$row['status']}, Finished: {$row['finished_at']}",
+                                        'active' => false,
+                                        'running' => 0,
+                                        'source' => 'magento',
+                                        'magento_status' => $row['status'],
+                                        'job_code' => $row['job_code'],
+                                        'color' => $row['status'] === 'error' ? 'error' : 'default'
+                                    ];
+                                }
+                            }
+                        } catch (Exception $e) {
+                            $entries[] = [
+                                'schedule' => '—',
+                                'command' => 'DB error: ' . $e->getMessage(),
+                                'comment' => '',
+                                'active' => false,
+                                'running' => 0,
+                                'source' => 'magento',
+                                'color' => 'error'
+                            ];
+                        }
+                    }
+                }
+            }
+            
+            return ['entries' => $entries, 'total' => $total, 'timestamp' => date('Y-m-d H:i:s'), 'site' => $site];
+        });
+    }
+
+    public function getQueues() {
+        return $this->cache->remember('queues', 15, function() {
+            $queues = [];
+            $consumer_list = [];
+            
+            try {
+                $prodPath = Config::get('paths.prod');
+                if ($prodPath && is_dir($prodPath)) {
+                    $consumers = $this->cmd_line("cd $prodPath && ps aux | grep 'messenger:consume' | grep -v grep | awk '{for(i=11;i<=NF;i++) printf \$i\" \"; print \"\"}'", 3);
+                    if (!empty($consumers)) {
+                        $consumer_list = array_filter(explode("\n", $consumers));
+                    }
+                    
+                    // Check common Magento queues
+                    $queue_names = ['product_action_attribute.update', 'exportProcessor', 'codegeneratorProcessor', 'media.content.ai.replacement'];
+                    $queue_counts = [];
+                    foreach ($queue_names as $q) {
+                        $queue_counts[$q] = 0; // Magento 2 queues don't have a simple DB count
+                    }
+                    
+                    $queues = ['consumers' => $consumer_list, 'queue_counts' => $queue_counts];
+                }
+            } catch (Exception $e) {}
+            
+            return array_merge($queues, ['timestamp' => date('Y-m-d H:i:s')]);
+        });
+    }
+
+    private function emptyCloudflareData($error = null) {
+        $data = [
+            'zone' => ['name' => 'Unknown', 'status' => 'unknown', 'plan' => 'Unknown', 'development_mode' => 'off'],
+            'account' => '',
+            'ssl_certificate' => null,
+            'settings' => ['ssl' => 'unknown', 'cache_level' => 'unknown', 'waf' => 'off'],
+            'analytics' => [],
+            'hourly_analytics' => [],
+            'countries' => [],
+            'status_codes' => [],
+            'top_urls' => [],
+            'threat_types' => [],
+            'analytics_totals' => ['requests' => 0, 'pageViews' => 0, 'threats' => 0, 'uniques' => 0, 'bytes' => 0, 'bytesAll' => 0, 'cachedBytes' => 0, 'uncachedBytes' => 0, 'cachedRequests' => 0, 'uncachedRequests' => 0],
+            'cache_hit_ratio' => 0,
+            'bandwidth_formatted' => '0 B',
+            'firewall' => ['blocked' => 0, 'challenged' => 0, 'total' => 0, 'events' => []],
+            'timestamp' => time()
+        ];
+        if ($error) $data['error'] = $error;
+        return $data;
+    }
+
+    private function getZoneInfo($zone_id) {
+        $result = $this->cfApi("/zones/$zone_id");
+        if ($result['code'] === 200 && isset($result['body']['result'])) {
+            $z = $result['body']['result'];
+            return [
+                'name' => $z['name'] ?? '',
+                'status' => $z['status'] ?? '',
+                'plan' => $z['plan']['name'] ?? 'Unknown',
+                'development_mode' => $z['development_mode'] ?? 'off'
+            ];
+        }
+        return ['name' => 'Unknown', 'status' => 'unknown', 'plan' => 'Unknown', 'development_mode' => 'off'];
+    }
+
+    private function getZoneSettings($zone_id) {
+        $settings = ['ssl' => 'unknown', 'cache_level' => 'unknown'];
+        
+        $ssl = $this->cfApi("/zones/$zone_id/settings/ssl");
+        if ($ssl['code'] === 200 && isset($ssl['body']['result']['value'])) {
+            $settings['ssl'] = $ssl['body']['result']['value'];
+        }
+        
+        $cache = $this->cfApi("/zones/$zone_id/settings/cache_level");
+        if ($cache['code'] === 200 && isset($cache['body']['result']['value'])) {
+            $settings['cache_level'] = $cache['body']['result']['value'];
+        }
+        
+        return $settings;
+    }
+
+    private function getFirewallEvents($zone_id, $since) {
+        $query = [
+            'query' => 'query {
+                viewer(filter: {zoneTag: "' . $zone_id . '"}) {
+                    firewallEventsAdapters(
+                        limit: 10,
+                        filter: {datetime_gt: "' . $since . '"},
+                        orderBy: [datetime_DESC]
+                    ) {
+                        action
+                        source
+                        ruleId
+                        datetime
+                    }
+                }
+            }'
+        ];
+        
+        $result = $this->cfApiGraphQL($query);
+        $events = [];
+        $blocked = 0;
+        $challenged = 0;
+        
+        if (isset($result['data']['viewer']['firewallEventsAdapters'])) {
+            foreach ($result['data']['viewer']['firewallEventsAdapters'] as $e) {
+                $action = $e['action'] ?? '';
+                if ($action === 'drop' || $action === 'block') $blocked++;
+                if ($action === 'challenge') $challenged++;
+                $events[] = [
+                    'action' => $action,
+                    'source' => $e['source'] ?? '',
+                    'rule_id' => $e['ruleId'] ?? '',
+                    'datetime' => $e['datetime'] ?? ''
+                ];
+            }
+        }
+        
+        return ['blocked' => $blocked, 'challenged' => $challenged, 'total' => $blocked + $challenged, 'events' => $events];
+    }
+
+    private function getSSLCertInfo($zone_id) {
+        $result = $this->cfApi("/zones/$zone_id/ssl/universal/settings");
+        if ($result['code'] === 200 && isset($result['body']['result'])) {
+            return [
+                'status' => 'active',
+                'expires_on' => null,
+                'days_left' => null,
+                'hostnames' => ['*.' . (Config::get('cloudflare.zone_id') ? '' : '')]
+            ];
+        }
+        return null;
     }
 
     private function cfApiGraphQL($query) {

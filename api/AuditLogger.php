@@ -16,6 +16,17 @@ class AuditLogger {
             $timestamp, $ip, $username, strtoupper($action), $target, $details);
             
         @file_put_contents(self::$logFile, $entry, FILE_APPEND);
+
+        // Also log via Monolog if available
+        if (class_exists('Logger')) {
+            Logger::audit()->info('Audit action', [
+                'action' => strtoupper($action),
+                'target' => $target,
+                'details' => $details,
+                'username' => $username,
+                'ip' => $ip,
+            ]);
+        }
     }
 
     public static function getEntries($limit = 100) {

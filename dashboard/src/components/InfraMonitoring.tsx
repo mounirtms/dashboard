@@ -100,7 +100,7 @@ const InfraMonitoring = () => {
       interval = setInterval(() => {
         fetchVarnishStats();
         fetchLogs();
-      }, 10000);
+      }, 30000);
     }
     
     return () => {

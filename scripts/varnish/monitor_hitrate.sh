@@ -217,7 +217,14 @@ echo ""
 if command -v varnishtop &> /dev/null; then
     echo "=== TOP CACHED OBJECTS (last 5 seconds) ==="
     echo ""
-    timeout 5 varnishtop -1 -i ReqURL | head -15 || echo "  No data available"
+    # Use subshell with explicit kill to prevent hanging varnishtop
+    (
+        varnishtop -1 -i ReqURL &
+        PID=$!
+        sleep 5
+        kill $PID 2>/dev/null
+        wait $PID 2>/dev/null
+    ) 2>/dev/null | head -15 || echo "  No data available"
     echo ""
 fi
 

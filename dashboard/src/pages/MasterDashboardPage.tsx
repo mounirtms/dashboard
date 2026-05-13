@@ -19,7 +19,7 @@ export default function MasterDashboardPage() {
 
   useEffect(() => {
     fetchMasterData();
-    const timer = setInterval(fetchMasterData, 15000);
+    const timer = setInterval(fetchMasterData, 30000);
     return () => clearInterval(timer);
   }, []);
 
@@ -59,7 +59,7 @@ export default function MasterDashboardPage() {
             value={`${data?.system?.mem_pct}%`} 
             icon={<Memory color="success" />} 
             progress={data?.system?.mem_pct}
-            footer="Free: 4.2 GB"
+            footer={data?.system?.mem_free ? `Free: ${data.system.mem_free}` : data?.system?.mem_total ? `Free: ${((data.system.mem_total * (100 - data.system.mem_pct) / 100) / 1024).toFixed(1)} GB` : 'Free: --'}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
@@ -99,8 +99,6 @@ export default function MasterDashboardPage() {
                     <Typography color="text.secondary">No critical infrastructure issues detected.</Typography>
                   </Box>
                 )}
-                <AlertItem title="Cloudflare: High threat volume detected from 'FR'" time="15m ago" type="warning" />
-                <AlertItem title="Magento: Cron 'catalog_event_status_checker' delay" time="1h ago" type="info" />
               </Box>
             </CardContent>
           </Card>

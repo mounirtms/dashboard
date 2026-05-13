@@ -75,7 +75,7 @@ echo -e "${YELLOW}[2/5] Checking Cloudflare Settings${NC}" | tee -a "$LOG_FILE"
 
 # Check Always Use HTTPS setting
 ALWAYS_HTTPS=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/4919ad3406fcabba381edbd543814a68/settings/always_use_https" \
-  -H "X-Auth-Email: amine.bo@techno-dz.com" \
+  -H "X-Auth-Email: webmaster@techno-dz.com" \
   -H "X-Auth-Key: 35d8fd4b1a5d27eabbce73c6753978fc350bc" \
   -H "Content-Type: application/json" | grep -o '"value":"[^"]*"' | cut -d'"' -f4)
 
@@ -91,7 +91,7 @@ echo "" | tee -a "$LOG_FILE"
 echo -e "${YELLOW}[3/5] Verifying Cloudflare SSL Mode${NC}" | tee -a "$LOG_FILE"
 
 CURRENT_SSL=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/4919ad3406fcabba381edbd543814a68/settings/ssl" \
-  -H "X-Auth-Email: amine.bo@techno-dz.com" \
+  -H "X-Auth-Email: webmaster@techno-dz.com" \
   -H "X-Auth-Key: 35d8fd4b1a5d27eabbce73c6753978fc350bc" \
   -H "Content-Type: application/json" | grep -o '"value":"[^"]*"' | cut -d'"' -f4)
 
@@ -101,7 +101,7 @@ if [ "$CURRENT_SSL" != "full" ]; then
     echo "Setting SSL mode to 'full'..." | tee -a "$LOG_FILE"
     
     curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/4919ad3406fcabba381edbd543814a68/settings/ssl" \
-      -H "X-Auth-Email: amine.bo@techno-dz.com" \
+      -H "X-Auth-Email: webmaster@techno-dz.com" \
       -H "X-Auth-Key: 35d8fd4b1a5d27eabbce73c6753978fc350bc" \
       -H "Content-Type: application/json" \
       --data '{"value":"full"}' | tee -a "$LOG_FILE"
@@ -115,7 +115,7 @@ echo "" | tee -a "$LOG_FILE"
 echo -e "${YELLOW}[4/5] Purging Cloudflare Cache${NC}" | tee -a "$LOG_FILE"
 
 curl -s -X POST "https://api.cloudflare.com/client/v4/zones/4919ad3406fcabba381edbd543814a68/purge_cache" \
-  -H "X-Auth-Email: amine.bo@techno-dz.com" \
+  -H "X-Auth-Email: webmaster@techno-dz.com" \
   -H "X-Auth-Key: 35d8fd4b1a5d27eabbce73c6753978fc350bc" \
   -H "Content-Type: application/json" \
   --data '{"purge_everything":true}' | tee -a "$LOG_FILE"

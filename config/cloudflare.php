@@ -13,7 +13,7 @@ return [
     'api_token' => getenv('CLOUDFLARE_API_TOKEN') ?: 'zflwN_9EYIx_UDQ6tcFQJt-4CJOjMxs5mnNncqVj',
     
     // Email and Global API Key (legacy - for full account access)
-    'email' => 'amine.bo@techno-dz.com',
+    'email' => 'webmaster@techno-dz.com',
     'api_key' => '35d8fd4b1a5d27eabbce73c6753978fc350bc',
     
     // Account Information

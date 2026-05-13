@@ -29,14 +29,16 @@ export async function fetchMagentoStock(env: string = 'prod', page: number = 1):
 }
 
 export async function fetchMagentoIndexers(env: string = 'prod'): Promise<any> {
-  const { data } = await apiClient.get(`/api/magento.php?action=indexer&env=${env}`);
-  return data;
+  const { data } = await apiClient.get(`/api/monitor.php?action=indexer&env=${env}`);
+  if (data.error) throw new Error(data.error);
+  return data.indexers || [];
 }
 
 export async function runMagentoIndexer(env: string = 'prod', indexerId: string): Promise<any> {
-  const { data } = await apiClient.post(`/api/magento.php?action=indexer&env=${env}`, {
+  const { data } = await apiClient.post(`/api/monitor.php?action=indexer_action&env=${env}&indexer=${indexerId}`, {
     indexer_id: indexerId,
     mode: 'reindex'
   });
+  if (data.error) throw new Error(data.error);
   return data;
 }

@@ -1,9 +1,9 @@
-import { Box, Typography, Grid, Card, CardContent, Button, Divider, Alert, CircularProgress, Paper, Chip, LinearProgress } from '@mui/material';
-import { Cached, CleaningServices, LocalFireDepartment, Hub, Bolt, History, Storage, Speed } from '@mui/icons-material';
+import { Box, Typography, Grid, Card, CardContent, Button, Divider, Alert, CircularProgress, Chip, LinearProgress } from '@mui/material';
+import { Cached, CleaningServices, LocalFireDepartment, Hub, Bolt, Storage, Speed, Memory } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { useSystemOverview } from '../hooks/useSystemData';
-import { formatBytes } from '../utils/formatters';
+import { fetchVarnishStats, fetchRedisStats } from '../api/system';
+import ConsoleOutput from '../components/common/ConsoleOutput';
 
 const SITES = [
   { key: 'prod', name: 'Production', url: 'technostationery.com' },
@@ -14,7 +14,18 @@ const SITES = [
 export default function CacheControlPage() {
   const [executing, setExecuting] = useState<string | null>(null);
   const [output, setOutput] = useState<string>('');
-  const { data: sysData } = useSystemOverview(15000);
+  const [varnishData, setVarnishData] = useState<any>(null);
+  const [redisData, setRedisData] = useState<any>(null);
+
+  useEffect(() => {
+    fetchVarnishStats().then(setVarnishData).catch(() => setVarnishData(null));
+    fetchRedisStats().then(setRedisData).catch(() => setRedisData(null));
+    const interval = setInterval(() => {
+      fetchVarnishStats().then(setVarnishData);
+      fetchRedisStats().then(setRedisData);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCacheOp = async (site: string, op: string) => {
     const actionKey = `${site}-${op}`;
@@ -35,8 +46,6 @@ export default function CacheControlPage() {
     }
   };
 
-  const varnish = sysData?.varnish || { hit_ratio: 0, storage_pct: 0 };
-
   return (
     <Box>
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -51,11 +60,19 @@ export default function CacheControlPage() {
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Card variant="outlined" sx={{ px: 2, py: 1, backgroundColor: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.2)' }}>
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700, display: 'block' }}>VARNISH HIT RATIO</Typography>
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>{varnish.hit_ratio}%</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>{varnishData?.hit_ratio?.toFixed(1) ?? 0}%</Typography>
           </Card>
           <Card variant="outlined" sx={{ px: 2, py: 1, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderColor: 'rgba(59, 130, 246, 0.2)' }}>
             <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700, display: 'block' }}>VARNISH STORAGE</Typography>
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>{varnish.storage_pct}%</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>{varnishData?.storage?.usage_pct?.toFixed(1) ?? 0}%</Typography>
+          </Card>
+          <Card variant="outlined" sx={{ px: 2, py: 1, backgroundColor: 'rgba(255, 152, 0, 0.05)', borderColor: 'rgba(255, 152, 0, 0.2)' }}>
+            <Typography variant="caption" sx={{ color: 'warning.main', fontWeight: 700, display: 'block' }}>REDIS HIT RATE</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>{redisData?.performance?.hit_rate?.toFixed(1) ?? 0}%</Typography>
+          </Card>
+          <Card variant="outlined" sx={{ px: 2, py: 1, backgroundColor: 'rgba(156, 39, 176, 0.05)', borderColor: 'rgba(156, 39, 176, 0.2)' }}>
+            <Typography variant="caption" sx={{ color: 'purple.main', fontWeight: 700, display: 'block' }}>REDIS MEMORY</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>{redisData?.memory?.used ?? '—'}</Typography>
           </Card>
         </Box>
       </Box>
@@ -113,24 +130,12 @@ export default function CacheControlPage() {
       </Grid>
 
       {output && (
-        <Paper sx={{ p: 2, background: '#000', border: '1px solid #334155', borderRadius: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography sx={{ color: 'success.main', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <History sx={{ fontSize: 16 }} /> OPERATION LOG
-            </Typography>
-            <Button size="small" onClick={() => setOutput('')} sx={{ color: 'text.disabled', fontSize: '0.65rem' }}>Clear Console</Button>
-          </Box>
-          <Typography component="pre" sx={{ 
-            color: '#fff', 
-            fontFamily: 'monospace', 
-            fontSize: '0.75rem', 
-            whiteSpace: 'pre-wrap',
-            maxHeight: 300,
-            overflowY: 'auto'
-          }}>
-            {output}
-          </Typography>
-        </Paper>
+        <ConsoleOutput
+          text={output}
+          onClear={() => setOutput('')}
+          title="OPERATION LOG"
+          autoScroll
+        />
       )}
     </Box>
   );

@@ -1,16 +1,87 @@
-import { Box, Typography, Card, CardContent, Select, MenuItem, FormControl, InputLabel, Button, IconButton, Paper, Tooltip, TextField } from '@mui/material';
-import { Assignment, Refresh, FileDownload, ClearAll, Search, SettingsEthernet } from '@mui/icons-material';
-import { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Card, CardContent, Select, MenuItem, FormControl, InputLabel, Button, IconButton, Tooltip, TextField, Snackbar, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Paper } from '@mui/material';
+import { Assignment, Refresh, FileDownload, ClearAll, Search, ArrowDownward } from '@mui/icons-material';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
+import ConsoleOutput from '../components/common/ConsoleOutput';
+
+// Parse log level from a line and return color
+function getLogLevelColor(line: string): string {
+  const upper = line.toUpperCase();
+  if (/(ERROR|CRITICAL|FATAL|EMERG|ALERT|EXCEPTION|FAIL|DENIED)/.test(upper)) return '#f87171';
+  if (/(WARN|WARNING)/.test(upper)) return '#fbbf24';
+  if (/(INFO|NOTICE)/.test(upper)) return '#60a5fa';
+  if (/(DEBUG|TRACE)/.test(upper)) return '#94a3b8';
+  if (/(SUCCESS|OK|COMPLETE)/.test(upper)) return '#4ade80';
+  return '#d1d5db';
+}
+
+const LEVEL_COLORS: Record<string, string> = {
+  DEBUG: '#94a3b8', INFO: '#60a5fa', NOTICE: '#60a5fa',
+  WARNING: '#fbbf24', ERROR: '#f87171', CRITICAL: '#f87171',
+  ALERT: '#f87171', EMERGENCY: '#f87171',
+};
+
+function StructuredLogTable({ entries }: { entries: any[] }) {
+  return (
+    <TableContainer component={Paper} sx={{ bgcolor: 'transparent' }}>
+      <Table stickyHeader size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.75rem' }}>Time</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.75rem' }}>Level</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.75rem' }}>Channel</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.75rem' }}>Message</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.75rem' }}>Correlation ID</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {entries.map((entry, i) => (
+            <TableRow key={i} sx={{ '&:last-child td': { borderBottom: 0 } }}>
+              <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem', py: 0.5 }}>
+                {entry.timestamp?.slice(0, 19)}
+              </TableCell>
+              <TableCell sx={{ py: 0.5 }}>
+                <Chip
+                  label={entry.level}
+                  size="small"
+                  sx={{
+                    bgcolor: LEVEL_COLORS[entry.level] || '#d1d5db',
+                    color: '#000',
+                    fontWeight: 600,
+                    fontSize: '0.65rem',
+                    height: 20,
+                  }}
+                />
+              </TableCell>
+              <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem', py: 0.5 }}>
+                {entry.channel}
+              </TableCell>
+              <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem', py: 0.5, maxWidth: 400 }}>
+                {entry.message}
+              </TableCell>
+              <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.7rem', color: 'text.disabled', py: 0.5 }}>
+                {entry.correlation_id?.slice(0, 8)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
 
 export default function LogViewerPage() {
-  const [site, setSite] = useState('');
+  const [site, setSite] = useState('prod');
   const [type, setType] = useState('system');
   const [lines, setLines] = useState(100);
   const [logData, setLogData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [logDate, setLogDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [channelFilter, setChannelFilter] = useState('');
+  const [levelFilter, setLevelFilter] = useState('');
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
   const logEndRef = useRef<HTMLDivElement>(null);
 
   const SITES = [
@@ -21,28 +92,52 @@ export default function LogViewerPage() {
     { key: 'pim', name: 'PIM Akeneo' },
   ];
 
-  const fetchLogs = () => {
+  const fetchLogs = useCallback(() => {
     setLoading(true);
-    apiClient.get(`/api/monitor.php?action=logs&type=${type}&lines=${lines}&site=${site}`)
+    const params = new URLSearchParams({
+      action: 'logs',
+      type,
+      lines: lines.toString(),
+    });
+    if (site) params.set('site', site);
+    if (type === 'app') params.set('date', logDate);
+    
+    apiClient.get(`/api/monitor.php?${params.toString()}`)
       .then(({ data }) => setLogData(data))
-      .catch((e) => console.error(e))
+      .catch((e) => {
+        console.error(e);
+        setSnackbar({ open: true, message: 'Failed to fetch logs', severity: 'error' });
+      })
       .finally(() => setLoading(false));
-  };
+  }, [type, site, lines, logDate]);
 
   useEffect(() => {
     fetchLogs();
-  }, [type, site]);
+  }, [fetchLogs]);
 
   useEffect(() => {
     let timer: any;
     if (autoRefresh) {
-      timer = setInterval(fetchLogs, 5000);
+      timer = setInterval(fetchLogs, 2000);
     }
     return () => clearInterval(timer);
-  }, [autoRefresh, type, lines]);
+  }, [autoRefresh, fetchLogs]);
 
   const scrollToBottom = () => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleDownload = () => {
+    if (!logData?.lines?.length) return;
+    const content = logData.lines.join('\n');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${type}_log_${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setSnackbar({ open: true, message: 'Log file downloaded', severity: 'success' });
   };
 
   return (
@@ -85,6 +180,7 @@ export default function LogViewerPage() {
                   <MenuItem value="mariadb">MariaDB Error Log</MenuItem>
                   <MenuItem value="cron">System Cron</MenuItem>
                   <MenuItem value="auth">Auth / Security</MenuItem>
+                  <MenuItem value="app">Application (JSON)</MenuItem>
                 </>
               )}
             </Select>
@@ -98,6 +194,42 @@ export default function LogViewerPage() {
             onChange={(e) => setLines(parseInt(e.target.value))}
             sx={{ width: 80 }}
           />
+
+          {type === 'app' && (
+            <>
+              <TextField
+                size="small"
+                label="Date"
+                type="date"
+                value={logDate}
+                onChange={(e) => setLogDate(e.target.value)}
+                sx={{ width: 150 }}
+              />
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Channel</InputLabel>
+                <Select value={channelFilter} label="Channel" onChange={(e) => setChannelFilter(e.target.value)}>
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="api">API</MenuItem>
+                  <MenuItem value="audit">Audit</MenuItem>
+                  <MenuItem value="auth">Auth</MenuItem>
+                  <MenuItem value="database">Database</MenuItem>
+                  <MenuItem value="telegram">Telegram</MenuItem>
+                  <MenuItem value="app">App</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ minWidth: 100 }}>
+                <InputLabel>Level</InputLabel>
+                <Select value={levelFilter} label="Level" onChange={(e) => setLevelFilter(e.target.value)}>
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="DEBUG">Debug</MenuItem>
+                  <MenuItem value="INFO">Info</MenuItem>
+                  <MenuItem value="WARNING">Warning</MenuItem>
+                  <MenuItem value="ERROR">Error</MenuItem>
+                  <MenuItem value="CRITICAL">Critical</MenuItem>
+                </Select>
+              </FormControl>
+            </>
+          )}
 
           <Button variant="outlined" startIcon={<Refresh />} onClick={fetchLogs} disabled={loading}>
             Refresh
@@ -113,52 +245,48 @@ export default function LogViewerPage() {
         </Box>
       </Box>
 
-      <Paper sx={{ 
-        flexGrow: 1, 
-        backgroundColor: '#000', 
-        color: '#fff', 
-        p: 2, 
-        fontFamily: 'monospace', 
-        fontSize: '0.75rem',
-        overflow: 'auto',
-        border: '1px solid #334155',
-        borderRadius: 2,
-        position: 'relative'
-      }}>
-        {loading && !logData && <LoadingState message="Connecting to log stream..." />}
-        
-        {logData?.lines ? (
-          <Box>
-            {logData.lines.map((line: string, i: number) => (
-              <Box key={i} sx={{ 
-                py: 0.1, 
-                borderBottom: '1px solid rgba(255,255,255,0.02)',
-                color: line.includes('error') || line.includes('ERROR') ? '#f87171' : 
-                       line.includes('warn') || line.includes('WARN') ? '#fbbf24' : '#d1d5db'
-              }}>
-                {line}
-              </Box>
-            ))}
-            <div ref={logEndRef} />
+      <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+        {logData?.structured ? (
+          <Box sx={{ height: '100%', overflow: 'auto' }}>
+            <StructuredLogTable
+              entries={(logData.lines || []).filter((entry: any) => {
+                if (channelFilter && entry.channel !== channelFilter) return false;
+                if (levelFilter && entry.level !== levelFilter) return false;
+                return true;
+              })}
+            />
           </Box>
         ) : (
-          !loading && <Typography sx={{ color: 'text.disabled', textAlign: 'center', mt: 4 }}>No log data found or file unreachable.</Typography>
+          <ConsoleOutput
+            lines={logData?.lines || []}
+            autoScroll={autoRefresh}
+            showHeader={false}
+          />
         )}
-      </Paper>
+      </Box>
 
       <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="caption" sx={{ color: 'text.disabled' }}>
           Path: {logData?.path || 'N/A'}
+          {logData?.lines && ` • ${logData.lines.length} lines`}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <IconButton size="small" onClick={scrollToBottom} sx={{ color: 'text.secondary' }}>
-            <Tooltip title="Scroll to Bottom"><SettingsEthernet sx={{ transform: 'rotate(90deg)' }} /></Tooltip>
+            <Tooltip title="Scroll to Bottom"><ArrowDownward sx={{ fontSize: 18 }} /></Tooltip>
           </IconButton>
-          <IconButton size="small" sx={{ color: 'text.secondary' }}>
+          <IconButton size="small" onClick={handleDownload} sx={{ color: 'text.secondary' }}>
             <Tooltip title="Download Log"><FileDownload /></Tooltip>
           </IconButton>
         </Box>
       </Box>
+
+      <div ref={logEndRef} />
+
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+        <Alert onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -16,7 +16,7 @@ class AiApi extends BaseApi {
         $this->ai = new CloudflareAi([
             'account_id' => $cf['account_id'],
             'api_token'  => $cf['api_token'],
-            'model'      => '@cf/meta/llama-3-8b-instruct'
+            'model'      => '@cf/meta/llama-3.1-8b-instruct'
         ]);
     }
 
@@ -54,10 +54,11 @@ class AiApi extends BaseApi {
 
         $text = "🤖 *AI INSIGHT REPORT*\n\n" . $report['response'];
 
-        // Send via Telegram
+        // Send via Telegram - pass full config structure
         require_once __DIR__ . '/telegram/BotHandler.php';
-        $telegramConfig = Config::get('telegram');
-        $bot = new BotHandler(['alerts' => $telegramConfig], 'server');
+        require_once __DIR__ . '/telegram/config.php';
+        $telegramConfig = include __DIR__ . '/telegram/config.php';
+        $bot = new BotHandler($telegramConfig, 'server');
         
         $result = $bot->sendAlert('ai_report', 'general', $text);
         

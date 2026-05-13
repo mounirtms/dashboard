@@ -12,7 +12,7 @@
 
 define('TELEGRAM_BOT_TOKEN', '8534022192:AAEUTgGuYGH31FvaY9nuw-Onj3d9P2k4EAY');
 define('TELEGRAM_CHAT_ID', '6972138184');
-define('TELEGRAM_ENABLED', false); // DISABLED - No alerts will be sent
+define('TELEGRAM_ENABLED', true); // Enabled - alerts will be sent
 define('TELEGRAM_ALERT_LEVEL', 'critical'); // critical | warning | all
 
 // Alert frequency control - only send if threshold exceeded

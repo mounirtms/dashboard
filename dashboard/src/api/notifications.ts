@@ -37,14 +37,59 @@ export interface PushStats {
   subscribers: number;
   last_sent?: string;
   env_status: Record<string, string>;
+  segments?: Segment[];
+  current_env?: string;
 }
 
-export async function fetchPushStats(): Promise<PushStats> {
-  const { data } = await apiClient.get('/api/webpushr.php?action=stats');
+export interface Segment {
+  id: string;
+  title: string;
+  subscribers: number;
+  type: string;
+  created?: string;
+}
+
+export async function fetchPushStats(env?: string): Promise<PushStats> {
+  const url = env ? `/api/webpushr.php?action=stats&env=${env}` : '/api/webpushr.php?action=stats';
+  const { data } = await apiClient.get(url);
+  return {
+    subscribers: data.subscribers ?? 0,
+    last_sent: data.last_sent,
+    env_status: data.env_status ?? { 'Production': 'OK', 'Beta': 'OK', 'Development': 'OK' },
+    segments: data.segments ?? [],
+    current_env: data.current_env,
+  };
+}
+
+export async function fetchSegments(env: string = 'dev'): Promise<Segment[]> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=segments&env=${env}`);
+  return data.segments ?? [];
+}
+
+export async function syncSubscribers(): Promise<any> {
+  const { data } = await apiClient.post('/api/webpushr.php?action=sync_subscribers');
   return data;
 }
 
-export async function sendPushNotification(payload: any): Promise<any> {
-  const { data } = await apiClient.post('/api/webpushr.php?action=send', payload);
+export async function sendPushNotification(payload: { 
+  title: string; 
+  message: string; 
+  url?: string; 
+  env?: string; 
+  segment_id?: string;
+  scheduled_at?: string;
+}): Promise<any> {
+  const body: Record<string, string> = {
+    title: payload.title,
+    message: payload.message,
+  };
+  if (payload.url) body.target_url = payload.url;
+  if (payload.env) body.env = payload.env;
+  if (payload.segment_id) body.segment_id = payload.segment_id;
+  if (payload.scheduled_at) body.scheduled_time = payload.scheduled_at;
+  
+  const { data } = await apiClient.post('/api/webpushr.php?action=send', body, {
+    headers: { 'Content-Type': 'application/json' },
+  });
   return data;
 }

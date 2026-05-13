@@ -38,6 +38,19 @@ export default function SitesPage() {
     }
   };
 
+  const handleSuspendResume = async (site: string, op: 'suspend' | 'resume') => {
+    setExecuting(`${site}-${op}`);
+    try {
+      const res = await performSiteAction(site, op);
+      setNotify({ open: true, message: res.message, severity: res.success ? 'success' : 'error' });
+      if (res.success) loadData();
+    } catch (e: any) {
+      setNotify({ open: true, message: e.message, severity: 'error' });
+    } finally {
+      setExecuting(null);
+    }
+  };
+
   const columns: GridColDef[] = [
     { 
       field: 'name', 
@@ -60,10 +73,14 @@ export default function SitesPage() {
       headerName: 'Status', 
       width: 100,
       renderCell: (params: GridRenderCellParams) => (
-        <StatusBadge 
-          label={params.value ? 'ACTIVE' : 'MISSING'} 
-          color={params.value ? 'success' : 'error'} 
-        />
+        params.row.is_suspended ? (
+          <StatusBadge label="SUSPENDED" color="warning" />
+        ) : (
+          <StatusBadge 
+            label={params.value ? 'ACTIVE' : 'MISSING'} 
+            color={params.value ? 'success' : 'error'} 
+          />
+        )
       )
     },
     { 
@@ -123,6 +140,31 @@ export default function SitesPage() {
                 {executing?.startsWith(params.row.key) ? <CircularProgress size={16} color="inherit" /> : <PowerSettingsNew sx={{ fontSize: 18 }} />}
               </IconButton>
             </Tooltip>
+          )}
+          {!['prod'].includes(params.row.key) && params.row.exists && (
+            params.row.is_suspended ? (
+              <Tooltip title="Resume Site">
+                <IconButton
+                  size="small"
+                  color="success"
+                  onClick={() => handleSuspendResume(params.row.key, 'resume')}
+                  disabled={!!executing}
+                >
+                  {executing?.startsWith(params.row.key) ? <CircularProgress size={16} color="inherit" /> : <VisibilityOff sx={{ fontSize: 18 }} />}
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Suspend Site">
+                <IconButton
+                  size="small"
+                  color="warning"
+                  onClick={() => handleSuspendResume(params.row.key, 'suspend')}
+                  disabled={!!executing}
+                >
+                  {executing?.startsWith(params.row.key) ? <CircularProgress size={16} color="inherit" /> : <VisibilityOff sx={{ fontSize: 18 }} />}
+                </IconButton>
+              </Tooltip>
+            )
           )}
           <Tooltip title="View Logs">
             <IconButton size="small" href={`/#/logs?site=${params.row.key}`}><Storage sx={{ fontSize: 16 }} /></IconButton>

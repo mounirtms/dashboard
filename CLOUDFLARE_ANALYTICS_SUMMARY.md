@@ -143,7 +143,7 @@ Status: ✅ HEALTHY
 **Credentials Configured:**
 ```php
 'api_token' => 'zflwN_9EYIx_UDQ6tcFQJt-4CJOjMxs5mnNncqVj',
-'email' => 'amine.bo@techno-dz.com',
+'email' => 'webmaster@techno-dz.com',
 'api_key' => '35d8fd4b1a5d27eabbce73c6753978fc350bc',
 'account_id' => 'cb89f9d4bfa5ff6fe2c8528847dbc5fe',
 'zone_id' => '4919ad3406fcabba381edbd543814a68', // Primary zone
@@ -358,7 +358,7 @@ Set up cron jobs:
 
 **Primary Zone:** technostationery.com (4919ad3406fcabba381edbd543814a68)  
 **Account ID:** cb89f9d4bfa5ff6fe2c8528847dbc5fe  
-**Email:** amine.bo@techno-dz.com  
+**Email:** webmaster@techno-dz.com  
 
 **API Endpoints:**
 - Analytics: `/api/cloudflare/analytics.php`

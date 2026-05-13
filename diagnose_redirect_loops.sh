@@ -31,7 +31,7 @@ echo ""
 echo "4. Testing Cloudflare SSL Mode (via API):"
 echo "------------------------------------------"
 curl -s -X GET "https://api.cloudflare.com/client/v4/zones/4919ad3406fcabba381edbd543814a68/settings/ssl" \
-  -H "X-Auth-Email: amine.bo@techno-dz.com" \
+  -H "X-Auth-Email: webmaster@techno-dz.com" \
   -H "X-Auth-Key: 35d8fd4b1a5d27eabbce73c6753978fc350bc" \
   -H "Content-Type: application/json" | python3 -m json.tool 2>/dev/null || echo "API call failed"
 

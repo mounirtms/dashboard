@@ -176,7 +176,7 @@ echo 'Requests: ' . number_format(\$data['analytics_totals']['requests']) . '\n'
 "
 
 # Verify GraphQL API
-curl -H "X-Auth-Email: amine.bo@techno-dz.com" \
+curl -H "X-Auth-Email: webmaster@techno-dz.com" \
      -H "X-Auth-Key: 35d8fd4b1a5d27eabbce73c6753978fc350bc" \
      -H "Content-Type: application/json" \
      -X POST \
@@ -199,7 +199,7 @@ curl -H "X-Auth-Email: amine.bo@techno-dz.com" \
 
 ```php
 'api_key' => '35d8fd4b1a5d27eabbce73c6753978fc350bc',
-'email' => 'amine.bo@techno-dz.com',
+'email' => 'webmaster@techno-dz.com',
 'api_token' => 'zflwN_9EYIx_UDQ6tcFQJt-4CJOjMxs5mnNncqVj',
 'zone_id' => '4919ad3406fcabba381edbd543814a68',
 'account_id' => 'cb89f9d4bfa5ff6fe2c8528847dbc5fe',

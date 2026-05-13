@@ -22,12 +22,27 @@ export default function SalesOverviewPage() {
         setStatus(statusData);
         setOrders(ordersData.items || []);
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => {
+        // If 401, it means token not configured - not a critical error
+        if (e.message.includes('401') || e.message.includes('token not configured')) {
+          setStatus({ authenticated: false, message: 'API token not configured' });
+          setOrders([]);
+        } else {
+          setError(e.message);
+        }
+      })
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LoadingState message="Loading Magento sales data..." />;
   if (error) return <LoadingState message={`Error: ${error}`} />;
+
+  // Derive stats from orders data
+  const today = new Date().toDateString();
+  const todayOrders = orders.filter((o) => new Date(o.created_at).toDateString() === today);
+  const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.base_grand_total) || 0), 0);
+  const uniqueCustomers = new Set(orders.filter(o => o.customer_email).map(o => o.customer_email)).size;
+  const returnedOrders = orders.filter((o) => o.status === 'canceled' || o.status === 'closed').length;
 
   return (
     <Box>
@@ -48,16 +63,16 @@ export default function SalesOverviewPage() {
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Today's Orders" value={orders.length > 0 ? "12" : "0"} color="primary" icon={<ShoppingCart />} />
+          <StatCard label="Today's Orders" value={todayOrders.length} color="primary" icon={<ShoppingCart />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Daily Revenue" value="€1,240.50" color="success" icon={<TrendingUp />} />
+          <StatCard label="Daily Revenue" value={`${orders[0]?.order_currency_code || 'DZD'} ${totalRevenue.toFixed(2)}`} color="success" icon={<TrendingUp />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Active Customers" value="84" color="info" icon={<Group />} />
+          <StatCard label="Active Customers" value={uniqueCustomers || orders.length} color="info" icon={<Group />} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard label="Returns" value="1" color="warning" icon={<AssignmentReturn />} />
+          <StatCard label="Returns" value={returnedOrders} color="warning" icon={<AssignmentReturn />} />
         </Grid>
       </Grid>
 

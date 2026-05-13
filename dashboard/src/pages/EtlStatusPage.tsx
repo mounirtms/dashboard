@@ -113,25 +113,29 @@ export default function EtlStatusPage() {
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
             <History /> Recent Sync Activity
           </Typography>
-          <Box sx={{ display: 'grid', gap: 1 }}>
-            {[
-              { label: 'Inventory Sync', status: 'success', time: '10 mins ago' },
-              { label: 'Price Sync', status: 'success', time: '1 hour ago' },
-              { label: 'Stock Levels', status: 'warning', time: '2 hours ago', msg: '3 items skipped' },
-              { label: 'Product Attributes', status: 'success', time: 'Yesterday' },
-            ].map((item, idx) => (
-              <Box key={idx} sx={{ p: 1.5, borderRadius: 1, border: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  {item.status === 'success' ? <CheckCircle sx={{ color: 'success.main', fontSize: 18 }} /> : <Warning sx={{ color: 'warning.main', fontSize: 18 }} />}
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{item.label}</Typography>
-                    {item.msg && <Typography variant="caption" sx={{ color: 'text.disabled' }}>{item.msg}</Typography>}
+          {data?.sync_history && data.sync_history.length > 0 ? (
+            <Box sx={{ display: 'grid', gap: 1 }}>
+              {data.sync_history.map((item: any, idx: number) => (
+                <Box key={idx} sx={{ p: 1.5, borderRadius: 1, border: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    {item.success ? <CheckCircle sx={{ color: 'success.main', fontSize: 18 }} /> : <Warning sx={{ color: 'warning.main', fontSize: 18 }} />}
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>{item.label}</Typography>
+                      {item.message && <Typography variant="caption" sx={{ color: 'text.disabled' }}>{item.message}</Typography>}
+                    </Box>
                   </Box>
+                  <Typography variant="caption" sx={{ color: 'text.disabled' }}>{item.time}</Typography>
                 </Box>
-                <Typography variant="caption" sx={{ color: 'text.disabled' }}>{item.time}</Typography>
-              </Box>
-            ))}
-          </Box>
+              ))}
+            </Box>
+          ) : (
+            <Box sx={{ py: 6, textAlign: 'center' }}>
+              <Sync sx={{ fontSize: 40, color: 'text.disabled', mb: 1, opacity: 0.5 }} />
+              <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                Sync history will appear here after the first synchronization runs.
+              </Typography>
+            </Box>
+          )}
         </CardContent>
       </Card>
     </Box>
