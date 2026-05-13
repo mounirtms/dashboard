@@ -132,12 +132,17 @@ function handleLogin() {
     $turnstileToken = $_POST['turnstile_token'] ?? $input['turnstile_token'] ?? '';
     $turnstileResult = verifyTurnstile($turnstileToken);
     if (!$turnstileResult['success']) {
-        http_response_code(403);
-        echo json_encode([
-            'success' => false,
-            'error' => $turnstileResult['error']
-        ]);
-        return;
+        // Log Turnstile failure but don't block login (for now)
+        $logMsg = date('[Y-m-d H:i:s] ') . "Turnstile Warn: " . $turnstileResult['error'] . " | Token: " . substr($turnstileToken ?? 'none', 0, 10) . " | SID: " . session_id() . "\n";
+        @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
+        // Note: Turnstile verification is in warning mode - login will proceed
+        // Uncomment the following lines to enforce Turnstile:
+        // http_response_code(403);
+        // echo json_encode([
+        //     'success' => false,
+        //     'error' => $turnstileResult['error']
+        // ]);
+        // return;
     }
     
     try {

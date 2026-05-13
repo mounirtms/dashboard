@@ -132,25 +132,37 @@ export default function LoginPage() {
     } catch (err: any) {
       // On 403 (CSRF mismatch), fetch new token and retry once
       if (err.response?.status === 403 && !retried) {
-        retried = true;
-        try {
-          const { data } = await apiClient.get('/api/auth.php?action=csrf_token');
-          if (data.success) {
-            setCsrfToken(data.csrf_token);
-            // Retry login with fresh token
-            await login({
-              username,
-              password,
-              csrf_token: data.csrf_token,
-              remember_me: rememberMe,
-              turnstile_token: turnstileToken,
-            });
-            localStorage.removeItem('dashboard_username');
-            navigate('/');
+        const errorData = err.response?.data;
+        const isCsrfError = errorData?.error?.includes('CSRF') || errorData?.reason;
+        
+        // Only retry for CSRF errors, not Turnstile errors
+        if (isCsrfError) {
+          retried = true;
+          try {
+            const { data } = await apiClient.get('/api/auth.php?action=csrf_token');
+            if (data.success) {
+              setCsrfToken(data.csrf_token);
+              // Retry login with fresh token
+              await login({
+                username,
+                password,
+                csrf_token: data.csrf_token,
+                remember_me: rememberMe,
+                turnstile_token: turnstileToken,
+              });
+              localStorage.removeItem('dashboard_username');
+              navigate('/');
+              return;
+            }
+          } catch (retryErr: any) {
+            setError('Session expired. Please try logging in again.');
+            fetchCsrf();
+            setLoading(false);
             return;
           }
-        } catch (retryErr: any) {
-          setError('Session expired. Please try logging in again.');
+        } else {
+          // Turnstile or other error - show the actual error
+          setError(errorData?.error || err.message || 'Login failed. Please check your credentials.');
           fetchCsrf();
           setLoading(false);
           return;
