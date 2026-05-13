@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, Grid, useTheme } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, useTheme, Alert } from '@mui/material';
 import {
   LineChart,
   Line,
@@ -21,7 +21,7 @@ export default function TrafficPage() {
   const { data, loading, error } = useCloudflareData();
 
   if (loading) return <LoadingState />;
-  if (error) return <LoadingState message={`Error: ${error}`} />;
+  if (error) return <Alert severity="error" sx={{ mb: 2 }}>Error loading traffic data: {error}</Alert>;
   if (!data) return null;
 
   const dailyData = (data.analytics || []).map((d) => ({

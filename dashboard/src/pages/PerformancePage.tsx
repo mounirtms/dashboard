@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, Grid, LinearProgress, useTheme } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, LinearProgress, useTheme, Alert } from '@mui/material';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
@@ -9,7 +9,7 @@ export default function PerformancePage() {
   const { data, loading, error } = useCloudflareData();
 
   if (loading) return <LoadingState />;
-  if (error) return <LoadingState message={`Error: ${error}`} />;
+  if (error) return <Alert severity="error" sx={{ mb: 2 }}>Error loading performance data: {error}</Alert>;
   if (!data) return null;
 
   const ratio = data.cache_hit_ratio;

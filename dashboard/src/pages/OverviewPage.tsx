@@ -1,5 +1,5 @@
-import { Grid, Box, Typography, Card, CardContent, Chip, Divider, useTheme } from '@mui/material';
-import { CloudOutlined, CheckCircle, Warning, Schedule, Shield, Cached, Http, Public, GppMaybe } from '@mui/icons-material';
+import { Grid, Box, Typography, Card, CardContent, Chip, Divider, useTheme, Alert } from '@mui/material';
+import { CloudOutlined, Shield, Cached, Http, Public, GppMaybe } from '@mui/icons-material';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
@@ -11,7 +11,7 @@ export default function OverviewPage() {
   const theme = useTheme();
 
   if (loading && !data) return <LoadingState message="Connecting to Cloudflare Edge..." />;
-  if (error) return <LoadingState message={`Cloudflare Error: ${error}`} />;
+  if (error) return <Alert severity="error" sx={{ mb: 2 }}>Cloudflare Error: {error}</Alert>;
   if (!data) return null;
 
   return (

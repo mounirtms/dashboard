@@ -191,7 +191,12 @@ export default function LogViewerPage() {
             label="Lines" 
             type="number" 
             value={lines} 
-            onChange={(e) => setLines(parseInt(e.target.value))}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              if (!isNaN(val) && val > 0 && val <= 10000) {
+                setLines(val);
+              }
+            }}
             sx={{ width: 80 }}
           />
 

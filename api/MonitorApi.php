@@ -168,7 +168,8 @@ class MonitorApi extends BaseApi {
                     try {
                         $db = $this->getDb();
                         $db->select_db($db_name);
-                        $r = $db->query("SELECT ROUND(SUM(data_length+index_length)/1024/1024,2) as mb FROM information_schema.TABLES WHERE table_schema='$db_name'");
+                        $db_name_escaped = $db->real_escape_string($db_name);
+                        $r = $db->query("SELECT ROUND(SUM(data_length+index_length)/1024/1024,2) as mb FROM information_schema.TABLES WHERE table_schema='$db_name_escaped'");
                         if($r) {
                             $row = $r->fetch_assoc();
                             $db_size = ($row['mb']??0) . ' MB';
@@ -919,6 +920,12 @@ class MonitorApi extends BaseApi {
 
                 $now = date('Y-m-d\TH:i:s');
                 $since = date('Y-m-d\TH:i:s', strtotime('-24 hours'));
+                
+                // Sanitize zone_id to prevent injection (must be alphanumeric + underscores)
+                $zone_id = preg_replace('/[^a-zA-Z0-9_]/', '', $zone_id);
+                if (empty($zone_id)) {
+                    throw new Exception('Invalid zone ID');
+                }
 
                 // GraphQL analytics query
                 $query = [
@@ -1375,11 +1382,13 @@ class MonitorApi extends BaseApi {
     private function getSSLCertInfo($zone_id) {
         $result = $this->cfApi("/zones/$zone_id/ssl/universal/settings");
         if ($result['code'] === 200 && isset($result['body']['result'])) {
+            $domain = Config::get('paths.prod_url') ?: 'technostationery.com';
+            $domain = str_replace(['https://', 'http://'], '', $domain);
             return [
                 'status' => 'active',
                 'expires_on' => null,
                 'days_left' => null,
-                'hostnames' => ['*.' . (Config::get('cloudflare.zone_id') ? '' : '')]
+                'hostnames' => ["*.$domain"]
             ];
         }
         return null;

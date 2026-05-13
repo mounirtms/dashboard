@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useTheme } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useTheme } , Alert } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Map as AlgeriaMap } from 'algeria-map-ts';
@@ -11,7 +11,7 @@ export default function GeographyPage() {
   const { data, loading, error } = useCloudflareData();
 
   if (loading) return <LoadingState />;
-  if (error) return <LoadingState message={`Error: ${error}`} />;
+  if (error) return <Alert severity="error" sx={{ mb: 2 }}>Error: {error}</Alert>;
   if (!data) return null;
 
   const countryColumns: GridColDef[] = [

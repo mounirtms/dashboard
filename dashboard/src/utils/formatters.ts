@@ -5,8 +5,8 @@ export function formatBytes(bytes: number): string {
   return bytes + ' B';
 }
 
-export function formatNumber(n: number): string {
-  return (n || 0).toLocaleString();
+export function formatNumber(n: number | null | undefined): string {
+  return (n ?? 0).toLocaleString();
 }
 
 export function formatDate(dateStr: string): string {

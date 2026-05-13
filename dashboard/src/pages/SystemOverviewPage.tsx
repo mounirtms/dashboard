@@ -13,7 +13,7 @@ export default function SystemOverviewPage() {
   const [cleaning, setCleaning] = useState(false);
 
   if (loading && !data) return <LoadingState message="Loading system data..." />;
-  if (error) return <LoadingState message={`Error: ${error}`} />;
+  if (error) return <Alert severity="error" sx={{ mb: 2 }}>Error: {error}</Alert>;
   if (!data) return null;
 
   const loadColor = data.load['1min'] > 8 ? 'error' : data.load['1min'] > 4 ? 'warning' : 'success';
