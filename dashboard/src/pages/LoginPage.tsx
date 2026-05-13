@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Checkbox, FormControlLabel, Card, CardContent, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, TextField, Button, Checkbox, FormControlLabel, Card, CardContent, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Link } from '@mui/material';
 import { Person, Lock, CheckCircle, Warning } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client.ts';
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: string | HTMLElement, params: {
+        sitekey: string;
+        callback?: (token: string) => void;
+        'error-callback'?: (error: string) => void;
+      }) => string;
+      reset: (container?: string | HTMLElement) => void;
+      remove: (container?: string | HTMLElement) => void;
+    };
+  }
+}
 
 export default function LoginPage() {
   const [username, setUsername] = useState(localStorage.getItem('dashboard_username') || '');
@@ -13,15 +27,73 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [csrfToken, setCsrfToken] = useState('');
   const [serverStatus, setServerStatus] = useState<any>(null);
-  const { login } = useAuth();
+  const [forgotDialogOpen, setForgotDialogOpen] = useState(false);
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [turnstileEnabled, setTurnstileEnabled] = useState(false);
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const { login, forgotPassword, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect to home if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     fetchCsrf();
     fetchStatus();
+    fetchTurnstileConfig();
     const timer = setInterval(fetchStatus, 30000);
     return () => clearInterval(timer);
   }, []);
+
+  const fetchTurnstileConfig = async () => {
+    try {
+      const { data } = await apiClient.get('/api/auth.php?action=turnstile_config');
+      if (data.success && data.enabled) {
+        setTurnstileEnabled(true);
+        setTurnstileSiteKey(data.site_key);
+        
+        // Load Turnstile script
+        if (!document.getElementById('cf-turnstile-script')) {
+          const script = document.createElement('script');
+          script.id = 'cf-turnstile-script';
+          script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+          script.async = true;
+          script.defer = true;
+          script.onload = () => renderTurnstile();
+          document.head.appendChild(script);
+        } else {
+          // Script already loaded, render widget
+          setTimeout(() => renderTurnstile(), 100);
+        }
+      }
+    } catch (e) {
+      // Turnstile config fetch failed - continue without it
+    }
+  };
+
+  const renderTurnstile = () => {
+    if (window.turnstile && turnstileSiteKey) {
+      const container = document.getElementById('turnstile-container');
+      if (container) {
+        window.turnstile.render(container, {
+          sitekey: turnstileSiteKey,
+          callback: (token: string) => {
+            setTurnstileToken(token);
+          },
+          'error-callback': (error: string) => {
+            setError('Security verification failed. Please refresh and try again.');
+          },
+        });
+      }
+    }
+  };
 
   const fetchCsrf = async () => {
     try {
@@ -42,26 +114,76 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
+    let retried = false;
+
     try {
       await login({
         username,
         password,
-        csrf_token: csrfToken
+        csrf_token: csrfToken,
+        remember_me: rememberMe,
+        turnstile_token: turnstileToken,
       });
       
-      if (rememberMe) {
-        localStorage.setItem('dashboard_username', username);
-      } else {
-        localStorage.removeItem('dashboard_username');
-      }
+      // Clean up old localStorage keys
+      localStorage.removeItem('dashboard_username');
 
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      // On 403 (CSRF mismatch), fetch new token and retry once
+      if (err.response?.status === 403 && !retried) {
+        retried = true;
+        try {
+          const { data } = await apiClient.get('/api/auth.php?action=csrf_token');
+          if (data.success) {
+            setCsrfToken(data.csrf_token);
+            // Retry login with fresh token
+            await login({
+              username,
+              password,
+              csrf_token: data.csrf_token,
+              remember_me: rememberMe,
+              turnstile_token: turnstileToken,
+            });
+            localStorage.removeItem('dashboard_username');
+            navigate('/');
+            return;
+          }
+        } catch (retryErr: any) {
+          setError('Session expired. Please try logging in again.');
+          fetchCsrf();
+          setLoading(false);
+          return;
+        }
+      }
+      
+      setError(err.message || 'Login failed. Please check your credentials.');
       fetchCsrf(); // Refresh token on failure
     } finally {
-      setLoading(false);
+      if (!retried) {
+        setLoading(false);
+      }
     }
+  };
+
+  const handleForgotPassword = async () => {
+    setForgotLoading(true);
+    setError(null);
+    try {
+      await forgotPassword(forgotIdentifier);
+      setForgotSent(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to process request');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const openForgotDialog = () => {
+    setForgotIdentifier('');
+    setForgotSent(false);
+    setError(null);
+    setForgotDialogOpen(true);
   };
 
   return (
@@ -201,7 +323,16 @@ export default function LoginPage() {
                   }
                   label={<Typography sx={{ fontSize: '0.82rem', color: '#94a3b8' }}>Remember me</Typography>}
                 />
+                <Link component="button" type="button" onClick={openForgotDialog} sx={{ fontSize: '0.82rem', color: '#3b82f6', fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                  Forgot password?
+                </Link>
               </Box>
+
+              {turnstileEnabled && (
+                <Box sx={{ mb: 2.5 }}>
+                  <div id="turnstile-container"></div>
+                </Box>
+              )}
 
               <Button
                 fullWidth
@@ -227,6 +358,44 @@ export default function LoginPage() {
           v3.1.0 &nbsp;·&nbsp; {new Date().toLocaleTimeString()}
         </Typography>
       </Box>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={forgotDialogOpen} onClose={() => setForgotDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Reset Your Password</DialogTitle>
+        <DialogContent>
+          {forgotSent ? (
+            <Box sx={{ pt: 1 }}>
+              <Alert severity="success" sx={{ mb: 2 }}>
+                If the account exists, a password reset link has been sent to the registered email address.
+              </Alert>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Check your inbox and follow the instructions in the email.
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ pt: 1 }}>
+              <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                Enter your username or email address. We'll send you a link to reset your password.
+              </Typography>
+              <TextField
+                label="Username or Email"
+                fullWidth
+                value={forgotIdentifier}
+                onChange={(e) => setForgotIdentifier(e.target.value)}
+                autoFocus
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setForgotDialogOpen(false)}>Close</Button>
+          {!forgotSent && (
+            <Button variant="contained" onClick={handleForgotPassword} disabled={forgotLoading || !forgotIdentifier}>
+              {forgotLoading ? <CircularProgress size={20} color="inherit" /> : 'Send Reset Link'}
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -66,8 +66,26 @@ class Config {
             'pim' => ['token' => $_ENV['MAGENTO_TOKEN_PIM'] ?? ''],
         ];
 
+        // Try loading from credentials file if tokens are empty
+        $credsFile = __DIR__ . '/magento_credentials.json';
+        if (file_exists($credsFile)) {
+            $creds = json_decode(file_get_contents($credsFile), true);
+            foreach (['prod', 'beta', 'dev', 'pim'] as $env) {
+                if (empty(self::$config['magento'][$env]['token']) && isset($creds[$env]['token'])) {
+                    self::$config['magento'][$env]['token'] = $creds[$env]['token'];
+                }
+            }
+        }
+
         // PHP binary
         self::$config['php_bin'] = $_ENV['PHP_BIN'] ?? '/opt/cpanel/ea-php82/root/usr/bin/php';
+
+        // Redis configuration
+        self::$config['redis'] = [
+            'host' => $_ENV['REDIS_HOST'] ?? '127.0.0.1',
+            'port' => $_ENV['REDIS_PORT'] ?? '6379',
+            'pass' => $_ENV['REDIS_PASS'] ?? null,
+        ];
 
         // Telegram configuration
         self::$config['telegram'] = [
@@ -85,6 +103,8 @@ class Config {
             'zone_id' => $_ENV['CF_ZONE_ID'] ?? '',
             'account_id' => $_ENV['CF_ACCOUNT_ID'] ?? '',
             'email' => $_ENV['CF_EMAIL'] ?? '',
+            'turnstile_site_key' => $_ENV['CF_TURNSTILE_SITE_KEY'] ?? '0x4AAAAAADOHEIn3ZnHV64fQ',
+            'turnstile_secret_key' => $_ENV['CF_TURNSTILE_SECRET_KEY'] ?? '0x4AAAAAADOHELGXgTYqHT3lkzjkObCm8MA',
         ];
 
         // AI/QoderCLI configuration
