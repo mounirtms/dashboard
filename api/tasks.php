@@ -1,0 +1,463 @@
+<?php
+/**
+ * Task Management API
+ */
+
+header('Content-Type: application/json');
+require_once __DIR__ . '/session_helper.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/PermissionChecker.php';
+Config::load();
+
+// Require authentication
+if (empty($_SESSION['logged_in'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
+}
+
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+try {
+    $db = Config::get('db');
+    $pdo = new PDO("mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth", $db['user'], $db['pass'], [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+
+    // Create tables if they don't exist
+    $pdo->exec("CREATE TABLE IF NOT EXISTS tasks (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+        status ENUM('pending', 'in-progress', 'completed', 'cancelled') DEFAULT 'pending',
+        assigned_to VARCHAR(100) DEFAULT '',
+        due_date DATE NULL,
+        category VARCHAR(50) DEFAULT 'general',
+        created_by VARCHAR(50),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_status (status),
+        INDEX idx_priority (priority),
+        INDEX idx_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS task_notes (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        task_id INT UNSIGNED NOT NULL,
+        author VARCHAR(50) NOT NULL,
+        content TEXT NOT NULL,
+        category ENUM('tuning', 'fix', 'implementation', 'question', 'general') DEFAULT 'general',
+        is_pinned TINYINT(1) DEFAULT 0,
+        parent_id INT UNSIGNED NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+        INDEX idx_task (task_id),
+        INDEX idx_pinned (is_pinned)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Add missing columns for existing databases
+    try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN category ENUM('tuning', 'fix', 'implementation', 'question', 'general') DEFAULT 'general' AFTER content"); } catch (\Exception $e) {}
+    try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN is_pinned TINYINT(1) DEFAULT 0 AFTER category"); } catch (\Exception $e) {}
+    try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at"); } catch (\Exception $e) {}
+    try { $pdo->exec("ALTER TABLE task_notes ADD INDEX idx_pinned (is_pinned)"); } catch (\Exception $e) {}
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS task_activity (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        task_id INT UNSIGNED NOT NULL,
+        action VARCHAR(50) NOT NULL,
+        actor VARCHAR(50),
+        details TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+        INDEX idx_task (task_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Push notification subscriptions table
+    $pdo->exec("CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        user_id INT UNSIGNED NOT NULL,
+        subscription_endpoint TEXT NOT NULL,
+        subscription_p256dh VARCHAR(255) NOT NULL,
+        subscription_auth VARCHAR(255) NOT NULL,
+        browser VARCHAR(50),
+        device_type VARCHAR(50),
+        os VARCHAR(50),
+        last_used DATETIME,
+        is_active TINYINT(1) DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_subscription (subscription_endpoint(255)),
+        INDEX idx_user (user_id),
+        INDEX idx_active (is_active)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $currentUser = $_SESSION['username'] ?? 'system';
+
+    switch ($action) {
+        case 'list':
+            $stmt = $pdo->query("SELECT * FROM tasks ORDER BY created_at DESC");
+            echo json_encode($stmt->fetchAll());
+            break;
+
+        case 'get':
+            $id = $_GET['id'] ?? 0;
+            $stmt = $pdo->prepare("SELECT * FROM tasks WHERE id = ?");
+            $stmt->execute([$id]);
+            $task = $stmt->fetch();
+            if ($task) {
+                echo json_encode($task);
+            } else {
+                http_response_code(404);
+                echo json_encode(['error' => 'Task not found']);
+            }
+            break;
+
+        case 'create':
+            if (!PermissionChecker::hasPermission('can_create_tasks')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to create tasks']);
+                break;
+            }
+
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $title = trim($input['title'] ?? '');
+            if (empty($title)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Title is required']);
+                break;
+            }
+
+            $stmt = $pdo->prepare("INSERT INTO tasks (title, description, priority, status, assigned_to, due_date, category, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $title,
+                $input['description'] ?? '',
+                $input['priority'] ?? 'medium',
+                $input['status'] ?? 'pending',
+                $input['assigned_to'] ?? '',
+                $input['due_date'] ?? null,
+                $input['category'] ?? 'general',
+                $currentUser
+            ]);
+            $taskId = $pdo->lastInsertId();
+
+            // Log activity
+            $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'created', ?, ?)")
+                ->execute([$taskId, $currentUser, "Task created: $title"]);
+
+            // Send email notification if task is assigned
+            $assignedTo = $input['assigned_to'] ?? '';
+            if (!empty($assignedTo)) {
+                try {
+                    $userStmt = $pdo->prepare("SELECT email, full_name FROM users WHERE username = ?");
+                    $userStmt->execute([$assignedTo]);
+                    $user = $userStmt->fetch();
+                    if ($user && !empty($user['email'])) {
+                        require_once __DIR__ . '/Mailer.php';
+                        Mailer::sendTaskAssignment(
+                            $user['email'],
+                            $user['full_name'] ?: $assignedTo,
+                            $title,
+                            $input['description'] ?? '',
+                            $input['priority'] ?? 'medium',
+                            $currentUser,
+                            $input['due_date'] ?? null,
+                            $taskId
+                        );
+                    }
+                } catch (\Exception $e) {
+                    error_log("[tasks.php] Failed to send task assignment email: " . $e->getMessage());
+                }
+            }
+
+            echo json_encode(['success' => true, 'id' => $taskId]);
+            break;
+
+        case 'update':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $id = $input['id'] ?? 0;
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Task ID is required']);
+                break;
+            }
+
+            // Get old task for ownership and status checks
+            $oldStmt = $pdo->prepare("SELECT title, status, assigned_to, created_by FROM tasks WHERE id = ?");
+            $oldStmt->execute([$id]);
+            $oldTask = $oldStmt->fetch();
+
+            // Permission check: only task owner or users with can_update_any_task can update
+            $isOwner = ($currentUser === $oldTask['created_by']);
+            if ($isOwner) {
+                if (!PermissionChecker::hasPermission('can_update_own_tasks')) {
+                    http_response_code(403);
+                    echo json_encode(['error' => 'You do not have permission to update your own tasks']);
+                    break;
+                }
+            } else {
+                if (!PermissionChecker::hasPermission('can_update_any_task')) {
+                    http_response_code(403);
+                    echo json_encode(['error' => 'You can only update your own tasks']);
+                    break;
+                }
+            }
+
+            $fields = [];
+            $values = [];
+            $allowedFields = ['title', 'description', 'priority', 'status', 'assigned_to', 'due_date', 'category'];
+            foreach ($allowedFields as $field) {
+                if (isset($input[$field])) {
+                    $fields[] = "$field = ?";
+                    $values[] = $input[$field];
+                }
+            }
+
+            if (empty($fields)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'No fields to update']);
+                break;
+            }
+
+            $fields[] = "updated_at = NOW()";
+            $values[] = $id;
+
+            $stmt = $pdo->prepare("UPDATE tasks SET " . implode(', ', $fields) . " WHERE id = ?");
+            $stmt->execute($values);
+
+            // Log activity
+            $newStatus = $input['status'] ?? $oldTask['status'];
+            if ($newStatus !== $oldTask['status']) {
+                $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'status_changed', ?, ?)")
+                    ->execute([$id, $currentUser, "Status: {$oldTask['status']} → $newStatus"]);
+
+                // Send email notification for status change
+                $assignedTo = $oldTask['assigned_to'] ?? '';
+                if (!empty($assignedTo)) {
+                    try {
+                        $userStmt = $pdo->prepare("SELECT email, full_name FROM users WHERE username = ?");
+                        $userStmt->execute([$assignedTo]);
+                        $user = $userStmt->fetch();
+                        if ($user && !empty($user['email'])) {
+                            require_once __DIR__ . '/Mailer.php';
+                            Mailer::sendTaskStatusChange(
+                                $user['email'],
+                                $user['full_name'] ?: $assignedTo,
+                                $oldTask['title'],
+                                $oldTask['status'],
+                                $newStatus,
+                                $currentUser,
+                                $id
+                            );
+                        }
+                    } catch (\Exception $e) {
+                        error_log("[tasks.php] Failed to send status change email: " . $e->getMessage());
+                    }
+                }
+            } else {
+                $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'updated', ?, ?)")
+                    ->execute([$id, $currentUser, "Task updated"]);
+            }
+
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'delete':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $id = $input['id'] ?? 0;
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Task ID is required']);
+                break;
+            }
+
+            if (!PermissionChecker::hasPermission('can_delete_tasks')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to delete tasks']);
+                break;
+            }
+
+            $stmt = $pdo->prepare("SELECT title FROM tasks WHERE id = ?");
+            $stmt->execute([$id]);
+            $task = $stmt->fetch();
+
+            $pdo->prepare("DELETE FROM tasks WHERE id = ?")->execute([$id]);
+
+            // Log activity
+            $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'deleted', ?, ?)")
+                ->execute([$id, $currentUser, "Task deleted: {$task['title']}"]);
+
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'notes':
+            $taskId = $_GET['task_id'] ?? 0;
+            $stmt = $pdo->prepare("SELECT * FROM task_notes WHERE task_id = ? ORDER BY is_pinned DESC, created_at ASC");
+            $stmt->execute([$taskId]);
+            echo json_encode($stmt->fetchAll());
+            break;
+
+        case 'add_note':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $taskId = $input['task_id'] ?? 0;
+            $content = trim($input['content'] ?? '');
+            if (empty($content) || !$taskId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Task ID and content are required']);
+                break;
+            }
+
+            $validCategories = ['tuning', 'fix', 'implementation', 'question', 'general'];
+            $category = in_array($input['category'] ?? 'general', $validCategories) ? $input['category'] : 'general';
+
+            $stmt = $pdo->prepare("INSERT INTO task_notes (task_id, author, content, category, is_pinned, parent_id) VALUES (?, ?, ?, ?, 0, ?)");
+            $stmt->execute([$taskId, $currentUser, $content, $category, $input['parent_id'] ?? null]);
+
+            $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'commented', ?, ?)")
+                ->execute([$taskId, $currentUser, "Note added: " . mb_substr($content, 0, 50)]);
+
+            echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
+            break;
+
+        case 'edit_note':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $id = $input['id'] ?? 0;
+            $content = trim($input['content'] ?? '');
+            if (!$id || empty($content)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Note ID and content are required']);
+                break;
+            }
+
+            // Check if note exists
+            $stmt = $pdo->prepare("SELECT author FROM task_notes WHERE id = ?");
+            $stmt->execute([$id]);
+            $note = $stmt->fetch();
+            if (!$note) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Note not found']);
+                break;
+            }
+
+            // Allow edit if user is author or has can_edit_any_note permission
+            $isAuthor = ($note['author'] === $currentUser);
+            $canEditAny = PermissionChecker::hasPermission('can_edit_any_note');
+            if (!$isAuthor && !$canEditAny) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You can only edit your own notes']);
+                break;
+            }
+
+            $validCategories = ['tuning', 'fix', 'implementation', 'question', 'general'];
+            $category = in_array($input['category'] ?? 'general', $validCategories) ? $input['category'] : 'general';
+
+            $stmt = $pdo->prepare("UPDATE task_notes SET content = ?, category = ? WHERE id = ?");
+            $stmt->execute([$content, $category, $id]);
+
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'pin_note':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $id = $input['id'] ?? 0;
+            $pinned = (int)($input['is_pinned'] ?? 1);
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Note ID is required']);
+                break;
+            }
+
+            if (!PermissionChecker::hasPermission('can_pin_notes')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to pin notes']);
+                break;
+            }
+
+            $stmt = $pdo->prepare("UPDATE task_notes SET is_pinned = ? WHERE id = ?");
+            $stmt->execute([$pinned, $id]);
+
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'delete_note':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $id = $input['id'] ?? 0;
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Note ID is required']);
+                break;
+            }
+
+            // Check ownership: author or can_delete_any_note
+            $stmt = $pdo->prepare("SELECT author FROM task_notes WHERE id = ?");
+            $stmt->execute([$id]);
+            $note = $stmt->fetch();
+            if (!$note) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Note not found']);
+                break;
+            }
+
+            $isAuthor = ($note['author'] === $currentUser);
+            $canDeleteAny = PermissionChecker::hasPermission('can_delete_any_note');
+            if (!$isAuthor && !$canDeleteAny) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You can only delete your own notes']);
+                break;
+            }
+
+            $pdo->prepare("DELETE FROM task_notes WHERE id = ?")->execute([$id]);
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'activity':
+            $taskId = $_GET['task_id'] ?? 0;
+            $stmt = $pdo->prepare("SELECT * FROM task_activity WHERE task_id = ? ORDER BY created_at DESC");
+            $stmt->execute([$taskId]);
+            echo json_encode($stmt->fetchAll());
+            break;
+
+        case 'stats':
+            $statsStmt = $pdo->query("SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status = 'in-progress' THEN 1 ELSE 0 END) as in_progress,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+            FROM tasks");
+            echo json_encode($statsStmt->fetch());
+            break;
+
+        case 'notes_counts':
+            // Get note counts for all tasks in a single query (avoids N+1 problem)
+            $stmt = $pdo->query("SELECT task_id, COUNT(*) as count FROM task_notes GROUP BY task_id");
+            $counts = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $counts[$row['task_id']] = (int)$row['count'];
+            }
+            echo json_encode($counts);
+            break;
+
+        default:
+            echo json_encode(['error' => 'Invalid action']);
+    }
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
+}
