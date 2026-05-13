@@ -70,6 +70,12 @@ class PermissionChecker {
         if (empty($_SESSION['role'])) {
             return false;
         }
+        
+        // Admin always has all permissions
+        if (self::isAdmin()) {
+            return true;
+        }
+        
         self::loadPermissions();
         $role = $_SESSION['role'];
         if (!isset(self::$permissions[$role])) {

@@ -76,11 +76,13 @@ export function usePermissions() {
 
   const hasPermission = useCallback(
     (permission: PermissionKey): boolean => {
+      // Admin always has all permissions
+      if (role === 'admin') return true;
       if (!permissions) return false;
       const value: unknown = permissions[permission];
       return value === true || value === 1;
     },
-    [permissions],
+    [permissions, role],
   );
 
   return {

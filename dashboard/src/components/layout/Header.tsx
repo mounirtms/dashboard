@@ -1,9 +1,10 @@
 import { Box, Typography, Button, IconButton, Chip, useTheme, Menu, MenuItem, Tooltip, ListItemIcon, ListItemText } from '@mui/material';
-import { Menu as MenuIcon, ExitToApp, CloudDone, Warning, Speed, Memory, Storage, Cached, LightMode, DarkMode, Settings, Language, Check } from '@mui/icons-material';
+import { Menu as MenuIcon, ExitToApp, CloudDone, Warning, Speed, Memory, Storage, Cached, LightMode, DarkMode, Settings, Language, Check, Storage as StorageIcon } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth.tsx';
 import { useSystemOverview } from '../../hooks/useSystemData.ts';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePermissions } from '../../hooks/usePermissions.ts';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const { logout, user } = useAuth();
+  const { isAdmin } = usePermissions();
   const { data } = useSystemOverview(30000);
   const theme = useTheme();
   const navigate = useNavigate();
@@ -34,6 +36,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
   };
 
   const goToProfile = () => navigate('/settings');
+  
+  const openPhpMyAdmin = () => {
+    window.open('https://technostationery.com/phpmyadmin', '_blank', 'noopener,noreferrer');
+  };
 
   const load1 = data ? data.load['1min'] : 0;
   const memPct = data ? data.memory.used_pct : 0;
@@ -96,6 +102,22 @@ export default function Header({ onMenuClick }: HeaderProps) {
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* phpMyAdmin - Admin only */}
+        {isAdmin && (
+          <Tooltip title="phpMyAdmin">
+            <IconButton 
+              size="small" 
+              onClick={openPhpMyAdmin}
+              sx={{ 
+                color: 'text.secondary',
+                '&:hover': { color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' }
+              }}
+            >
+              <StorageIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+        )}
+
         {/* Language Switcher */}
         <Tooltip title="Language">
           <IconButton size="small" onClick={(e) => setLangAnchor(e.currentTarget)} sx={{ color: 'text.secondary' }}>
