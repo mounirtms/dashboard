@@ -6,7 +6,7 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Techno Server Dashboard</title>
-  <script type="module" crossorigin src="/assets/index-DBwLn1Kp.js"></script>
+  <script type="module" crossorigin src="/assets/index-BVNNQ292.js"></script>
 </head>
 
 <body>
@@ -24,20 +24,23 @@
       var prompted = sessionStorage.getItem('webpushr_prompted');
       if (prompted) return;
       
-      // Wait for SDK to load, then prompt
       var checkSdk = setInterval(function() {
         if (typeof webpushr === 'function') {
           clearInterval(checkSdk);
-          // Show prompt after 3 seconds (gives user time to see the page)
+          // Wait 5 seconds for SDK to fully initialize
           setTimeout(function() {
-            webpushr('subscribe');
-            sessionStorage.setItem('webpushr_prompted', '1');
-          }, 3000);
+            try {
+              webpushr('subscribe');
+              sessionStorage.setItem('webpushr_prompted', '1');
+            } catch(e) {
+              console.warn('Webpushr subscribe failed:', e);
+            }
+          }, 5000);
         }
       }, 200);
       
-      // Timeout after 10 seconds if SDK doesn't load
-      setTimeout(function() { clearInterval(checkSdk); }, 10000);
+      // Timeout after 15 seconds if SDK doesn't load
+      setTimeout(function() { clearInterval(checkSdk); }, 15000);
     })();
   </script>
 </body>

@@ -29,12 +29,12 @@ export function useWebpushrSubscription() {
         clearInterval(checkSdk);
         setState(prev => ({ ...prev, isSupported: true, isLoading: false }));
       }
-    }, 200);
+    }, 300);
 
     setTimeout(() => {
       clearInterval(checkSdk);
       setState(prev => ({ ...prev, isLoading: false }));
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(checkSdk);
   }, []);
@@ -43,21 +43,24 @@ export function useWebpushrSubscription() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // Trigger Webpushr subscription prompt
-      if (typeof window.webpushr === 'function') {
-        window.webpushr('subscribe');
-        
-        // Wait a moment for subscription to complete
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Notify backend that user subscribed
-        await apiClient.post('/api/webpushr.php?action=subscribe', {
-          endpoint: 'pending', // Webpushr handles this internally
-          domain: 'dashboard',
-        });
-        
-        setState(prev => ({ ...prev, isSubscribed: true, isLoading: false }));
+      if (typeof window.webpushr !== 'function') {
+        setState(prev => ({ ...prev, error: 'Webpushr SDK not loaded', isLoading: false }));
+        return;
       }
+      
+      // Trigger Webpushr subscription prompt
+      window.webpushr('subscribe');
+      
+      // Wait for subscription to process
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Notify backend that user subscribed
+      await apiClient.post('/api/webpushr.php?action=subscribe', {
+        endpoint: 'webpushr-managed',
+        domain: 'dashboard',
+      });
+      
+      setState(prev => ({ ...prev, isSubscribed: true, isLoading: false }));
     } catch (err: any) {
       setState(prev => ({
         ...prev,
@@ -67,19 +70,19 @@ export function useWebpushrSubscription() {
     }
   }, []);
 
-  const unsubscribe = useCallback(async (endpoint?: string) => {
+  const unsubscribe = useCallback(async (subscriptionId?: number) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      if (typeof window.webpushr === 'function' && !endpoint) {
-        // Unsubscribe from Webpushr entirely
+      if (typeof window.webpushr === 'function') {
         window.webpushr('unsubscribe');
       }
       
-      // Remove from backend
-      await apiClient.post('/api/webpushr.php?action=unsubscribe', {
-        endpoint: endpoint || 'all',
-      });
+      if (subscriptionId) {
+        await apiClient.post('/api/webpushr.php?action=unsubscribe', {
+          subscription_id: subscriptionId,
+        });
+      }
       
       setState(prev => ({ ...prev, isSubscribed: false, isLoading: false }));
     } catch (err: any) {

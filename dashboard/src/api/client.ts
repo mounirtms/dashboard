@@ -2,19 +2,32 @@ import axios from 'axios';
 
 const apiClient = axios.create({
   baseURL: '/',
-  timeout: 15000,
+  timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
 
+// Retry failed requests (except POST/PUT/DELETE)
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const config = error.config;
+    if (!config) return Promise.reject(error);
+    
     if (error.response?.status === 401) {
-      // Don't redirect immediately - let the auth context handle it via remember token
-      // Only set a flag that can be checked by the auth context
       error.isAuthError = true;
     }
+    
+    // Retry GET requests once on network errors
+    if (config.method === 'get' && !config.__retried && error.code !== 'ERR_CANCELED') {
+      config.__retried = true;
+      try {
+        return await apiClient(config);
+      } catch (retryError) {
+        return Promise.reject(retryError);
+      }
+    }
+    
     return Promise.reject(error);
   }
 );

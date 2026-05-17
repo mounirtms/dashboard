@@ -27,7 +27,7 @@ export async function fetchSettings(): Promise<UserSettings> {
 }
 
 export async function saveSettings(settings: UserSettings): Promise<void> {
-  const { data } = await apiClient.post('/api/settings.php?action=save', settings, {
+  const { data } = await apiClient.post('/api/settings.php?action=save', { settings }, {
     headers: { 'Content-Type': 'application/json' },
   });
   if (data.error) throw new Error(data.error);

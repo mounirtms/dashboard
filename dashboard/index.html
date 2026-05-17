@@ -27,12 +27,16 @@
         if (typeof webpushr === 'function') {
           clearInterval(checkSdk);
           setTimeout(function() {
-            webpushr('subscribe');
-            sessionStorage.setItem('webpushr_prompted', '1');
-          }, 3000);
+            try {
+              webpushr('subscribe');
+              sessionStorage.setItem('webpushr_prompted', '1');
+            } catch(e) {
+              console.warn('Webpushr subscribe failed:', e);
+            }
+          }, 5000);
         }
       }, 200);
-      setTimeout(function() { clearInterval(checkSdk); }, 10000);
+      setTimeout(function() { clearInterval(checkSdk); }, 15000);
     })();
   </script>
 </body>
