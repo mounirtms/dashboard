@@ -275,7 +275,7 @@ export default function PushNotificationsPage() {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {['dev', 'beta', 'production'].map((env) => (
+          {['dev', 'beta'].map((env) => (
             <Chip
               key={env}
               label={env.charAt(0).toUpperCase() + env.slice(1)}

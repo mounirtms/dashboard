@@ -94,6 +94,29 @@ export default function LogViewerPage() {
 
   const fetchLogs = useCallback(() => {
     setLoading(true);
+    
+    // Notification logs use a different endpoint
+    if (type === 'notification') {
+      apiClient.get('/api/monitor.php?action=notification_log')
+        .then(({ data }) => {
+          // Transform notification logs to structured format
+          const structuredLogs = (data.logs || []).map((log: any) => ({
+            timestamp: log.timestamp,
+            level: log.severity.toUpperCase(),
+            channel: log.channel || 'webpushr',
+            message: `${log.title} | ${log.message} | Status: ${log.status}`,
+            correlation_id: '',
+          }));
+          setLogData({ lines: structuredLogs, structured: true });
+        })
+        .catch((e) => {
+          console.error(e);
+          setSnackbar({ open: true, message: 'Failed to fetch notification logs', severity: 'error' });
+        })
+        .finally(() => setLoading(false));
+      return;
+    }
+    
     const params = new URLSearchParams({
       action: 'logs',
       type,
@@ -180,6 +203,7 @@ export default function LogViewerPage() {
                   <MenuItem value="mariadb">MariaDB Error Log</MenuItem>
                   <MenuItem value="cron">System Cron</MenuItem>
                   <MenuItem value="auth">Auth / Security</MenuItem>
+                  <MenuItem value="notification">Notification Events</MenuItem>
                   <MenuItem value="app">Application (JSON)</MenuItem>
                 </>
               )}
@@ -230,6 +254,28 @@ export default function LogViewerPage() {
                   <MenuItem value="INFO">Info</MenuItem>
                   <MenuItem value="WARNING">Warning</MenuItem>
                   <MenuItem value="ERROR">Error</MenuItem>
+                  <MenuItem value="CRITICAL">Critical</MenuItem>
+                </Select>
+              </FormControl>
+            </>
+          )}
+          
+          {type === 'notification' && (
+            <>
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Channel</InputLabel>
+                <Select value={channelFilter} label="Channel" onChange={(e) => setChannelFilter(e.target.value)}>
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="webpushr">Webpushr</MenuItem>
+                  <MenuItem value="telegram">Telegram</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ minWidth: 100 }}>
+                <InputLabel>Severity</InputLabel>
+                <Select value={levelFilter} label="Severity" onChange={(e) => setLevelFilter(e.target.value)}>
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="INFO">Info</MenuItem>
+                  <MenuItem value="WARNING">Warning</MenuItem>
                   <MenuItem value="CRITICAL">Critical</MenuItem>
                 </Select>
               </FormControl>

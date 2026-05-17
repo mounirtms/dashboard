@@ -21,22 +21,14 @@
   <script>
     // Auto-prompt for push notification subscription after page loads
     (function() {
-      var prompted = sessionStorage.getItem('webpushr_prompted');
-      if (prompted) return;
-      var checkSdk = setInterval(function() {
+      if (sessionStorage.getItem('webpushr_prompted')) return;
+      var check = setInterval(function() {
         if (typeof webpushr === 'function') {
-          clearInterval(checkSdk);
-          setTimeout(function() {
-            try {
-              webpushr('subscribe');
-              sessionStorage.setItem('webpushr_prompted', '1');
-            } catch(e) {
-              console.warn('Webpushr subscribe failed:', e);
-            }
-          }, 5000);
+          clearInterval(check);
+          setTimeout(function() { webpushr('subscribe'); sessionStorage.setItem('webpushr_prompted', '1'); }, 3000);
         }
       }, 200);
-      setTimeout(function() { clearInterval(checkSdk); }, 15000);
+      setTimeout(function() { clearInterval(check); }, 10000);
     })();
   </script>
 </body>
