@@ -1,9 +1,9 @@
-import { Box, Typography, Card, CardContent, Button, Chip, IconButton, Tooltip, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, InputLabel, Menu, Avatar } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Chip, IconButton, Tooltip, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, InputLabel, Menu, Avatar, Checkbox, Slide } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { Add, Edit, Delete, CheckCircle, Refresh, FilterList, MoreVert, Notes } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { Add, Edit, Delete, CheckCircle, Refresh, FilterList, MoreVert, Notes, Download, Person, LinkOff, Schedule } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchTasks, createTask, updateTask, deleteTask, fetchTaskStats, fetchTaskNotesCount, type Task, type TaskStats } from '../api/tasks';
+import { fetchTasks, createTask, updateTask, deleteTask, fetchTaskStats, fetchTaskNotesCount, bulkUpdate, type Task, type TaskStats } from '../api/tasks';
 import { fetchUsers, type User } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
@@ -26,6 +26,10 @@ export default function TasksPage() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
+  const [myTasksOnly, setMyTasksOnly] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkActionMenu, setBulkActionMenu] = useState<null | HTMLElement>(null);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
   const [moreAnchor, setMoreAnchor] = useState<null | HTMLElement>(null);
   const [formData, setFormData] = useState({ title: '', description: '', priority: 'medium' as any, status: 'pending' as any, assigned_to: '', due_date: '', category: 'general' });
 
@@ -93,14 +97,80 @@ export default function TasksPage() {
   };
 
   const filteredTasks = tasks.filter(t => {
+    if (myTasksOnly && t.assigned_to !== currentUsername) return false;
     if (filterStatus && t.status !== filterStatus) return false;
     if (filterPriority && t.priority !== filterPriority) return false;
     if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !t.assigned_to?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
+  const exportCSV = useCallback(() => {
+    const headers = ['ID', 'Title', 'Priority', 'Status', 'Assigned To', 'Due Date', 'Category', 'Created'];
+    const rows = filteredTasks.map(t => [
+      t.id,
+      `"${t.title.replace(/"/g, '""')}"`,
+      t.priority,
+      t.status,
+      t.assigned_to || 'Unassigned',
+      t.due_date || '',
+      t.category,
+      new Date(t.created_at).toLocaleDateString(),
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tasks_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setSnackbar({ open: true, message: `${filteredTasks.length} tasks exported`, severity: 'success' });
+  }, [filteredTasks]);
+
+  const handleBulkAction = async (action: string, value?: string) => {
+    if (selectedIds.length === 0) return;
+    setBulkUpdating(true);
+    try {
+      const fields: any = {};
+      if (action === 'status') fields.status = value;
+      else if (action === 'priority') fields.priority = value;
+      
+      await bulkUpdate(selectedIds, fields);
+      setSnackbar({ open: true, message: `${selectedIds.length} tasks updated`, severity: 'success' });
+      setSelectedIds([]);
+      loadData();
+    } catch (e: any) {
+      setSnackbar({ open: true, message: e.response?.data?.error || e.message, severity: 'error' });
+    } finally {
+      setBulkUpdating(false);
+      setBulkActionMenu(null);
+    }
+  };
+
   const priorityColor = (p: string) => p === 'high' ? 'error' : p === 'medium' ? 'warning' : 'default';
   const statusColor = (s: string) => s === 'completed' ? 'success' : s === 'in-progress' ? 'info' : s === 'cancelled' ? 'error' : 'default';
+
+  const isOverdue = (task: Task) => {
+    if (!task.due_date || task.status === 'completed' || task.status === 'cancelled') return false;
+    return new Date(task.due_date) < new Date();
+  };
+
+  const dueDateUrgency = (task: Task) => {
+    if (!task.due_date) return null;
+    const now = new Date();
+    const due = new Date(task.due_date);
+    const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0 && task.status !== 'completed' && task.status !== 'cancelled') return { color: 'error' as const, label: `${Math.abs(diffDays)}d overdue` };
+    if (diffDays <= 3) return { color: 'warning' as const, label: `${diffDays}d left` };
+    return null;
+  };
+
+  const taskAge = (task: Task) => {
+    const created = new Date(task.created_at);
+    const now = new Date();
+    const days = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+    return days;
+  };
 
   const columns: GridColDef[] = [
     { field: 'title', headerName: 'Task', flex: 1.5, renderCell: (p: GridRenderCellParams) => (
@@ -125,7 +195,26 @@ export default function TasksPage() {
         </Tooltip>
       ) : <Typography variant="caption" sx={{ color: 'text.disabled' }}>—</Typography>;
     }},
-    { field: 'due_date', headerName: 'Due', width: 90, renderCell: (p: GridRenderCellParams) => <Typography variant="caption">{p.value ? new Date(p.value).toLocaleDateString() : '—'}</Typography> },
+    { field: 'due_date', headerName: 'Due', width: 110, renderCell: (p: GridRenderCellParams) => {
+      const urgency = dueDateUrgency(p.row);
+      const overdue = isOverdue(p.row);
+      return (
+        <Tooltip title={urgency?.label || (p.value ? new Date(p.value).toLocaleDateString() : 'No due date')}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {p.value ? (
+              <>
+                <Typography variant="caption" sx={{ color: overdue ? 'error.main' : urgency ? 'warning.main' : 'inherit' }}>
+                  {new Date(p.value).toLocaleDateString()}
+                </Typography>
+                {overdue && <Chip label="Overdue" size="small" color="error" sx={{ height: 16, fontSize: '0.55rem', fontWeight: 700 }} />}
+              </>
+            ) : (
+              <Typography variant="caption" sx={{ color: 'text.disabled' }}>—</Typography>
+            )}
+          </Box>
+        </Tooltip>
+      );
+    }},
     { field: 'category', headerName: 'Category', width: 100, renderCell: (p: GridRenderCellParams) => <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>{p.value}</Typography> },
     { field: 'actions', headerName: '', width: 120, sortable: false, renderCell: (p: GridRenderCellParams) => {
       const isOwner = p.row.created_by === currentUsername;
@@ -161,6 +250,18 @@ export default function TasksPage() {
         {/* Compact Toolbar */}
         <Card sx={{ py: 0.75, px: 1.5, background: 'rgba(255,255,255,0.02)', border: '1px solid #1e293b' }}>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* My Tasks Filter */}
+            <Chip
+              label="My Tasks"
+              icon={<Person sx={{ fontSize: 14 }} />}
+              onClick={() => setMyTasksOnly(!myTasksOnly)}
+              color={myTasksOnly ? 'primary' : 'default'}
+              variant={myTasksOnly ? 'filled' : 'outlined'}
+              clickable
+              size="small"
+              sx={{ fontSize: '0.7rem', height: 24 }}
+            />
+
             {/* Search */}
             <TextField size="small" placeholder="Search tasks..." value={search} onChange={(e) => setSearch(e.target.value)} sx={{ width: 180, '& .MuiInputBase-root': { fontSize: '0.75rem' } }} />
 
@@ -186,7 +287,7 @@ export default function TasksPage() {
             </FormControl>
 
             <Tooltip title="Clear Filters">
-              <IconButton size="small" onClick={() => { setSearch(''); setFilterStatus(''); setFilterPriority(''); }}>
+              <IconButton size="small" onClick={() => { setSearch(''); setFilterStatus(''); setFilterPriority(''); setMyTasksOnly(false); }}>
                 <FilterList sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
@@ -201,16 +302,51 @@ export default function TasksPage() {
             </Tooltip>
             <Menu anchorEl={moreAnchor} open={Boolean(moreAnchor)} onClose={() => setMoreAnchor(null)}>
               <MenuItem onClick={() => { setMoreAnchor(null); loadData(); }}>Refresh Data</MenuItem>
-              <MenuItem onClick={() => { setMoreAnchor(null); }}>Export CSV</MenuItem>
-              <MenuItem onClick={() => { setMoreAnchor(null); }}>Bulk Edit</MenuItem>
+              <MenuItem onClick={() => { setMoreAnchor(null); exportCSV(); }}><Download sx={{ fontSize: 16, mr: 1 }} />Export CSV</MenuItem>
             </Menu>
           </Box>
         </Card>
       </Box>
 
+      {/* Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <Card sx={{ mb: 2, py: 1, px: 2, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.3)' }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main' }}>{selectedIds.length} selected</Typography>
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', mr: 0.5 }}>Set status:</Typography>
+              <Button size="small" variant="outlined" onClick={() => handleBulkAction('status', 'in-progress')} disabled={bulkUpdating}>In Progress</Button>
+              <Button size="small" variant="outlined" color="success" onClick={() => handleBulkAction('status', 'completed')} disabled={bulkUpdating}>Complete</Button>
+              <Button size="small" variant="outlined" color="error" onClick={() => handleBulkAction('status', 'cancelled')} disabled={bulkUpdating}>Cancel</Button>
+            </Box>
+            <IconButton size="small" onClick={() => setSelectedIds([])} sx={{ ml: 'auto' }}>
+              <LinkOff sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Box>
+        </Card>
+      )}
+
       {/* DataGrid */}
       <Card sx={{ flexGrow: 1, mb: 2 }}>
-        <DataGrid rows={filteredTasks} columns={columns} getRowId={(r) => r.id} density="compact" pageSizeOptions={[10, 25, 50]} initialState={{ pagination: { paginationModel: { pageSize: 25 } } }} disableRowSelectionOnClick sx={{ border: 'none' }} />
+        <DataGrid 
+          rows={filteredTasks} 
+          columns={columns} 
+          getRowId={(r) => r.id} 
+          density="compact" 
+          pageSizeOptions={[10, 25, 50]} 
+          initialState={{ 
+            pagination: { paginationModel: { pageSize: 25 } },
+            sorting: { sortModel: [{ field: 'priority', sort: 'desc' }, { field: 'due_date', sort: 'asc' }] }
+          }}
+          checkboxSelection
+          onRowSelectionModelChange={(model) => {
+            // Extract IDs from the selection model (v9 format)
+            const ids = 'ids' in model ? Array.from(model.ids) : [];
+            setSelectedIds(ids as number[]);
+          }}
+          disableRowSelectionOnClick 
+          sx={{ border: 'none' }} 
+        />
       </Card>
 
       {/* Stats Cards at Bottom */}

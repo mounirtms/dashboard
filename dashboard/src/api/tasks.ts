@@ -155,3 +155,38 @@ export async function setNoteStatus(noteId: number, status: TaskNote['status']):
   });
   return data;
 }
+
+export async function bulkUpdate(ids: number[], fields: Partial<Task>): Promise<any> {
+  const { data } = await apiClient.post('/api/tasks.php?action=bulk_update', { ids, ...fields });
+  return data;
+}
+
+export interface TaskLink {
+  id: number;
+  task_id: number;
+  linked_task_id: number;
+  link_type: 'blocks' | 'blocked-by' | 'related' | 'duplicate-of';
+  linked_title: string;
+  linked_status: Task['status'];
+  linked_priority: Task['priority'];
+  created_at: string;
+}
+
+export async function linkTask(taskId: number, linkedTaskId: number, linkType: TaskLink['link_type'] = 'related'): Promise<any> {
+  const { data } = await apiClient.post('/api/tasks.php?action=link_task', {
+    task_id: taskId,
+    linked_task_id: linkedTaskId,
+    link_type: linkType,
+  });
+  return data;
+}
+
+export async function getTaskLinks(taskId: number): Promise<TaskLink[]> {
+  const { data } = await apiClient.get(`/api/tasks.php?action=get_task_links&task_id=${taskId}`);
+  return data;
+}
+
+export async function unlinkTask(linkId: number): Promise<any> {
+  const { data } = await apiClient.post('/api/tasks.php?action=unlink_task', { id: linkId });
+  return data;
+}

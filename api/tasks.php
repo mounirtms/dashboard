@@ -87,6 +87,19 @@ try {
         INDEX idx_task (task_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS task_links (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        task_id INT UNSIGNED NOT NULL,
+        linked_task_id INT UNSIGNED NOT NULL,
+        link_type ENUM('blocks', 'blocked-by', 'related', 'duplicate-of') DEFAULT 'related',
+        created_by VARCHAR(50),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+        FOREIGN KEY (linked_task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+        INDEX idx_task (task_id),
+        INDEX idx_linked (linked_task_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     // Push notification subscriptions table
     $pdo->exec("CREATE TABLE IF NOT EXISTS push_subscriptions (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -305,6 +318,138 @@ try {
             // Log activity
             $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'deleted', ?, ?)")
                 ->execute([$id, $currentUser, "Task deleted: {$task['title']}"]);
+
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'bulk_update':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $ids = $input['ids'] ?? [];
+            if (empty($ids) || !is_array($ids)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Task IDs array is required']);
+                break;
+            }
+
+            $fields = [];
+            $values = [];
+            $allowedFields = ['status', 'priority', 'assigned_to', 'due_date', 'category'];
+            foreach ($allowedFields as $field) {
+                if (isset($input[$field])) {
+                    $fields[] = "$field = ?";
+                    $values[] = $input[$field];
+                }
+            }
+
+            if (empty($fields)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'No fields to update']);
+                break;
+            }
+
+            $fields[] = "updated_at = NOW()";
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $values = array_merge($values, $ids);
+
+            $stmt = $pdo->prepare("UPDATE tasks SET " . implode(', ', $fields) . " WHERE id IN ($placeholders)");
+            $stmt->execute($values);
+            $updated = $stmt->rowCount();
+
+            // Log activity for each updated task
+            $titleStmt = $pdo->prepare("SELECT title FROM tasks WHERE id = ?");
+            foreach ($ids as $taskId) {
+                $titleStmt->execute([$taskId]);
+                $taskTitle = $titleStmt->fetchColumn();
+                if (isset($input['status'])) {
+                    $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'bulk_status_changed', ?, ?)")
+                        ->execute([$taskId, $currentUser, "Bulk update: status → {$input['status']}"]);
+                } else {
+                    $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'bulk_updated', ?, ?)")
+                        ->execute([$taskId, $currentUser, "Bulk updated: $taskTitle"]);
+                }
+            }
+
+            echo json_encode(['success' => true, 'updated' => $updated]);
+            break;
+
+        case 'link_task':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $taskId = $input['task_id'] ?? 0;
+            $linkedTaskId = $input['linked_task_id'] ?? 0;
+            $linkType = $input['link_type'] ?? 'related';
+
+            if (!$taskId || !$linkedTaskId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Task ID and linked task ID are required']);
+                break;
+            }
+
+            if ($taskId === $linkedTaskId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Cannot link a task to itself']);
+                break;
+            }
+
+            $validLinkTypes = ['blocks', 'blocked-by', 'related', 'duplicate-of'];
+            if (!in_array($linkType, $validLinkTypes)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid link type. Valid: ' . implode(', ', $validLinkTypes)]);
+                break;
+            }
+
+            // Check if link already exists
+            $checkStmt = $pdo->prepare("SELECT id FROM task_links WHERE task_id = ? AND linked_task_id = ? AND link_type = ?");
+            $checkStmt->execute([$taskId, $linkedTaskId, $linkType]);
+            if ($checkStmt->fetch()) {
+                echo json_encode(['success' => true, 'message' => 'Link already exists']);
+                break;
+            }
+
+            $stmt = $pdo->prepare("INSERT INTO task_links (task_id, linked_task_id, link_type, created_by) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$taskId, $linkedTaskId, $linkType, $currentUser]);
+
+            $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'task_linked', ?, ?)")
+                ->execute([$taskId, $currentUser, "Linked to task #$linkedTaskId ($linkType)"]);
+
+            echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
+            break;
+
+        case 'get_task_links':
+            $taskId = $_GET['task_id'] ?? 0;
+            $stmt = $pdo->prepare("SELECT tl.*, t.title as linked_title, t.status as linked_status, t.priority as linked_priority 
+                FROM task_links tl 
+                JOIN tasks t ON tl.linked_task_id = t.id 
+                WHERE tl.task_id = ? 
+                ORDER BY tl.created_at DESC");
+            $stmt->execute([$taskId]);
+            echo json_encode($stmt->fetchAll());
+            break;
+
+        case 'unlink_task':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $id = $input['id'] ?? 0;
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Link ID is required']);
+                break;
+            }
+
+            $stmt = $pdo->prepare("SELECT task_id FROM task_links WHERE id = ?");
+            $stmt->execute([$id]);
+            $linkData = $stmt->fetch();
+
+            $pdo->prepare("DELETE FROM task_links WHERE id = ?")->execute([$id]);
+
+            if ($linkData) {
+                $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'task_unlinked', ?, ?)")
+                    ->execute([$linkData['task_id'], $currentUser, "Task link removed"]);
+            }
 
             echo json_encode(['success' => true]);
             break;

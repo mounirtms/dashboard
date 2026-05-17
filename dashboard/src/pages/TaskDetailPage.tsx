@@ -1,8 +1,8 @@
-import { Box, Typography, Card, CardContent, Button, Chip, TextField, IconButton, Tooltip, Divider, Avatar, CircularProgress, FormControl, InputLabel, Select, MenuItem, Paper, Menu, MenuItem as MuiMenuItem, Popper, ClickAwayListener, List, ListItemButton, ListItemAvatar, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { ArrowBack, Delete, Send, CheckCircle, Edit, PushPin, Reply, Code, FormatQuote, MoreVert, Save, Close, AddPhotoAlternate, OpenInNew } from '@mui/icons-material';
-import { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Card, CardContent, Button, Chip, TextField, IconButton, Tooltip, Divider, Avatar, CircularProgress, FormControl, InputLabel, Select, MenuItem, Paper, Menu, MenuItem as MuiMenuItem, Popper, ClickAwayListener, List, ListItem, ListItemButton, ListItemAvatar, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, Link } from '@mui/material';
+import { ArrowBack, Delete, Send, CheckCircle, Edit, PushPin, Reply, Code, FormatQuote, MoreVert, Save, Close, AddPhotoAlternate, OpenInNew, KeyboardArrowRight, Link as LinkIcon, UnfoldMore, LinkOff } from '@mui/icons-material';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchTask, updateTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, fetchScreenshots, deleteScreenshot, forwardNote, setNoteStatus, uploadScreenshot, type Task, type TaskNote, type TaskActivity, type TaskScreenshot } from '../api/tasks';
+import { fetchTask, updateTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, fetchScreenshots, deleteScreenshot, forwardNote, setNoteStatus, uploadScreenshot, getTaskLinks, linkTask, unlinkTask, type Task, type TaskNote, type TaskActivity, type TaskScreenshot, type TaskLink } from '../api/tasks';
 import { fetchTasks, type Task as TaskType } from '../api/tasks';
 import { fetchUsers, type User } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
@@ -44,6 +44,12 @@ export default function TaskDetailPage() {
   const [forwardingNote, setForwardingNote] = useState<TaskNote | null>(null);
   const [forwardTargetTaskId, setForwardTargetTaskId] = useState('');
   const [allTasks, setAllTasks] = useState<TaskType[]>([]);
+
+  // Linked tasks
+  const [taskLinks, setTaskLinks] = useState<TaskLink[]>([]);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkDialogType, setLinkDialogType] = useState<TaskLink['link_type']>('related');
+  const [linkTargetTaskId, setLinkTargetTaskId] = useState('');
 
   // @mention state
   const [users, setUsers] = useState<User[]>([]);
@@ -240,14 +246,14 @@ export default function TaskDetailPage() {
     }
   };
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([fetchTask(+id), fetchTaskNotes(+id), fetchTaskActivity(+id), fetchUsers(), fetchScreenshots(+id), fetchTasks()])
-      .then(([t, n, a, u, s, allT]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setScreenshots(s); setAllTasks(allT); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
+    Promise.all([fetchTask(+id), fetchTaskNotes(+id), fetchTaskActivity(+id), fetchUsers(), fetchScreenshots(+id), fetchTasks(), getTaskLinks(+id)])
+      .then(([t, n, a, u, s, allT, links]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setScreenshots(s); setAllTasks(allT); setTaskLinks(links); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
-  };
+  }, [id]);
 
   // @mention helpers
   const handleMentionInput = (value: string, cursorPos: number) => {
@@ -285,14 +291,14 @@ export default function TaskDetailPage() {
 
   useEffect(() => { loadData(); }, [id]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!task || !editData.title.trim()) return;
     try {
       await updateTask({ id: task.id, ...editData });
       setEditing(false);
       loadData();
     } catch (e: any) { console.error(e); }
-  };
+  }, [task, editData]);
 
   const handleDeleteNote = async (noteId: number) => {
     try { await deleteNote(noteId); loadData(); } catch (e: any) { console.error(e); }
@@ -301,10 +307,60 @@ export default function TaskDetailPage() {
   const handleStatusToggle = async () => {
     if (!task) return;
     try {
-      await updateTask({ id: task.id, status: task.status === 'completed' ? 'pending' : 'completed' });
+      const cycle: Task['status'][] = ['pending', 'in-progress', 'completed'];
+      const currentIndex = cycle.indexOf(task.status as any);
+      const nextStatus = task.status === 'completed' ? 'pending' : cycle[(currentIndex + 1) % cycle.length];
+      await updateTask({ id: task.id, status: nextStatus });
       loadData();
     } catch (e: any) { console.error(e); }
   };
+
+  const handleLinkTask = async () => {
+    if (!task || !linkTargetTaskId) return;
+    try {
+      await linkTask(task.id, parseInt(linkTargetTaskId), linkDialogType);
+      setLinkDialogOpen(false);
+      setLinkTargetTaskId('');
+      loadData();
+    } catch (err: any) {
+      console.error('Link task failed:', err);
+    }
+  };
+
+  const handleUnlinkTask = async (linkId: number) => {
+    try {
+      await unlinkTask(linkId);
+      loadData();
+    } catch (err: any) {
+      console.error('Unlink task failed:', err);
+    }
+  };
+
+  const linkTypeConfig: Record<string, { label: string; color: string; icon: string }> = {
+    'blocks': { label: 'Blocks', color: 'error', icon: '🚫' },
+    'blocked-by': { label: 'Blocked by', color: 'warning', icon: '⏸️' },
+    'related': { label: 'Related', color: 'info', icon: '🔗' },
+    'duplicate-of': { label: 'Duplicate of', color: 'default', icon: '📋' },
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S to save when editing
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && editing) {
+        e.preventDefault();
+        handleSave();
+      }
+      // Escape to close edit mode or dialogs
+      if (e.key === 'Escape') {
+        if (editing) setEditing(false);
+        if (forwardDialogOpen) setForwardDialogOpen(false);
+        if (linkDialogOpen) setLinkDialogOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [editing, handleSave, forwardDialogOpen, linkDialogOpen]);
 
   if (loading) return <LoadingState message="Loading task details..." />;
   if (!task) return <Box sx={{ p: 3 }}><Typography>Task not found</Typography></Box>;
@@ -327,7 +383,7 @@ export default function TaskDetailPage() {
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Chip label={task.priority.toUpperCase()} size="small" color={priorityColor(task.priority)} sx={{ fontWeight: 700 }} />
-          <Chip label={task.status.toUpperCase().replace('-', ' ')} size="small" color={statusColor(task.status)} sx={{ fontWeight: 700 }} />
+          <Chip label={task.status.toUpperCase().replace('-', ' ')} size="small" color={statusColor(task.status)} sx={{ fontWeight: 700, cursor: 'pointer' }} onClick={handleStatusToggle} title="Click to cycle status" />
           {task.status !== 'completed' && <Tooltip title="Mark Complete"><IconButton size="small" color="success" onClick={handleStatusToggle}><CheckCircle /></IconButton></Tooltip>}
           {(task.created_by === currentUser || permissions?.can_update_any_task) && (
             <Tooltip title="Edit"><IconButton size="small" onClick={() => setEditing(!editing)}><Edit /></IconButton></Tooltip>
@@ -356,6 +412,41 @@ export default function TaskDetailPage() {
             <Card><CardContent><Typography variant="caption" sx={{ color: 'text.disabled' }}>Due Date</Typography><Typography variant="body2" sx={{ fontWeight: 600 }}>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}</Typography></CardContent></Card>
             <Card><CardContent><Typography variant="caption" sx={{ color: 'text.disabled' }}>Category</Typography><Typography variant="body2" sx={{ fontWeight: 600, textTransform: 'capitalize' }}>{task.category}</Typography></CardContent></Card>
           </Box>
+          
+          {/* Linked Tasks */}
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Linked Tasks ({taskLinks.length})</Typography>
+                <Button size="small" startIcon={<LinkIcon sx={{ fontSize: 14 }} />} onClick={() => setLinkDialogOpen(true)}>Link Task</Button>
+              </Box>
+              {taskLinks.length === 0 ? (
+                <Typography variant="caption" sx={{ color: 'text.disabled' }}>No linked tasks yet. Link related, blocking, or duplicate tasks.</Typography>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {taskLinks.map(link => {
+                    const config = linkTypeConfig[link.link_type] || linkTypeConfig.related;
+                    return (
+                      <Box key={link.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, borderRadius: 1, backgroundColor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
+                        <Chip label={`${config.icon} ${config.label}`} size="small" color={config.color as any} sx={{ height: 20, fontSize: '0.6rem' }} />
+                        <Link 
+                          component="button"
+                          sx={{ cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                          onClick={() => navigate(`/tasks/${link.linked_task_id}`)}
+                        >
+                          #{link.linked_task_id} - {link.linked_title}
+                        </Link>
+                        <Chip label={link.linked_status.replace('-', ' ')} size="small" color={statusColor(link.linked_status)} sx={{ height: 18, fontSize: '0.55rem', ml: 'auto' }} />
+                        <IconButton size="small" onClick={() => handleUnlinkTask(link.id)} sx={{ p: 0.25 }}>
+                          <LinkOff sx={{ fontSize: 14, color: 'text.disabled' }} />
+                        </IconButton>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              )}
+            </CardContent>
+          </Card>
         </Box>
       )}
 
@@ -789,6 +880,50 @@ export default function TaskDetailPage() {
           <Button onClick={() => { setForwardDialogOpen(false); setForwardingNote(null); setForwardTargetTaskId(''); }}>Cancel</Button>
           <Button variant="contained" onClick={handleForwardNote} disabled={!forwardTargetTaskId}>
             Forward Note
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Link Task Dialog */}
+      <Dialog open={linkDialogOpen} onClose={() => { setLinkDialogOpen(false); setLinkTargetTaskId(''); }}>
+        <DialogTitle>Link to Another Task</DialogTitle>
+        <DialogContent sx={{ minWidth: 400, pt: 2 }}>
+          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+            Linking from Task #{task.id} - {task.title}
+          </Typography>
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel>Link Type</InputLabel>
+            <Select
+              value={linkDialogType}
+              label="Link Type"
+              onChange={(e) => setLinkDialogType(e.target.value as TaskLink['link_type'])}
+            >
+              <MenuItem value="related">🔗 Related</MenuItem>
+              <MenuItem value="blocks">🚫 Blocks</MenuItem>
+              <MenuItem value="blocked-by">⏸️ Blocked by</MenuItem>
+              <MenuItem value="duplicate-of">📋 Duplicate of</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl fullWidth size="small">
+            <InputLabel>Target Task</InputLabel>
+            <Select
+              value={linkTargetTaskId}
+              label="Target Task"
+              onChange={(e) => setLinkTargetTaskId(e.target.value)}
+            >
+              <MenuItem value="" disabled>Select a task...</MenuItem>
+              {allTasks.filter(t => t.id !== task.id).map(t => (
+                <MenuItem key={t.id} value={t.id}>
+                  #{t.id} - {t.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setLinkDialogOpen(false); setLinkTargetTaskId(''); }}>Cancel</Button>
+          <Button variant="contained" onClick={handleLinkTask} disabled={!linkTargetTaskId}>
+            Link Tasks
           </Button>
         </DialogActions>
       </Dialog>
