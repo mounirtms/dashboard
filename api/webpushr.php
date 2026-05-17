@@ -478,17 +478,24 @@ switch ($action) {
         $rawInput = file_get_contents('php://input');
         $input = json_decode($rawInput, true) ?? [];
         
-        if (empty($input['endpoint'])) {
-            echo json_encode(['error' => 'Endpoint is required']);
-            break;
-        }
+        $subscriptionId = $input['subscription_id'] ?? null;
         
         try {
             $authDb = getAuthDb();
             $userId = $_SESSION['user_id'] ?? 0;
             
-            $stmt = $authDb->prepare("UPDATE push_subscriptions SET is_active = 0 WHERE user_id = ? AND subscription_endpoint = ?");
-            $stmt->execute([$userId, $input['endpoint']]);
+            if ($subscriptionId) {
+                // Delete by subscription ID
+                $stmt = $authDb->prepare("DELETE FROM push_subscriptions WHERE id = ? AND user_id = ?");
+                $stmt->execute([$subscriptionId, $userId]);
+            } elseif (!empty($input['endpoint'])) {
+                // Delete by endpoint
+                $stmt = $authDb->prepare("DELETE FROM push_subscriptions WHERE user_id = ? AND subscription_endpoint = ?");
+                $stmt->execute([$userId, $input['endpoint']]);
+            } else {
+                echo json_encode(['error' => 'Subscription ID or endpoint is required']);
+                break;
+            }
             
             echo json_encode(['success' => true, 'message' => 'Subscription removed']);
         } catch (Exception $e) {

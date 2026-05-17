@@ -1,6 +1,8 @@
-import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip, Select, MenuItem, FormControl, InputLabel, Avatar } from '@mui/material';
-import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save } from '@mui/icons-material';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip, Select, MenuItem, FormControl, InputLabel, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
+import { fetchSettings, saveSettings, fetchPushSubscriptions, unsubscribeDevice, type UserSettings, type PushSubscription } from '../api/settings';
+import { useWebpushrSubscription } from '../hooks/useWebpushrSubscription';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -17,89 +19,116 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-interface PersonalInfo {
-  full_name: string;
-  email: string;
-  phone: string;
-}
-
-interface AppearanceSettings {
-  theme: string;
-  font_size: string;
-  animations: boolean;
-  language: string;
-}
-
-interface GeneralSettings {
-  notifications_enabled: boolean;
-  auto_refresh: boolean;
-  refresh_interval: number;
-  debug_mode: boolean;
-}
-
-const defaultPersonal: PersonalInfo = { full_name: '', email: '', phone: '' };
-const defaultAppearance: AppearanceSettings = { theme: 'dark', font_size: 'medium', animations: true, language: 'en' };
-const defaultGeneral: GeneralSettings = { notifications_enabled: true, auto_refresh: true, refresh_interval: 30, debug_mode: false };
+const defaultPersonal: UserSettings['personal'] = { full_name: '', email: '', phone: '' };
+const defaultAppearance: UserSettings['appearance'] = { theme: 'dark', font_size: 'medium', animations: true, language: 'en' };
+const defaultGeneral: UserSettings['general'] = { notifications_enabled: true, auto_refresh: true, refresh_interval: 30, debug_mode: false };
 
 export default function SettingsPage() {
   const [tab, setTab] = useState(0);
   const [showKey, setShowKey] = useState(false);
   const [apiToken, setApiToken] = useState('••••••••••••••••••••••••••••••••');
   const [telegramWebhook, setTelegramWebhook] = useState('https://dashboard.technostationery.com/api/telegram/webhook.php');
-  const [personal, setPersonal] = useState<PersonalInfo>(() => {
-    const saved = localStorage.getItem('dashboard_personal_info');
-    return saved ? JSON.parse(saved) : defaultPersonal;
-  });
-  const [appearance, setAppearance] = useState<AppearanceSettings>(() => {
-    const saved = localStorage.getItem('dashboard_appearance');
-    return saved ? JSON.parse(saved) : defaultAppearance;
-  });
-  const [general, setGeneral] = useState<GeneralSettings>(() => {
-    const saved = localStorage.getItem('dashboard_general_settings');
-    return saved ? JSON.parse(saved) : defaultGeneral;
-  });
+  
+  // API-loaded settings
+  const [personal, setPersonal] = useState<UserSettings['personal']>(defaultPersonal);
+  const [appearance, setAppearance] = useState<UserSettings['appearance']>(defaultAppearance);
+  const [general, setGeneral] = useState<UserSettings['general']>(defaultGeneral);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  
+  // Push subscriptions
+  const [subscriptions, setSubscriptions] = useState<PushSubscription[]>([]);
+  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = useWebpushrSubscription();
 
-  const saveToStorage = useCallback((key: string, value: any) => {
-    setSaving(true);
-    localStorage.setItem(key, JSON.stringify(value));
-    const now = new Date().toLocaleTimeString();
-    setLastSaved(now);
-    setTimeout(() => setSaving(false), 500);
+  // Load settings from API on mount
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const settings = await fetchSettings();
+        if (!cancelled) {
+          setPersonal(settings.personal || defaultPersonal);
+          setAppearance(settings.appearance || defaultAppearance);
+          setGeneral(settings.general || defaultGeneral);
+        }
+      } catch (err: any) {
+        if (!cancelled) setLoadError(err.message);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
-  const debouncedSave = useCallback((key: string, value: any) => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => saveToStorage(key, value), 2000);
-  }, [saveToStorage]);
-
+  // Load push subscriptions
   useEffect(() => {
-    debouncedSave('dashboard_personal_info', personal);
-    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [personal, debouncedSave]);
+    let cancelled = false;
+    const loadSubs = async () => {
+      try {
+        const subs = await fetchPushSubscriptions('dashboard');
+        if (!cancelled) setSubscriptions(subs.filter((s: PushSubscription) => s.is_active === 1));
+      } catch (err) {
+        console.error('Failed to load push subscriptions:', err);
+      }
+    };
+    if (general.notifications_enabled) loadSubs();
+    return () => { cancelled = true; };
+  }, [general.notifications_enabled]);
 
+  const saveAll = useCallback(async () => {
+    setSaving(true);
+    try {
+      await saveSettings({ personal, appearance, general });
+      setLastSaved(new Date().toLocaleTimeString());
+    } catch (err: any) {
+      console.error('Failed to save settings:', err);
+    } finally {
+      setSaving(false);
+    }
+  }, [personal, appearance, general]);
+
+  // Auto-save on changes
   useEffect(() => {
-    debouncedSave('dashboard_appearance', appearance);
-    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [appearance, debouncedSave]);
+    const timer = setTimeout(() => saveAll(), 2000);
+    return () => clearTimeout(timer);
+  }, [personal, appearance, general, saveAll]);
 
-  useEffect(() => {
-    debouncedSave('dashboard_general_settings', general);
-    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [general, debouncedSave]);
-
-  const handlePersonalChange = (field: keyof PersonalInfo, value: string) => {
+  const handlePersonalChange = (field: keyof UserSettings['personal'], value: string) => {
     setPersonal(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAppearanceChange = (field: keyof AppearanceSettings, value: string | boolean) => {
+  const handleAppearanceChange = (field: keyof UserSettings['appearance'], value: string | boolean) => {
     setAppearance(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleGeneralChange = (field: keyof GeneralSettings, value: any) => {
+  const handleGeneralChange = async (field: keyof UserSettings['general'], value: any) => {
+    if (field === 'notifications_enabled') {
+      if (value) {
+        // Subscribe to push notifications
+        await subscribe();
+      } else {
+        // Unsubscribe from push notifications
+        await unsubscribe();
+      }
+    }
     setGeneral(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleUnsubscribeDevice = async (subscriptionId: number) => {
+    try {
+      await unsubscribeDevice(subscriptionId);
+      setSubscriptions(prev => prev.filter(s => s.id !== subscriptionId));
+    } catch (err: any) {
+      console.error('Failed to unsubscribe device:', err);
+    }
+  };
+
+  const getDeviceIcon = (deviceType: string) => {
+    switch (deviceType) {
+      case 'mobile': return <Smartphone fontSize="small" />;
+      case 'tablet': return <Tablet fontSize="small" />;
+      default: return <Laptop fontSize="small" />;
+    }
   };
 
   return (
@@ -265,11 +294,55 @@ export default function SettingsPage() {
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>System Notifications</Typography>
                 <Box sx={{ display: 'grid', gap: 2 }}>
                   <FormControlLabel
-                    control={<Switch checked={general.notifications_enabled} onChange={(e) => handleGeneralChange('notifications_enabled', e.target.checked)} />}
-                    label={<Box><Typography variant="body2" sx={{ fontWeight: 600 }}>Browser Push Alerts</Typography><Typography variant="caption" color="text.disabled">Receive critical server alerts via Webpushr</Typography></Box>}
+                    control={<Switch checked={general.notifications_enabled} onChange={(e) => handleGeneralChange('notifications_enabled', e.target.checked)} disabled={pushLoading} />}
+                    label={<Box><Typography variant="body2" sx={{ fontWeight: 600 }}>Browser Push Alerts</Typography><Typography variant="caption" color="text.disabled">Receive critical server alerts via Webpushr {isSupported ? '(Supported)' : '(Not supported)'}</Typography></Box>}
                   />
-                  <Button variant="outlined" size="small" sx={{ alignSelf: 'flex-start' }}>Reset Service Worker</Button>
+                  <Button variant="outlined" size="small" sx={{ alignSelf: 'flex-start' }} onClick={() => {
+                    if (navigator.serviceWorker) {
+                      navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.unregister()));
+                    }
+                  }}>Reset Service Worker</Button>
                 </Box>
+                
+                {general.notifications_enabled && subscriptions.length > 0 && (
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Push Subscription Devices</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 2 }}>Devices subscribed to receive dashboard alerts</Typography>
+                    <TableContainer component={Paper} variant="outlined" sx={{ border: '1px solid', borderColor: 'divider' }}>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Device</TableCell>
+                            <TableCell>Browser</TableCell>
+                            <TableCell>OS</TableCell>
+                            <TableCell>Last Active</TableCell>
+                            <TableCell align="right">Action</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {subscriptions.map((sub) => (
+                            <TableRow key={sub.id}>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  {getDeviceIcon(sub.device_type)}
+                                  <Typography variant="body2">{sub.device_id || 'Device'}</Typography>
+                                </Box>
+                              </TableCell>
+                              <TableCell>{sub.browser}</TableCell>
+                              <TableCell>{sub.os}</TableCell>
+                              <TableCell>{new Date(sub.last_used).toLocaleDateString()}</TableCell>
+                              <TableCell align="right">
+                                <Button size="small" color="error" startIcon={<Delete />} onClick={() => handleUnsubscribeDevice(sub.id)}>
+                                  Remove
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Box>
+                )}
               </Grid>
             </Grid>
           </TabPanel>

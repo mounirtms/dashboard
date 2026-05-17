@@ -63,6 +63,18 @@ try {
     try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN is_pinned TINYINT(1) DEFAULT 0 AFTER category"); } catch (\Exception $e) {}
     try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at"); } catch (\Exception $e) {}
     try { $pdo->exec("ALTER TABLE task_notes ADD INDEX idx_pinned (is_pinned)"); } catch (\Exception $e) {}
+    try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN status ENUM('draft', 'active', 'reviewed', 'action-required') DEFAULT 'active' AFTER is_pinned"); } catch (\Exception $e) {}
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS task_screenshots (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        task_id INT UNSIGNED NOT NULL,
+        author VARCHAR(50) NOT NULL,
+        file_path VARCHAR(500) NOT NULL,
+        caption VARCHAR(500) DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+        INDEX idx_task (task_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS task_activity (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -451,6 +463,184 @@ try {
                 $counts[$row['task_id']] = (int)$row['count'];
             }
             echo json_encode($counts);
+            break;
+
+        case 'upload_screenshot':
+            if (!PermissionChecker::hasPermission('can_add_task_notes')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to add screenshots']);
+                break;
+            }
+
+            $taskId = $_POST['task_id'] ?? 0;
+            $caption = trim($_POST['caption'] ?? '');
+            if (!$taskId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Task ID is required']);
+                break;
+            }
+
+            if (!isset($_FILES['screenshot']) || $_FILES['screenshot']['error'] !== UPLOAD_ERR_OK) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Screenshot file is required']);
+                break;
+            }
+
+            $file = $_FILES['screenshot'];
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!in_array($file['type'], $allowedTypes)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid file type. Only images are allowed']);
+                break;
+            }
+
+            if ($file['size'] > 5 * 1024 * 1024) {
+                http_response_code(400);
+                echo json_encode(['error' => 'File size must be less than 5MB']);
+                break;
+            }
+
+            // Create upload directory
+            $uploadDir = __DIR__ . '/uploads/screenshots';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            // Generate unique filename
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = 'task_' . $taskId . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+            $filepath = $uploadDir . '/' . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                $relativePath = '/uploads/screenshots/' . $filename;
+                $stmt = $pdo->prepare("INSERT INTO task_screenshots (task_id, author, file_path, caption) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$taskId, $currentUser, $relativePath, $caption]);
+
+                $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'screenshot_added', ?, ?)")
+                    ->execute([$taskId, $currentUser, "Screenshot uploaded: $filename"]);
+
+                echo json_encode(['success' => true, 'id' => $pdo->lastInsertId(), 'file_path' => $relativePath]);
+            } else {
+                http_response_code(500);
+                echo json_encode(['error' => 'Failed to upload file']);
+            }
+            break;
+
+        case 'get_screenshots':
+            $taskId = $_GET['task_id'] ?? 0;
+            $stmt = $pdo->prepare("SELECT * FROM task_screenshots WHERE task_id = ? ORDER BY created_at DESC");
+            $stmt->execute([$taskId]);
+            echo json_encode($stmt->fetchAll());
+            break;
+
+        case 'delete_screenshot':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $id = $input['id'] ?? 0;
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Screenshot ID is required']);
+                break;
+            }
+
+            if (!PermissionChecker::hasPermission('can_delete_tasks')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to delete screenshots']);
+                break;
+            }
+
+            // Get file path to delete physical file
+            $stmt = $pdo->prepare("SELECT file_path, task_id FROM task_screenshots WHERE id = ?");
+            $stmt->execute([$id]);
+            $screenshot = $stmt->fetch();
+
+            if ($screenshot) {
+                $filePath = __DIR__ . $screenshot['file_path'];
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+
+                $pdo->prepare("DELETE FROM task_screenshots WHERE id = ?")->execute([$id]);
+
+                $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'screenshot_deleted', ?, ?)")
+                    ->execute([$screenshot['task_id'], $currentUser, "Screenshot deleted: ID $id"]);
+            }
+
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'forward_note':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $noteId = $input['note_id'] ?? 0;
+            $targetTaskId = $input['target_task_id'] ?? 0;
+            if (!$noteId || !$targetTaskId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Note ID and target task ID are required']);
+                break;
+            }
+
+            // Get original note
+            $stmt = $pdo->prepare("SELECT * FROM task_notes WHERE id = ?");
+            $stmt->execute([$noteId]);
+            $note = $stmt->fetch();
+            if (!$note) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Note not found']);
+                break;
+            }
+
+            // Create forwarded note on target task
+            $forwardedContent = "[Forwarded from Task #{$note['task_id']} by {$currentUser}]\n\n" . $note['content'];
+            $stmt = $pdo->prepare("INSERT INTO task_notes (task_id, author, content, category, is_pinned, status, parent_id) VALUES (?, ?, ?, ?, 0, 'active', ?)");
+            $stmt->execute([$targetTaskId, $currentUser, $forwardedContent, $note['category'], $noteId]);
+
+            $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'note_forwarded', ?, ?)")
+                ->execute([$targetTaskId, $currentUser, "Note forwarded from task #{$note['task_id']}"]);
+
+            $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'note_forwarded', ?, ?)")
+                ->execute([$note['task_id'], $currentUser, "Note forwarded to task #$targetTaskId"]);
+
+            echo json_encode(['success' => true, 'new_note_id' => $pdo->lastInsertId()]);
+            break;
+
+        case 'set_note_status':
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+
+            $id = $input['note_id'] ?? 0;
+            $status = $input['status'] ?? 'active';
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Note ID is required']);
+                break;
+            }
+
+            $validStatuses = ['draft', 'active', 'reviewed', 'action-required'];
+            if (!in_array($status, $validStatuses)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid status. Valid values: ' . implode(', ', $validStatuses)]);
+                break;
+            }
+
+            $stmt = $pdo->prepare("SELECT task_id FROM task_notes WHERE id = ?");
+            $stmt->execute([$id]);
+            $noteData = $stmt->fetch();
+            if (!$noteData) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Note not found']);
+                break;
+            }
+
+            $stmt = $pdo->prepare("UPDATE task_notes SET status = ? WHERE id = ?");
+            $stmt->execute([$status, $id]);
+
+            $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'note_status_changed', ?, ?)")
+                ->execute([$noteData['task_id'], $currentUser, "Note #$id status set to $status"]);
+
+            echo json_encode(['success' => true]);
             break;
 
         default:

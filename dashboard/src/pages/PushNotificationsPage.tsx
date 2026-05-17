@@ -1,13 +1,38 @@
-import { Box, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Select, FormControl, InputLabel, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
-import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code, CloudUpload, BarChart, TrendingUp } from '@mui/icons-material';
+import { Box, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Select, FormControl, InputLabel, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, ListItemIcon, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code, CloudUpload, BarChart, TrendingUp, History, Warning, Error as ErrorIcon, Info as InfoIcon } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { fetchPushStats, sendPushNotification, syncSubscribers, fetchSegments, fetchDeliveryStats, fetchSubscriberAnalytics, uploadPushImage, PushStats, Segment as SegmentType } from '../api/notifications';
 import { usePermissions } from '../hooks/usePermissions';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
 
+interface AlertLogEntry {
+  timestamp: string;
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  message: string;
+  status: 'sent' | 'suppressed' | 'failed';
+  channel: 'webpushr' | 'telegram';
+}
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div role="tabpanel" hidden={value !== index} {...other}>
+      {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
+    </div>
+  );
+}
+
 export default function PushNotificationsPage() {
   const { hasPermission, isAdmin } = usePermissions();
+  const [activeTab, setActiveTab] = useState(0);
   const [stats, setStats] = useState<PushStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -20,6 +45,10 @@ export default function PushNotificationsPage() {
     env: 'dev',
     segment_id: ''
   });
+  
+  // Alert history
+  const [alertLog, setAlertLog] = useState<AlertLogEntry[]>([]);
+  const [alertLogLoading, setAlertLogLoading] = useState(false);
 
   // Image/icon uploads
   const [iconFile, setIconFile] = useState<File | null>(null);
@@ -76,10 +105,29 @@ export default function PushNotificationsPage() {
     }).finally(() => setAnalyticsLoading(false));
   };
 
+  const loadAlertLog = async () => {
+    setAlertLogLoading(true);
+    try {
+      const response = await fetch('/api/monitor.php?action=notification_log');
+      const data = await response.json();
+      if (data.success && data.logs) {
+        setAlertLog(data.logs);
+      }
+    } catch (err) {
+      console.error('Failed to load alert log:', err);
+    } finally {
+      setAlertLogLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadStats(selectedEnv);
     loadAnalytics(selectedEnv);
   }, [selectedEnv]);
+
+  useEffect(() => {
+    if (activeTab === 1) loadAlertLog();
+  }, [activeTab]);
 
   const handleEnvChange = (env: string) => {
     setSelectedEnv(env);
@@ -226,8 +274,8 @@ export default function PushNotificationsPage() {
             Webpushr integration for real-time browser alerts and marketing campaigns.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {['dev', 'beta', 'production'].map((env) => (
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {['dev', 'beta'].map((env) => (
             <Chip
               key={env}
               label={env.charAt(0).toUpperCase() + env.slice(1)}
@@ -241,33 +289,43 @@ export default function PushNotificationsPage() {
         </Box>
       </Box>
 
+      <Card sx={{ mb: 3 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
+            <Tab icon={<Send sx={{ fontSize: 18 }} />} iconPosition="start" label="Broadcast" />
+            <Tab icon={<History sx={{ fontSize: 18 }} />} iconPosition="start" label="Alert History" />
+          </Tabs>
+        </Box>
+      </Card>
+
       {/* Stats Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard
-            label="Total Subscribers"
-            value={stats?.subscribers ?? '...'}
-            color="primary"
-            icon={<Groups />}
-          />
+      <TabPanel value={activeTab} index={0}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              label="Total Subscribers"
+              value={stats?.subscribers ?? '...'}
+              color="primary"
+              icon={<Groups />}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              label="Active Environment"
+              value={stats?.current_env ?? selectedEnv}
+              color="info"
+              icon={<Speed />}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              label="Segments"
+              value={segments.length}
+              color="success"
+              icon={<Segment />}
+            />
+          </Grid>
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard
-            label="Active Environment"
-            value={stats?.current_env ?? selectedEnv}
-            color="info"
-            icon={<Speed />}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard
-            label="Segments"
-            value={segments.length}
-            color="success"
-            icon={<Segment />}
-          />
-        </Grid>
-      </Grid>
 
       {/* Analytics Cards */}
       {analyticsLoading ? (
@@ -519,6 +577,7 @@ export default function PushNotificationsPage() {
           </Card>
         </Grid>
       </Grid>
+      </TabPanel>
 
       {/* Schedule Dialog */}
       <Dialog open={scheduleOpen} onClose={() => setScheduleOpen(false)}>
@@ -560,6 +619,58 @@ export default function PushNotificationsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Alert History Tab */}
+      <TabPanel value={activeTab} index={1}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <History sx={{ color: 'info.main' }} /> Monitoring Alert Log
+            </Typography>
+            {alertLogLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
+            ) : alertLog.length > 0 ? (
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Time</TableCell>
+                      <TableCell>Severity</TableCell>
+                      <TableCell>Title</TableCell>
+                      <TableCell>Message</TableCell>
+                      <TableCell>Channel</TableCell>
+                      <TableCell>Status</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {alertLog.slice(0, 50).map((entry, i) => (
+                      <TableRow key={i}>
+                        <TableCell>{new Date(entry.timestamp).toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Chip
+                            size="small"
+                            label={entry.severity}
+                            color={entry.severity === 'critical' ? 'error' : entry.severity === 'warning' ? 'warning' : 'info'}
+                            icon={entry.severity === 'critical' ? <ErrorIcon /> : entry.severity === 'warning' ? <Warning /> : <InfoIcon />}
+                          />
+                        </TableCell>
+                        <TableCell>{entry.title}</TableCell>
+                        <TableCell sx={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.message}</TableCell>
+                        <TableCell>{entry.channel}</TableCell>
+                        <TableCell>
+                          <Chip size="small" label={entry.status} color={entry.status === 'sent' ? 'success' : entry.status === 'suppressed' ? 'default' : 'error'} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No alerts logged yet</Typography>
+            )}
+          </CardContent>
+        </Card>
+      </TabPanel>
 
       {/* Snackbar */}
       <Snackbar open={snackbar.open} autoHideDuration={5000} onClose={handleCloseSnackbar}>

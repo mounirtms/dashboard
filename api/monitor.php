@@ -50,7 +50,7 @@ $allowedActions = [
     'system_advanced', 'phpfpm_pools', 'alerts', 'cloudflare',
     'cloudflare_action', 'apache', 'cache_manage', 'logs', 'processes',
     'db_action', 'cron_action', 'process_action', 'site_action', 'indexer_action',
-    'ssh', 'services', 'network'
+    'ssh', 'services', 'network', 'notification_log'
 ];
 
 if (!in_array($action, $allowedActions)) {
@@ -192,6 +192,27 @@ try {
             break;
         case 'network':
             $data = $monitorApi->getNetworkConnections();
+            break;
+        case 'notification_log':
+            $logFile = __DIR__ . '/logs/webpushr_alerts.log';
+            $logs = [];
+            if (file_exists($logFile)) {
+                $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                foreach (array_slice(array_reverse($lines), 0, 200) as $line) {
+                    // Format: [2024-01-01 12:00:00] SEVERITY: Title | Message | Status: sent
+                    if (preg_match('/\[(.*?)\]\s+(INFO|WARNING|CRITICAL):\s+(.*?)\s*\|\s*(.*?)\s*\|\s*Status:\s*(sent|suppressed|failed)/', $line, $matches)) {
+                        $logs[] = [
+                            'timestamp' => $matches[1],
+                            'severity' => strtolower($matches[2]),
+                            'title' => trim($matches[3]),
+                            'message' => trim($matches[4]),
+                            'status' => $matches[5],
+                            'channel' => 'webpushr'
+                        ];
+                    }
+                }
+            }
+            $data = ['success' => true, 'logs' => $logs, 'total' => count($logs)];
             break;
         default: 
             $data = $monitorApi->getOverview(); 

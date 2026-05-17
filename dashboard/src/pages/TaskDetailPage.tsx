@@ -1,8 +1,9 @@
-import { Box, Typography, Card, CardContent, Button, Chip, TextField, IconButton, Tooltip, Divider, Avatar, CircularProgress, FormControl, InputLabel, Select, MenuItem, Paper, Menu, MenuItem as MuiMenuItem, Popper, ClickAwayListener, List, ListItemButton, ListItemAvatar, ListItemText } from '@mui/material';
-import { ArrowBack, Delete, Send, CheckCircle, Edit, PushPin, Reply, Code, FormatQuote, MoreVert, Save, Close } from '@mui/icons-material';
+import { Box, Typography, Card, CardContent, Button, Chip, TextField, IconButton, Tooltip, Divider, Avatar, CircularProgress, FormControl, InputLabel, Select, MenuItem, Paper, Menu, MenuItem as MuiMenuItem, Popper, ClickAwayListener, List, ListItemButton, ListItemAvatar, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { ArrowBack, Delete, Send, CheckCircle, Edit, PushPin, Reply, Code, FormatQuote, MoreVert, Save, Close, AddPhotoAlternate, OpenInNew } from '@mui/icons-material';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchTask, updateTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, type Task, type TaskNote, type TaskActivity } from '../api/tasks';
+import { fetchTask, updateTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, fetchScreenshots, deleteScreenshot, forwardNote, setNoteStatus, uploadScreenshot, type Task, type TaskNote, type TaskActivity, type TaskScreenshot } from '../api/tasks';
+import { fetchTasks, type Task as TaskType } from '../api/tasks';
 import { fetchUsers, type User } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import { usePermissions } from '../hooks/usePermissions';
@@ -32,6 +33,17 @@ export default function TaskDetailPage() {
   const [replyText, setReplyText] = useState('');
   const [noteMenuAnchor, setNoteMenuAnchor] = useState<null | HTMLElement>(null);
   const [activeNoteMenu, setActiveNoteMenu] = useState<TaskNote | null>(null);
+  
+  // Screenshots
+  const [screenshots, setScreenshots] = useState<TaskScreenshot[]>([]);
+  const [screenshotUploading, setScreenshotUploading] = useState(false);
+  const screenshotInputRef = useRef<HTMLInputElement>(null);
+  
+  // Note forward and status
+  const [forwardDialogOpen, setForwardDialogOpen] = useState(false);
+  const [forwardingNote, setForwardingNote] = useState<TaskNote | null>(null);
+  const [forwardTargetTaskId, setForwardTargetTaskId] = useState('');
+  const [allTasks, setAllTasks] = useState<TaskType[]>([]);
 
   // @mention state
   const [users, setUsers] = useState<User[]>([]);
@@ -181,12 +193,58 @@ export default function TaskDetailPage() {
     setNoteMenuAnchor(event.currentTarget);
     setActiveNoteMenu(note);
   };
+  
+  const handleScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !task) return;
+    setScreenshotUploading(true);
+    try {
+      await uploadScreenshot(task.id, file);
+      loadData();
+    } catch (err: any) {
+      console.error('Screenshot upload failed:', err);
+    } finally {
+      setScreenshotUploading(false);
+      if (screenshotInputRef.current) screenshotInputRef.current.value = '';
+    }
+  };
+  
+  const handleDeleteScreenshot = async (screenshotId: number) => {
+    try {
+      await deleteScreenshot(screenshotId);
+      setScreenshots(prev => prev.filter(s => s.id !== screenshotId));
+    } catch (err: any) {
+      console.error('Screenshot delete failed:', err);
+    }
+  };
+  
+  const handleForwardNote = async () => {
+    if (!forwardingNote || !forwardTargetTaskId) return;
+    try {
+      await forwardNote(forwardingNote.id, parseInt(forwardTargetTaskId));
+      setForwardDialogOpen(false);
+      setForwardingNote(null);
+      setForwardTargetTaskId('');
+      loadData();
+    } catch (err: any) {
+      console.error('Forward note failed:', err);
+    }
+  };
+  
+  const handleSetNoteStatus = async (noteId: number, status: TaskNote['status']) => {
+    try {
+      await setNoteStatus(noteId, status);
+      loadData();
+    } catch (err: any) {
+      console.error('Set note status failed:', err);
+    }
+  };
 
   const loadData = () => {
     if (!id) return;
     setLoading(true);
-    Promise.all([fetchTask(+id), fetchTaskNotes(+id), fetchTaskActivity(+id), fetchUsers()])
-      .then(([t, n, a, u]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
+    Promise.all([fetchTask(+id), fetchTaskNotes(+id), fetchTaskActivity(+id), fetchUsers(), fetchScreenshots(+id), fetchTasks()])
+      .then(([t, n, a, u, s, allT]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setScreenshots(s); setAllTasks(allT); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
   };
@@ -303,6 +361,49 @@ export default function TaskDetailPage() {
 
       {activeTab === 1 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {/* Screenshots Section */}
+          <Paper sx={{ p: 2, backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Screenshots ({screenshots.length})</Typography>
+              <input
+                type="file"
+                accept="image/*"
+                ref={screenshotInputRef}
+                style={{ display: 'none' }}
+                onChange={handleScreenshotUpload}
+              />
+              <Button
+                size="small"
+                startIcon={screenshotUploading ? <CircularProgress size={16} /> : <AddPhotoAlternate />}
+                onClick={() => screenshotInputRef.current?.click()}
+                disabled={screenshotUploading}
+              >
+                {screenshotUploading ? 'Uploading...' : 'Add Screenshot'}
+              </Button>
+            </Box>
+            {screenshots.length > 0 && (
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
+                {screenshots.map(ss => (
+                  <Box key={ss.id} sx={{ position: 'relative', borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                    <img src={ss.file_path} alt={ss.caption} style={{ width: '100%', height: 140, objectFit: 'cover' }} />
+                    {ss.caption && (
+                      <Typography variant="caption" sx={{ display: 'block', p: 0.5, backgroundColor: 'background.paper' }}>{ss.caption}</Typography>
+                    )}
+                    <Typography variant="caption" sx={{ display: 'block', p: 0.5, color: 'text.disabled' }}>by {ss.author}</Typography>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      sx={{ position: 'absolute', top: 4, right: 4, backgroundColor: 'rgba(0,0,0,0.6)', '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' } }}
+                      onClick={() => handleDeleteScreenshot(ss.id)}
+                    >
+                      <Delete sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Paper>
+          
           {/* Notes List */}
           {notes.length === 0 && (
             <Box sx={{ textAlign: 'center', py: 6, color: 'text.disabled' }}>
@@ -329,6 +430,14 @@ export default function TaskDetailPage() {
                     <Typography variant="caption" sx={{ fontWeight: 700 }}>{note.author}</Typography>
                     <Chip label={`${cat.icon} ${cat.label}`} size="small" color={cat.color as any} sx={{ height: 18, fontSize: '0.6rem', fontWeight: 600 }} />
                     {note.is_pinned && <PushPin sx={{ fontSize: 12, color: 'primary.main' }} />}
+                    {note.status && note.status !== 'active' && (
+                      <Chip
+                        size="small"
+                        label={note.status}
+                        color={note.status === 'reviewed' ? 'success' : note.status === 'action-required' ? 'error' : 'default'}
+                        sx={{ height: 18, fontSize: '0.6rem', fontWeight: 600 }}
+                      />
+                    )}
                     <Typography variant="caption" sx={{ color: 'text.disabled', ml: 'auto' }} title={new Date(note.created_at).toLocaleString()}>
                       {note.updated_at !== note.created_at ? `edited ${relativeTime(note.updated_at)}` : relativeTime(note.created_at)}
                     </Typography>
@@ -609,6 +718,34 @@ export default function TaskDetailPage() {
       <Menu anchorEl={noteMenuAnchor} open={!!noteMenuAnchor} onClose={() => setNoteMenuAnchor(null)}>
         {activeNoteMenu && (
           <>
+            {/* Status submenu */}
+            <MuiMenuItem disabled>
+              <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>Set Status</Typography>
+            </MuiMenuItem>
+            {(['draft', 'active', 'reviewed', 'action-required'] as const).map(status => (
+              <MuiMenuItem
+                key={status}
+                onClick={() => { handleSetNoteStatus(activeNoteMenu.id, status); setNoteMenuAnchor(null); }}
+                sx={{ pl: 4 }}
+              >
+                <Chip
+                  size="small"
+                  label={status}
+                  color={status === 'reviewed' ? 'success' : status === 'action-required' ? 'error' : status === 'active' ? 'primary' : 'default'}
+                  sx={{ mr: 1, height: 18, fontSize: '0.65rem' }}
+                />
+                {status.replace('-', ' ')}
+              </MuiMenuItem>
+            ))}
+            
+            <Divider />
+            
+            {/* Forward note */}
+            <MuiMenuItem onClick={() => { setForwardingNote(activeNoteMenu); setForwardDialogOpen(true); setNoteMenuAnchor(null); }}>
+              <Send sx={{ fontSize: 16, mr: 1 }} />
+              Forward to Task...
+            </MuiMenuItem>
+            
             {permissions?.can_pin_notes && (
               <MuiMenuItem onClick={() => { handlePinNote(activeNoteMenu.id, !activeNoteMenu.is_pinned); }}>
                 <PushPin sx={{ fontSize: 16, mr: 1, transform: activeNoteMenu.is_pinned ? 'rotate(-45deg)' : 'none' }} />
@@ -624,6 +761,37 @@ export default function TaskDetailPage() {
           </>
         )}
       </Menu>
+      
+      {/* Forward Note Dialog */}
+      <Dialog open={forwardDialogOpen} onClose={() => { setForwardDialogOpen(false); setForwardingNote(null); setForwardTargetTaskId(''); }}>
+        <DialogTitle>Forward Note to Another Task</DialogTitle>
+        <DialogContent sx={{ minWidth: 400, pt: 2 }}>
+          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+            Forwarding note from Task #{forwardingNote?.task_id}
+          </Typography>
+          <FormControl fullWidth size="small">
+            <InputLabel>Target Task</InputLabel>
+            <Select
+              value={forwardTargetTaskId}
+              label="Target Task"
+              onChange={(e) => setForwardTargetTaskId(e.target.value)}
+            >
+              <MenuItem value="" disabled>Select a task...</MenuItem>
+              {allTasks.filter(t => t.id !== forwardingNote?.task_id).map(task => (
+                <MenuItem key={task.id} value={task.id}>
+                  #{task.id} - {task.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setForwardDialogOpen(false); setForwardingNote(null); setForwardTargetTaskId(''); }}>Cancel</Button>
+          <Button variant="contained" onClick={handleForwardNote} disabled={!forwardTargetTaskId}>
+            Forward Note
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -21,9 +21,19 @@ export interface TaskNote {
   content: string;
   category: 'tuning' | 'fix' | 'implementation' | 'question' | 'general';
   is_pinned: number;
+  status: 'draft' | 'active' | 'reviewed' | 'action-required';
   parent_id: number | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface TaskScreenshot {
+  id: number;
+  task_id: number;
+  author: string;
+  file_path: string;
+  caption: string;
+  created_at: string;
 }
 
 export interface TaskActivity {
@@ -105,5 +115,43 @@ export async function fetchTaskActivity(taskId: number): Promise<TaskActivity[]>
 
 export async function fetchTaskNotesCount(): Promise<Record<number, number>> {
   const { data } = await apiClient.get('/api/tasks.php?action=notes_counts');
+  return data;
+}
+
+export async function uploadScreenshot(taskId: number, file: File, caption: string = ''): Promise<any> {
+  const formData = new FormData();
+  formData.append('screenshot', file);
+  formData.append('task_id', taskId.toString());
+  formData.append('caption', caption);
+  
+  const { data } = await apiClient.post('/api/tasks.php?action=upload_screenshot', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+export async function fetchScreenshots(taskId: number): Promise<TaskScreenshot[]> {
+  const { data } = await apiClient.get(`/api/tasks.php?action=get_screenshots&task_id=${taskId}`);
+  return data;
+}
+
+export async function deleteScreenshot(id: number): Promise<any> {
+  const { data } = await apiClient.post('/api/tasks.php?action=delete_screenshot', { id });
+  return data;
+}
+
+export async function forwardNote(noteId: number, targetTaskId: number): Promise<any> {
+  const { data } = await apiClient.post('/api/tasks.php?action=forward_note', {
+    note_id: noteId,
+    target_task_id: targetTaskId,
+  });
+  return data;
+}
+
+export async function setNoteStatus(noteId: number, status: TaskNote['status']): Promise<any> {
+  const { data } = await apiClient.post('/api/tasks.php?action=set_note_status', {
+    note_id: noteId,
+    status,
+  });
   return data;
 }
