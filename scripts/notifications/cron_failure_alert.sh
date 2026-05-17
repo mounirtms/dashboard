@@ -1,7 +1,7 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════
 # Cron Failure Alert Script
-# Purpose: Check for cron job failures and send alerts
+# Purpose: Check for cron job failures and send alerts via Telegram and email
 # Location: /home/dashboard/public_html/scripts/notifications/cron_failure_alert.sh
 # Usage: bash cron_failure_alert.sh --check-period=1h --alert-email=admin@example.com
 # ═══════════════════════════════════════════════════════════════════════════
@@ -14,14 +14,28 @@ LOG_DIRS=(
     "/home/pim/public_html/var/log"
     "/home/beta/public_html/var/log"
     "/home/dashboard/public_html/var/log"
+    "/home/dashboard/public_html/logs"
 )
 
 ALERT_EMAIL="admin@technostationery.com"
 CHECK_PERIOD="1h"  # Default: check last hour
 FAILURE_PATTERNS="ERROR|CRITICAL|FATAL|failed|Failed|FAILURE"
 
+# Telegram alert integration
+PHP_BIN="/opt/cpanel/ea-php82/root/usr/bin/php"
+ALERT_CRON_PHP="/home/dashboard/public_html/api/telegram/alert_cron.php"
+
 log_message() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "/home/dashboard/public_html/var/log/cron_failures.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "/home/dashboard/public_html/logs/cron_failures.log"
+}
+
+send_telegram_alert() {
+    local message="$1"
+    local alert_key="cron_fail_$(echo "$message" | head -c 50 | md5sum | cut -d' ' -f1)"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    # Send via Telegram with deduplication
+    $PHP_BIN "$ALERT_CRON_PHP" --direct-alert --key="$alert_key" --severity="CRITICAL" --message="$message" --time="$timestamp" >> /dev/null 2>&1 &
 }
 
 usage() {
@@ -133,7 +147,14 @@ Please check the logs and take appropriate action."
         log_message "[DRY RUN] Would send alert:"
         echo "$ALERT_BODY"
     else
-        # Send alert
+        # Send Telegram alert
+        TELEGRAM_MSG="Cron Job Failures Detected in ${#FAILURES_FOUND[@]} log(s) ($CHECK_PERIOD): "
+        for log_file in "${FAILURES_FOUND[@]}"; do
+            TELEGRAM_MSG+="$(basename $log_file), "
+        done
+        send_telegram_alert "$TELEGRAM_MSG"
+
+        # Send email alert
         bash /home/dashboard/public_html/scripts/notifications/email_alert.sh \
             --to="$ALERT_EMAIL" \
             --subject="Cron Job Failures Detected" \

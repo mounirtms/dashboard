@@ -93,6 +93,7 @@ export function usePermissions() {
     isEditor: role === 'editor',
     isModerator: role === 'moderator',
     isViewer: role === 'viewer',
+    isMarketing: role === 'marketing',
     loading,
     error,
   };

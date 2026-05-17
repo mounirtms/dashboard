@@ -2,10 +2,8 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # CPU & Resource Monitor - Production Server
 # Purpose: Monitor CPU, Memory, Disk and alert on high usage
-# Location: /home/technadminy7/public_html/scripts/monitoring/cpu_monitor.sh
+# Location: /home/dashboard/public_html/scripts/monitoring/cpu_monitor.sh
 # ═══════════════════════════════════════════════════════════════════════════
-
-set -e
 
 # Configuration
 MYSQL_BIN="/opt/mariadb10.6/mariadb/bin/mysql"
@@ -15,10 +13,10 @@ MYSQL_HOST="127.0.0.1"
 MYSQL_PORT="3307"
 DB_NAME="technadminy7_dBT8x12y22"
 
-# Thresholds
-CPU_WARNING=70
-CPU_CRITICAL=85
-MEMORY_WARNING=75
+# Thresholds (unified with other monitoring scripts)
+CPU_WARNING=60
+CPU_CRITICAL=80
+MEMORY_WARNING=70
 MEMORY_CRITICAL=90
 DISK_WARNING=80
 DISK_CRITICAL=90
@@ -26,8 +24,12 @@ LOAD_WARNING=8
 LOAD_CRITICAL=12
 
 # Log files
-LOG_FILE="/home/technadminy7/public_html/var/log/cpu_monitor.log"
-ALERT_FILE="/home/technadminy7/public_html/var/log/resource_alerts.log"
+LOG_FILE="/home/dashboard/public_html/logs/cpu_monitor.log"
+ALERT_FILE="/home/dashboard/public_html/logs/resource_alerts.log"
+
+# Telegram alert integration
+PHP_BIN="/opt/cpanel/ea-php82/root/usr/bin/php"
+ALERT_CRON_PHP="/home/dashboard/public_html/api/telegram/alert_cron.php"
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")"
@@ -43,9 +45,20 @@ send_alert() {
     local message="$2"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$severity] $message" >> "$ALERT_FILE"
     log_message "ALERT [$severity]: $message"
-    
-    # Optional: Send email (configure as needed)
-    # echo "$message" | mail -s "[$severity] Resource Alert - $(hostname)" admin @example.com
+
+    # Send Telegram notification for all alerts (with dedup handled by PHP)
+    send_telegram_alert "$severity" "$message"
+}
+
+# Function to send Telegram alert
+send_telegram_alert() {
+    local severity="$1"
+    local message="$2"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local alert_key="cpumon_$(echo "$message" | md5sum | cut -d' ' -f1)"
+
+    # Run PHP in background to avoid blocking
+    $PHP_BIN "$ALERT_CRON_PHP" --direct-alert --key="$alert_key" --severity="$severity" --message="$message" --time="$timestamp" >> /dev/null 2>&1 &
 }
 
 log_message "=== Resource Monitor Check ==="

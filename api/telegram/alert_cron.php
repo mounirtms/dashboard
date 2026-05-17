@@ -2,14 +2,97 @@
 /**
  * Telegram Alert Cron Job
  * 
- * Runs every minute to check server conditions and send alerts.
+ * Runs every 2 minutes to check server conditions and send alerts.
  * This replaces the dashboard UI-triggered alerts for proactive monitoring.
  * 
- * Cron schedule: Every minute
+ * Cron schedule: Every 2 minutes
+ * 
+ * Direct alert mode (from shell scripts):
+ *   php alert_cron.php --direct-alert --key=alert_key --severity=CRITICAL --message="msg" --time="2024-01-01 00:00:00"
  */
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Prevent overlapping runs via flock
+$lockFile = __DIR__ . '/data/alert_cron.lock';
+$lockFp = @fopen($lockFile, 'c');
+if ($lockFp && !flock($lockFp, LOCK_EX | LOCK_NB)) {
+    echo date('Y-m-d H:i:s') . " - Another instance is already running, skipping\n";
+    fclose($lockFp);
+    exit(0);
+}
+
+// Release lock on shutdown
+register_shutdown_function(function() use ($lockFp) {
+    if ($lockFp) { flock($lockFp, LOCK_UN); fclose($lockFp); }
+    @unlink($lockFile);
+});
+
+// Check for direct alert mode
+$args = [];
+for ($i = 1; $i < $argc; $i++) {
+    if (strpos($argv[$i], '--') === 0) {
+        $parts = explode('=', substr($argv[$i], 2), 2);
+        $args[$parts[0]] = $parts[1] ?? '';
+    }
+}
+
+if (array_key_exists('direct-alert', $args)) {
+    // Direct alert mode - send a specific alert
+    
+    // First load the main API config for Webpushr (Config class)
+    $apiConfigPath = __DIR__ . '/../config.php';
+    if (file_exists($apiConfigPath) && !class_exists('Config', false)) {
+        require_once $apiConfigPath;
+    }
+    
+    // Load Webpushr helper first (before telegram config which may conflict)
+    $webpushrSent = false;
+    try {
+        $wpHelperPath = __DIR__ . '/../WebpushrAlertHelper.php';
+        if (file_exists($wpHelperPath)) {
+            require_once $wpHelperPath;
+            WebpushrAlertHelper::sendAlert(
+                $args['severity'] ?? 'WARNING',
+                "System Alert: " . ($args['message'] ?? 'Unknown issue'),
+                $args['message'] ?? 'Unknown issue',
+                $args['key'] ?? 'direct_alert'
+            );
+            $webpushrSent = true;
+        }
+    } catch (Exception $e) {
+        error_log("[alert_cron] Webpushr direct alert error: " . $e->getMessage());
+    }
+    
+    // Now load telegram config
+    $config = require __DIR__ . '/config.php';
+    require_once __DIR__ . '/BotHandler.php';
+    
+    try {
+        $bot = new BotHandler($config, 'server');
+        
+        $emoji = match($args['severity'] ?? 'WARNING') {
+            'EMERGENCY' => '🚨',
+            'CRITICAL' => '🔴',
+            'WARNING' => '🟡',
+            default => 'ℹ️'
+        };
+        
+        $text = "$emoji *System Alert - " . ($args['severity'] ?? 'WARNING') . "*\n\n";
+        $text .= ($args['message'] ?? 'Unknown issue') . "\n\n";
+        $text .= "📅 `" . ($args['time'] ?? date('Y-m-d H:i:s T')) . "`\n";
+        $text .= "🖥️ Host: `" . gethostname() . "`";
+        
+        $bot->sendAlert($args['key'] ?? 'direct_alert', 'service', $text);
+        
+        echo date('Y-m-d H:i:s') . " - Direct alert sent: {$args['key']}" . ($webpushrSent ? " (webpushr+telegram)" : " (telegram only)") . "\n";
+    } catch (Exception $e) {
+        echo date('Y-m-d H:i:s') . " - Direct alert error: " . $e->getMessage() . "\n";
+    }
+    exit(0);
+}
 
 // Helper functions
 function cmd($c, $timeout=5) {
@@ -49,8 +132,12 @@ foreach(['ea-php82-php-fpm','elasticsearch','mariadb10.6','httpd','varnish','red
     $services[$svc] = ($s==='active') ? 'running' : $s;
 }
 
-$error_503 = cmd_line("grep -c ' 503 ' /etc/apache2/logs/access_log 2>/dev/null || echo 0");
-$error_500 = cmd_line("grep -c ' 500 ' /etc/apache2/logs/access_log 2>/dev/null || echo 0");
+// Count recent HTTP errors (last 2 minutes only)
+// Use awk to filter by timestamp to avoid counting all-time errors
+$recent_503 = cmd_line("tail -5000 /etc/apache2/logs/access_log 2>/dev/null | awk -v since=\$(date -d '2 minutes ago' '+%d/%b/%Y:%H:%M') '\$4 >= since && / 503 /' | wc -l || echo 0");
+$recent_500 = cmd_line("tail -5000 /etc/apache2/logs/access_log 2>/dev/null | awk -v since=\$(date -d '2 minutes ago' '+%d/%b/%Y:%H:%M') '\$4 >= since && / 500 /' | wc -l || echo 0");
+$error_503 = (int)trim($recent_503);
+$error_500 = (int)trim($recent_500);
 
 // Send alerts
 $config = require __DIR__ . '/config.php';
@@ -58,6 +145,7 @@ $config = require __DIR__ . '/config.php';
 if ($config['alerts']['enabled'] ?? true) {
     require_once __DIR__ . '/AlertManager.php';
     require_once __DIR__ . '/BotHandler.php';
+    require_once __DIR__ . '/../WebpushrAlertHelper.php';
     
     try {
         $bot = new BotHandler($config, 'server');
@@ -68,6 +156,7 @@ if ($config['alerts']['enabled'] ?? true) {
                 $alertKey = "service_down:$svc";
                 $text = "🔴 *Service Down*\n\nService `$svc` is not running (status: `$status`)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
                 $bot->sendAlert($alertKey, 'service', $text);
+                WebpushrAlertHelper::sendAlert('CRITICAL', "Service Down: $svc", "Service $svc is not running (status: $status)", $alertKey);
             }
         }
 
@@ -76,13 +165,15 @@ if ($config['alerts']['enabled'] ?? true) {
             $alertKey = "high_cpu_load";
             $text = "🔴 *High CPU Load*\n\n1-min load average: `{$load[0]}` (threshold: 8)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'load', $text);
+            WebpushrAlertHelper::sendAlert('CRITICAL', 'High CPU Load', "Load average: {$load[0]} (threshold: 8)", $alertKey);
         }
 
-        // Check memory usage (critical >= 95%)
-        if ($mem_used_pct >= 95) {
+        // Check memory usage (critical >= 90%)
+        if ($mem_used_pct >= 90) {
             $alertKey = "high_memory";
-            $text = "🔴 *High Memory Usage*\n\nMemory usage: `{$mem_used_pct}%` (threshold: 85%)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
+            $text = "🔴 *High Memory Usage*\n\nMemory usage: `{$mem_used_pct}%` (threshold: 90%)\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'memory', $text);
+            WebpushrAlertHelper::sendAlert('CRITICAL', 'High Memory Usage', "Memory: {$mem_used_pct}% (threshold: 90%)", $alertKey);
         }
 
         // Check HTTP 503 errors
@@ -90,6 +181,7 @@ if ($config['alerts']['enabled'] ?? true) {
             $alertKey = "http_503_errors";
             $text = "🔴 *HTTP 503 Errors*\n\nDetected `$error_503` HTTP 503 errors in access logs\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'http_error', $text);
+            WebpushrAlertHelper::sendAlert('CRITICAL', 'HTTP 503 Errors', "Detected $error_503 HTTP 503 errors in access logs", $alertKey);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -123,6 +215,7 @@ if ($config['alerts']['enabled'] ?? true) {
                         $max_human = $parse_redis($redis_mem, 'maxmemory_human');
                         $text = "🔴 *Redis Memory Critical*\n\nMemory usage: `{$used_human}` / `{$max_human}` ({$mem_pct}%)\n\nRisk of OOM eviction or failures\n\n📅 `" . date('Y-m-d H:i:s T') . "`";
                         $bot->sendAlert($alertKey, 'service', $text);
+                        WebpushrAlertHelper::sendAlert('CRITICAL', 'Redis Memory Critical', "Memory: $used_human / $max_human ({$mem_pct}%)", $alertKey);
                     }
                 }
                 
@@ -167,6 +260,7 @@ if ($config['alerts']['enabled'] ?? true) {
                     $alertKey = "varnish_backend_failures";
                     $text = "🔴 *Varnish Backend Failures*\n\nBackend failures: `{$backend_fail}` (connections: {$backend_conn})\n\nApache/PHP-FPM may be down or overloaded\n\n📅 `" . date('Y-m-d H:i:s T') . "`";
                     $bot->sendAlert($alertKey, 'service', $text);
+                    WebpushrAlertHelper::sendAlert('CRITICAL', 'Varnish Backend Failures', "Backend failures: $backend_fail (connections: $backend_conn)", $alertKey);
                 }
                 
                 // Check session drops
@@ -188,6 +282,7 @@ if ($config['alerts']['enabled'] ?? true) {
                     $used_mb = round($s0_g_bytes / 1024 / 1024, 0);
                     $text = "🔴 *Varnish Storage Full*\n\nLRU nuked: `{$n_lru_nuked}` objects\nStorage used: `{$used_mb} MB`\n\nVarnish is force-evicting content due to space limits\n\n📅 `" . date('Y-m-d H:i:s T') . "`";
                     $bot->sendAlert($alertKey, 'service', $text);
+                    WebpushrAlertHelper::sendAlert('CRITICAL', 'Varnish Storage Full', "LRU nuked: $n_lru_nuked objects, Storage: {$used_mb} MB", $alertKey);
                 }
             }
         }
@@ -205,6 +300,7 @@ if ($config['alerts']['enabled'] ?? true) {
                     $alertKey = "es_cluster_red";
                     $text = "🔴 *Elasticsearch Cluster RED*\n\nStatus: `RED`\nNodes: {$es['number_of_nodes']}\nUnassigned shards: {$es['unassigned_shards']}\n\nSearch functionality is critically impaired\n\n📅 `" . date('Y-m-d H:i:s T') . "`";
                     $bot->sendAlert($alertKey, 'service', $text);
+                    WebpushrAlertHelper::sendAlert('CRITICAL', 'Elasticsearch Cluster RED', "Status: RED, Nodes: {$es['number_of_nodes']}, Unassigned: {$es['unassigned_shards']}", $alertKey);
                 }
                 
                 // Yellow status = warning (only if multiple nodes expected)
@@ -251,10 +347,12 @@ if ($config['alerts']['enabled'] ?? true) {
             $alertKey = "disk_space_critical";
             $text = "🔴 *Disk Space Critical*\n\n/home partition usage: `{$disk_usage}%`\n\nImmediate action required to free space\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'service', $text);
+            WebpushrAlertHelper::sendAlert('CRITICAL', 'Disk Space Critical', "/home partition: {$disk_usage}% used", $alertKey);
         } elseif ((int)$disk_usage >= 80) {
             $alertKey = "disk_space_warning";
             $text = "🟡 *Disk Space Warning*\n\n/home partition usage: `{$disk_usage}%`\n\nPlan to free up space soon\n\n📅 `" . date('Y-m-d H:i:s T') . "`\n🖥️ Host: `" . gethostname() . "`";
             $bot->sendAlert($alertKey, 'service', $text);
+            WebpushrAlertHelper::sendAlert('WARNING', 'Disk Space Warning', "/home partition: {$disk_usage}% used", $alertKey);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -273,6 +371,7 @@ if ($config['alerts']['enabled'] ?? true) {
                         $alertKey = "phpfpm_saturation_{$site_user}";
                         $text = "🔴 *PHP-FPM Pool Saturated*\n\nPool: `$site_user`\nActive workers: `{$active}` / `{$max_children}` ({$util_pct}%)\n\nRisk of request queuing and 503 errors\n\n📅 `" . date('Y-m-d H:i:s T') . "`";
                         $bot->sendAlert($alertKey, 'service', $text);
+                        WebpushrAlertHelper::sendAlert('CRITICAL', "PHP-FPM Saturated: $site_user", "Workers: $active/$max_children ({$util_pct}%)", $alertKey);
                     }
                 }
             }

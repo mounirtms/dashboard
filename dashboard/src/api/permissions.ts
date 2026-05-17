@@ -19,6 +19,11 @@ export interface RolePermissions {
   can_delete_any_note: boolean;
   can_pin_notes: boolean;
   can_manage_users: boolean;
+  // Push notification permissions
+  can_access_push_notifications: boolean;
+  can_send_notifications: boolean;
+  can_view_subscribers: boolean;
+  can_manage_segments: boolean;
   created_at: string;
   updated_at: string;
 }

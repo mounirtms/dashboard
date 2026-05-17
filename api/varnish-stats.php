@@ -67,37 +67,59 @@ function getVarnishStats() {
     }
     
     // Get device statistics from varnish logs (optimized)
-    // Only run if we have enough time and it's not too heavy
-    $devices = ['mobile' => 0, 'tablet' => 0, 'desktop' => 0];
-    $device_total = 0;
+    // Uses VCL device detection patterns for consistency
+    $devices = ['mobile' => ['hits' => 0, 'misses' => 0], 'tablet' => ['hits' => 0, 'misses' => 0], 'desktop' => ['hits' => 0, 'misses' => 0]];
     
-    // Use timeout to prevent hanging
-    exec("timeout 2s varnishlog -d -i RespHeader -I 'X-Device:' 2>/dev/null | grep 'X-Device:' | tail -500 | awk '{print \$NF}' | sort | uniq -c", $device_lines);
+    // Parse varnishlog for device type + cache status
+    exec("timeout 2s varnishlog -d -g request -i ReqHeader -i RespHeader 2>/dev/null | grep -E 'User-Agent|X-Magento-Cache-Debug' | head -1000", $device_lines);
+    
+    $current_device = null;
+    $is_hit = null;
     
     foreach ($device_lines as $line) {
-        if (preg_match('/^\s*(\d+)\s+(mobile|tablet|desktop)/i', trim($line), $matches)) {
-            $device_type = strtolower($matches[2]);
-            $devices[$device_type] = (int)$matches[1];
-            $device_total += (int)$matches[1];
+        if (preg_match('/User-Agent:\s*(.*)/', $line, $m)) {
+            $ua = strtolower($m[1]);
+            if (preg_match('/(iphone|ipod|android.*mobile|windows phone|blackberry|iemobile)/', $ua)) {
+                $current_device = 'mobile';
+            } elseif (preg_match('/(ipad|android(?!.*mobile)|silk)/', $ua)) {
+                $current_device = 'tablet';
+            } else {
+                $current_device = 'desktop';
+            }
+        } elseif (preg_match('/X-Magento-Cache-Debug:\s*(HIT|MISS)/i', $line, $m)) {
+            $is_hit = strtolower($m[1]);
+            if ($current_device && isset($devices[$current_device])) {
+                if ($is_hit === 'hit') {
+                    $devices[$current_device]['hits']++;
+                } else {
+                    $devices[$current_device]['misses']++;
+                }
+            }
+            $is_hit = null;
         }
     }
     
-    $stats['devices'] = [
-        'mobile' => [
-            'count' => number_format($devices['mobile']),
-            'percentage' => $device_total > 0 ? round(($devices['mobile'] / $device_total) * 100, 2) : 0
-        ],
-        'tablet' => [
-            'count' => number_format($devices['tablet']),
-            'percentage' => $device_total > 0 ? round(($devices['tablet'] / $device_total) * 100, 2) : 0
-        ],
-        'desktop' => [
-            'count' => number_format($devices['desktop']),
-            'percentage' => $device_total > 0 ? round(($devices['desktop'] / $device_total) * 100, 2) : 0
-        ],
-        'total' => number_format($device_total),
-        'sample_note' => 'Based on recent logged requests'
-    ];
+    // Build device stats
+    $device_stats = [];
+    $device_total = 0;
+    foreach ($devices as $type => $data) {
+        $total = $data['hits'] + $data['misses'];
+        $device_total += $total;
+        $device_stats[$type] = [
+            'hits' => $data['hits'],
+            'misses' => $data['misses'],
+            'total' => $total,
+            'hit_rate' => $total > 0 ? round(($data['hits'] / $total) * 100, 1) : 0,
+        ];
+    }
+    
+    // Add percentages
+    foreach ($device_stats as $type => &$data) {
+        $data['percentage'] = $device_total > 0 ? round(($data['total'] / $device_total) * 100, 1) : 0;
+    }
+    
+    $stats['devices'] = $device_stats;
+    $stats['device_sample_size'] = $device_total;
     
     // Get memory statistics
     $mem = shell_exec('free -b | grep Mem');

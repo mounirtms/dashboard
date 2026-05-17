@@ -70,7 +70,7 @@ try {
                 break;
             }
 
-            $role = in_array($input['role'] ?? '', ['admin', 'editor', 'moderator', 'viewer']) ? $input['role'] : 'viewer';
+            $role = in_array($input['role'] ?? '', ['admin', 'editor', 'moderator', 'viewer', 'marketing']) ? $input['role'] : 'viewer';
 
             $password = $input['password'] ?? '';
             $pwValidation = InputValidator::validatePassword($password);
@@ -136,7 +136,7 @@ try {
                 break;
             }
 
-            $role = in_array($input['role'] ?? '', ['admin', 'editor', 'moderator', 'viewer']) ? $input['role'] : 'viewer';
+            $role = in_array($input['role'] ?? '', ['admin', 'editor', 'moderator', 'viewer', 'marketing']) ? $input['role'] : 'viewer';
 
             // Check uniqueness (exclude current user)
             $stmt = $pdo->prepare("SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?");

@@ -2,10 +2,8 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # Queue Monitor Script - Magento 2
 # Purpose: Monitor queue sizes and alert before they become critical
-# Location: /home/technadminy7/public_html/scripts/monitoring/queue_monitor.sh
+# Location: /home/dashboard/public_html/scripts/monitoring/queue_monitor.sh
 # ═══════════════════════════════════════════════════════════════════════════
-
-set -e
 
 # Configuration
 MYSQL_BIN="/opt/mariadb10.6/mariadb/bin/mysql"
@@ -15,16 +13,20 @@ MYSQL_HOST="127.0.0.1"
 MYSQL_PORT="3307"
 DB_NAME="technadminy7_dBT8x12y22"
 
-# Thresholds (adjust based on your needs)
+# Thresholds (unified with other monitoring scripts)
 QUEUE_WARNING_THRESHOLD=1000    # Warn when queue exceeds this
 QUEUE_CRITICAL_THRESHOLD=5000   # Critical alert when exceeds this
-CPU_WARNING_THRESHOLD=70        # CPU usage warning (%)
-CPU_CRITICAL_THRESHOLD=90       # CPU usage critical (%)
-MEMORY_WARNING_THRESHOLD=80     # Memory usage warning (%)
+CPU_WARNING_THRESHOLD=60        # CPU usage warning (%)
+CPU_CRITICAL_THRESHOLD=80       # CPU usage critical (%)
+MEMORY_WARNING_THRESHOLD=70     # Memory usage warning (%)
 
 # Log file
-LOG_FILE="/home/technadminy7/public_html/var/log/queue_monitor.log"
-ALERT_FILE="/home/technadminy7/public_html/var/log/queue_alerts.log"
+LOG_FILE="/home/dashboard/public_html/logs/queue_monitor.log"
+ALERT_FILE="/home/dashboard/public_html/logs/queue_alerts.log"
+
+# Telegram alert integration
+PHP_BIN="/opt/cpanel/ea-php82/root/usr/bin/php"
+ALERT_CRON_PHP="/home/dashboard/public_html/api/telegram/alert_cron.php"
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")"
@@ -39,11 +41,21 @@ send_alert() {
     local severity="$1"
     local message="$2"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$severity] $message" >> "$ALERT_FILE"
-    
-    # Optional: Send email alert (uncomment and configure if needed)
-    # echo "$message" | mail -s "[$severity] Queue Monitor Alert" admin @example.com
-    
     log_message "ALERT [$severity]: $message"
+
+    # Send Telegram notification for all alerts (with dedup handled by PHP)
+    send_telegram_alert "$severity" "$message"
+}
+
+# Function to send Telegram alert
+send_telegram_alert() {
+    local severity="$1"
+    local message="$2"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local alert_key="queuemon_$(echo "$message" | md5sum | cut -d' ' -f1)"
+
+    # Run PHP in background to avoid blocking
+    $PHP_BIN "$ALERT_CRON_PHP" --direct-alert --key="$alert_key" --severity="$severity" --message="$message" --time="$timestamp" >> /dev/null 2>&1 &
 }
 
 # Function to execute MySQL query
@@ -113,8 +125,9 @@ elif [ -n "$CPU_USAGE" ] && [ "$CPU_USAGE" -ge "$CPU_WARNING_THRESHOLD" ]; then
 fi
 
 # Memory checks
-if [ "$MEMORY_PERCENT" -ge "$CPU_CRITICAL_THRESHOLD" ]; then
-    send_alert "CRITICAL" "Memory usage is critically high: ${MEMORY_PERCENT}% (threshold: ${CPU_CRITICAL_THRESHOLD}%)"
+MEMORY_CRITICAL_THRESHOLD=90
+if [ "$MEMORY_PERCENT" -ge "$MEMORY_CRITICAL_THRESHOLD" ]; then
+    send_alert "CRITICAL" "Memory usage is critically high: ${MEMORY_PERCENT}% (threshold: ${MEMORY_CRITICAL_THRESHOLD}%)"
 elif [ "$MEMORY_PERCENT" -ge "$MEMORY_WARNING_THRESHOLD" ]; then
     send_alert "WARNING" "Memory usage is elevated: ${MEMORY_PERCENT}% (threshold: ${MEMORY_WARNING_THRESHOLD}%)"
 fi
@@ -128,9 +141,10 @@ log_message "=== Queue Monitor Check Completed ==="
 log_message ""
 
 # Exit with appropriate code
-if [ "$QUEUE_COUNT" -ge "$QUEUE_CRITICAL_THRESHOLD" ] || [ -n "$CPU_USAGE" ] && [ "$CPU_USAGE" -ge "$CPU_CRITICAL_THRESHOLD" ]; then
+# Note: Use { } for proper grouping since && binds tighter than ||
+if [ "$QUEUE_COUNT" -ge "$QUEUE_CRITICAL_THRESHOLD" ] || { [ -n "$CPU_USAGE" ] && [ "$CPU_USAGE" -ge "$CPU_CRITICAL_THRESHOLD" ]; } || { [ "$MEMORY_PERCENT" -ge "$MEMORY_CRITICAL_THRESHOLD" ]; }; then
     exit 2  # Critical
-elif [ "$QUEUE_COUNT" -ge "$QUEUE_WARNING_THRESHOLD" ] || [ -n "$CPU_USAGE" ] && [ "$CPU_USAGE" -ge "$CPU_WARNING_THRESHOLD" ]; then
+elif [ "$QUEUE_COUNT" -ge "$QUEUE_WARNING_THRESHOLD" ] || { [ -n "$CPU_USAGE" ] && [ "$CPU_USAGE" -ge "$CPU_WARNING_THRESHOLD" ]; } || { [ "$MEMORY_PERCENT" -ge "$MEMORY_WARNING_THRESHOLD" ]; }; then
     exit 1  # Warning
 else
     exit 0  # OK

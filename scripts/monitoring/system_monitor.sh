@@ -2,8 +2,8 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # Comprehensive System Monitor - Production Server
 # Purpose: Monitor CPU, Memory, Queue, Elasticsearch, MariaDB and auto-remediate
-# Location: /home/pim/public_html/scripts/monitoring/system_monitor.sh
-# Run: Every 2 minutes via cron
+# Location: /home/dashboard/public_html/scripts/monitoring/system_monitor.sh
+# Run: Every 3 minutes via cron
 # ═══════════════════════════════════════════════════════════════════════════
 
 set -e
@@ -27,8 +27,12 @@ QUEUE_CRITICAL=5000
 PHP_FPM_MAX=6
 
 # Log files
-LOG_FILE="/home/pim/public_html/var/log/system_monitor.log"
-ALERT_FILE="/home/pim/public_html/var/log/system_alerts.log"
+LOG_FILE="/home/dashboard/public_html/logs/system_monitor.log"
+ALERT_FILE="/home/dashboard/public_html/logs/system_alerts.log"
+
+# Telegram alert integration
+TELEGRAM_ALERT_PHP="/home/dashboard/public_html/api/telegram/alert_cron.php"
+PHP_BIN="/opt/cpanel/ea-php82/root/usr/bin/php"
 
 mkdir -p "$(dirname "$LOG_FILE")"
 
@@ -41,18 +45,60 @@ send_alert() {
     local message="$2"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$severity] $message" >> "$ALERT_FILE"
     log_message "ALERT [$severity]: $message"
+
+    # Send Telegram notification for all alerts (with dedup handled by PHP)
+    send_telegram_alert "$severity" "$message"
+}
+
+send_telegram_alert() {
+    local severity="$1"
+    local message="$2"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local alert_key="sysmon_$(echo "$message" | md5sum | cut -d' ' -f1)"
+
+    # Run PHP in background to avoid blocking the monitor script
+    $PHP_BIN "$TELEGRAM_ALERT_PHP" --direct-alert --key="$alert_key" --severity="$severity" --message="$message" --time="$timestamp" >> /dev/null 2>&1 &
 }
 
 log_message "=== System Monitor Check ==="
 
 # Get current metrics
-CPU_LINE=$(top -bn1 | grep "Cpu(s)")
-CPU_USER=$(echo "$CPU_LINE" | awk '{print $2}' | cut -d'%' -f1)
-CPU_SYS=$(echo "$CPU_LINE" | awk '{print $4}' | cut -d'%' -f1)
-CPU_TOTAL=$(echo "$CPU_USER + $CPU_SYS" | bc 2>/dev/null || echo "$CPU_USER")
+# Use /proc/stat for more reliable CPU measurement
+read_cpu_stats() {
+    head -1 /proc/stat | awk '{print $2, $3, $4, $5, $6, $7, $8}'
+}
+CPU1=$(read_cpu_stats)
+sleep 1
+CPU2=$(read_cpu_stats)
 
-MEM_INFO=$(free | grep Mem)
-MEM_PERCENT=$(( $(echo $MEM_INFO | awk '{print $3}') * 100 / $(echo $MEM_INFO | awk '{print $2}') ))
+CPU_TOTAL=$(echo "$CPU1" "$CPU2" | awk '{
+    user1=$1; nice1=$2; sys1=$3; idle1=$4; iowait1=$5; irq1=$6; softirq1=$7
+    user2=$8; nice2=$9; sys2=$10; idle2=$11; iowait2=$12; irq2=$13; softirq2=$14
+    d_user = user2 - user1
+    d_nice = nice2 - nice1
+    d_sys = sys2 - sys1
+    d_idle = idle2 - idle1
+    d_iowait = iowait2 - iowait1
+    d_irq = irq2 - irq1
+    d_softirq = softirq2 - softirq1
+    total = d_user + d_nice + d_sys + d_idle + d_iowait + d_irq + d_softirq
+    active = total - d_idle
+    if (total > 0) printf "%.1f", (active / total) * 100
+    else print "0"
+}')
+
+# Fallback if /proc/stat doesn't work
+if [ -z "$CPU_TOTAL" ] || [ "$CPU_TOTAL" = "0" ]; then
+    CPU_TOTAL=$(top -bn1 2>/dev/null | grep "Cpu(s)" | awk '{print $2+$4}' | head -1)
+    [ -z "$CPU_TOTAL" ] && CPU_TOTAL="0"
+fi
+
+MEM_INFO=$(free 2>/dev/null | grep Mem)
+if [ -n "$MEM_INFO" ]; then
+    MEM_PERCENT=$(( $(echo $MEM_INFO | awk '{print $3}') * 100 / $(echo $MEM_INFO | awk '{print $2}') ))
+else
+    MEM_PERCENT=0
+fi
 
 QUEUE_COUNT=$($MYSQL_BIN -u "$MYSQL_USER" -p"$MYSQL_PASS" -h "$MYSQL_HOST" -P "$MYSQL_PORT" "$DB_NAME" -N -e "SELECT COUNT(*) FROM queue_message;" 2>/dev/null || echo "0")
 
@@ -69,13 +115,13 @@ log_message "CPU: ${CPU_TOTAL}% | Memory: ${MEM_PERCENT}% | Queue: $QUEUE_COUNT 
 if (( $(echo "$CPU_TOTAL >= $CPU_EMERGENCY" | bc -l 2>/dev/null || echo 0) )); then
     send_alert "EMERGENCY" "CPU at ${CPU_TOTAL}% - Initiating emergency throttle"
     log_message "Running emergency CPU throttle..."
-    /bin/bash /home/pim/public_html/emergency_cpu_throttle.sh
+    /bin/bash /home/dashboard/public_html/scripts/maintenance/emergency_cpu_throttle.sh 2>/dev/null || true
     exit 0
     
 elif (( $(echo "$CPU_TOTAL >= $CPU_CRITICAL" | bc -l 2>/dev/null || echo 0) )); then
     send_alert "CRITICAL" "CPU at ${CPU_TOTAL}% - Running optimization"
     log_message "Running CPU optimization script..."
-    /bin/bash /home/pim/public_html/cpu_optimize.sh
+    /bin/bash /home/dashboard/public_html/scripts/maintenance/cpu_optimize.sh 2>/dev/null || true
     exit 1
     
 elif (( $(echo "$CPU_TOTAL >= $CPU_WARNING" | bc -l 2>/dev/null || echo 0) )); then

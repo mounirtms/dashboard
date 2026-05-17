@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useTheme } , Alert } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useTheme, Alert } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Map as AlgeriaMap } from 'algeria-map-ts';

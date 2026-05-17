@@ -2,11 +2,11 @@ import { Box, Typography, Card, CardContent, Button, Chip, IconButton, Tooltip, 
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { Person, Shield, Lock, PowerSettingsNew, Refresh, Edit, Add, Delete, Visibility, VisibilityOff, CheckCircle } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
-import { fetchUsers, createUser, updateUser, deleteUser, resetUserPassword, toggleUserStatus, type CreateUserInput, type UpdateUserInput } from '../api/users';
+import { fetchUsers, createUser, updateUser, deleteUser, resetUserPassword, toggleUserStatus, type CreateUserInput, type UpdateUserInput, type UserRole } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\+\-=\[\]/\\~`;]).{8,}$/;
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -19,7 +19,7 @@ export default function UsersPage() {
   const [formUsername, setFormUsername] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formFullName, setFormFullName] = useState('');
-  const [formRole, setFormRole] = useState<'admin' | 'viewer'>('viewer');
+  const [formRole, setFormRole] = useState<UserRole>('viewer');
   const [formPassword, setFormPassword] = useState('');
   const [formConfirmPassword, setFormConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -267,9 +267,12 @@ export default function UsersPage() {
             <TextField label="Username" fullWidth value={formUsername} onChange={(e) => setFormUsername(e.target.value)} error={!!formErrors.username} helperText={formErrors.username} />
             <TextField label="Email" fullWidth type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} error={!!formErrors.email} helperText={formErrors.email} />
             <TextField label="Full Name" fullWidth value={formFullName} onChange={(e) => setFormFullName(e.target.value)} error={!!formErrors.full_name} helperText={formErrors.full_name} />
-            <TextField label="Role" select fullWidth value={formRole} onChange={(e) => setFormRole(e.target.value as 'admin' | 'viewer')}>
-              <MenuItem value="viewer">Viewer</MenuItem>
+            <TextField label="Role" select fullWidth value={formRole} onChange={(e) => setFormRole(e.target.value as UserRole)}>
               <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="editor">Editor</MenuItem>
+              <MenuItem value="moderator">Moderator</MenuItem>
+              <MenuItem value="viewer">Viewer</MenuItem>
+              <MenuItem value="marketing">Marketing</MenuItem>
             </TextField>
             <TextField label="Password" fullWidth type={showPassword ? 'text' : 'password'} value={formPassword} onChange={(e) => setFormPassword(e.target.value)} error={!!formErrors.password} helperText={formErrors.password}
               slotProps={{ input: { endAdornment: <InputAdornment position="end"><IconButton size="small" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}</IconButton></InputAdornment> } }}
@@ -291,9 +294,12 @@ export default function UsersPage() {
             <TextField label="Username" fullWidth value={formUsername} onChange={(e) => setFormUsername(e.target.value)} error={!!formErrors.username} helperText={formErrors.username} />
             <TextField label="Email" fullWidth type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} error={!!formErrors.email} helperText={formErrors.email} />
             <TextField label="Full Name" fullWidth value={formFullName} onChange={(e) => setFormFullName(e.target.value)} error={!!formErrors.full_name} helperText={formErrors.full_name} />
-            <TextField label="Role" select fullWidth value={formRole} onChange={(e) => setFormRole(e.target.value as 'admin' | 'viewer')}>
-              <MenuItem value="viewer">Viewer</MenuItem>
+            <TextField label="Role" select fullWidth value={formRole} onChange={(e) => setFormRole(e.target.value as UserRole)}>
               <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="editor">Editor</MenuItem>
+              <MenuItem value="moderator">Moderator</MenuItem>
+              <MenuItem value="viewer">Viewer</MenuItem>
+              <MenuItem value="marketing">Marketing</MenuItem>
             </TextField>
           </Box>
         </DialogContent>

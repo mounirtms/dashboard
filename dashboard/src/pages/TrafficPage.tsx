@@ -29,7 +29,6 @@ export default function TrafficPage() {
     requests: d.requests,
     pageViews: d.pageViews,
     threats: d.threats,
-    uniques: d.uniques,
   }));
 
   const hourlyData = (data.hourly_analytics || []).map((h) => ({
@@ -57,7 +56,7 @@ export default function TrafficPage() {
           <StatCard label="Bandwidth" value={formatBytes(totals.bytes)} color="info" />
         </Grid>
         <Grid size={{ xs: 12, sm: 3 }}>
-          <StatCard label="Unique Visitors" value={formatNumber(totals.uniques)} color="default" />
+          <StatCard label="Threats Blocked" value={formatNumber(totals.threats)} color="warning" />
         </Grid>
       </Grid>
 

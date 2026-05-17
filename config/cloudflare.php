@@ -15,6 +15,7 @@ return [
     // Email and Global API Key (legacy - for full account access)
     'email' => 'webmaster@techno-dz.com',
     'api_key' => '35d8fd4b1a5d27eabbce73c6753978fc350bc',
+    'global_key' => '35d8fd4b1a5d27eabbce73c6753978fc350bc',
     
     // Account Information
     'account_id' => getenv('CLOUDFLARE_ACCOUNT_ID') ?: 'cb89f9d4bfa5ff6fe2c8528847dbc5fe',

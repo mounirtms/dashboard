@@ -49,7 +49,8 @@ $allowedActions = [
     'execute', 'dbhealth', 'redis', 'elasticsearch', 'varnish', 'audit',
     'system_advanced', 'phpfpm_pools', 'alerts', 'cloudflare',
     'cloudflare_action', 'apache', 'cache_manage', 'logs', 'processes',
-    'db_action', 'cron_action', 'process_action', 'site_action', 'indexer_action'
+    'db_action', 'cron_action', 'process_action', 'site_action', 'indexer_action',
+    'ssh', 'services', 'network'
 ];
 
 if (!in_array($action, $allowedActions)) {
@@ -76,7 +77,10 @@ try {
         'system_advanced' => 60,
         'phpfpm_pools' => 15,
         'alerts' => 60,
-        'cloudflare' => 60
+        'cloudflare' => 60,
+        'ssh' => 10,
+        'services' => 15,
+        'network' => 10
     ];
 
     $cacheKey = "api_" . $action . ($site ? "_$site" : "");
@@ -179,6 +183,15 @@ try {
             break;
         case 'site_action': 
             $data = $monitorApi->siteAction(); 
+            break;
+        case 'ssh':
+            $data = $monitorApi->getSshConnections();
+            break;
+        case 'services':
+            $data = $monitorApi->getServices();
+            break;
+        case 'network':
+            $data = $monitorApi->getNetworkConnections();
             break;
         default: 
             $data = $monitorApi->getOverview(); 

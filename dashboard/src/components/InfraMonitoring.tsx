@@ -26,7 +26,11 @@ import {
   Public as PublicIcon,
   CloudQueue as CloudQueueIcon,
   DeleteSweep as DeleteSweepIcon,
-  Whatshot as WhatshotIcon
+  Whatshot as WhatshotIcon,
+  Devices as DevicesIcon,
+  Web as WebIcon,
+  Phone as PhoneIcon,
+  Tablet as TabletIcon,
 } from '@mui/icons-material';
 
 const InfraMonitoring = () => {
@@ -250,19 +254,72 @@ const InfraMonitoring = () => {
         />
         <StatCard
           title="Mobile Traffic"
-          value={stats.devices?.mobile_pct || 0}
+          value={stats.devices?.mobile?.percentage || 0}
           unit="%"
-          icon={MemoryIcon}
+          icon={DevicesIcon}
           color="warning"
+          subtitle={`Desktop: ${stats.devices?.desktop?.percentage || 0}% | Tablet: ${stats.devices?.tablet?.percentage || 0}%`}
         />
         <StatCard
           title="Uptime"
-          value={Math.floor((stats.uptime || 0) / 3600)}
+          value={Math.floor((stats.uptime_seconds || stats.uptime || 0) / 3600)}
           unit="h"
           icon={CloudQueueIcon}
           color="info"
         />
       </Box>
+
+      {/* Per-Device Cache Performance */}
+      {stats.devices && (
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <DevicesIcon /> Per-Device Cache Performance
+          </Typography>
+          <Grid container spacing={2}>
+            {[
+              { key: 'desktop', label: 'Desktop', icon: <WebIcon />, color: '#3b82f6' },
+              { key: 'mobile', label: 'Mobile', icon: <PhoneIcon />, color: '#10b981' },
+              { key: 'tablet', label: 'Tablet', icon: <TabletIcon />, color: '#f59e0b' },
+            ].map((device) => {
+              const d = stats.devices[device.key];
+              if (!d) return null;
+              const hitRate = parseFloat(d.hit_rate) || 0;
+              return (
+                <Grid size={{ xs: 12, md: 4 }} key={device.key}>
+                  <Card elevation={2} sx={{ borderColor: `${device.color}33` }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                        {device.icon}
+                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: device.color }}>
+                          {device.label}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2" color="textSecondary">Hit Rate</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: hitRate >= 80 ? 'success.main' : hitRate >= 50 ? 'warning.main' : 'error.main' }}>
+                          {hitRate.toFixed(1)}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min(hitRate, 100)}
+                        sx={{ height: 6, borderRadius: 3, mb: 1, backgroundColor: 'action.hover', '& .MuiLinearProgress-bar': { backgroundColor: device.color } }}
+                      />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                        <Typography variant="caption">Hits: {d.hits || 0}</Typography>
+                        <Typography variant="caption">Misses: {d.misses || 0}</Typography>
+                      </Box>
+                      <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
+                        Traffic: {d.percentage || 0}%
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
+      )}
 
       <Box sx={{ mt: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <Button

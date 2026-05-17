@@ -78,6 +78,9 @@ export async function sendPushNotification(payload: {
   env?: string; 
   segment_id?: string;
   scheduled_at?: string;
+  icon?: string;
+  image?: string;
+  tag?: string;
 }): Promise<any> {
   const body: Record<string, string> = {
     title: payload.title,
@@ -87,9 +90,38 @@ export async function sendPushNotification(payload: {
   if (payload.env) body.env = payload.env;
   if (payload.segment_id) body.segment_id = payload.segment_id;
   if (payload.scheduled_at) body.scheduled_time = payload.scheduled_at;
+  if (payload.icon) body.icon = payload.icon;
+  if (payload.image) body.image = payload.image;
+  if (payload.tag) body.tag = payload.tag;
   
   const { data } = await apiClient.post('/api/webpushr.php?action=send', body, {
     headers: { 'Content-Type': 'application/json' },
   });
+  return data;
+}
+
+export async function uploadPushImage(file: File, type: 'image' | 'icon' = 'image'): Promise<{ url: string; filename: string; size: number; width: number; height: number }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', type);
+  
+  const { data } = await apiClient.post('/api/upload.php', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  
+  if (!data.success) {
+    throw new Error(data.error || 'Upload failed');
+  }
+  
+  return { url: data.url, filename: data.filename, size: data.size, width: data.width, height: data.height };
+}
+
+export async function fetchDeliveryStats(env: string = 'dev'): Promise<any> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=delivery_stats&env=${env}`);
+  return data;
+}
+
+export async function fetchSubscriberAnalytics(env: string = 'dev'): Promise<any> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=subscriber_analytics&env=${env}`);
   return data;
 }

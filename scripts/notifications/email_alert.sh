@@ -129,30 +129,31 @@ $BODY
 This is an automated alert from the Server Management System."
 fi
 
-# Build mail command
-MAIL_CMD="mail"
-MAIL_CMD="$MAIL_CMD -s \"$SUBJECT\""
-MAIL_CMD="$MAIL_CMD -a \"Content-Type: $CONTENT_TYPE; charset=UTF-8\""
-MAIL_CMD="$MAIL_CMD -a \"From: $FROM_NAME <$FROM_EMAIL>\""
+# Send email safely without eval (prevents command injection)
+log_alert "Sending email to $TO: $SUBJECT"
+
+# Build mail arguments as an array (no eval needed)
+MAIL_ARGS=()
+MAIL_ARGS+=("-s" "$SUBJECT")
+MAIL_ARGS+=("-a" "Content-Type: $CONTENT_TYPE; charset=UTF-8")
+MAIL_ARGS+=("-a" "From: $FROM_NAME <$FROM_EMAIL>")
 
 if [ -n "$CC" ]; then
-    MAIL_CMD="$MAIL_CMD -c \"$CC\""
+    MAIL_ARGS+=("-c" "$CC")
 fi
 
 if [ -n "$BCC" ]; then
-    MAIL_CMD="$MAIL_CMD -b \"$BCC\""
+    MAIL_ARGS+=("-b" "$BCC")
 fi
 
 if [ -n "$LOG_FILE_ATTACH" ] && [ -f "$LOG_FILE_ATTACH" ]; then
-    MAIL_CMD="$MAIL_CMD -a \"$LOG_FILE_ATTACH\""
+    MAIL_ARGS+=("-a" "$LOG_FILE_ATTACH")
 fi
 
-MAIL_CMD="$MAIL_CMD \"$TO\""
+MAIL_ARGS+=("$TO")
 
-# Send email
-log_alert "Sending email to $TO: $SUBJECT"
-
-if echo "$EMAIL_BODY" | eval "$MAIL_CMD"; then
+# Send email using array expansion (safe from injection)
+if echo "$EMAIL_BODY" | mail "${MAIL_ARGS[@]}"; then
     log_alert "Email sent successfully to $TO"
     echo "Email sent successfully"
     exit 0

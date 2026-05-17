@@ -15,6 +15,7 @@ export default function PerformancePage() {
   const ratio = data.cache_hit_ratio;
   const ratioColor = ratio > 80 ? 'success' : ratio > 50 ? 'warning' : 'error';
   const totals = data.analytics_totals;
+  const uncachedRequests = totals.requests - totals.cachedRequests;
   const s = data.settings;
 
   const perfSettings = [
@@ -45,7 +46,7 @@ export default function PerformancePage() {
           <StatCard label="Cached Requests" value={formatNumber(totals.cachedRequests)} color="success" />
         </Grid>
         <Grid size={{ xs: 12, sm: 3 }}>
-          <StatCard label="Uncached Requests" value={formatNumber(totals.uncachedRequests)} color="error" />
+          <StatCard label="Uncached Requests" value={formatNumber(uncachedRequests)} color="error" />
         </Grid>
         <Grid size={{ xs: 12, sm: 3 }}>
           <StatCard label="Cached Bandwidth" value={formatBytes(totals.cachedBytes)} color="info" />
@@ -65,7 +66,7 @@ export default function PerformancePage() {
             color={ratioColor as any}
           />
           <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-            {formatNumber(totals.cachedRequests)} cached / {formatNumber(totals.cachedRequests + totals.uncachedRequests)} total requests
+            {formatNumber(totals.cachedRequests)} cached / {formatNumber(totals.requests)} total requests
           </Typography>
         </CardContent>
       </Card>

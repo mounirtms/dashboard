@@ -43,12 +43,14 @@ function getAuthDb() {
     return $pdo;
 }
 
-// Create push_subscriptions table if not exists
+// Create/upgrade push_subscriptions table if not exists
 try {
     $authDb = getAuthDb();
     $authDb->exec("CREATE TABLE IF NOT EXISTS push_subscriptions (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id INT UNSIGNED NOT NULL,
+        device_id VARCHAR(255) DEFAULT NULL,
+        domain VARCHAR(255) DEFAULT 'dashboard',
         subscription_endpoint TEXT NOT NULL,
         subscription_p256dh VARCHAR(255) NOT NULL,
         subscription_auth VARCHAR(255) NOT NULL,
@@ -58,12 +60,33 @@ try {
         last_used DATETIME,
         is_active TINYINT(1) DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_subscription (subscription_endpoint(255)),
+        UNIQUE KEY unique_subscription (subscription_endpoint(255), domain(255)),
         INDEX idx_user (user_id),
-        INDEX idx_active (is_active)
+        INDEX idx_active (is_active),
+        INDEX idx_domain (domain)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    
+    // Migration: add device_id and domain columns if they don't exist
+    $cols = $authDb->query("SHOW COLUMNS FROM push_subscriptions")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('device_id', $cols)) {
+        $authDb->exec("ALTER TABLE push_subscriptions ADD COLUMN device_id VARCHAR(255) DEFAULT NULL AFTER user_id");
+    }
+    if (!in_array('domain', $cols)) {
+        $authDb->exec("ALTER TABLE push_subscriptions ADD COLUMN domain VARCHAR(255) DEFAULT 'dashboard' AFTER device_id");
+        $authDb->exec("ALTER TABLE push_subscriptions ADD INDEX idx_domain (domain)");
+    }
+    // Recreate unique constraint if old one exists
+    $keys = $authDb->query("SHOW INDEX FROM push_subscriptions WHERE Key_name = 'unique_subscription'")->fetchAll();
+    $hasComposite = false;
+    foreach ($keys as $k) {
+        if ($k['Column_name'] === 'domain') $hasComposite = true;
+    }
+    if (!$hasComposite && count($keys) > 0) {
+        $authDb->exec("ALTER TABLE push_subscriptions DROP INDEX unique_subscription");
+        $authDb->exec("ALTER TABLE push_subscriptions ADD UNIQUE KEY unique_subscription (subscription_endpoint(255), domain(255))");
+    }
 } catch (Exception $e) {
-    error_log("[Webpushr] Failed to create push_subscriptions table: " . $e->getMessage());
+    error_log("[Webpushr] Table migration error: " . $e->getMessage());
 }
 
 // ── Webpushr API Helper ──
@@ -153,6 +176,12 @@ switch ($action) {
             'target_url' => $target_url ?: $envConfig['url'],
         ];
         
+        // Optional fields for enhanced notifications
+        if (!empty($input['icon'])) $data['icon'] = $input['icon'];
+        if (!empty($input['image'])) $data['image'] = $input['image'];
+        if (!empty($input['tag'])) $data['tag'] = $input['tag'];
+        if (!empty($input['action_buttons'])) $data['action_buttons'] = $input['action_buttons'];
+        
         // Send to segment (default to "All Users" segment)
         if ($segment_id) {
             $data['segment'] = [(string)$segment_id];
@@ -206,7 +235,7 @@ switch ($action) {
             'target_url' => $envConfig['url'],
         ];
         
-        $result = webpushrRequest('send', 'POST', $envConfig['key'], $envConfig['token'], $data);
+        $result = webpushrRequest('/v1/notification/send/all', 'POST', $envConfig['key'], $envConfig['token'], $data);
         
         if ($result['error']) {
             echo json_encode(['error' => true, 'message' => $result['message']]);
@@ -333,7 +362,7 @@ switch ($action) {
             if (!empty($notif['icon'])) $data['icon'] = $notif['icon'];
             if (!empty($notif['tag'])) $data['tag'] = $notif['tag'];
             
-            $result = webpushrRequest('send', 'POST', $envConfig['key'], $envConfig['token'], $data);
+            $result = webpushrRequest('/v1/notification/send/all', 'POST', $envConfig['key'], $envConfig['token'], $data);
             
             if ($result['error']) {
                 $failed++;
@@ -377,7 +406,7 @@ switch ($action) {
             'scheduled_time' => $scheduled_time,
         ];
         
-        $result = webpushrRequest('send', 'POST', $envConfig['key'], $envConfig['token'], $data);
+        $result = webpushrRequest('/v1/notification/send/all', 'POST', $envConfig['key'], $envConfig['token'], $data);
         
         if ($result['error']) {
             echo json_encode(['error' => true, 'message' => $result['message']]);
@@ -418,13 +447,18 @@ switch ($action) {
             elseif (strpos($userAgent, 'iOS') !== false) { $os = 'iOS'; $deviceType = 'mobile'; }
             
             // Insert or update subscription
+            $deviceId = $input['device_id'] ?? null;
+            $domain = $input['domain'] ?? 'dashboard';
+            
             $stmt = $authDb->prepare("INSERT INTO push_subscriptions 
-                (user_id, subscription_endpoint, subscription_p256dh, subscription_auth, browser, device_type, os, last_used) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
-                ON DUPLICATE KEY UPDATE last_used = NOW(), is_active = 1");
+                (user_id, device_id, domain, subscription_endpoint, subscription_p256dh, subscription_auth, browser, device_type, os, last_used) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                ON DUPLICATE KEY UPDATE last_used = NOW(), is_active = 1, user_id = VALUES(user_id), device_id = VALUES(device_id)");
             
             $stmt->execute([
                 $userId,
+                $deviceId,
+                $domain,
                 $input['endpoint'],
                 $input['keys']['p256dh'],
                 $input['keys']['auth'],
@@ -467,10 +501,19 @@ switch ($action) {
         try {
             $authDb = getAuthDb();
             $userId = $_SESSION['user_id'] ?? 0;
+            $domainFilter = $_GET['domain'] ?? null;
             
-            $stmt = $authDb->prepare("SELECT id, browser, device_type, os, last_used, created_at, is_active 
-                FROM push_subscriptions WHERE user_id = ? ORDER BY last_used DESC");
-            $stmt->execute([$userId]);
+            $sql = "SELECT id, device_id, domain, browser, device_type, os, last_used, created_at, is_active 
+                FROM push_subscriptions WHERE user_id = ?";
+            $params = [$userId];
+            if ($domainFilter) {
+                $sql .= " AND domain = ?";
+                $params[] = $domainFilter;
+            }
+            $sql .= " ORDER BY last_used DESC";
+            
+            $stmt = $authDb->prepare($sql);
+            $stmt->execute($params);
             $subscriptions = $stmt->fetchAll();
             
             echo json_encode(['success' => true, 'subscriptions' => $subscriptions]);
@@ -488,6 +531,64 @@ switch ($action) {
         
         // This would sync from Magento customer list to webpushr segments
         echo json_encode(['success' => true, 'message' => 'Subscribers synced']);
+        break;
+    
+    case 'delivery_stats':
+        // Fetch delivery/analytics stats from WebPushr
+        $env = $_GET['env'] ?? 'dev';
+        $envConfig = getEnvConfig($env);
+        if (!$envConfig) {
+            echo json_encode(['error' => 'Invalid environment']);
+            break;
+        }
+        
+        // Get notification delivery reports
+        $result = webpushrRequest('/v1/report/notification?limit=50', 'GET', $envConfig['key'], $envConfig['token']);
+        if ($result['error']) {
+            echo json_encode(['error' => true, 'message' => $result['message']]);
+        } else {
+            echo json_encode(['success' => true, 'data' => $result['data'] ?? []]);
+        }
+        break;
+    
+    case 'subscriber_analytics':
+        // Fetch subscriber count and analytics
+        $env = $_GET['env'] ?? 'dev';
+        $envConfig = getEnvConfig($env);
+        if (!$envConfig) {
+            echo json_encode(['error' => 'Invalid environment']);
+            break;
+        }
+        
+        // Get subscriber count
+        $countResult = webpushrRequest('/v1/subscriber/count', 'GET', $envConfig['key'], $envConfig['token']);
+        
+        // Also get segments for detailed breakdown
+        $segmentsResult = webpushrRequest('/v1/segments', 'GET', $envConfig['key'], $envConfig['token']);
+        
+        $analytics = [
+            'total_subscribers' => 0,
+            'segments' => [],
+        ];
+        
+        if (!$countResult['error'] && isset($countResult['data']['count'])) {
+            $analytics['total_subscribers'] = (int)$countResult['data']['count'];
+        }
+        
+        if (!$segmentsResult['error'] && is_array($segmentsResult['data'])) {
+            foreach ($segmentsResult['data'] as $seg) {
+                if (is_array($seg) && isset($seg['id'])) {
+                    $analytics['segments'][] = [
+                        'id' => $seg['id'],
+                        'title' => $seg['title'],
+                        'subscribers' => $seg['total_subscribers'] ?? 0,
+                        'type' => $seg['type'] ?? 'custom',
+                    ];
+                }
+            }
+        }
+        
+        echo json_encode(['success' => true, 'data' => $analytics]);
         break;
     
     default:

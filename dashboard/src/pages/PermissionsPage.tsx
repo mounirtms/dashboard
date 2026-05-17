@@ -40,11 +40,20 @@ const PERMISSION_GROUPS = [
       { key: 'can_manage_users', label: 'Manage users' },
     ] as const,
   },
+  {
+    label: 'Push Notifications',
+    permissions: [
+      { key: 'can_access_push_notifications', label: 'Access Push Notifications page' },
+      { key: 'can_send_notifications', label: 'Send push notifications' },
+      { key: 'can_view_subscribers', label: 'View subscriber analytics' },
+      { key: 'can_manage_segments', label: 'Manage subscriber segments' },
+    ] as const,
+  },
 ];
 
-const ROLES = ['admin', 'editor', 'moderator', 'viewer'] as const;
-const ROLE_LABELS: Record<string, string> = { admin: 'Admin', editor: 'Editor', moderator: 'Moderator', viewer: 'Viewer' };
-const ROLE_COLORS: Record<string, string> = { admin: 'error', editor: 'primary', moderator: 'warning', viewer: 'default' };
+const ROLES = ['admin', 'editor', 'moderator', 'viewer', 'marketing'] as const;
+const ROLE_LABELS: Record<string, string> = { admin: 'Admin', editor: 'Editor', moderator: 'Moderator', viewer: 'Viewer', marketing: 'Marketing' };
+const ROLE_COLORS: Record<string, string> = { admin: 'error', editor: 'primary', moderator: 'warning', viewer: 'default', marketing: 'secondary' };
 
 export default function PermissionsPage() {
   const [permissions, setPermissions] = useState<Record<string, RolePermissions> | null>(null);

@@ -1,6 +1,6 @@
 import apiClient from './client';
 
-export type UserRole = 'admin' | 'editor' | 'moderator' | 'viewer';
+export type UserRole = 'admin' | 'editor' | 'moderator' | 'viewer' | 'marketing';
 
 export interface User {
   id: number;

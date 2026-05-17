@@ -105,6 +105,7 @@ class Config {
             'email' => $_ENV['CF_EMAIL'] ?? '',
             'turnstile_site_key' => $_ENV['CF_TURNSTILE_SITE_KEY'] ?? '0x4AAAAAADOHEIn3ZnHV64fQ',
             'turnstile_secret_key' => $_ENV['CF_TURNSTILE_SECRET_KEY'] ?? '0x4AAAAAADOHELGXgTYqHT3lkzjkObCm8MA',
+            'origin_ca_key' => $_ENV['CF_ORIGIN_CA_KEY'] ?? '',
         ];
 
         // AI/QoderCLI configuration
@@ -116,6 +117,12 @@ class Config {
 
         // Webpushr configuration
         self::$config['webpushr'] = [
+            'dashboard' => [
+                'key' => 'c33c74cd215b2669cf9a57943410e033',
+                'token' => '121243',
+                'url' => 'https://dashboard.technostationery.com',
+                'label' => 'Dashboard',
+            ],
             'production' => [
                 'key' => 'a40b88bbd3c88fe47a03d6fff988d756',
                 'token' => '119340',

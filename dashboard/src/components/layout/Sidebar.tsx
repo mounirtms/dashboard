@@ -49,6 +49,7 @@ import {
   Search,
   Close,
   Task,
+  Lan,
 } from '@mui/icons-material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -73,6 +74,7 @@ const navItems: NavItem[] = [
       { path: '/cache-control', label: 'Cache Control', icon: <Cached /> },
       { path: '/process-explorer', label: 'Process Explorer', icon: <Terminal /> },
       { path: '/log-explorer', label: 'Log Explorer', icon: <DocsIcon /> },
+      { path: '/system-health', label: 'System Health', icon: <Lan /> },
     ]
   },
   {

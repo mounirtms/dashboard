@@ -108,7 +108,7 @@ export default function OverviewPage() {
                 <Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>Development Mode</Typography>
-                    <Chip label={data.zone?.development_mode.toUpperCase()} size="small" color={data.zone?.development_mode === 'on' ? 'warning' : 'default'} sx={{ fontSize: '0.65rem', height: 18, fontWeight: 700 }} />
+                    <Chip label={String(data.zone?.development_mode ?? 'off').toUpperCase()} size="small" color={(data.zone?.development_mode === 'on' || (typeof data.zone?.development_mode === 'number' && data.zone?.development_mode > 0)) ? 'warning' : 'default'} sx={{ fontSize: '0.65rem', height: 18, fontWeight: 700 }} />
                   </Box>
                   <Typography variant="caption" color="text.disabled">Bypass edge cache for real-time debugging</Typography>
                 </Box>

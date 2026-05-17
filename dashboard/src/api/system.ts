@@ -200,3 +200,104 @@ export async function runEmergencyCleanup(type: string = 'all'): Promise<any> {
   const { data } = await apiClient.get(`/api/monitor.php?action=cleanup&type=${type}`);
   return data;
 }
+
+// SSH Monitoring
+export interface SshSession {
+  user: string;
+  tty: string;
+  from: string;
+  login_at: string;
+  idle: string;
+}
+
+export interface SshConnection {
+  state: string;
+  local_ip: string;
+  local_port: string;
+  remote_ip: string;
+  remote_port: string;
+}
+
+export interface FailedLogin {
+  user: string;
+  ip: string;
+  invalid_user: boolean;
+}
+
+export interface SshData {
+  service_active: boolean;
+  active_sessions: number;
+  sessions: SshSession[];
+  established_connections: number;
+  connections: SshConnection[];
+  failed_logins_total: number;
+  recent_failed: FailedLogin[];
+  sshd_status: string;
+  timestamp: number;
+}
+
+// Services Monitoring
+export interface ServiceInfo {
+  name: string;
+  status: 'active' | 'inactive' | 'failed' | 'not-found';
+  enabled: boolean;
+  pid: number;
+  uptime_seconds: number;
+}
+
+export interface ServicesData {
+  categories: Record<string, ServiceInfo[]>;
+  summary: {
+    total: number;
+    active: number;
+    inactive: number;
+    failed: number;
+  };
+  timestamp: number;
+}
+
+// Network Monitoring
+export interface ListeningPort {
+  address: string;
+  port: number;
+  process: string;
+  pid: number;
+}
+
+export interface ConnectionState {
+  state: string;
+  count: number;
+}
+
+export interface RemoteIpStat {
+  ip: string;
+  connections: number;
+}
+
+export interface NetworkData {
+  listening_ports: ListeningPort[];
+  established_total: number;
+  time_wait_total: number;
+  connection_summary: { protocol: string; count: number }[];
+  connection_states: ConnectionState[];
+  top_remote_ips: RemoteIpStat[];
+  timestamp: number;
+}
+
+export async function fetchSshConnections(): Promise<SshData> {
+  const { data } = await apiClient.get('/api/monitor.php?action=ssh');
+  if (data.error) throw new Error(data.message || data.error);
+  return data;
+}
+
+export async function fetchServices(): Promise<ServicesData> {
+  const { data } = await apiClient.get('/api/monitor.php?action=services');
+  if (data.error) throw new Error(data.message || data.error);
+  return data;
+}
+
+export async function fetchNetworkConnections(): Promise<NetworkData> {
+  const { data } = await apiClient.get('/api/monitor.php?action=network');
+  if (data.error) throw new Error(data.message || data.error);
+  return data;
+}

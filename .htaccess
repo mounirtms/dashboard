@@ -35,7 +35,7 @@ Header set Surrogate-Control "no-store"
 Header set X-Content-Type-Options "nosniff"
 Header set X-Frame-Options "SAMEORIGIN"
 Header set X-XSS-Protection "1; mode=block"
-Header set Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://www.clarity.ms https://scripts.clarity.ms https://connect.facebook.net https://www.googletagmanager.com https://gc.kes.v2.scr.kaspersky-labs.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com https://*.clarity.ms https://www.clarity.ms https://www.google-analytics.com https://analytics.google.com https://*.google.com https://stats.g.doubleclick.net https://*.facebook.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com;"
+Header set Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://www.clarity.ms https://scripts.clarity.ms https://connect.facebook.net https://www.googletagmanager.com https://gc.kes.v2.scr.kaspersky-labs.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://cdn.webpushr.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com https://*.clarity.ms https://www.clarity.ms https://www.google-analytics.com https://analytics.google.com https://*.google.com https://stats.g.doubleclick.net https://*.facebook.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://*.webpushr.com;"
 
 # Flight v2 API routing
 <IfModule mod_rewrite.c>
@@ -45,10 +45,20 @@ Header set Content-Security-Policy "default-src 'self' https:; script-src 'self'
   RewriteRule ^api/v2/(.*)$ api/v2/index.php [L,QSA]
 </IfModule>
 
+# ============================================
+# Skip phpMyAdmin - must come BEFORE SPA routing
+# ============================================
+<IfModule mod_rewrite.c>
+  RewriteRule ^phpmyadmin(/.*)?$ - [L]
+</IfModule>
+
 # SPA Routing for React
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+  
+  # Skip phpMyAdmin and other system directories
+  RewriteCond %{REQUEST_URI} !^/phpmyadmin
   
   # Forward Node.js backend requests to proxy
   RewriteRule ^api/(mdm|cegid|techno|magento-node)/(.*)$ api/node-proxy.php [L,QSA]

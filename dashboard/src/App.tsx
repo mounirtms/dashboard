@@ -37,6 +37,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage.tsx';
 import TasksPage from './pages/TasksPage.tsx';
 import TaskDetailPage from './pages/TaskDetailPage.tsx';
 import PermissionsPage from './pages/PermissionsPage.tsx';
+import SystemHealthPage from './pages/SystemHealthPage.tsx';
 
 export default function App() {
   return (
@@ -72,6 +73,7 @@ export default function App() {
                 <Route path="infrastructure" element={<InfrastructurePage />} />
                 <Route path="log-explorer" element={<LogViewerPage />} />
                 <Route path="terminal-ai" element={<TerminalAiPage />} />
+                <Route path="system-health" element={<SystemHealthPage />} />
                 
                 {/* Commerce */}
                 <Route path="commerce/sales" element={<SalesOverviewPage />} />

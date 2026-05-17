@@ -19,21 +19,16 @@ export interface AnalyticsDay {
   requests: number;
   pageViews: number;
   threats: number;
-  uniques: number;
   bytes: number;
   cachedBytes: number;
-  uncachedBytes: number;
   cachedRequests: number;
-  uncachedRequests: number;
 }
 
 export interface AnalyticsHour {
   datetime: string;
+  time?: string;
   requests: number;
   bytes: number;
-  threats: number;
-  cachedRequests: number;
-  uncachedRequests: number;
 }
 
 export interface Country {
@@ -67,13 +62,9 @@ export interface AnalyticsTotals {
   requests: number;
   pageViews: number;
   threats: number;
-  uniques: number;
   bytes: number;
-  bytesAll: number;
   cachedBytes: number;
-  uncachedBytes: number;
   cachedRequests: number;
-  uncachedRequests: number;
 }
 
 export interface FirewallEvent {

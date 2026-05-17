@@ -72,7 +72,7 @@ class InputValidator {
             $errors[] = 'Password must contain at least one number';
         }
         
-        if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
+        if (!preg_match('/[!@#$%^&*(),.?":{}|<>\+\-=\[\]\/\\\\~`;]/', $password)) {
             $errors[] = 'Password must contain at least one special character';
         }
         

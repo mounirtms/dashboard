@@ -4,7 +4,7 @@ import { Lock, Visibility, VisibilityOff, CheckCircle } from '@mui/icons-materia
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client.ts';
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\+\-=\[\]/\\~`;]).{8,}$/;
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();

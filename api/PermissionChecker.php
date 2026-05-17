@@ -30,6 +30,11 @@ class PermissionChecker {
         'can_delete_any_note',
         'can_pin_notes',
         'can_manage_users',
+        // Push notification permissions
+        'can_access_push_notifications',
+        'can_send_notifications',
+        'can_view_subscribers',
+        'can_manage_segments',
     ];
 
     /**
@@ -118,7 +123,7 @@ class PermissionChecker {
      * Update a permission for a role
      */
     public static function setRolePermission($role, $permission, $value) {
-        $validRoles = ['admin', 'editor', 'viewer', 'moderator'];
+        $validRoles = ['admin', 'editor', 'viewer', 'moderator', 'marketing'];
         if (!in_array($role, $validRoles)) {
             throw new Exception("Invalid role: $role");
         }
@@ -141,6 +146,6 @@ class PermissionChecker {
      * Get available roles
      */
     public static function getAvailableRoles() {
-        return ['admin', 'editor', 'moderator', 'viewer'];
+        return ['admin', 'editor', 'moderator', 'viewer', 'marketing'];
     }
 }

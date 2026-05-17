@@ -171,22 +171,43 @@ class BotHandler {
      * Send alert via bot (with deduplication)
      */
     public function sendAlert(string $alertKey, string $alertType, string $text, int $chatId = null): bool {
-        // Check if alert should be sent
-        if (!$this->alertManager->shouldSend($alertKey, $alertType)) {
+        // Atomic check-and-mark to prevent race conditions
+        if (!$this->alertManager->claimAndMark($alertKey, $alertType)) {
             return false;
         }
 
         // Send to all authorized chats if no specific chat provided
         $targetChats = $chatId ? [$chatId] : $this->security->getAuthorizedChats();
 
+        $sentCount = 0;
+        $failedChats = [];
         foreach ($targetChats as $targetChatId) {
-            $this->sendMessage($targetChatId, $text);
+            try {
+                $this->sendMessage($targetChatId, $text);
+                $sentCount++;
+            } catch (Exception $e) {
+                $failedChats[] = $targetChatId;
+                // Log but continue sending to other chats
+                @file_put_contents(
+                    __DIR__ . '/logs/alerts.log',
+                    sprintf("[%s] alert=%s type=%s status=failed chat=%s reason=%s\n",
+                        date('Y-m-d H:i:s'), $alertKey, $alertType, $targetChatId, $e->getMessage()),
+                    FILE_APPEND | LOCK_EX
+                );
+            }
         }
 
-        // Mark as sent
-        $this->alertManager->markSent($alertKey, $alertType);
+        // Log partial failure if some chats failed
+        if (!empty($failedChats)) {
+            @file_put_contents(
+                __DIR__ . '/logs/alerts.log',
+                sprintf("[%s] alert=%s type=%s status=partial_success sent=%d failed=%d\n",
+                    date('Y-m-d H:i:s'), $alertKey, $alertType, $sentCount, count($failedChats)),
+                FILE_APPEND | LOCK_EX
+            );
+        }
 
-        return true;
+        return $sentCount > 0;
     }
 
     /**

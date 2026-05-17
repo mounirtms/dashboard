@@ -1,11 +1,13 @@
 import { Box, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Select, FormControl, InputLabel, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
-import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code } from '@mui/icons-material';
+import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code, CloudUpload, BarChart, TrendingUp } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
-import { fetchPushStats, sendPushNotification, syncSubscribers, fetchSegments, PushStats, Segment as SegmentType } from '../api/notifications';
+import { fetchPushStats, sendPushNotification, syncSubscribers, fetchSegments, fetchDeliveryStats, fetchSubscriberAnalytics, uploadPushImage, PushStats, Segment as SegmentType } from '../api/notifications';
+import { usePermissions } from '../hooks/usePermissions';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
 
 export default function PushNotificationsPage() {
+  const { hasPermission, isAdmin } = usePermissions();
   const [stats, setStats] = useState<PushStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -18,6 +20,21 @@ export default function PushNotificationsPage() {
     env: 'dev',
     segment_id: ''
   });
+
+  // Image/icon uploads
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string>('');
+  const [iconUrl, setIconUrl] = useState<string>('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
+  const [tag, setTag] = useState('');
+
+  // Analytics
+  const [deliveryStats, setDeliveryStats] = useState<any[]>([]);
+  const [subscriberAnalytics, setSubscriberAnalytics] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   // Schedule dialog
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -35,6 +52,9 @@ export default function PushNotificationsPage() {
   // Re-sync
   const [syncing, setSyncing] = useState(false);
 
+  // Permission check
+  const canAccess = isAdmin || hasPermission('can_access_push_notifications');
+
   const loadStats = (env: string) => {
     fetchPushStats(env)
       .then((data) => {
@@ -45,14 +65,64 @@ export default function PushNotificationsPage() {
       .finally(() => setLoading(false));
   };
 
+  const loadAnalytics = (env: string) => {
+    setAnalyticsLoading(true);
+    Promise.all([
+      fetchDeliveryStats(env).catch(() => null),
+      fetchSubscriberAnalytics(env).catch(() => null),
+    ]).then(([delivery, subs]) => {
+      if (delivery?.success) setDeliveryStats(delivery.data ?? []);
+      if (subs?.success) setSubscriberAnalytics(subs.data);
+    }).finally(() => setAnalyticsLoading(false));
+  };
+
   useEffect(() => {
     loadStats(selectedEnv);
+    loadAnalytics(selectedEnv);
   }, [selectedEnv]);
 
   const handleEnvChange = (env: string) => {
     setSelectedEnv(env);
     setPayload({ ...payload, env, segment_id: '' });
     setLoading(true);
+  };
+
+  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIconFile(file);
+    setIconPreview(URL.createObjectURL(file));
+    
+    setUploading(true);
+    try {
+      const result = await uploadPushImage(file, 'icon');
+      setIconUrl(result.url);
+    } catch (err: any) {
+      setSnackbar({ open: true, message: 'Icon upload failed: ' + (err.message || 'Unknown error'), severity: 'error' });
+      setIconFile(null);
+      setIconPreview('');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    
+    setUploading(true);
+    try {
+      const result = await uploadPushImage(file, 'image');
+      setImageUrl(result.url);
+    } catch (err: any) {
+      setSnackbar({ open: true, message: 'Image upload failed: ' + (err.message || 'Unknown error'), severity: 'error' });
+      setImageFile(null);
+      setImagePreview('');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSend = async () => {
@@ -62,9 +132,19 @@ export default function PushNotificationsPage() {
     }
     setSending(true);
     try {
-      await sendPushNotification(payload);
+      await sendPushNotification({
+        ...payload,
+        icon: iconUrl || undefined,
+        image: imageUrl || undefined,
+        tag: tag || undefined,
+      });
       setSnackbar({ open: true, message: 'Notification sent successfully!', severity: 'success' });
       setPayload({ ...payload, title: '', message: '' });
+      setIconFile(null); setIconPreview(''); setIconUrl('');
+      setImageFile(null); setImagePreview(''); setImageUrl('');
+      setTag('');
+      // Refresh analytics
+      loadAnalytics(selectedEnv);
     } catch (e: any) {
       setSnackbar({ open: true, message: 'Error: ' + (e.response?.data?.message || e.message), severity: 'error' });
     } finally {
@@ -84,12 +164,21 @@ export default function PushNotificationsPage() {
     setScheduling(true);
     try {
       const scheduledAt = `${scheduleDate}T${scheduleTime}`;
-      await sendPushNotification({ ...payload, scheduled_at: scheduledAt });
+      await sendPushNotification({ 
+        ...payload, 
+        scheduled_at: scheduledAt,
+        icon: iconUrl || undefined,
+        image: imageUrl || undefined,
+        tag: tag || undefined,
+      });
       setSnackbar({ open: true, message: `Notification scheduled for ${scheduledAt}`, severity: 'success' });
       setPayload({ ...payload, title: '', message: '' });
       setScheduleOpen(false);
       setScheduleDate('');
       setScheduleTime('');
+      setIconFile(null); setIconPreview(''); setIconUrl('');
+      setImageFile(null); setImagePreview(''); setImageUrl('');
+      setTag('');
     } catch (e: any) {
       setSnackbar({ open: true, message: 'Error: ' + (e.response?.data?.message || e.message), severity: 'error' });
     } finally {
@@ -102,8 +191,7 @@ export default function PushNotificationsPage() {
     try {
       await syncSubscribers();
       setSnackbar({ open: true, message: 'Subscribers re-synced successfully!', severity: 'success' });
-      // Refresh stats
-      const freshStats = await fetchPushStats();
+      const freshStats = await fetchPushStats(selectedEnv);
       setStats(freshStats);
     } catch (e: any) {
       setSnackbar({ open: true, message: 'Re-sync failed: ' + (e.response?.data?.message || e.message), severity: 'error' });
@@ -113,6 +201,17 @@ export default function PushNotificationsPage() {
   };
 
   const handleCloseSnackbar = () => setSnackbar(prev => ({ ...prev, open: false }));
+
+  if (!canAccess) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ mb: 2 }}>Access Denied</Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          You don't have permission to access Push Notifications. Contact your administrator.
+        </Typography>
+      </Box>
+    );
+  }
 
   if (loading && !stats) return <LoadingState message="Loading Webpushr stats..." />;
 
@@ -124,7 +223,7 @@ export default function PushNotificationsPage() {
             Push Notifications
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Webpushr integration for real-time browser alerts and marketing.
+            Webpushr integration for real-time browser alerts and marketing campaigns.
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -142,6 +241,7 @@ export default function PushNotificationsPage() {
         </Box>
       </Box>
 
+      {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
           <StatCard
@@ -169,7 +269,57 @@ export default function PushNotificationsPage() {
         </Grid>
       </Grid>
 
+      {/* Analytics Cards */}
+      {analyticsLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
+      ) : subscriberAnalytics ? (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <BarChart sx={{ color: 'info.main' }} /> Subscriber Analytics
+                </Typography>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                  {subscriberAnalytics.total_subscribers?.toLocaleString() ?? 0}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>Total subscribers across all segments</Typography>
+                {subscriberAnalytics.segments?.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>Top Segments:</Typography>
+                    {subscriberAnalytics.segments.slice(0, 3).map((seg: any) => (
+                      <Chip key={seg.id} label={`${seg.title}: ${seg.subscribers}`} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
+                    ))}
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TrendingUp sx={{ color: 'success.main' }} /> Delivery Reports
+                </Typography>
+                {deliveryStats.length > 0 ? (
+                  <Box>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {deliveryStats.length} recent notifications tracked
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    No delivery data available yet
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      ) : null}
+
       <Grid container spacing={2}>
+        {/* Quick Broadcast Card */}
         <Grid size={{ xs: 12, md: 7 }}>
           <Card>
             <CardContent>
@@ -202,6 +352,81 @@ export default function PushNotificationsPage() {
                   onChange={(e) => setPayload({...payload, url: e.target.value})}
                   placeholder={`https://${selectedEnv}.technostationery.com`} 
                 />
+                
+                {/* Icon and Image Upload */}
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                  {/* Icon Upload */}
+                  <Box sx={{ flex: 1, minWidth: 140 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
+                      Icon (max 192x192, 512KB)
+                    </Typography>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handleIconUpload}
+                      style={{ display: 'none' }}
+                      id="icon-upload-input"
+                    />
+                    <label htmlFor="icon-upload-input">
+                      <Button 
+                        variant="outlined" 
+                        component="span" 
+                        size="small"
+                        startIcon={<CloudUpload sx={{ fontSize: 16 }} />}
+                        disabled={uploading}
+                      >
+                        {uploading && !iconUrl ? <CircularProgress size={16} /> : iconUrl ? 'Change Icon' : 'Upload Icon'}
+                      </Button>
+                    </label>
+                    {iconPreview && (
+                      <Box sx={{ mt: 1, width: 48, height: 48, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider', backgroundColor: 'background.default' }}>
+                        <img src={iconPreview} alt="Icon preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </Box>
+                    )}
+                  </Box>
+                  
+                  {/* Image Upload */}
+                  <Box sx={{ flex: 1, minWidth: 140 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
+                      Large Image (max 1200x1200, 2MB)
+                    </Typography>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handleImageUpload}
+                      style={{ display: 'none' }}
+                      id="image-upload-input"
+                    />
+                    <label htmlFor="image-upload-input">
+                      <Button 
+                        variant="outlined" 
+                        component="span" 
+                        size="small"
+                        startIcon={<CloudUpload sx={{ fontSize: 16 }} />}
+                        disabled={uploading}
+                      >
+                        {uploading && !imageUrl ? <CircularProgress size={16} /> : imageUrl ? 'Change Image' : 'Upload Image'}
+                      </Button>
+                    </label>
+                    {imagePreview && (
+                      <Box sx={{ mt: 1, width: 120, height: 80, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider', backgroundColor: 'background.default' }}>
+                        <img src={imagePreview} alt="Image preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Tag field */}
+                <TextField 
+                  fullWidth 
+                  label="Notification Tag" 
+                  size="small" 
+                  value={tag}
+                  onChange={(e) => setTag(e.target.value)}
+                  placeholder="e.g. sale, promotion, alert"
+                  helperText="Groups notifications with the same tag"
+                />
+
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                   <FormControl size="small" sx={{ minWidth: 180 }}>
                     <InputLabel>Segment</InputLabel>
@@ -240,6 +465,7 @@ export default function PushNotificationsPage() {
           </Card>
         </Grid>
 
+        {/* Segments and Status Card */}
         <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
@@ -306,7 +532,7 @@ export default function PushNotificationsPage() {
                 min={new Date().toISOString().split('T')[0]}
                 value={scheduleDate}
                 onChange={(e) => setScheduleDate(e.target.value)}
-                style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                style={{ width: '100%', padding: '8px', border: '1px solid #333', borderRadius: '4px', backgroundColor: '#1a1a1a', color: '#fff' }}
               />
             </Box>
             <Box>
@@ -315,7 +541,7 @@ export default function PushNotificationsPage() {
                 type="time"
                 value={scheduleTime}
                 onChange={(e) => setScheduleTime(e.target.value)}
-                style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                style={{ width: '100%', padding: '8px', border: '1px solid #333', borderRadius: '4px', backgroundColor: '#1a1a1a', color: '#fff' }}
               />
             </Box>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
