@@ -1054,6 +1054,15 @@ class MonitorApi extends BaseApi {
 
                 $result = $this->cfApiGraphQL($query);
                 
+                // Check for authentication errors
+                if (isset($result['code']) && $result['code'] === 401) {
+                    error_log('[Cloudflare] API 401 - Check API token/credentials');
+                    return array_merge($this->emptyCloudflareData(), [
+                        'error' => 'Cloudflare authentication failed. Please verify API credentials.',
+                        'auth_error' => true
+                    ]);
+                }
+                
                 if (!isset($result['data']['viewer']['zones'][0])) {
                     return $this->emptyCloudflareData();
                 }

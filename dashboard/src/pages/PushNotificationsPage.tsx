@@ -1,5 +1,5 @@
 import { Box, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Select, FormControl, InputLabel, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, ListItemIcon, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code, CloudUpload, BarChart, TrendingUp, History, Warning, Error as ErrorIcon, Info as InfoIcon } from '@mui/icons-material';
+import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code, CloudUpload, BarChart, TrendingUp, History, Warning, Error as ErrorIcon, Info as InfoIcon, Language } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { fetchPushStats, sendPushNotification, syncSubscribers, fetchSegments, fetchDeliveryStats, fetchSubscriberAnalytics, uploadPushImage, PushStats, Segment as SegmentType } from '../api/notifications';
 import { usePermissions } from '../hooks/usePermissions';
@@ -275,7 +275,7 @@ export default function PushNotificationsPage() {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {['dev', 'beta'].map((env) => (
+          {['dev', 'beta', 'production'].map((env) => (
             <Chip
               key={env}
               label={env.charAt(0).toUpperCase() + env.slice(1)}
@@ -294,6 +294,7 @@ export default function PushNotificationsPage() {
           <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
             <Tab icon={<Send sx={{ fontSize: 18 }} />} iconPosition="start" label="Broadcast" />
             <Tab icon={<History sx={{ fontSize: 18 }} />} iconPosition="start" label="Alert History" />
+            <Tab icon={<Groups sx={{ fontSize: 18 }} />} iconPosition="start" label="Geography" />
           </Tabs>
         </Box>
       </Card>
@@ -670,6 +671,92 @@ export default function PushNotificationsPage() {
             )}
           </CardContent>
         </Card>
+      </TabPanel>
+
+      {/* Geography Tab */}
+      <TabPanel value={activeTab} index={2}>
+        <Grid container spacing={2}>
+          {/* Subscriber Distribution by Country */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Groups sx={{ color: 'info.main' }} /> Subscriber Distribution
+                </Typography>
+                {subscriberAnalytics?.segments ? (
+                  <Box>
+                    {subscriberAnalytics.segments.map((seg: any, i: number) => (
+                      <Box key={i} sx={{ mb: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{seg.title}</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>{seg.subscribers?.toLocaleString() || 0}</Typography>
+                        </Box>
+                        <Box sx={{ height: 8, backgroundColor: 'background.default', borderRadius: 1, overflow: 'hidden' }}>
+                          <Box
+                            sx={{
+                              height: '100%',
+                              width: `${subscriberAnalytics.total_subscribers ? (seg.subscribers / subscriberAnalytics.total_subscribers * 100) : 0}%`,
+                              backgroundColor: i === 0 ? 'primary.main' : i === 1 ? 'success.main' : 'warning.main',
+                              borderRadius: 1
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    ))}
+                    <Divider sx={{ my: 2 }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Total Subscribers</Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                        {subscriberAnalytics.total_subscribers?.toLocaleString() || 0}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No subscriber data available</Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Geographic Targeting Info */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Language sx={{ color: 'success.main' }} /> Geographic Targeting
+                </Typography>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  <Typography variant="body2">
+                    <strong>Algeria-focused targeting</strong> — Uses Cloudflare geography data for DZ region.
+                    Production subscribers primarily from Algeria (Wilayas: 16-Algers, 31-Oran, 25-Constantine).
+                  </Typography>
+                </Alert>
+                <Box sx={{ display: 'grid', gap: 1.5 }}>
+                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Primary Region</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>🇩🇿 Algeria (DZ) - North Africa</Typography>
+                  </Box>
+                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Top Wilayas</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Algiers (16), Oran (31), Constantine (25), Annaba (23)</Typography>
+                  </Box>
+                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Cloudflare Geography Source</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Cloudflare Analytics → Traffic → Countries</Typography>
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{ mt: 1, alignSelf: 'flex-start' }}
+                    onClick={() => window.open('/traffic', '_blank')}
+                  >
+                    View Full Traffic Geography
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       </TabPanel>
 
       {/* Snackbar */}

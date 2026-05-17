@@ -60,6 +60,9 @@ Header set Content-Security-Policy "default-src 'self' https:; script-src 'self'
   # Skip phpMyAdmin and other system directories
   RewriteCond %{REQUEST_URI} !^/phpmyadmin
   
+  # Serve webpushr service worker as real file
+  RewriteCond %{REQUEST_URI} !^/webpushr-sw\.js$
+  
   # Forward Node.js backend requests to proxy
   RewriteRule ^api/(mdm|cegid|techno|magento-node)/(.*)$ api/node-proxy.php [L,QSA]
   
