@@ -14,8 +14,77 @@ class Mailer {
         'webmaster@techno-dz.com'
     ];
     
+    // Email template constants
+    private const PRIORITY_LABELS = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'];
+    private const STATUS_LABELS = ['pending' => 'Pending', 'in-progress' => 'In Progress', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
+    private const DASHBOARD_URL = 'https://dashboard.technostationery.com';
+    private const MAX_REPORT_LENGTH = 5000;
+    
     // Cached settings
     private static $settingsCache = null;
+    private static $settingsCacheTime = 0;
+    private const CACHE_TTL = 60; // 60 seconds
+
+    /**
+     * Get PDO connection for email settings
+     */
+    private static function getPDO() {
+        require_once __DIR__ . '/config.php';
+        Config::load();
+        $db = Config::get('db');
+        
+        return new PDO(
+            "mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth",
+            $db['user'],
+            $db['pass'],
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+        );
+    }
+
+    /**
+     * Sanitize string for safe use in email headers (prevent header injection)
+     */
+    private static function sanitizeHeader($value) {
+        return str_replace(["\r", "\n"], '', $value);
+    }
+
+    /**
+     * Build task URL
+     */
+    private static function buildTaskUrl($taskId) {
+        return $taskId ? self::DASHBOARD_URL . "/#/tasks/$taskId" : self::DASHBOARD_URL . "/#/tasks";
+    }
+
+    /**
+     * Build CTA button HTML
+     */
+    private static function buildCTA($url, $text = 'View Task') {
+        return "<p><a href=\"$url\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">$text</a></p>";
+    }
+
+    /**
+     * Escape HTML for safe inclusion in email templates
+     */
+    private static function escape($value) {
+        return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
+     * Format due date with validation
+     */
+    private static function formatDueDate($dueDate) {
+        if (empty($dueDate)) return 'No due date set';
+        $timestamp = strtotime($dueDate);
+        return $timestamp !== false ? date('F j, Y', $timestamp) : 'Invalid date';
+    }
+
+    /**
+     * Truncate text to max length
+     */
+    private static function truncate($text, $maxLength) {
+        if (mb_strlen($text) <= $maxLength) return $text;
+        return mb_substr($text, 0, $maxLength) . '...';
+    }
 
     /**
      * Send an HTML email
@@ -29,8 +98,16 @@ class Mailer {
 
         // Load settings from database or use defaults
         $settings = self::loadSettings();
-        $fromEmail = $settings['from_email'] ?? self::FROM_EMAIL;
-        $fromName = $settings['from_name'] ?? self::FROM_NAME;
+        
+        // Check if email is enabled
+        if (($settings['enabled'] ?? 'true') === 'false') {
+            error_log("[Mailer] Email notifications are disabled");
+            EmailNotificationLogger::log('disabled', $to, $subject, false, 'Email notifications disabled');
+            return false;
+        }
+        
+        $fromEmail = self::sanitizeHeader($settings['from_email'] ?? self::FROM_EMAIL);
+        $fromName = self::sanitizeHeader($settings['from_name'] ?? self::FROM_NAME);
 
         $headers = [
             'From: ' . $fromName . ' <' . $fromEmail . '>',
@@ -46,7 +123,7 @@ class Mailer {
         $type = self::extractTypeFromSubject($subject);
         EmailNotificationLogger::log($type, $to, $subject, $result, $result ? null : 'mail() function returned false');
         
-        error_log("[Mailer] Sent to $to | Subject: $subject | Result: " . ($result ? 'OK' : 'FAIL'));
+        error_log("[Mailer] Sent to $to | Subject: $subject | Result: " . ($result ? 'Accepted by MTA' : 'FAIL'));
         return $result;
     }
     
@@ -180,28 +257,25 @@ HTML;
      * Send task assignment notification email
      */
     public static function sendTaskAssignment($to, $assigneeName, $taskTitle, $taskDescription, $priority, $assignedBy, $dueDate = null, $taskId = null) {
-        $taskUrl = $taskId ? "https://dashboard.technostationery.com/#/tasks/$taskId" : "https://dashboard.technostationery.com/#/tasks";
-        $priorityLabels = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'];
-        $priorityLabel = $priorityLabels[$priority] ?? $priority;
-        $dueDateText = $dueDate ? "Due date: " . date('F j, Y', strtotime($dueDate)) : "No due date set";
+        $taskUrl = self::buildTaskUrl($taskId);
+        $priorityLabel = self::PRIORITY_LABELS[$priority] ?? self::escape($priority);
+        $dueDateText = self::formatDueDate($dueDate);
 
         $content = "
-<p>Hello <strong>$assigneeName</strong>,</p>
+<p>Hello <strong>" . self::escape($assigneeName) . "</strong>,</p>
 <p>You have been assigned a new task in the Techno Dashboard.</p>
 <table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
-<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">$taskTitle</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">" . self::escape($taskTitle) . "</td></tr>
 <tr><td style=\"color:#6b7280;font-size:12px;\">Priority</td><td style=\"font-size:14px;\">$priorityLabel</td></tr>
 <tr><td style=\"color:#6b7280;font-size:12px;\">Due</td><td style=\"font-size:14px;\">$dueDateText</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned by</td><td style=\"font-size:14px;\">$assignedBy</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned by</td><td style=\"font-size:14px;\">" . self::escape($assignedBy) . "</td></tr>
 </table>
 ";
         if (!empty($taskDescription)) {
-            $content .= "<p><strong>Description:</strong></p><p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(htmlspecialchars($taskDescription)) . "</p>";
+            $content .= "<p><strong>Description:</strong></p><p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(self::escape($taskDescription)) . "</p>";
         }
 
-        $content .= "
-<p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
-";
+        $content .= self::buildCTA($taskUrl);
         return self::send($to, "New Task Assigned: $taskTitle", self::wrapTemplate('New Task Assigned', $content));
     }
 
@@ -209,42 +283,42 @@ HTML;
      * Send task status change notification
      */
     public static function sendTaskStatusChange($to, $assigneeName, $taskTitle, $oldStatus, $newStatus, $changedBy, $taskId = null) {
-        $taskUrl = $taskId ? "https://dashboard.technostationery.com/#/tasks/$taskId" : "https://dashboard.technostationery.com/#/tasks";
-        $statusLabels = ['pending' => 'Pending', 'in-progress' => 'In Progress', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
-        $oldLabel = $statusLabels[$oldStatus] ?? $oldStatus;
-        $newLabel = $statusLabels[$newStatus] ?? $newStatus;
+        $taskUrl = self::buildTaskUrl($taskId);
+        $oldLabel = self::STATUS_LABELS[$oldStatus] ?? self::escape($oldStatus);
+        $newLabel = self::STATUS_LABELS[$newStatus] ?? self::escape($newStatus);
 
         $content = "
-<p>Hello <strong>$assigneeName</strong>,</p>
-<p>The status of task <strong>\"$taskTitle\"</strong> has been changed.</p>
+<p>Hello <strong>" . self::escape($assigneeName) . "</strong>,</p>
+<p>The status of task <strong>\"" . self::escape($taskTitle) . "\"</strong> has been changed.</p>
 <table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
 <tr><td style=\"color:#6b7280;font-size:12px;\">From</td><td style=\"font-size:14px;\">$oldLabel</td></tr>
 <tr><td style=\"color:#6b7280;font-size:12px;\">To</td><td style=\"font-size:14px;font-weight:600;\">$newLabel</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Changed by</td><td style=\"font-size:14px;\">$changedBy</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Changed by</td><td style=\"font-size:14px;\">" . self::escape($changedBy) . "</td></tr>
 </table>
-<p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
-";
+" . self::buildCTA($taskUrl);
         return self::send($to, "Task Status Updated: $taskTitle", self::wrapTemplate('Task Status Updated', $content));
     }
 
     /**
      * Send admin notification for major updates and reports
-     * Sends to both admin addresses
+     * Sends to both admin addresses from database settings
      */
     public static function sendAdminNotification($subject, $title, $content) {
-        $adminEmails = [
-            'admin@dashboard.technostationery.com',
-            'webmaster@techno-dz.com'
-        ];
+        $settings = self::loadSettings();
+        $adminEmails = array_filter([
+            $settings['admin_email_1'] ?? self::ADMIN_EMAILS[0],
+            $settings['admin_email_2'] ?? self::ADMIN_EMAILS[1]
+        ]);
         
         $results = [];
         foreach ($adminEmails as $email) {
-            try {
-                $results[$email] = self::send($email, $subject, self::wrapTemplate($title, $content));
+            $result = self::send($email, $subject, self::wrapTemplate($title, $content));
+            $results[$email] = $result;
+            
+            if ($result) {
                 error_log("[Mailer] Admin notification sent to $email: $subject");
-            } catch (\Exception $e) {
-                error_log("[Mailer] Admin notification failed for $email: " . $e->getMessage());
-                $results[$email] = false;
+            } else {
+                error_log("[Mailer] Admin notification failed for $email: $subject");
             }
         }
         
@@ -260,16 +334,16 @@ HTML;
         
         $content = "
 <p>Hello Administrator,</p>
-<p>A new <strong>$reportType</strong> has been generated.</p>
+<p>A new <strong>" . self::escape($reportType) . "</strong> has been generated.</p>
 <table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
-<tr><td style=\"color:#6b7280;font-size:12px;\">Report</td><td style=\"font-size:14px;font-weight:600;\">$reportTitle</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Report</td><td style=\"font-size:14px;font-weight:600;\">" . self::escape($reportTitle) . "</td></tr>
 <tr><td style=\"color:#6b7280;font-size:12px;\">Generated</td><td style=\"font-size:14px;\">$time</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Server</td><td style=\"font-size:14px;\">$hostname</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Server</td><td style=\"font-size:14px;\">" . self::escape($hostname) . "</td></tr>
 </table>
 <div style=\"background:#f9fafb;padding:16px;border-radius:4px;margin:16px 0;\">
-$reportContent
+" . self::truncate($reportContent, self::MAX_REPORT_LENGTH) . "
 </div>
-<p><a href=\"https://dashboard.technostationery.com\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Dashboard</a></p>
+<p><a href=\"" . self::DASHBOARD_URL . "\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Dashboard</a></p>
 ";
         
         return self::sendAdminNotification("System Report: $reportTitle", $reportType, $content);
@@ -285,13 +359,13 @@ $reportContent
 <p>Hello Administrator,</p>
 <p>A major system update has been detected.</p>
 <table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
-<tr><td style=\"color:#6b7280;font-size:12px;\">Update</td><td style=\"font-size:14px;font-weight:600;\">$updateTitle</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Update</td><td style=\"font-size:14px;font-weight:600;\">" . self::escape($updateTitle) . "</td></tr>
 <tr><td style=\"color:#6b7280;font-size:12px;\">Time</td><td style=\"font-size:14px;\">$time</td></tr>
 </table>
 <div style=\"background:#f9fafb;padding:16px;border-radius:4px;margin:16px 0;\">
-$updateDetails
+" . self::truncate($updateDetails, self::MAX_REPORT_LENGTH) . "
 </div>
-<p><a href=\"https://dashboard.technostationery.com\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Dashboard</a></p>
+<p><a href=\"" . self::DASHBOARD_URL . "\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Dashboard</a></p>
 ";
         
         return self::sendAdminNotification("Major Update: $updateTitle", 'Major System Update', $content);
@@ -302,29 +376,26 @@ $updateDetails
      * Used when a new task is created (separate from assignment)
      */
     public static function sendTaskCreatedNotification($to, $assigneeName, $taskTitle, $taskDescription, $priority, $createdBy, $assignedTo, $dueDate = null, $taskId = null) {
-        $taskUrl = $taskId ? "https://dashboard.technostationery.com/#/tasks/$taskId" : "https://dashboard.technostationery.com/#/tasks";
-        $priorityLabels = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'];
-        $priorityLabel = $priorityLabels[$priority] ?? $priority;
-        $dueDateText = $dueDate ? "Due date: " . date('F j, Y', strtotime($dueDate)) : "No due date set";
+        $taskUrl = self::buildTaskUrl($taskId);
+        $priorityLabel = self::PRIORITY_LABELS[$priority] ?? self::escape($priority);
+        $dueDateText = self::formatDueDate($dueDate);
 
         $content = "
-<p>Hello <strong>$assigneeName</strong>,</p>
+<p>Hello <strong>" . self::escape($assigneeName) . "</strong>,</p>
 <p>A new task has been created in the Techno Dashboard.</p>
 <table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
-<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">$taskTitle</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">" . self::escape($taskTitle) . "</td></tr>
 <tr><td style=\"color:#6b7280;font-size:12px;\">Priority</td><td style=\"font-size:14px;\">$priorityLabel</td></tr>
 <tr><td style=\"color:#6b7280;font-size:12px;\">Due</td><td style=\"font-size:14px;\">$dueDateText</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Created by</td><td style=\"font-size:14px;\">$createdBy</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned to</td><td style=\"font-size:14px;\">$assignedTo</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Created by</td><td style=\"font-size:14px;\">" . self::escape($createdBy) . "</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned to</td><td style=\"font-size:14px;\">" . self::escape($assignedTo) . "</td></tr>
 </table>
 ";
         if (!empty($taskDescription)) {
-            $content .= "<p><strong>Description:</strong></p><p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(htmlspecialchars($taskDescription)) . "</p>";
+            $content .= "<p><strong>Description:</strong></p><p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(self::escape($taskDescription)) . "</p>";
         }
 
-        $content .= "
-<p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
-";
+        $content .= self::buildCTA($taskUrl);
         return self::send($to, "New Task Created: $taskTitle", self::wrapTemplate('New Task Created', $content));
     }
 
@@ -332,18 +403,17 @@ $updateDetails
      * Send task note added notification
      */
     public static function sendTaskNoteAdded($to, $assigneeName, $taskTitle, $noteContent, $addedBy, $taskId = null) {
-        $taskUrl = $taskId ? "https://dashboard.technostationery.com/#/tasks/$taskId" : "https://dashboard.technostationery.com/#/tasks";
+        $taskUrl = self::buildTaskUrl($taskId);
         
         $content = "
-<p>Hello <strong>$assigneeName</strong>,</p>
-<p>A new note has been added to task <strong>\"$taskTitle\"</strong>.</p>
+<p>Hello <strong>" . self::escape($assigneeName) . "</strong>,</p>
+<p>A new note has been added to task <strong>\"" . self::escape($taskTitle) . "\"</strong>.</p>
 <table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
-<tr><td style=\"color:#6b7280;font-size:12px;\">Added by</td><td style=\"font-size:14px;\">$addedBy</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Added by</td><td style=\"font-size:14px;\">" . self::escape($addedBy) . "</td></tr>
 </table>
 <p><strong>Note Content:</strong></p>
-<p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(htmlspecialchars(mb_substr($noteContent, 0, 500))) . "</p>
-<p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
-";
+<p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(self::escape(self::truncate($noteContent, 500))) . "</p>
+" . self::buildCTA($taskUrl);
         return self::send($to, "New Note on Task: $taskTitle", self::wrapTemplate('Task Note Added', $content));
     }
 
@@ -351,15 +421,15 @@ $updateDetails
      * Send task completion notification
      */
     public static function sendTaskCompleted($to, $assigneeName, $taskTitle, $completedBy, $taskId = null) {
-        $taskUrl = $taskId ? "https://dashboard.technostationery.com/#/tasks/$taskId" : "https://dashboard.technostationery.com/#/tasks";
+        $taskUrl = self::buildTaskUrl($taskId);
         
         $content = "
-<p>Hello <strong>$assigneeName</strong>,</p>
-<p>Task <strong>\"$taskTitle\"</strong> has been marked as completed.</p>
+<p>Hello <strong>" . self::escape($assigneeName) . "</strong>,</p>
+<p>Task <strong>\"" . self::escape($taskTitle) . "\"</strong> has been marked as completed.</p>
 <table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
-<tr><td style=\"color:#6b7280;font-size:12px;\">Completed by</td><td style=\"font-size:14px;\">$completedBy</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Completed by</td><td style=\"font-size:14px;\">" . self::escape($completedBy) . "</td></tr>
 </table>
-<p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
+" . self::buildCTA($taskUrl) . "
 <p style=\"color:#6b7280;font-size:12px;margin-top:16px;\">Great work on completing this task!</p>
 ";
         return self::send($to, "Task Completed: $taskTitle", self::wrapTemplate('Task Completed', $content));
@@ -369,22 +439,13 @@ $updateDetails
      * Load email settings from database or return defaults
      */
     private static function loadSettings() {
-        // Return cached settings if available
-        if (self::$settingsCache !== null) {
+        // Return cached settings if still fresh
+        if (self::$settingsCache !== null && (time() - self::$settingsCacheTime) < self::CACHE_TTL) {
             return self::$settingsCache;
         }
 
         try {
-            require_once __DIR__ . '/config.php';
-            Config::load();
-            $db = Config::get('db');
-            
-            $pdo = new PDO(
-                "mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth",
-                $db['user'],
-                $db['pass'],
-                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-            );
+            $pdo = self::getPDO();
             
             // Check if settings table exists
             $tableExists = $pdo->query("SHOW TABLES LIKE 'email_settings'")->fetch();
@@ -398,6 +459,7 @@ $updateDetails
                 
                 // Cache settings
                 self::$settingsCache = $settings;
+                self::$settingsCacheTime = time();
                 return $settings;
             }
         } catch (\Exception $e) {
@@ -412,6 +474,7 @@ $updateDetails
             'admin_email_2' => self::ADMIN_EMAILS[1],
             'enabled' => 'true'
         ];
+        self::$settingsCacheTime = time();
         
         return self::$settingsCache;
     }
@@ -421,16 +484,7 @@ $updateDetails
      */
     public static function saveSettings($settings) {
         try {
-            require_once __DIR__ . '/config.php';
-            Config::load();
-            $db = Config::get('db');
-            
-            $pdo = new PDO(
-                "mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth",
-                $db['user'],
-                $db['pass'],
-                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-            );
+            $pdo = self::getPDO();
             
             // Create table if it doesn't exist
             $pdo->exec("CREATE TABLE IF NOT EXISTS email_settings (
@@ -486,5 +540,20 @@ $updateDetails
             'admin_email_2' => $settings['admin_email_2'] ?? self::ADMIN_EMAILS[1],
             'enabled' => $settings['enabled'] ?? 'true'
         ];
+    }
+
+    /**
+     * Public method to send test email (for settings page API)
+     */
+    public static function sendTestEmail($to, $subject, $content) {
+        return self::send($to, $subject, self::wrapTemplate('Email Configuration Test', $content));
+    }
+
+    /**
+     * Clear settings cache (useful for testing or manual refresh)
+     */
+    public static function clearSettingsCache() {
+        self::$settingsCache = null;
+        self::$settingsCacheTime = 0;
     }
 }
