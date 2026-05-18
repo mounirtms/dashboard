@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/session_helper.php';
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/PermissionChecker.php';
+require_once __DIR__ . '/Mailer.php';
 Config::load();
 
 // Require authentication
@@ -120,6 +121,15 @@ try {
 
     $currentUser = $_SESSION['username'] ?? 'system';
 
+    // Helper function to get user email and name
+    $getUserInfo = function($username) use ($pdo) {
+        if (empty($username)) return null;
+        $stmt = $pdo->prepare("SELECT email, full_name FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+        return ($user && !empty($user['email'])) ? $user : null;
+    };
+
     switch ($action) {
         case 'list':
             $stmt = $pdo->query("SELECT * FROM tasks ORDER BY created_at DESC");
@@ -177,14 +187,12 @@ try {
             $assignedTo = $input['assigned_to'] ?? '';
             if (!empty($assignedTo)) {
                 try {
-                    $userStmt = $pdo->prepare("SELECT email, full_name FROM users WHERE username = ?");
-                    $userStmt->execute([$assignedTo]);
-                    $user = $userStmt->fetch();
-                    if ($user && !empty($user['email'])) {
-                        require_once __DIR__ . '/Mailer.php';
+                    $assignedUser = $getUserInfo($assignedTo);
+                    if ($assignedUser) {
+                        // Send assignment notification to the assigned user
                         Mailer::sendTaskAssignment(
-                            $user['email'],
-                            $user['full_name'] ?: $assignedTo,
+                            $assignedUser['email'],
+                            $assignedUser['full_name'] ?: $assignedTo,
                             $title,
                             $input['description'] ?? '',
                             $input['priority'] ?? 'medium',
@@ -192,9 +200,58 @@ try {
                             $input['due_date'] ?? null,
                             $taskId
                         );
+                        
+                        // If creator is different from assignee, notify the creator
+                        if ($currentUser !== $assignedTo) {
+                            $creatorUser = $getUserInfo($currentUser);
+                            if ($creatorUser) {
+                                Mailer::sendTaskCreatedNotification(
+                                    $creatorUser['email'],
+                                    $creatorUser['full_name'] ?: $currentUser,
+                                    $title,
+                                    $input['description'] ?? '',
+                                    $input['priority'] ?? 'medium',
+                                    $currentUser,
+                                    $assignedTo,
+                                    $input['due_date'] ?? null,
+                                    $taskId
+                                );
+                            }
+                        }
                     }
                 } catch (\Exception $e) {
-                    error_log("[tasks.php] Failed to send task assignment email: " . $e->getMessage());
+                    error_log("[tasks.php] Task creation email failed: " . $e->getMessage());
+                }
+            }
+            
+            // Send admin notification for high priority tasks
+            if (($input['priority'] ?? 'medium') === 'high') {
+                try {
+                    $priorityLabels = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'];
+                    $priorityLabel = $priorityLabels[$input['priority'] ?? 'medium'] ?? 'High';
+                    $dueDateText = !empty($input['due_date']) ? "Due: " . date('F j, Y', strtotime($input['due_date'])) : "No due date";
+                    
+                    $reportContent = "
+<p><strong>New High Priority Task Created</strong></p>
+<table style=\"background:#f3f4f6;padding:12px;border-radius:6px;margin:16px 0;\">
+<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">$title</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Priority</td><td style=\"font-size:14px;\">$priorityLabel</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Due Date</td><td style=\"font-size:14px;\">$dueDateText</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Created by</td><td style=\"font-size:14px;\">$currentUser</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned to</td><td style=\"font-size:14px;\">$assignedTo</td></tr>
+</table>
+";
+                    if (!empty($input['description'])) {
+                        $reportContent .= "<p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(htmlspecialchars(mb_substr($input['description'], 0, 300))) . "</p>";
+                    }
+                    
+                    Mailer::sendAdminNotification(
+                        "High Priority Task: $title",
+                        'High Priority Task Alert',
+                        $reportContent
+                    );
+                } catch (\Exception $e) {
+                    error_log("[tasks.php] Admin notification failed: " . $e->getMessage());
                 }
             }
 
@@ -265,23 +322,52 @@ try {
                 $assignedTo = $oldTask['assigned_to'] ?? '';
                 if (!empty($assignedTo)) {
                     try {
-                        $userStmt = $pdo->prepare("SELECT email, full_name FROM users WHERE username = ?");
-                        $userStmt->execute([$assignedTo]);
-                        $user = $userStmt->fetch();
-                        if ($user && !empty($user['email'])) {
-                            require_once __DIR__ . '/Mailer.php';
+                        $assignedUser = $getUserInfo($assignedTo);
+                        if ($assignedUser) {
                             Mailer::sendTaskStatusChange(
-                                $user['email'],
-                                $user['full_name'] ?: $assignedTo,
+                                $assignedUser['email'],
+                                $assignedUser['full_name'] ?: $assignedTo,
                                 $oldTask['title'],
                                 $oldTask['status'],
                                 $newStatus,
                                 $currentUser,
                                 $id
                             );
+                            
+                            // If task is completed, send additional completion notification
+                            if ($newStatus === 'completed') {
+                                Mailer::sendTaskCompleted(
+                                    $assignedUser['email'],
+                                    $assignedUser['full_name'] ?: $assignedTo,
+                                    $oldTask['title'],
+                                    $currentUser,
+                                    $id
+                                );
+                            }
                         }
                     } catch (\Exception $e) {
-                        error_log("[tasks.php] Failed to send status change email: " . $e->getMessage());
+                        error_log("[tasks.php] Status change email failed: " . $e->getMessage());
+                    }
+                }
+                
+                // Send admin notification for task completion
+                if ($newStatus === 'completed') {
+                    try {
+                        $reportContent = "
+<p><strong>Task Completed</strong></p>
+<table style=\"background:#f3f4f6;padding:12px;border-radius:6px;margin:16px 0;\">
+<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">{$oldTask['title']}</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Completed by</td><td style=\"font-size:14px;\">$currentUser</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned to</td><td style=\"font-size:14px;\">$assignedTo</td></tr>
+</table>
+";
+                        Mailer::sendAdminNotification(
+                            "Task Completed: {$oldTask['title']}",
+                            'Task Completion Report',
+                            $reportContent
+                        );
+                    } catch (\Exception $e) {
+                        error_log("[tasks.php] Completion admin notification failed: " . $e->getMessage());
                     }
                 }
             } else {
@@ -359,15 +445,48 @@ try {
 
             // Log activity for each updated task
             $titleStmt = $pdo->prepare("SELECT title FROM tasks WHERE id = ?");
+            $completedTasks = [];
             foreach ($ids as $taskId) {
                 $titleStmt->execute([$taskId]);
                 $taskTitle = $titleStmt->fetchColumn();
                 if (isset($input['status'])) {
                     $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'bulk_status_changed', ?, ?)")
                         ->execute([$taskId, $currentUser, "Bulk update: status → {$input['status']}"]);
+                    
+                    // Track completed tasks for admin notification
+                    if ($input['status'] === 'completed') {
+                        $completedTasks[] = $taskTitle;
+                    }
                 } else {
                     $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'bulk_updated', ?, ?)")
                         ->execute([$taskId, $currentUser, "Bulk updated: $taskTitle"]);
+                }
+            }
+            
+            // Send admin notification for bulk completion
+            if (!empty($completedTasks)) {
+                try {
+                    $taskCount = count($completedTasks);
+                    $taskListItems = implode('', array_map(function($t) {
+                        return "<li style=\"margin:4px 0;\">$t</li>";
+                    }, $completedTasks));
+                    
+                    $reportContent = "
+<p><strong>Bulk Task Completion</strong></p>
+<p>The following <strong>$taskCount task" . ($taskCount > 1 ? 's have' : 'has') . "</strong> been marked as completed:</p>
+<ul style=\"background:#f3f4f6;padding:16px 16px 16px 32px;border-radius:6px;margin:16px 0;\">
+$taskListItems
+</ul>
+<p><strong>Updated by:</strong> $currentUser<br>
+<strong>Time:</strong> " . date('Y-m-d H:i:s') . "</p>
+";
+                    Mailer::sendAdminNotification(
+                        "Bulk Task Completion: $taskCount task" . ($taskCount > 1 ? 's' : ''),
+                        'Bulk Task Completion Report',
+                        $reportContent
+                    );
+                } catch (\Exception $e) {
+                    error_log("[tasks.php] Bulk completion notification failed: " . $e->getMessage());
                 }
             }
 
@@ -481,6 +600,30 @@ try {
 
             $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'commented', ?, ?)")
                 ->execute([$taskId, $currentUser, "Note added: " . mb_substr($content, 0, 50)]);
+
+            // Send email notification to task assignee
+            try {
+                $taskStmt = $pdo->prepare("SELECT title, assigned_to FROM tasks WHERE id = ?");
+                $taskStmt->execute([$taskId]);
+                $task = $taskStmt->fetch();
+                
+                if ($task && !empty($task['assigned_to'])) {
+                    $assignedUser = $getUserInfo($task['assigned_to']);
+                    
+                    if ($assignedUser && $task['assigned_to'] !== $currentUser) {
+                        Mailer::sendTaskNoteAdded(
+                            $assignedUser['email'],
+                            $assignedUser['full_name'] ?: $task['assigned_to'],
+                            $task['title'],
+                            $content,
+                            $currentUser,
+                            $taskId
+                        );
+                    }
+                }
+            } catch (\Exception $e) {
+                error_log("[tasks.php] Task note email failed: " . $e->getMessage());
+            }
 
             echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
             break;

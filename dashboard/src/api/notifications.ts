@@ -125,3 +125,97 @@ export async function fetchSubscriberAnalytics(env: string = 'dev'): Promise<any
   const { data } = await apiClient.get(`/api/webpushr.php?action=subscriber_analytics&env=${env}`);
   return data;
 }
+
+export async function fetchSubscribers(env: string = 'dev', limit: number = 50, offset: number = 0, segmentId?: string): Promise<any> {
+  let url = `/api/webpushr.php?action=get_subscribers&env=${env}&limit=${limit}&offset=${offset}`;
+  if (segmentId) url += `&segment_id=${segmentId}`;
+  const { data } = await apiClient.get(url);
+  return data;
+}
+
+export async function fetchSubscriberDetail(env: string = 'dev', sid: string): Promise<any> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=get_subscriber_detail&env=${env}&sid=${sid}`);
+  return data;
+}
+
+export async function fetchGeoAnalytics(env: string = 'dev'): Promise<any> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=get_geo_analytics&env=${env}`);
+  return data;
+}
+
+export async function fetchDeviceAnalytics(env: string = 'dev'): Promise<any> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=get_device_analytics&env=${env}`);
+  return data;
+}
+
+export async function fetchBrowserAnalytics(env: string = 'dev'): Promise<any> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=get_browser_analytics&env=${env}`);
+  return data;
+}
+
+export async function fetchOsAnalytics(env: string = 'dev'): Promise<any> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=get_os_analytics&env=${env}`);
+  return data;
+}
+
+export async function fetchSubscriberBySid(sid: string): Promise<any> {
+  const { data } = await apiClient.get(`/api/webpushr.php?action=get_subscriber_by_sid&sid=${sid}`);
+  return data;
+}
+
+// Email Notification Logs
+export interface EmailLog {
+  timestamp: string;
+  type: string;
+  to: string;
+  subject: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface EmailLogStats {
+  total: number;
+  success: number;
+  failed: number;
+  by_type: Record<string, number>;
+  recent_failures: EmailLog[];
+}
+
+export async function fetchEmailLogs(limit: number = 50): Promise<{ logs: EmailLog[]; total: number }> {
+  const { data } = await apiClient.get(`/api/email_logs.php?action=list&limit=${limit}`);
+  return data;
+}
+
+export async function fetchEmailLogStats(): Promise<EmailLogStats> {
+  const { data } = await apiClient.get('/api/email_logs.php?action=stats');
+  return data.stats;
+}
+
+export async function clearEmailLogs(): Promise<any> {
+  const { data } = await apiClient.post('/api/email_logs.php?action=clear');
+  return data;
+}
+
+// Email Settings
+export interface EmailSettings {
+  from_email: string;
+  from_name: string;
+  admin_email_1: string;
+  admin_email_2: string;
+  enabled: string;
+}
+
+export async function fetchEmailSettings(): Promise<EmailSettings> {
+  const { data } = await apiClient.get('/api/email_settings.php?action=get');
+  return data.settings;
+}
+
+export async function saveEmailSettings(settings: EmailSettings): Promise<any> {
+  const { data } = await apiClient.post('/api/email_settings.php?action=save', settings);
+  return data;
+}
+
+export async function testEmailSettings(email: string): Promise<any> {
+  const { data } = await apiClient.post('/api/email_settings.php?action=test', { email });
+  return data;
+}

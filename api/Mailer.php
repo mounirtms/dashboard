@@ -3,9 +3,19 @@
  * Mailer - Email sending utility using PHP mail()
  */
 
+require_once __DIR__ . '/EmailNotificationLogger.php';
+
 class Mailer {
-    private const FROM_EMAIL = 'dashboard@techno-dz.com';
+    // Default email settings (can be overridden by database settings)
+    private const FROM_EMAIL = 'alerts@dashboard.technostationery.com';
     private const FROM_NAME = 'Techno Dashboard';
+    private const ADMIN_EMAILS = [
+        'admin@dashboard.technostationery.com',
+        'webmaster@techno-dz.com'
+    ];
+    
+    // Cached settings
+    private static $settingsCache = null;
 
     /**
      * Send an HTML email
@@ -13,20 +23,48 @@ class Mailer {
     private static function send($to, $subject, $htmlBody) {
         if (empty($to) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
             error_log("[Mailer] Invalid email: $to");
+            EmailNotificationLogger::log('invalid_email', $to, $subject, false, 'Invalid email address');
             return false;
         }
 
+        // Load settings from database or use defaults
+        $settings = self::loadSettings();
+        $fromEmail = $settings['from_email'] ?? self::FROM_EMAIL;
+        $fromName = $settings['from_name'] ?? self::FROM_NAME;
+
         $headers = [
-            'From: ' . self::FROM_NAME . ' <' . self::FROM_EMAIL . '>',
-            'Reply-To: ' . self::FROM_EMAIL,
+            'From: ' . $fromName . ' <' . $fromEmail . '>',
+            'Reply-To: ' . $fromEmail,
             'MIME-Version: 1.0',
             'Content-Type: text/html; charset=UTF-8',
             'X-Mailer: TechnoDashboard/1.0'
         ];
 
         $result = mail($to, $subject, $htmlBody, implode("\r\n", $headers));
+        
+        // Log the attempt
+        $type = self::extractTypeFromSubject($subject);
+        EmailNotificationLogger::log($type, $to, $subject, $result, $result ? null : 'mail() function returned false');
+        
         error_log("[Mailer] Sent to $to | Subject: $subject | Result: " . ($result ? 'OK' : 'FAIL'));
         return $result;
+    }
+    
+    /**
+     * Extract notification type from subject line for logging
+     */
+    private static function extractTypeFromSubject($subject) {
+        if (strpos($subject, 'New Task Assigned') === 0) return 'task_assignment';
+        if (strpos($subject, 'New Task Created') === 0) return 'task_created';
+        if (strpos($subject, 'Task Status Updated') === 0) return 'task_status_change';
+        if (strpos($subject, 'Task Completed') === 0) return 'task_completed';
+        if (strpos($subject, 'New Note on Task') === 0) return 'task_note';
+        if (strpos($subject, 'High Priority Task') === 0) return 'admin_high_priority';
+        if (strpos($subject, 'Task Completion Report') === 0) return 'admin_completion';
+        if (strpos($subject, 'Bulk Task Completion') === 0) return 'admin_bulk_completion';
+        if (strpos($subject, 'System Report') === 0) return 'admin_system_report';
+        if (strpos($subject, 'Major Update') === 0) return 'admin_major_update';
+        return 'other';
     }
 
     /**
@@ -187,5 +225,266 @@ HTML;
 <p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
 ";
         return self::send($to, "Task Status Updated: $taskTitle", self::wrapTemplate('Task Status Updated', $content));
+    }
+
+    /**
+     * Send admin notification for major updates and reports
+     * Sends to both admin addresses
+     */
+    public static function sendAdminNotification($subject, $title, $content) {
+        $adminEmails = [
+            'admin@dashboard.technostationery.com',
+            'webmaster@techno-dz.com'
+        ];
+        
+        $results = [];
+        foreach ($adminEmails as $email) {
+            try {
+                $results[$email] = self::send($email, $subject, self::wrapTemplate($title, $content));
+                error_log("[Mailer] Admin notification sent to $email: $subject");
+            } catch (\Exception $e) {
+                error_log("[Mailer] Admin notification failed for $email: " . $e->getMessage());
+                $results[$email] = false;
+            }
+        }
+        
+        return $results;
+    }
+
+    /**
+     * Send system report notification to admins
+     */
+    public static function sendSystemReport($reportTitle, $reportContent, $reportType = 'System Report') {
+        $time = date('Y-m-d H:i:s');
+        $hostname = gethostname();
+        
+        $content = "
+<p>Hello Administrator,</p>
+<p>A new <strong>$reportType</strong> has been generated.</p>
+<table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
+<tr><td style=\"color:#6b7280;font-size:12px;\">Report</td><td style=\"font-size:14px;font-weight:600;\">$reportTitle</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Generated</td><td style=\"font-size:14px;\">$time</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Server</td><td style=\"font-size:14px;\">$hostname</td></tr>
+</table>
+<div style=\"background:#f9fafb;padding:16px;border-radius:4px;margin:16px 0;\">
+$reportContent
+</div>
+<p><a href=\"https://dashboard.technostationery.com\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Dashboard</a></p>
+";
+        
+        return self::sendAdminNotification("System Report: $reportTitle", $reportType, $content);
+    }
+
+    /**
+     * Send major update notification to admins
+     */
+    public static function sendMajorUpdateNotification($updateTitle, $updateDetails, $timestamp = null) {
+        $time = $timestamp ? date('Y-m-d H:i:s', strtotime($timestamp)) : date('Y-m-d H:i:s');
+        
+        $content = "
+<p>Hello Administrator,</p>
+<p>A major system update has been detected.</p>
+<table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
+<tr><td style=\"color:#6b7280;font-size:12px;\">Update</td><td style=\"font-size:14px;font-weight:600;\">$updateTitle</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Time</td><td style=\"font-size:14px;\">$time</td></tr>
+</table>
+<div style=\"background:#f9fafb;padding:16px;border-radius:4px;margin:16px 0;\">
+$updateDetails
+</div>
+<p><a href=\"https://dashboard.technostationery.com\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Dashboard</a></p>
+";
+        
+        return self::sendAdminNotification("Major Update: $updateTitle", 'Major System Update', $content);
+    }
+
+    /**
+     * Send task created notification
+     * Used when a new task is created (separate from assignment)
+     */
+    public static function sendTaskCreatedNotification($to, $assigneeName, $taskTitle, $taskDescription, $priority, $createdBy, $assignedTo, $dueDate = null, $taskId = null) {
+        $taskUrl = $taskId ? "https://dashboard.technostationery.com/#/tasks/$taskId" : "https://dashboard.technostationery.com/#/tasks";
+        $priorityLabels = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'];
+        $priorityLabel = $priorityLabels[$priority] ?? $priority;
+        $dueDateText = $dueDate ? "Due date: " . date('F j, Y', strtotime($dueDate)) : "No due date set";
+
+        $content = "
+<p>Hello <strong>$assigneeName</strong>,</p>
+<p>A new task has been created in the Techno Dashboard.</p>
+<table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
+<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">$taskTitle</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Priority</td><td style=\"font-size:14px;\">$priorityLabel</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Due</td><td style=\"font-size:14px;\">$dueDateText</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Created by</td><td style=\"font-size:14px;\">$createdBy</td></tr>
+<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned to</td><td style=\"font-size:14px;\">$assignedTo</td></tr>
+</table>
+";
+        if (!empty($taskDescription)) {
+            $content .= "<p><strong>Description:</strong></p><p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(htmlspecialchars($taskDescription)) . "</p>";
+        }
+
+        $content .= "
+<p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
+";
+        return self::send($to, "New Task Created: $taskTitle", self::wrapTemplate('New Task Created', $content));
+    }
+
+    /**
+     * Send task note added notification
+     */
+    public static function sendTaskNoteAdded($to, $assigneeName, $taskTitle, $noteContent, $addedBy, $taskId = null) {
+        $taskUrl = $taskId ? "https://dashboard.technostationery.com/#/tasks/$taskId" : "https://dashboard.technostationery.com/#/tasks";
+        
+        $content = "
+<p>Hello <strong>$assigneeName</strong>,</p>
+<p>A new note has been added to task <strong>\"$taskTitle\"</strong>.</p>
+<table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
+<tr><td style=\"color:#6b7280;font-size:12px;\">Added by</td><td style=\"font-size:14px;\">$addedBy</td></tr>
+</table>
+<p><strong>Note Content:</strong></p>
+<p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(htmlspecialchars(mb_substr($noteContent, 0, 500))) . "</p>
+<p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
+";
+        return self::send($to, "New Note on Task: $taskTitle", self::wrapTemplate('Task Note Added', $content));
+    }
+
+    /**
+     * Send task completion notification
+     */
+    public static function sendTaskCompleted($to, $assigneeName, $taskTitle, $completedBy, $taskId = null) {
+        $taskUrl = $taskId ? "https://dashboard.technostationery.com/#/tasks/$taskId" : "https://dashboard.technostationery.com/#/tasks";
+        
+        $content = "
+<p>Hello <strong>$assigneeName</strong>,</p>
+<p>Task <strong>\"$taskTitle\"</strong> has been marked as completed.</p>
+<table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
+<tr><td style=\"color:#6b7280;font-size:12px;\">Completed by</td><td style=\"font-size:14px;\">$completedBy</td></tr>
+</table>
+<p><a href=\"$taskUrl\" style=\"display:inline-block;background:#1e3a5f;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;margin-top:16px;\">View Task</a></p>
+<p style=\"color:#6b7280;font-size:12px;margin-top:16px;\">Great work on completing this task!</p>
+";
+        return self::send($to, "Task Completed: $taskTitle", self::wrapTemplate('Task Completed', $content));
+    }
+
+    /**
+     * Load email settings from database or return defaults
+     */
+    private static function loadSettings() {
+        // Return cached settings if available
+        if (self::$settingsCache !== null) {
+            return self::$settingsCache;
+        }
+
+        try {
+            require_once __DIR__ . '/config.php';
+            Config::load();
+            $db = Config::get('db');
+            
+            $pdo = new PDO(
+                "mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth",
+                $db['user'],
+                $db['pass'],
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+            );
+            
+            // Check if settings table exists
+            $tableExists = $pdo->query("SHOW TABLES LIKE 'email_settings'")->fetch();
+            
+            if ($tableExists) {
+                $stmt = $pdo->query("SELECT setting_key, setting_value FROM email_settings");
+                $settings = [];
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $settings[$row['setting_key']] = $row['setting_value'];
+                }
+                
+                // Cache settings
+                self::$settingsCache = $settings;
+                return $settings;
+            }
+        } catch (\Exception $e) {
+            error_log("[Mailer] Failed to load email settings: " . $e->getMessage());
+        }
+
+        // Return defaults
+        self::$settingsCache = [
+            'from_email' => self::FROM_EMAIL,
+            'from_name' => self::FROM_NAME,
+            'admin_email_1' => self::ADMIN_EMAILS[0],
+            'admin_email_2' => self::ADMIN_EMAILS[1],
+            'enabled' => 'true'
+        ];
+        
+        return self::$settingsCache;
+    }
+
+    /**
+     * Save email settings to database
+     */
+    public static function saveSettings($settings) {
+        try {
+            require_once __DIR__ . '/config.php';
+            Config::load();
+            $db = Config::get('db');
+            
+            $pdo = new PDO(
+                "mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth",
+                $db['user'],
+                $db['pass'],
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+            );
+            
+            // Create table if it doesn't exist
+            $pdo->exec("CREATE TABLE IF NOT EXISTS email_settings (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                setting_key VARCHAR(50) NOT NULL UNIQUE,
+                setting_value TEXT,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_key (setting_key)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            
+            // Save settings
+            $pdo->beginTransaction();
+            
+            foreach ($settings as $key => $value) {
+                $stmt = $pdo->prepare(
+                    "INSERT INTO email_settings (setting_key, setting_value) 
+                     VALUES (:key, :value) 
+                     ON DUPLICATE KEY UPDATE setting_value = :value2"
+                );
+                $stmt->execute([
+                    ':key' => $key,
+                    ':value' => $value,
+                    ':value2' => $value
+                ]);
+            }
+            
+            $pdo->commit();
+            
+            // Clear cache
+            self::$settingsCache = null;
+            
+            error_log("[Mailer] Email settings saved successfully");
+            return ['success' => true, 'message' => 'Email settings saved'];
+            
+        } catch (\Exception $e) {
+            if (isset($pdo) && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("[Mailer] Failed to save email settings: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get current email settings (for settings page API)
+     */
+    public static function getEmailSettings() {
+        $settings = self::loadSettings();
+        return [
+            'from_email' => $settings['from_email'] ?? self::FROM_EMAIL,
+            'from_name' => $settings['from_name'] ?? self::FROM_NAME,
+            'admin_email_1' => $settings['admin_email_1'] ?? self::ADMIN_EMAILS[0],
+            'admin_email_2' => $settings['admin_email_2'] ?? self::ADMIN_EMAILS[1],
+            'enabled' => $settings['enabled'] ?? 'true'
+        ];
     }
 }

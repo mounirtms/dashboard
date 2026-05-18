@@ -1,7 +1,8 @@
 import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip, Select, MenuItem, FormControl, InputLabel, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet } from '@mui/icons-material';
+import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchSettings, saveSettings, fetchPushSubscriptions, unsubscribeDevice, type UserSettings, type PushSubscription } from '../api/settings';
+import { fetchEmailSettings, saveEmailSettings, testEmailSettings, type EmailSettings } from '../api/notifications';
 import { useWebpushrSubscription } from '../hooks/useWebpushrSubscription';
 
 interface TabPanelProps {
@@ -37,6 +38,19 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   
+  // Email settings
+  const defaultEmailSettings: EmailSettings = {
+    from_email: 'alerts@dashboard.technostationery.com',
+    from_name: 'Techno Dashboard',
+    admin_email_1: 'admin@dashboard.technostationery.com',
+    admin_email_2: 'webmaster@techno-dz.com',
+    enabled: 'true'
+  };
+  const [emailSettings, setEmailSettings] = useState<EmailSettings>(defaultEmailSettings);
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailTestLoading, setEmailTestLoading] = useState(false);
+  const [emailTestResult, setEmailTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  
   // Push subscriptions
   const [subscriptions, setSubscriptions] = useState<PushSubscription[]>([]);
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = useWebpushrSubscription();
@@ -56,7 +70,20 @@ export default function SettingsPage() {
         if (!cancelled) setLoadError(err.message);
       }
     };
+    
+    const loadEmail = async () => {
+      try {
+        const email = await fetchEmailSettings();
+        if (!cancelled) {
+          setEmailSettings(email);
+        }
+      } catch (err) {
+        console.error('Failed to load email settings:', err);
+      }
+    };
+    
     load();
+    loadEmail();
     return () => { cancelled = true; };
   }, []);
 
@@ -123,6 +150,36 @@ export default function SettingsPage() {
     }
   };
 
+  const handleEmailSave = async () => {
+    setEmailSaving(true);
+    setEmailTestResult(null);
+    try {
+      await saveEmailSettings(emailSettings);
+      setEmailTestResult({ success: true, message: 'Email settings saved successfully' });
+    } catch (err: any) {
+      setEmailTestResult({ success: false, message: err.message || 'Failed to save email settings' });
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
+  const handleEmailTest = async () => {
+    setEmailTestLoading(true);
+    setEmailTestResult(null);
+    try {
+      const result = await testEmailSettings(emailSettings.admin_email_1);
+      setEmailTestResult({ success: true, message: result.message || 'Test email sent successfully' });
+    } catch (err: any) {
+      setEmailTestResult({ success: false, message: err.message || 'Failed to send test email' });
+    } finally {
+      setEmailTestLoading(false);
+    }
+  };
+
+  const handleEmailChange = (field: keyof EmailSettings, value: string) => {
+    setEmailSettings(prev => ({ ...prev, [field]: value }));
+  };
+
   const getDeviceIcon = (deviceType: string) => {
     switch (deviceType) {
       case 'mobile': return <Smartphone fontSize="small" />;
@@ -160,6 +217,7 @@ export default function SettingsPage() {
             <Tab icon={<Person sx={{ fontSize: 18 }} />} iconPosition="start" label="Personal Info" />
             <Tab icon={<Palette sx={{ fontSize: 18 }} />} iconPosition="start" label="Appearance" />
             <Tab icon={<SettingsIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="General" />
+            <Tab icon={<Email sx={{ fontSize: 18 }} />} iconPosition="start" label="Email" />
             <Tab icon={<Api sx={{ fontSize: 18 }} />} iconPosition="start" label="API & Integration" />
             <Tab icon={<Security sx={{ fontSize: 18 }} />} iconPosition="start" label="Access Control" />
             <Tab icon={<Info sx={{ fontSize: 18 }} />} iconPosition="start" label="About" />
@@ -348,6 +406,96 @@ export default function SettingsPage() {
           </TabPanel>
 
           <TabPanel value={tab} index={3}>
+            <Grid container spacing={4}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Email Configuration</Typography>
+                <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 2 }}>Configure sender email and admin recipients for system notifications</Typography>
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <TextField 
+                    label="From Email" 
+                    size="small" 
+                    value={emailSettings.from_email}
+                    onChange={(e) => handleEmailChange('from_email', e.target.value)}
+                    placeholder="e.g., alerts@dashboard.technostationery.com"
+                  />
+                  <TextField 
+                    label="From Name" 
+                    size="small" 
+                    value={emailSettings.from_name}
+                    onChange={(e) => handleEmailChange('from_name', e.target.value)}
+                    placeholder="e.g., Techno Dashboard"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch 
+                        checked={emailSettings.enabled === 'true'} 
+                        onChange={(e) => handleEmailChange('enabled', e.target.checked ? 'true' : 'false')} 
+                      />
+                    }
+                    label={<Box><Typography variant="body2" sx={{ fontWeight: 600 }}>Enable Email Notifications</Typography><Typography variant="caption" color="text.disabled">Send email alerts for critical events</Typography></Box>}
+                  />
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Admin Recipients</Typography>
+                <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 2 }}>Email addresses that receive admin notifications</Typography>
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <TextField 
+                    label="Primary Admin Email" 
+                    size="small" 
+                    value={emailSettings.admin_email_1}
+                    onChange={(e) => handleEmailChange('admin_email_1', e.target.value)}
+                    placeholder="e.g., admin@dashboard.technostationery.com"
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AdminPanelSettings sx={{ fontSize: 18, color: 'primary.main' }} />
+                          </InputAdornment>
+                        ),
+                      }
+                    }}
+                  />
+                  <TextField 
+                    label="Secondary Admin Email" 
+                    size="small" 
+                    value={emailSettings.admin_email_2}
+                    onChange={(e) => handleEmailChange('admin_email_2', e.target.value)}
+                    placeholder="e.g., webmaster@techno-dz.com"
+                  />
+                  <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                    <Button 
+                      variant="contained" 
+                      startIcon={saving || emailSaving ? <Refresh sx={{ animation: 'spin 1s linear infinite' }} /> : <Save />}
+                      onClick={handleEmailSave}
+                      disabled={emailSaving}
+                    >
+                      {emailSaving ? 'Saving...' : 'Save Settings'}
+                    </Button>
+                    <Button 
+                      variant="outlined" 
+                      startIcon={<Send />}
+                      onClick={handleEmailTest}
+                      disabled={emailTestLoading}
+                    >
+                      {emailTestLoading ? 'Sending...' : 'Send Test'}
+                    </Button>
+                  </Box>
+                  {emailTestResult && (
+                    <Alert 
+                      severity={emailTestResult.success ? 'success' : 'error'} 
+                      sx={{ mt: 2 }}
+                      onClose={() => setEmailTestResult(null)}
+                    >
+                      {emailTestResult.message}
+                    </Alert>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
+          </TabPanel>
+
+          <TabPanel value={tab} index={4}>
             <Box sx={{ maxWidth: 600 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>External API Tokens</Typography>
               <TextField 
@@ -386,7 +534,7 @@ export default function SettingsPage() {
             </Box>
           </TabPanel>
 
-          <TabPanel value={tab} index={4}>
+          <TabPanel value={tab} index={5}>
             <Alert severity="info" sx={{ mb: 3 }}>Session security and IP filtering settings.</Alert>
             <List sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
               <ListItem divider>
@@ -404,7 +552,7 @@ export default function SettingsPage() {
             </List>
           </TabPanel>
 
-          <TabPanel value={tab} index={5}>
+          <TabPanel value={tab} index={6}>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={{ p: 2, backgroundColor: 'background.default', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
