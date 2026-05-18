@@ -75,6 +75,16 @@ try {
         $authDb->exec("ALTER TABLE push_subscriptions ADD COLUMN domain VARCHAR(255) DEFAULT 'dashboard' AFTER device_id");
         $authDb->exec("ALTER TABLE push_subscriptions ADD INDEX idx_domain (domain)");
     }
+    // Migration: add geo columns for subscriber tracking
+    if (!in_array('country', $cols)) {
+        $authDb->exec("ALTER TABLE push_subscriptions ADD COLUMN country VARCHAR(100) DEFAULT NULL AFTER os");
+    }
+    if (!in_array('city', $cols)) {
+        $authDb->exec("ALTER TABLE push_subscriptions ADD COLUMN city VARCHAR(100) DEFAULT NULL AFTER country");
+    }
+    if (!in_array('webpushr_sid', $cols)) {
+        $authDb->exec("ALTER TABLE push_subscriptions ADD COLUMN webpushr_sid VARCHAR(100) DEFAULT NULL AFTER city");
+    }
     // Recreate unique constraint if old one exists
     $keys = $authDb->query("SHOW INDEX FROM push_subscriptions WHERE Key_name = 'unique_subscription'")->fetchAll();
     $hasComposite = false;
@@ -246,7 +256,7 @@ switch ($action) {
     
     case 'stats':
         // Fetch stats from Webpushr API for the default environment
-        $env = $_GET['env'] ?? 'dev';
+        $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
         if (!$envConfig) {
             $envConfig = $webpushrConfig['dev'] ?? reset($webpushrConfig);
@@ -293,7 +303,7 @@ switch ($action) {
         break;
     
     case 'segments':
-        $env = $_GET['env'] ?? 'dev';
+        $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
         if (!$envConfig) {
             echo json_encode(['error' => 'Invalid environment']);
@@ -542,7 +552,7 @@ switch ($action) {
     
     case 'delivery_stats':
         // Fetch delivery/analytics stats from WebPushr
-        $env = $_GET['env'] ?? 'dev';
+        $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
         if (!$envConfig) {
             echo json_encode(['error' => 'Invalid environment']);
@@ -560,7 +570,7 @@ switch ($action) {
     
     case 'subscriber_analytics':
         // Fetch subscriber count and analytics
-        $env = $_GET['env'] ?? 'dev';
+        $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
         if (!$envConfig) {
             echo json_encode(['error' => 'Invalid environment']);
@@ -596,6 +606,229 @@ switch ($action) {
         }
         
         echo json_encode(['success' => true, 'data' => $analytics]);
+        break;
+    
+    case 'get_subscribers':
+        // Get list of subscribers with pagination and filtering
+        $env = $_GET['env'] ?? 'production';
+        $envConfig = getEnvConfig($env);
+        if (!$envConfig) {
+            echo json_encode(['error' => 'Invalid environment']);
+            break;
+        }
+        
+        $limit = (int)($_GET['limit'] ?? 50);
+        $offset = (int)($_GET['offset'] ?? 0);
+        $segmentId = $_GET['segment_id'] ?? null;
+        
+        // Build the subscriber list endpoint
+        $endpoint = '/v1/subscriber/list';
+        $params = ['limit' => $limit, 'offset' => $offset];
+        if ($segmentId) $params['segment'] = $segmentId;
+        
+        $result = webpushrRequest($endpoint, 'GET', $envConfig['key'], $envConfig['token'], $params);
+        if ($result['error']) {
+            echo json_encode(['error' => true, 'message' => $result['message']]);
+        } else {
+            echo json_encode(['success' => true, 'data' => $result['data'] ?? []]);
+        }
+        break;
+    
+    case 'get_subscriber_detail':
+        // Get detailed info for a specific subscriber by SID
+        $env = $_GET['env'] ?? 'production';
+        $sid = $_GET['sid'] ?? null;
+        
+        if (!$sid) {
+            echo json_encode(['error' => 'Subscriber SID is required']);
+            break;
+        }
+        
+        $envConfig = getEnvConfig($env);
+        if (!$envConfig) {
+            echo json_encode(['error' => 'Invalid environment']);
+            break;
+        }
+        
+        $result = webpushrRequest('/v1/subscriber/' . urlencode($sid), 'GET', $envConfig['key'], $envConfig['token']);
+        if ($result['error']) {
+            echo json_encode(['error' => true, 'message' => $result['message']]);
+        } else {
+            echo json_encode(['success' => true, 'data' => $result['data'] ?? null]);
+        }
+        break;
+    
+    case 'get_geo_analytics':
+        // Get geographic breakdown (country/city) from subscribers
+        $env = $_GET['env'] ?? 'production';
+        $envConfig = getEnvConfig($env);
+        if (!$envConfig) {
+            echo json_encode(['error' => 'Invalid environment']);
+            break;
+        }
+        
+        // Get subscriber list with geo data
+        $result = webpushrRequest('/v1/subscriber/list', 'GET', $envConfig['key'], $envConfig['token'], ['limit' => 1000]);
+        if ($result['error']) {
+            echo json_encode(['error' => true, 'message' => $result['message']]);
+        } else {
+            $subscribers = $result['data'] ?? [];
+            $geoData = ['countries' => [], 'cities' => []];
+            
+            // Aggregate country and city data
+            foreach ($subscribers as $sub) {
+                $country = $sub['country'] ?? $sub['location']['country'] ?? 'Unknown';
+                $city = $sub['city'] ?? $sub['location']['city'] ?? 'Unknown';
+                
+                if (!isset($geoData['countries'][$country])) {
+                    $geoData['countries'][$country] = 0;
+                }
+                $geoData['countries'][$country]++;
+                
+                if (!isset($geoData['cities'][$city])) {
+                    $geoData['cities'][$city] = 0;
+                }
+                $geoData['cities'][$city]++;
+            }
+            
+            // Convert to sorted arrays
+            arsort($geoData['countries']);
+            arsort($geoData['cities']);
+            
+            $geoData['countries'] = array_map(function($count, $name) {
+                return ['name' => $name, 'count' => $count];
+            }, array_values($geoData['countries']), array_keys($geoData['countries']));
+            
+            $geoData['cities'] = array_map(function($count, $name) {
+                return ['name' => $name, 'count' => $count];
+            }, array_values($geoData['cities']), array_keys($geoData['cities']));
+            
+            echo json_encode(['success' => true, 'data' => $geoData]);
+        }
+        break;
+    
+    case 'get_device_analytics':
+        // Get device type breakdown
+        $env = $_GET['env'] ?? 'production';
+        $envConfig = getEnvConfig($env);
+        if (!$envConfig) {
+            echo json_encode(['error' => 'Invalid environment']);
+            break;
+        }
+        
+        $result = webpushrRequest('/v1/subscriber/list', 'GET', $envConfig['key'], $envConfig['token'], ['limit' => 1000]);
+        if ($result['error']) {
+            echo json_encode(['error' => true, 'message' => $result['message']]);
+        } else {
+            $subscribers = $result['data'] ?? [];
+            $deviceTypes = ['Desktop' => 0, 'Mobile' => 0, 'Tablet' => 0, 'Unknown' => 0];
+            
+            foreach ($subscribers as $sub) {
+                $deviceType = $sub['device_type'] ?? $sub['device']['type'] ?? 'Unknown';
+                if (stripos($deviceType, 'mobile') !== false) {
+                    $deviceTypes['Mobile']++;
+                } elseif (stripos($deviceType, 'tablet') !== false) {
+                    $deviceTypes['Tablet']++;
+                } elseif (stripos($deviceType, 'desktop') !== false) {
+                    $deviceTypes['Desktop']++;
+                } else {
+                    $deviceTypes['Unknown']++;
+                }
+            }
+            
+            echo json_encode(['success' => true, 'data' => $deviceTypes]);
+        }
+        break;
+    
+    case 'get_browser_analytics':
+        // Get browser breakdown
+        $env = $_GET['env'] ?? 'production';
+        $envConfig = getEnvConfig($env);
+        if (!$envConfig) {
+            echo json_encode(['error' => 'Invalid environment']);
+            break;
+        }
+        
+        $result = webpushrRequest('/v1/subscriber/list', 'GET', $envConfig['key'], $envConfig['token'], ['limit' => 1000]);
+        if ($result['error']) {
+            echo json_encode(['error' => true, 'message' => $result['message']]);
+        } else {
+            $subscribers = $result['data'] ?? [];
+            $browsers = [];
+            
+            foreach ($subscribers as $sub) {
+                $browser = $sub['browser'] ?? $sub['browser_name'] ?? 'Unknown';
+                if (!isset($browsers[$browser])) {
+                    $browsers[$browser] = 0;
+                }
+                $browsers[$browser]++;
+            }
+            
+            arsort($browsers);
+            $browserList = array_map(function($count, $name) {
+                return ['name' => $name, 'count' => $count];
+            }, array_values($browsers), array_keys($browsers));
+            
+            echo json_encode(['success' => true, 'data' => $browserList]);
+        }
+        break;
+    
+    case 'get_os_analytics':
+        // Get operating system breakdown
+        $env = $_GET['env'] ?? 'production';
+        $envConfig = getEnvConfig($env);
+        if (!$envConfig) {
+            echo json_encode(['error' => 'Invalid environment']);
+            break;
+        }
+        
+        $result = webpushrRequest('/v1/subscriber/list', 'GET', $envConfig['key'], $envConfig['token'], ['limit' => 1000]);
+        if ($result['error']) {
+            echo json_encode(['error' => true, 'message' => $result['message']]);
+        } else {
+            $subscribers = $result['data'] ?? [];
+            $operatingSystems = [];
+            
+            foreach ($subscribers as $sub) {
+                $os = $sub['os'] ?? $sub['os_name'] ?? 'Unknown';
+                if (!isset($operatingSystems[$os])) {
+                    $operatingSystems[$os] = 0;
+                }
+                $operatingSystems[$os]++;
+            }
+            
+            arsort($operatingSystems);
+            $osList = array_map(function($count, $name) {
+                return ['name' => $name, 'count' => $count];
+            }, array_values($operatingSystems), array_keys($operatingSystems));
+            
+            echo json_encode(['success' => true, 'data' => $osList]);
+        }
+        break;
+    
+    case 'get_subscriber_by_sid':
+        // Look up subscriber in local database by Webpushr SID
+        try {
+            $authDb = getAuthDb();
+            $sid = $_GET['sid'] ?? null;
+            
+            if (!$sid) {
+                echo json_encode(['error' => 'SID parameter is required']);
+                break;
+            }
+            
+            $stmt = $authDb->prepare("SELECT * FROM push_subscriptions WHERE webpushr_sid = ?");
+            $stmt->execute([$sid]);
+            $subscriber = $stmt->fetch();
+            
+            if ($subscriber) {
+                echo json_encode(['success' => true, 'data' => $subscriber]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Subscriber not found']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['error' => 'Failed to fetch subscriber: ' . $e->getMessage()]);
+        }
         break;
     
     default:

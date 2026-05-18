@@ -427,12 +427,17 @@ class MonitorApi extends BaseApi {
         $lines = (int)($_GET['lines'] ?? 100);
         $site = $_GET['site'] ?? '';
         
+        // Detect PHP version dynamically for PHP-FPM log path
+        $phpVersion = phpversion();
+        $phpMajorMinor = $phpVersion ? implode('.', array_slice(explode('.', $phpVersion), 0, 2)) : '8.2';
+        $cpanelPhpPath = "/opt/cpanel/ea-php" . str_replace('.', '', $phpMajorMinor) . "/root/usr/var/log/php-fpm/error.log";
+        
         $logMap = [
             'apache_error' => '/etc/apache2/logs/error_log',
             'apache_access' => '/etc/apache2/logs/access_log',
             'varnish' => '/var/log/messages', 
             'mariadb' => '/var/log/mariadb/mariadb.log',
-            'php_fpm' => '/opt/cpanel/ea-php82/root/usr/var/log/php-fpm/error.log',
+            'php_fpm' => $cpanelPhpPath,
             'system' => '/var/log/messages',
             'cron' => '/var/log/cron',
             'auth' => '/var/log/secure'
@@ -443,7 +448,7 @@ class MonitorApi extends BaseApi {
             'apache_error' => ['/var/log/apache2/error_log', '/etc/httpd/logs/error_log', '/var/log/httpd/error_log', '/usr/local/apache/logs/error_log'],
             'apache_access' => ['/var/log/apache2/access_log', '/etc/httpd/logs/access_log', '/var/log/httpd/access_log', '/usr/local/apache/logs/access_log'],
             'mariadb' => ['/var/lib/mysql/' . gethostname() . '.err', '/var/log/mysqld.log', '/var/lib/mysql/error.log', '/var/log/mariadb/mariadb.log', '/var/log/mysql/error.log'],
-            'php_fpm' => ['/opt/cpanel/ea-php82/root/usr/var/log/php-fpm/error.log', '/var/log/php-fpm.log', '/usr/local/cpanel/logs/php-fpm.log'],
+            'php_fpm' => [$cpanelPhpPath, '/var/log/php-fpm.log', '/usr/local/cpanel/logs/php-fpm.log', '/var/log/php-fpm/error.log'],
             'auth' => ['/var/log/auth.log', '/var/log/secure']
         ];
 

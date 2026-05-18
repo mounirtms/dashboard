@@ -81,8 +81,10 @@ export default function LogViewerPage() {
   const [logDate, setLogDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [channelFilter, setChannelFilter] = useState('');
   const [levelFilter, setLevelFilter] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
   const logEndRef = useRef<HTMLDivElement>(null);
+  const fetchRef = useRef(false);
 
   const SITES = [
     { key: '', name: 'Global / Server' },
@@ -92,8 +94,17 @@ export default function LogViewerPage() {
     { key: 'pim', name: 'PIM Akeneo' },
   ];
 
+  // Reset filters when switching log types
+  useEffect(() => {
+    setChannelFilter('');
+    setLevelFilter('');
+  }, [type]);
+
   const fetchLogs = useCallback(() => {
+    if (fetchRef.current) return;
+    fetchRef.current = true;
     setLoading(true);
+    setError(null);
     
     // Notification logs use a different endpoint
     if (type === 'notification') {
@@ -102,18 +113,19 @@ export default function LogViewerPage() {
           // Transform notification logs to structured format
           const structuredLogs = (data.logs || []).map((log: any) => ({
             timestamp: log.timestamp,
-            level: log.severity.toUpperCase(),
+            level: (log.severity || 'INFO').toUpperCase(),
             channel: log.channel || 'webpushr',
-            message: `${log.title} | ${log.message} | Status: ${log.status}`,
+            message: `${log.title}${log.message ? ' | ' + log.message : ''}${log.status ? ' | Status: ' + log.status : ''}`,
             correlation_id: '',
           }));
-          setLogData({ lines: structuredLogs, structured: true });
+          setLogData({ lines: structuredLogs, structured: true, source: 'notification' });
         })
         .catch((e) => {
           console.error(e);
+          setError('Failed to fetch notification logs');
           setSnackbar({ open: true, message: 'Failed to fetch notification logs', severity: 'error' });
         })
-        .finally(() => setLoading(false));
+        .finally(() => { setLoading(false); fetchRef.current = false; });
       return;
     }
     
@@ -126,23 +138,33 @@ export default function LogViewerPage() {
     if (type === 'app') params.set('date', logDate);
     
     apiClient.get(`/api/monitor.php?${params.toString()}`)
-      .then(({ data }) => setLogData(data))
+      .then(({ data }) => {
+        if (data.error) {
+          setError(data.error);
+          setLogData(null);
+        } else {
+          setError(null);
+          setLogData(data);
+        }
+      })
       .catch((e) => {
         console.error(e);
+        setError('Failed to fetch logs');
         setSnackbar({ open: true, message: 'Failed to fetch logs', severity: 'error' });
       })
-      .finally(() => setLoading(false));
+      .finally(() => { setLoading(false); fetchRef.current = false; });
   }, [type, site, lines, logDate]);
 
+  // Initial fetch on mount and when dependencies change
   useEffect(() => {
     fetchLogs();
-  }, [fetchLogs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, site, lines, logDate]);
 
+  // Auto-refresh interval - separate from dependency changes
   useEffect(() => {
-    let timer: any;
-    if (autoRefresh) {
-      timer = setInterval(fetchLogs, 2000);
-    }
+    if (!autoRefresh) return;
+    const timer = setInterval(fetchLogs, 2000);
     return () => clearInterval(timer);
   }, [autoRefresh, fetchLogs]);
 
@@ -297,15 +319,30 @@ export default function LogViewerPage() {
       </Box>
 
       <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-        {logData?.structured ? (
+        {error ? (
+          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Alert severity="error" sx={{ maxWidth: 600 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>Failed to load logs</Typography>
+              <Typography variant="body2">{error}</Typography>
+            </Alert>
+          </Box>
+        ) : loading && !logData ? (
+          <LoadingState message="Loading logs..." />
+        ) : logData?.structured ? (
           <Box sx={{ height: '100%', overflow: 'auto' }}>
-            <StructuredLogTable
-              entries={(logData.lines || []).filter((entry: any) => {
-                if (channelFilter && entry.channel !== channelFilter) return false;
-                if (levelFilter && entry.level !== levelFilter) return false;
-                return true;
-              })}
-            />
+            {(logData.lines || []).length === 0 ? (
+              <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography variant="body2" sx={{ color: 'text.disabled' }}>No logs found for the selected criteria</Typography>
+              </Box>
+            ) : (
+              <StructuredLogTable
+                entries={(logData.lines || []).filter((entry: any) => {
+                  if (channelFilter && entry.channel !== channelFilter) return false;
+                  if (levelFilter && entry.level !== levelFilter) return false;
+                  return true;
+                })}
+              />
+            )}
           </Box>
         ) : (
           <ConsoleOutput

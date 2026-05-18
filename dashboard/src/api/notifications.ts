@@ -61,7 +61,7 @@ export async function fetchPushStats(env?: string): Promise<PushStats> {
   };
 }
 
-export async function fetchSegments(env: string = 'dev'): Promise<Segment[]> {
+export async function fetchSegments(env: string = 'production'): Promise<Segment[]> {
   const { data } = await apiClient.get(`/api/webpushr.php?action=segments&env=${env}`);
   return data.segments ?? [];
 }
@@ -116,44 +116,44 @@ export async function uploadPushImage(file: File, type: 'image' | 'icon' = 'imag
   return { url: data.url, filename: data.filename, size: data.size, width: data.width, height: data.height };
 }
 
-export async function fetchDeliveryStats(env: string = 'dev'): Promise<any> {
+export async function fetchDeliveryStats(env: string = 'production'): Promise<any> {
   const { data } = await apiClient.get(`/api/webpushr.php?action=delivery_stats&env=${env}`);
   return data;
 }
 
-export async function fetchSubscriberAnalytics(env: string = 'dev'): Promise<any> {
+export async function fetchSubscriberAnalytics(env: string = 'production'): Promise<any> {
   const { data } = await apiClient.get(`/api/webpushr.php?action=subscriber_analytics&env=${env}`);
   return data;
 }
 
-export async function fetchSubscribers(env: string = 'dev', limit: number = 50, offset: number = 0, segmentId?: string): Promise<any> {
+export async function fetchSubscribers(env: string = 'production', limit: number = 50, offset: number = 0, segmentId?: string): Promise<any> {
   let url = `/api/webpushr.php?action=get_subscribers&env=${env}&limit=${limit}&offset=${offset}`;
   if (segmentId) url += `&segment_id=${segmentId}`;
   const { data } = await apiClient.get(url);
   return data;
 }
 
-export async function fetchSubscriberDetail(env: string = 'dev', sid: string): Promise<any> {
+export async function fetchSubscriberDetail(env: string = 'production', sid: string): Promise<any> {
   const { data } = await apiClient.get(`/api/webpushr.php?action=get_subscriber_detail&env=${env}&sid=${sid}`);
   return data;
 }
 
-export async function fetchGeoAnalytics(env: string = 'dev'): Promise<any> {
+export async function fetchGeoAnalytics(env: string = 'production'): Promise<any> {
   const { data } = await apiClient.get(`/api/webpushr.php?action=get_geo_analytics&env=${env}`);
   return data;
 }
 
-export async function fetchDeviceAnalytics(env: string = 'dev'): Promise<any> {
+export async function fetchDeviceAnalytics(env: string = 'production'): Promise<any> {
   const { data } = await apiClient.get(`/api/webpushr.php?action=get_device_analytics&env=${env}`);
   return data;
 }
 
-export async function fetchBrowserAnalytics(env: string = 'dev'): Promise<any> {
+export async function fetchBrowserAnalytics(env: string = 'production'): Promise<any> {
   const { data } = await apiClient.get(`/api/webpushr.php?action=get_browser_analytics&env=${env}`);
   return data;
 }
 
-export async function fetchOsAnalytics(env: string = 'dev'): Promise<any> {
+export async function fetchOsAnalytics(env: string = 'production'): Promise<any> {
   const { data } = await apiClient.get(`/api/webpushr.php?action=get_os_analytics&env=${env}`);
   return data;
 }

@@ -1,7 +1,7 @@
-import { Box, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Select, FormControl, InputLabel, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, ListItemIcon, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code, CloudUpload, BarChart, TrendingUp, History, Warning, Error as ErrorIcon, Info as InfoIcon, Language } from '@mui/icons-material';
+import { Box, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Select, FormControl, InputLabel, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, ListItemIcon, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, LinearProgress } from '@mui/material';
+import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code, CloudUpload, BarChart, TrendingUp, History, Warning, Error as ErrorIcon, Info as InfoIcon, Language, Public, Devices, Web, Dns, Person, Visibility } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
-import { fetchPushStats, sendPushNotification, syncSubscribers, fetchSegments, fetchDeliveryStats, fetchSubscriberAnalytics, uploadPushImage, PushStats, Segment as SegmentType } from '../api/notifications';
+import { fetchPushStats, sendPushNotification, syncSubscribers, fetchSegments, fetchDeliveryStats, fetchSubscriberAnalytics, fetchSubscribers, fetchGeoAnalytics, fetchDeviceAnalytics, fetchBrowserAnalytics, fetchOsAnalytics, uploadPushImage, PushStats, Segment as SegmentType } from '../api/notifications';
 import { usePermissions } from '../hooks/usePermissions';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
@@ -36,13 +36,13 @@ export default function PushNotificationsPage() {
   const [stats, setStats] = useState<PushStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [selectedEnv, setSelectedEnv] = useState('dev');
+  const [selectedEnv, setSelectedEnv] = useState('production');
   const [segments, setSegments] = useState<SegmentType[]>([]);
   const [payload, setPayload] = useState({
     title: '',
     message: '',
     url: '',
-    env: 'dev',
+    env: 'production',
     segment_id: ''
   });
   
@@ -64,6 +64,18 @@ export default function PushNotificationsPage() {
   const [deliveryStats, setDeliveryStats] = useState<any[]>([]);
   const [subscriberAnalytics, setSubscriberAnalytics] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  // Geography and subscriber analytics
+  const [geoData, setGeoData] = useState<any>(null);
+  const [deviceData, setDeviceData] = useState<any>(null);
+  const [browserData, setBrowserData] = useState<any>(null);
+  const [osData, setOsData] = useState<any>(null);
+  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [geoLoading, setGeoLoading] = useState(false);
+
+  // Segment detail dialog
+  const [segmentDialogOpen, setSegmentDialogOpen] = useState(false);
+  const [selectedSegment, setSelectedSegment] = useState<any>(null);
 
   // Schedule dialog
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -96,13 +108,27 @@ export default function PushNotificationsPage() {
 
   const loadAnalytics = (env: string) => {
     setAnalyticsLoading(true);
+    setGeoLoading(true);
     Promise.all([
       fetchDeliveryStats(env).catch(() => null),
       fetchSubscriberAnalytics(env).catch(() => null),
-    ]).then(([delivery, subs]) => {
+      fetchGeoAnalytics(env).catch(() => null),
+      fetchDeviceAnalytics(env).catch(() => null),
+      fetchBrowserAnalytics(env).catch(() => null),
+      fetchOsAnalytics(env).catch(() => null),
+      fetchSubscribers(env, 100).catch(() => null),
+    ]).then(([delivery, subs, geo, device, browser, os, subsList]) => {
       if (delivery?.success) setDeliveryStats(delivery.data ?? []);
       if (subs?.success) setSubscriberAnalytics(subs.data);
-    }).finally(() => setAnalyticsLoading(false));
+      if (geo?.success) setGeoData(geo.data);
+      if (device?.success) setDeviceData(device.data);
+      if (browser?.success) setBrowserData(browser.data);
+      if (os?.success) setOsData(os.data);
+      if (subsList?.success) setSubscribers(subsList.data ?? []);
+    }).finally(() => {
+      setAnalyticsLoading(false);
+      setGeoLoading(false);
+    });
   };
 
   const loadAlertLog = async () => {
@@ -275,7 +301,7 @@ export default function PushNotificationsPage() {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {['dev', 'beta'].map((env) => (
+          {['dashboard', 'production', 'beta', 'dev'].map((env) => (
             <Chip
               key={env}
               label={env.charAt(0).toUpperCase() + env.slice(1)}
@@ -284,6 +310,7 @@ export default function PushNotificationsPage() {
               variant={selectedEnv === env ? 'filled' : 'outlined'}
               clickable
               icon={<Code sx={{ fontSize: 14 }} />}
+              size="small"
             />
           ))}
         </Box>
@@ -294,7 +321,9 @@ export default function PushNotificationsPage() {
           <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
             <Tab icon={<Send sx={{ fontSize: 18 }} />} iconPosition="start" label="Broadcast" />
             <Tab icon={<History sx={{ fontSize: 18 }} />} iconPosition="start" label="Alert History" />
-            <Tab icon={<Groups sx={{ fontSize: 18 }} />} iconPosition="start" label="Geography" />
+            <Tab icon={<Language sx={{ fontSize: 18 }} />} iconPosition="start" label="Geography" />
+            <Tab icon={<Person sx={{ fontSize: 18 }} />} iconPosition="start" label="Subscribers" />
+            <Tab icon={<BarChart sx={{ fontSize: 18 }} />} iconPosition="start" label="Delivery" />
           </Tabs>
         </Box>
       </Card>
@@ -675,88 +704,257 @@ export default function PushNotificationsPage() {
 
       {/* Geography Tab */}
       <TabPanel value={activeTab} index={2}>
+        {geoLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
+        ) : (
         <Grid container spacing={2}>
           {/* Subscriber Distribution by Country */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Groups sx={{ color: 'info.main' }} /> Subscriber Distribution
+                  <Public sx={{ color: 'info.main' }} /> Countries
                 </Typography>
-                {subscriberAnalytics?.segments ? (
+                {geoData?.countries && geoData.countries.length > 0 ? (
                   <Box>
-                    {subscriberAnalytics.segments.map((seg: any, i: number) => (
-                      <Box key={i} sx={{ mb: 2 }}>
+                    {geoData.countries.slice(0, 10).map((country: any, i: number) => (
+                      <Box key={i} sx={{ mb: 1.5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{seg.title}</Typography>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>{seg.subscribers?.toLocaleString() || 0}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{country.name}</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>{country.count}</Typography>
                         </Box>
-                        <Box sx={{ height: 8, backgroundColor: 'background.default', borderRadius: 1, overflow: 'hidden' }}>
-                          <Box
-                            sx={{
-                              height: '100%',
-                              width: `${subscriberAnalytics.total_subscribers ? (seg.subscribers / subscriberAnalytics.total_subscribers * 100) : 0}%`,
-                              backgroundColor: i === 0 ? 'primary.main' : i === 1 ? 'success.main' : 'warning.main',
-                              borderRadius: 1
-                            }}
-                          />
-                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={geoData.countries[0]?.count ? (country.count / geoData.countries[0].count * 100) : 0}
+                          sx={{ height: 6, borderRadius: 1 }}
+                        />
                       </Box>
                     ))}
-                    <Divider sx={{ my: 2 }} />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Total Subscribers</Typography>
-                      <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
-                        {subscriberAnalytics.total_subscribers?.toLocaleString() || 0}
-                      </Typography>
-                    </Box>
                   </Box>
                 ) : (
-                  <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No subscriber data available</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No country data available</Typography>
                 )}
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Geographic Targeting Info */}
+          {/* Top Cities */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Language sx={{ color: 'success.main' }} /> Geographic Targeting
+                  <Language sx={{ color: 'success.main' }} /> Top Cities
                 </Typography>
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  <Typography variant="body2">
-                    <strong>Algeria-focused targeting</strong> — Uses Cloudflare geography data for DZ region.
-                    Production subscribers primarily from Algeria (Wilayas: 16-Algers, 31-Oran, 25-Constantine).
-                  </Typography>
-                </Alert>
-                <Box sx={{ display: 'grid', gap: 1.5 }}>
-                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Primary Region</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>🇩🇿 Algeria (DZ) - North Africa</Typography>
+                {geoData?.cities && geoData.cities.length > 0 ? (
+                  <Box>
+                    {geoData.cities.slice(0, 10).map((city: any, i: number) => (
+                      <Box key={i} sx={{ mb: 1.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{city.name}</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>{city.count}</Typography>
+                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={geoData.cities[0]?.count ? (city.count / geoData.cities[0].count * 100) : 0}
+                          sx={{ height: 6, borderRadius: 1 }}
+                        />
+                      </Box>
+                    ))}
                   </Box>
-                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Top Wilayas</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Algiers (16), Oran (31), Constantine (25), Annaba (23)</Typography>
+                ) : (
+                  <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No city data available</Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Device Types */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Devices sx={{ color: 'primary.main' }} /> Devices
+                </Typography>
+                {deviceData ? (
+                  <Box>
+                    {Object.entries(deviceData).map(([device, count]) => (
+                      <Box key={device} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2">{device}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{(count as number).toLocaleString()}</Typography>
+                      </Box>
+                    ))}
                   </Box>
-                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Cloudflare Geography Source</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Cloudflare Analytics → Traffic → Countries</Typography>
+                ) : (
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Browsers */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Web sx={{ color: 'success.main' }} /> Browsers
+                </Typography>
+                {browserData && browserData.length > 0 ? (
+                  <Box>
+                    {browserData.slice(0, 5).map((browser: any, i: number) => (
+                      <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2">{browser.name}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{browser.count.toLocaleString()}</Typography>
+                      </Box>
+                    ))}
                   </Box>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ mt: 1, alignSelf: 'flex-start' }}
-                    onClick={() => window.open('/traffic', '_blank')}
-                  >
-                    View Full Traffic Geography
-                  </Button>
+                ) : (
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Operating Systems */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Dns sx={{ color: 'warning.main' }} /> Operating Systems
+                </Typography>
+                {osData && osData.length > 0 ? (
+                  <Box>
+                    {osData.slice(0, 5).map((os: any, i: number) => (
+                      <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2">{os.name}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{os.count.toLocaleString()}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Summary */}
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Groups sx={{ color: 'info.main' }} /> Summary
+                </Typography>
+                <Box sx={{ display: 'grid', gap: 1 }}>
+                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1 }}>
+                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Total Countries</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                      {geoData?.countries?.length || 0}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1 }}>
+                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Total Cities</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: 'success.main' }}>
+                      {geoData?.cities?.length || 0}
+                    </Typography>
+                  </Box>
                 </Box>
               </CardContent>
             </Card>
           </Grid>
         </Grid>
+        )}
+      </TabPanel>
+
+      {/* Subscribers Tab */}
+      <TabPanel value={activeTab} index={3}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Person sx={{ color: 'primary.main' }} /> Subscribers List
+            </Typography>
+            {geoLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
+            ) : subscribers.length > 0 ? (
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Subscriber ID</TableCell>
+                      <TableCell>Browser</TableCell>
+                      <TableCell>OS</TableCell>
+                      <TableCell>Device</TableCell>
+                      <TableCell>Country</TableCell>
+                      <TableCell>City</TableCell>
+                      <TableCell>Last Active</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {subscribers.slice(0, 50).map((sub: any, i: number) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                            {sub.sid || sub.id || 'N/A'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>{sub.browser || sub.browser_name || 'Unknown'}</TableCell>
+                        <TableCell>{sub.os || sub.os_name || 'Unknown'}</TableCell>
+                        <TableCell>{sub.device_type || 'Unknown'}</TableCell>
+                        <TableCell>{sub.country || sub.location?.country || 'Unknown'}</TableCell>
+                        <TableCell>{sub.city || sub.location?.city || 'Unknown'}</TableCell>
+                        <TableCell>{sub.last_active || sub.created || 'N/A'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No subscriber data available</Typography>
+            )}
+          </CardContent>
+        </Card>
+      </TabPanel>
+
+      {/* Delivery Tab */}
+      <TabPanel value={activeTab} index={4}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <BarChart sx={{ color: 'success.main' }} /> Delivery Reports
+            </Typography>
+            {analyticsLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
+            ) : deliveryStats.length > 0 ? (
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Date</TableCell>
+                      <TableCell>Notification</TableCell>
+                      <TableCell>Sent</TableCell>
+                      <TableCell>Delivered</TableCell>
+                      <TableCell>Clicked</TableCell>
+                      <TableCell>Failed</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {deliveryStats.slice(0, 50).map((report: any, i: number) => (
+                      <TableRow key={i}>
+                        <TableCell>{report.date || report.created || 'N/A'}</TableCell>
+                        <TableCell>{report.title || report.name || 'Notification'}</TableCell>
+                        <TableCell>{report.sent?.toLocaleString() || 0}</TableCell>
+                        <TableCell>{report.delivered?.toLocaleString() || 0}</TableCell>
+                        <TableCell>{report.clicked?.toLocaleString() || 0}</TableCell>
+                        <TableCell>{report.failed?.toLocaleString() || 0}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No delivery data available yet</Typography>
+            )}
+          </CardContent>
+        </Card>
       </TabPanel>
 
       {/* Snackbar */}
