@@ -208,6 +208,7 @@ export interface SshSession {
   from: string;
   login_at: string;
   idle: string;
+  pid?: string;
 }
 
 export interface SshConnection {
@@ -233,6 +234,39 @@ export interface SshData {
   failed_logins_total: number;
   recent_failed: FailedLogin[];
   sshd_status: string;
+  timestamp: number;
+}
+
+// CSF Firewall
+export interface CsfDeniedIp {
+  ip: string;
+  reason: string;
+}
+
+export interface CsfAllowedIp {
+  ip: string;
+  reason: string;
+}
+
+export interface FailedSshIp {
+  ip: string;
+  attempts: number;
+}
+
+export interface CsfFirewallData {
+  csf_active: boolean;
+  lfd_active: boolean;
+  version: string;
+  testing_mode: boolean;
+  stats: {
+    denied_ips: number;
+    allowed_ips: number;
+    ignored_ips: number;
+    iptables_rules: number;
+  };
+  recent_denied: CsfDeniedIp[];
+  recent_allowed: CsfAllowedIp[];
+  top_failed_ssh_ips: FailedSshIp[];
   timestamp: number;
 }
 
@@ -299,5 +333,33 @@ export async function fetchServices(): Promise<ServicesData> {
 export async function fetchNetworkConnections(): Promise<NetworkData> {
   const { data } = await apiClient.get('/api/monitor.php?action=network');
   if (data.error) throw new Error(data.message || data.error);
+  return data;
+}
+
+// SSH Session Control
+export async function killAllSshSessions(skipTty?: string): Promise<any> {
+  const { data } = await apiClient.post('/api/monitor.php?action=ssh_kill', { skip_tty: skipTty });
+  return data;
+}
+
+export async function killSingleSshSession(sessionId: string): Promise<any> {
+  const { data } = await apiClient.post('/api/monitor.php?action=ssh_kill_single', { session_id: sessionId });
+  return data;
+}
+
+export async function restartSshd(): Promise<any> {
+  const { data } = await apiClient.post('/api/monitor.php?action=sshd_restart', {});
+  return data;
+}
+
+// CSF Firewall
+export async function fetchCsfFirewall(): Promise<CsfFirewallData> {
+  const { data } = await apiClient.get('/api/monitor.php?action=csf');
+  if (data.error) throw new Error(data.message || data.error);
+  return data;
+}
+
+export async function csfAction(action: string, ip?: string): Promise<any> {
+  const { data } = await apiClient.post('/api/monitor.php?action=csf_action', { action, ip });
   return data;
 }

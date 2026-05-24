@@ -2,18 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Tabs, Tab, Grid, Card, CardContent, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Button, Alert, Chip,
-  Paper
+  Paper, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar,
+  TextField, IconButton, Tooltip, InputAdornment
 } from '@mui/material';
 import {
   Refresh, Dns, Lan, Warning, CheckCircle, Cancel,
-  AccessTime, Security, Fingerprint
+  AccessTime, Security, Fingerprint, Lock, LockOpen, Block, Shield, Delete
 } from '@mui/icons-material';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
 import StatusBadge from '../components/common/StatusBadge';
 import {
   fetchSshConnections, fetchServices, fetchNetworkConnections,
-  SshData, ServicesData, NetworkData
+  killAllSshSessions, killSingleSshSession, restartSshd,
+  fetchCsfFirewall, csfAction,
+  SshData, ServicesData, NetworkData, CsfFirewallData
 } from '../api/system';
 
 const REFRESH_INTERVAL = 10000;
@@ -23,21 +26,29 @@ export default function SystemHealthPage() {
   const [sshData, setSshData] = useState<SshData | null>(null);
   const [servicesData, setServicesData] = useState<ServicesData | null>(null);
   const [networkData, setNetworkData] = useState<NetworkData | null>(null);
+  const [csfData, setCsfData] = useState<CsfFirewallData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogConfig, setDialogConfig] = useState<{ title: string; message: string; action: () => void } | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ open: false, message: '', severity: 'info' });
+  const [ipInput, setIpInput] = useState('');
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const [ssh, svc, net] = await Promise.all([
+      const [ssh, svc, net, csf] = await Promise.all([
         fetchSshConnections(),
         fetchServices(),
         fetchNetworkConnections(),
+        fetchCsfFirewall(),
       ]);
       setSshData(ssh);
       setServicesData(svc);
       setNetworkData(net);
+      setCsfData(csf);
     } catch (e: any) {
       setError(e.message || 'Failed to fetch system health data');
     } finally {
@@ -74,6 +85,110 @@ export default function SystemHealthPage() {
     }
   };
 
+  const showSnackbar = (message: string, severity: 'success' | 'error' | 'warning' | 'info') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const confirmAction = (title: string, message: string, action: () => void) => {
+    setDialogConfig({ title, message, action });
+    setDialogOpen(true);
+  };
+
+  const handleKillSession = async (session: any) => {
+    const sessionId = session.pid || session.tty;
+    confirmAction(
+      'Kill SSH Session',
+      `Are you sure you want to terminate the session for user "${session.user}" from ${session.from}?`,
+      async () => {
+        try {
+          setActionLoading(true);
+          const result = await killSingleSshSession(sessionId);
+          showSnackbar(result.message || 'Session terminated', result.success ? 'success' : 'error');
+          loadData();
+        } catch (e: any) {
+          showSnackbar(e.message || 'Failed to kill session', 'error');
+        } finally {
+          setActionLoading(false);
+        }
+      }
+    );
+  };
+
+  const handleKillAllSessions = async () => {
+    confirmAction(
+      'Kill All SSH Sessions',
+      'This will terminate all SSH sessions except your current one. Continue?',
+      async () => {
+        try {
+          setActionLoading(true);
+          const result = await killAllSshSessions(sshData?.sessions.find(s => s.user === 'current')?.tty);
+          showSnackbar(result.message || 'All sessions terminated', result.success ? 'success' : 'error');
+          loadData();
+        } catch (e: any) {
+          showSnackbar(e.message || 'Failed to kill sessions', 'error');
+        } finally {
+          setActionLoading(false);
+        }
+      }
+    );
+  };
+
+  const handleRestartSshd = async () => {
+    confirmAction(
+      'Restart SSH Daemon',
+      'This will restart the SSH service. Existing connections may be affected. Continue?',
+      async () => {
+        try {
+          setActionLoading(true);
+          const result = await restartSshd();
+          showSnackbar(result.message || 'SSH service restarted', result.success ? 'success' : 'error');
+          loadData();
+        } catch (e: any) {
+          showSnackbar(e.message || 'Failed to restart SSH', 'error');
+        } finally {
+          setActionLoading(false);
+        }
+      }
+    );
+  };
+
+  const handleCsfAction = async (action: string, ip?: string) => {
+    const actionLabels: Record<string, string> = {
+      deny: 'Block IP',
+      allow: 'Allow IP',
+      unblock: 'Unblock IP',
+      restart: 'Restart CSF',
+      disable_testing: 'Disable Testing Mode'
+    };
+
+    if (!ip && !['restart', 'disable_testing'].includes(action)) {
+      showSnackbar('IP address is required', 'error');
+      return;
+    }
+
+    confirmAction(
+      actionLabels[action] || action,
+      ip ? `Are you sure you want to ${actionLabels[action]?.toLowerCase()} ${ip}?` : `Are you sure you want to ${actionLabels[action]?.toLowerCase()}?`,
+      async () => {
+        try {
+          setActionLoading(true);
+          const result = await csfAction(action, ip);
+          showSnackbar(result.message || 'Action completed', result.success ? 'success' : 'error');
+          loadData();
+        } catch (e: any) {
+          showSnackbar(e.message || 'Action failed', 'error');
+        } finally {
+          setActionLoading(false);
+        }
+      }
+    );
+  };
+
+  const handleBlockFailedIp = (ip: string) => {
+    setIpInput(ip);
+    handleCsfAction('deny', ip);
+  };
+
   return (
     <Box>
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -102,6 +217,7 @@ export default function SystemHealthPage() {
         <Tab icon={<Security />} label="SSH" iconPosition="start" />
         <Tab icon={<Dns />} label="Services" iconPosition="start" />
         <Tab icon={<Lan />} label="Network" iconPosition="start" />
+        <Tab icon={<Shield />} label="Firewall" iconPosition="start" />
       </Tabs>
 
       {/* SSH Tab */}
@@ -112,6 +228,29 @@ export default function SystemHealthPage() {
               SSH daemon (sshd) is not running!
             </Alert>
           )}
+
+          <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Button
+              startIcon={<Delete />}
+              variant="outlined"
+              size="small"
+              color="error"
+              onClick={handleKillAllSessions}
+              disabled={actionLoading || sshData.active_sessions === 0}
+            >
+              Kill All Sessions
+            </Button>
+            <Button
+              startIcon={<Refresh />}
+              variant="outlined"
+              size="small"
+              color="warning"
+              onClick={handleRestartSshd}
+              disabled={actionLoading}
+            >
+              Restart SSHD
+            </Button>
+          </Box>
 
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 4 }}>
@@ -153,6 +292,7 @@ export default function SystemHealthPage() {
                         <TableCell>From</TableCell>
                         <TableCell>Login At</TableCell>
                         <TableCell>Idle</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -163,6 +303,18 @@ export default function SystemHealthPage() {
                           <TableCell sx={{ fontFamily: 'monospace' }}>{s.from}</TableCell>
                           <TableCell>{s.login_at}</TableCell>
                           <TableCell>{s.idle}</TableCell>
+                          <TableCell>
+                            <Tooltip title="Terminate session">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleKillSession(s)}
+                                disabled={actionLoading}
+                              >
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -185,6 +337,7 @@ export default function SystemHealthPage() {
                         <TableCell>User</TableCell>
                         <TableCell>IP Address</TableCell>
                         <TableCell>Invalid User</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -198,6 +351,18 @@ export default function SystemHealthPage() {
                             ) : (
                               <Chip label="No" size="small" color="default" variant="outlined" />
                             )}
+                          </TableCell>
+                          <TableCell>
+                            <Tooltip title="Block IP in firewall">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleBlockFailedIp(f.ip)}
+                                disabled={actionLoading}
+                              >
+                                <Block fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -370,6 +535,278 @@ export default function SystemHealthPage() {
           )}
         </Box>
       )}
+
+      {/* Firewall Tab */}
+      {tab === 3 && csfData && (
+        <Box>
+          {!csfData.csf_active && (
+            <Alert severity="error" sx={{ mb: 2 }} icon={<Shield />}>
+              CSF firewall is not active!
+            </Alert>
+          )}
+
+          {csfData.testing_mode && (
+            <Alert severity="warning" sx={{ mb: 2 }} icon={<Shield />}>
+              CSF is in TESTING MODE - firewall rules will expire automatically.
+              <Button
+                size="small"
+                color="warning"
+                onClick={() => handleCsfAction('disable_testing')}
+                sx={{ ml: 1 }}
+                disabled={actionLoading}
+              >
+                Disable Testing Mode
+              </Button>
+            </Alert>
+          )}
+
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <StatCard
+                label="CSF Status"
+                value={csfData.csf_active ? 'Active' : 'Inactive'}
+                color={csfData.csf_active ? 'success' : 'error'}
+                icon={<Shield />}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <StatCard
+                label="Denied IPs"
+                value={csfData.stats.denied_ips}
+                color="error"
+                icon={<Lock />}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <StatCard
+                label="Allowed IPs"
+                value={csfData.stats.allowed_ips}
+                color="success"
+                icon={<LockOpen />}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <StatCard
+                label="iptables Rules"
+                value={csfData.stats.iptables_rules}
+                color="primary"
+                icon={<Shield />}
+              />
+            </Grid>
+          </Grid>
+
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>IP Management</Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                <TextField
+                  size="small"
+                  placeholder="Enter IP address"
+                  value={ipInput}
+                  onChange={(e) => setIpInput(e.target.value)}
+                  sx={{ minWidth: 200 }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Shield fontSize="small" color="action" />
+                        </InputAdornment>
+                      ),
+                    }
+                  }}
+                />
+                <Button
+                  startIcon={<Block />}
+                  variant="contained"
+                  size="small"
+                  color="error"
+                  onClick={() => handleCsfAction('deny', ipInput)}
+                  disabled={actionLoading || !ipInput}
+                >
+                  Block
+                </Button>
+                <Button
+                  startIcon={<LockOpen />}
+                  variant="contained"
+                  size="small"
+                  color="success"
+                  onClick={() => handleCsfAction('allow', ipInput)}
+                  disabled={actionLoading || !ipInput}
+                >
+                  Allow
+                </Button>
+                <Button
+                  startIcon={<LockOpen />}
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleCsfAction('unblock', ipInput)}
+                  disabled={actionLoading || !ipInput}
+                >
+                  Unblock
+                </Button>
+                <Button
+                  startIcon={<Refresh />}
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleCsfAction('restart')}
+                  disabled={actionLoading}
+                >
+                  Restart CSF
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+
+          {csfData.top_failed_ssh_ips.length > 0 && (
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: 'error.main' }}>
+                  Top Failed SSH IPs
+                </Typography>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>IP Address</TableCell>
+                        <TableCell align="right">Failed Attempts</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {csfData.top_failed_ssh_ips.map((ip, i) => (
+                        <TableRow key={i}>
+                          <TableCell sx={{ fontFamily: 'monospace' }}>{ip.ip}</TableCell>
+                          <TableCell align="right">
+                            <Chip label={ip.attempts} size="small" color="error" variant="outlined" />
+                          </TableCell>
+                          <TableCell>
+                            <Tooltip title="Block this IP">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleCsfAction('deny', ip.ip)}
+                                disabled={actionLoading}
+                              >
+                                <Block fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          <Grid container spacing={2}>
+            {csfData.recent_denied.length > 0 && (
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: 'error.main' }}>
+                      Recently Denied IPs
+                    </Typography>
+                    <TableContainer>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>IP</TableCell>
+                            <TableCell>Reason</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {csfData.recent_denied.slice(0, 10).map((entry, i) => (
+                            <TableRow key={i}>
+                              <TableCell sx={{ fontFamily: 'monospace' }}>{entry.ip}</TableCell>
+                              <TableCell sx={{ fontSize: '0.75rem' }}>{entry.reason}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+
+            {csfData.recent_allowed.length > 0 && (
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: 'success.main' }}>
+                      Recently Allowed IPs
+                    </Typography>
+                    <TableContainer>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>IP</TableCell>
+                            <TableCell>Reason</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {csfData.recent_allowed.slice(0, 10).map((entry, i) => (
+                            <TableRow key={i}>
+                              <TableCell sx={{ fontFamily: 'monospace' }}>{entry.ip}</TableCell>
+                              <TableCell sx={{ fontSize: '0.75rem' }}>{entry.reason}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+          </Grid>
+
+          {csfData.recent_denied.length === 0 && csfData.recent_allowed.length === 0 && csfData.top_failed_ssh_ips.length === 0 && (
+            <Alert severity="info">No firewall rules or failed SSH attempts detected.</Alert>
+          )}
+        </Box>
+      )}
+
+      {/* Confirmation Dialog */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>{dialogConfig?.title}</DialogTitle>
+        <DialogContent>
+          <Typography>{dialogConfig?.message}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} disabled={actionLoading}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              setDialogOpen(false);
+              dialogConfig?.action();
+            }}
+            disabled={actionLoading}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -1499,22 +1499,40 @@ class MonitorApi extends BaseApi {
 
     public function getSshConnections() {
         return $this->cache->remember('ssh_connections', 10, function() {
-            // Active SSH sessions via 'w' command
-            $who_output = $this->cmd("w 2>/dev/null | grep -v '^$' | grep -v 'w ' | tail -20");
+            // Active SSH sessions via 'who' command (more reliable than 'w')
+            $who_output = $this->cmd("who 2>/dev/null | grep -v '^\$' | head -30");
             $sessions = [];
             foreach ($who_output['output'] as $line) {
                 $line = trim($line);
                 if (empty($line)) continue;
-                if (preg_match('/^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)$/', $line, $m)) {
+                // who format: user tty date time (host)
+                if (preg_match('/^(\S+)\s+(\S+)\s+(\w+\s+\d+\s+[\d:]+)\s*(?:\(([^)]*)\))?\s*$/', $line, $m)) {
                     $sessions[] = [
                         'user' => $m[1],
                         'tty' => $m[2],
-                        'from' => $m[3],
-                        'login_at' => $m[4] . ' ' . $m[5],
-                        'idle' => trim($m[6])
+                        'from' => $m[4] ?? 'local',
+                        'login_at' => $m[3],
+                        'idle' => '—',
                     ];
                 }
             }
+
+            // Get SSH process PIDs for kill capability
+            $ssh_procs = $this->cmd("ps -eo pid,user,tty,etime,args 2>/dev/null | grep 'sshd:' | grep -v grep | grep -v 'root@notty'");
+            $ssh_pid_map = [];
+            foreach ($ssh_procs['output'] as $line) {
+                if (preg_match('/^\s*(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)$/', $line, $m)) {
+                    $ssh_pid_map[$m[3]] = $m[1]; // tty -> pid
+                }
+            }
+
+            // Enrich sessions with PIDs
+            foreach ($sessions as &$session) {
+                if (isset($ssh_pid_map[$session['tty']])) {
+                    $session['pid'] = $ssh_pid_map[$session['tty']];
+                }
+            }
+            unset($session);
 
             // SSH established connections
             $ssh_conns = $this->cmd("ss -tun state established 'sport = :22 or dport = :22' 2>/dev/null");
@@ -1533,23 +1551,28 @@ class MonitorApi extends BaseApi {
                 }
             }
 
-            // Failed login attempts from /var/log/secure
-            $failed_count = $this->safe_num($this->cmd_line("grep -c 'Failed password' /var/log/secure 2>/dev/null || echo 0", 5), 0);
-
-            // Recent failed logins
-            $failed_recent = $this->cmd("tail -100 /var/log/secure 2>/dev/null | grep 'Failed password' | tail -10");
+            // Failed login attempts (support both RHEL/CentOS and Debian/Ubuntu)
+            $log_file = is_file('/var/log/secure') ? '/var/log/secure' : (is_file('/var/log/auth.log') ? '/var/log/auth.log' : null);
+            $failed_count = 0;
             $failed_details = [];
-            foreach ($failed_recent['output'] as $line) {
-                if (preg_match('/Failed password for (invalid user )?(\S+) from ([\d.]+)/', $line, $m)) {
-                    $failed_details[] = [
-                        'user' => $m[2],
-                        'ip' => $m[3],
-                        'invalid_user' => !empty($m[1])
-                    ];
+            
+            if ($log_file) {
+                $failed_count = $this->safe_num($this->cmd_line("grep -c 'Failed password' $log_file 2>/dev/null || echo 0", 5), 0);
+                
+                // Recent failed logins
+                $failed_recent = $this->cmd("tail -500 $log_file 2>/dev/null | grep 'Failed password' | tail -10");
+                foreach ($failed_recent['output'] as $line) {
+                    if (preg_match('/Failed password for (invalid user )?(\S+) from ([\d.]+)/', $line, $m)) {
+                        $failed_details[] = [
+                            'user' => $m[2],
+                            'ip' => $m[3],
+                            'invalid_user' => !empty($m[1])
+                        ];
+                    }
                 }
             }
 
-            // SSH service status (handle both sshd and ssh unit names)
+            // SSH service status
             $sshd_status = $this->cmd_line("systemctl is-active sshd 2>/dev/null || systemctl is-active ssh 2>/dev/null || echo 'not-found'");
 
             return [
@@ -1566,12 +1589,195 @@ class MonitorApi extends BaseApi {
         });
     }
 
+    public function killSshSessions($skip_tty = null) {
+        require_once __DIR__ . '/AuditLogger.php';
+        $current_tty = trim($this->cmd_line("tty 2>/dev/null | sed 's|/dev/||'"));
+        $skip_tty = $skip_tty ?: $current_tty;
+        AuditLogger::log('SSH_KILL_ALL', "skip_tty=$skip_tty", "User requested SSH session termination");
+        
+        $pids_output = $this->cmd("ps -eo pid,tty,args 2>/dev/null | grep 'sshd:' | grep -v grep | grep -v 'notty' | grep -v '$skip_tty' | awk '{print \$1}'");
+        $all_pids = array_filter(array_map('trim', $pids_output['output']), 'strlen');
+        $count_before = count($all_pids);
+        
+        if ($count_before > 0) {
+            $pid_list = implode(' ', array_map('intval', $all_pids));
+            $result = $this->cmd("kill -9 $pid_list 2>&1");
+            $success = $result['return'] === 0;
+        } else {
+            $success = true;
+        }
+        
+        sleep(1);
+        $remaining = $this->safe_num($this->cmd_line("who | grep -c ssh 2>/dev/null || echo 0"), 0);
+        
+        return [
+            'success' => $success,
+            'killed_count' => $count_before,
+            'remaining_sessions' => $remaining,
+            'message' => $count_before > 0 ? "Killed $count_before SSH sessions. $remaining remaining." : "No SSH sessions to kill.",
+        ];
+    }
+
+    public function killSingleSshSession($session_identifier) {
+        require_once __DIR__ . '/AuditLogger.php';
+        $current_tty = trim($this->cmd_line("tty 2>/dev/null | sed 's|/dev/||'"));
+        
+        if ($session_identifier === $current_tty) {
+            return ['success' => false, 'message' => 'Cannot kill your own session'];
+        }
+        
+        if (ctype_digit($session_identifier)) {
+            $pid = (int)$session_identifier;
+            if ($pid <= 10) return ['success' => false, 'message' => 'Invalid PID'];
+            $pid_tty = trim($this->cmd_line("ps -o tty= -p $pid 2>/dev/null"));
+            if ($pid_tty === $current_tty) return ['success' => false, 'message' => 'Cannot kill your own session'];
+            $result = $this->cmd("kill -9 $pid 2>&1");
+            AuditLogger::log('SSH_KILL_PID', "pid=$pid", "User killed SSH session PID $pid");
+            return ['success' => $result['return'] === 0, 'message' => $result['return'] === 0 ? "Session killed" : "Failed to kill session"];
+        }
+        
+        $pid = $this->cmd_line("ps -eo pid,tty,args 2>/dev/null | grep 'sshd:.*$session_identifier' | grep -v grep | awk '{print \$1}' | head -1");
+        if (!$pid || !ctype_digit(trim($pid))) {
+            return ['success' => false, 'message' => 'Session not found'];
+        }
+        
+        $pid = trim($pid);
+        $result = $this->cmd("kill -9 $pid 2>&1");
+        AuditLogger::log('SSH_KILL_TTY', "tty=$session_identifier pid=$pid", "User killed SSH session $session_identifier");
+        return ['success' => $result['return'] === 0, 'message' => $result['return'] === 0 ? "Session $session_identifier killed" : "Failed to kill session"];
+    }
+
+    public function restartSshd() {
+        require_once __DIR__ . '/AuditLogger.php';
+        AuditLogger::log('SSHD_RESTART', '', "SSH daemon restart requested via dashboard");
+        $result = $this->cmd("systemctl restart sshd 2>&1", 15);
+        usleep(2000000);
+        $new_status = $this->cmd_line("systemctl is-active sshd 2>/dev/null");
+        
+        return [
+            'success' => $new_status === 'active',
+            'message' => $new_status === 'active' ? 'SSH daemon restarted successfully' : 'SSH daemon restart failed',
+            'output' => $result['output'],
+        ];
+    }
+
+    public function getCsfFirewall() {
+        return $this->cache->remember('csf_firewall', 30, function() {
+            $csf_active = $this->cmd_line("systemctl is-active csf 2>/dev/null");
+            $lfd_active = $this->cmd_line("systemctl is-active lfd 2>/dev/null");
+            $csf_version = $this->cmd_line("csf -v 2>/dev/null | head -1");
+            $testing_mode = $this->cmd_line("grep '^TESTING' /etc/csf/csf.conf 2>/dev/null | awk -F'= ' '{print \$2}' | tr -d '"'");
+            $deny_count = $this->safe_num($this->cmd_line("grep -v '^#' /etc/csf/csf.deny 2>/dev/null | grep -v '^\$' | wc -l"), 0);
+            $allow_count = $this->safe_num($this->cmd_line("grep -v '^#' /etc/csf/csf.allow 2>/dev/null | grep -v '^\$' | wc -l"), 0);
+            $ignore_count = $this->safe_num($this->cmd_line("grep -v '^#' /etc/csf/csf.ignore 2>/dev/null | grep -v '^\$' | wc -l"), 0);
+            $iptables_count = $this->safe_num($this->cmd_line("iptables -L -n 2>/dev/null | wc -l"), 0);
+            
+            $deny_lines = $this->cmd("tail -20 /etc/csf/csf.deny 2>/dev/null | grep -v '^#' | grep -v '^\$'");
+            $recent_denied = [];
+            foreach ($deny_lines['output'] as $line) {
+                $line = trim($line);
+                if (empty($line)) continue;
+                $parts = preg_split('/\s+#\s*/', $line, 2);
+                $recent_denied[] = ['ip' => trim($parts[0]), 'reason' => trim($parts[1] ?? '')];
+            }
+            
+            $allow_lines = $this->cmd("tail -20 /etc/csf/csf.allow 2>/dev/null | grep -v '^#' | grep -v '^\$'");
+            $recent_allowed = [];
+            foreach ($allow_lines['output'] as $line) {
+                $line = trim($line);
+                if (empty($line)) continue;
+                $parts = preg_split('/\s+#\s*/', $line, 2);
+                $recent_allowed[] = ['ip' => trim($parts[0]), 'reason' => trim($parts[1] ?? '')];
+            }
+            
+            $log_file = is_file('/var/log/secure') ? '/var/log/secure' : '/var/log/auth.log';
+            $failed_ips_raw = $this->cmd("grep 'Failed password' $log_file 2>/dev/null | tail -500 | grep -oP 'from \K[\d.]+' | sort | uniq -c | sort -rn | head -10");
+            $failed_ssh_ips = [];
+            foreach ($failed_ips_raw['output'] as $line) {
+                if (preg_match('/^\s*(\d+)\s+([\d.]+)/', $line, $m)) {
+                    $failed_ssh_ips[] = ['ip' => $m[2], 'attempts' => (int)$m[1]];
+                }
+            }
+            
+            return [
+                'csf_active' => $csf_active === 'active',
+                'lfd_active' => $lfd_active === 'active',
+                'version' => $csf_version ?: 'unknown',
+                'testing_mode' => $testing_mode === '1',
+                'stats' => [
+                    'denied_ips' => $deny_count,
+                    'allowed_ips' => $allow_count,
+                    'ignored_ips' => $ignore_count,
+                    'iptables_rules' => $iptables_count,
+                ],
+                'recent_denied' => $recent_denied,
+                'recent_allowed' => $recent_allowed,
+                'top_failed_ssh_ips' => $failed_ssh_ips,
+                'timestamp' => time(),
+            ];
+        });
+    }
+
+    public function csfAction() {
+        require_once __DIR__ . '/AuditLogger.php';
+        $action = $_POST['action'] ?? $_GET['action'] ?? '';
+        $ip = $_POST['ip'] ?? $_GET['ip'] ?? '';
+        
+        $allowed_actions = ['deny', 'allow', 'unblock', 'restart', 'refresh', 'disable_testing'];
+        if (!in_array($action, $allowed_actions)) {
+            return ['success' => false, 'message' => "Unknown action: $action"];
+        }
+        
+        if (in_array($action, ['deny', 'allow', 'unblock']) && !$ip) {
+            return ['success' => false, 'message' => 'IP address required'];
+        }
+        
+        if ($ip && !filter_var($ip, FILTER_VALIDATE_IP) && !preg_match('/^[\d.]+\/\d+$/', $ip)) {
+            return ['success' => false, 'message' => 'Invalid IP address format'];
+        }
+        
+        switch ($action) {
+            case 'deny':
+                $safe_ip = escapeshellarg($ip);
+                $result = $this->cmd("csf -d $safe_ip 2>&1");
+                AuditLogger::log('CSF_DENY', $ip, "IP blocked via CSF");
+                $this->cache->forget('csf_firewall');
+                return ['success' => $result['return'] === 0, 'message' => $result['return'] === 0 ? "IP $ip blocked" : "Failed to block IP", 'output' => $result['output']];
+            case 'allow':
+                $safe_ip = escapeshellarg($ip);
+                $result = $this->cmd("csf -a $safe_ip 2>&1");
+                AuditLogger::log('CSF_ALLOW', $ip, "IP allowed via CSF");
+                $this->cache->forget('csf_firewall');
+                return ['success' => $result['return'] === 0, 'message' => $result['return'] === 0 ? "IP $ip allowed" : "Failed to allow IP", 'output' => $result['output']];
+            case 'unblock':
+                $safe_ip = escapeshellarg($ip);
+                $result = $this->cmd("csf -dr $safe_ip 2>&1");
+                AuditLogger::log('CSF_UNBLOCK', $ip, "IP unblocked via CSF");
+                $this->cache->forget('csf_firewall');
+                return ['success' => $result['return'] === 0, 'message' => $result['return'] === 0 ? "IP $ip unblocked" : "Failed to unblock IP", 'output' => $result['output']];
+            case 'restart':
+                AuditLogger::log('CSF_RESTART', '', "CSF firewall restart requested");
+                $this->cmd("nohup csf -r > /dev/null 2>&1 & echo started", 10);
+                $this->cache->forget('csf_firewall');
+                return ['success' => true, 'message' => 'CSF restart initiated (takes ~30 seconds)'];
+            case 'refresh':
+                $this->cache->forget('csf_firewall');
+                return ['success' => true, 'message' => 'CSF cache refreshed'];
+            case 'disable_testing':
+                $this->cmd("sed -i 's/^TESTING = "1"/TESTING = "0"/' /etc/csf/csf.conf 2>&1 && nohup csf -r > /dev/null 2>&1 & echo done", 10);
+                AuditLogger::log('CSF_DISABLE_TESTING', '', "CSF testing mode disabled");
+                $this->cache->forget('csf_firewall');
+                return ['success' => true, 'message' => 'CSF testing mode disabled and firewall restarted'];
+        }
+        return ['success' => false, 'message' => 'Unhandled action'];
+    }
+
     public function getServices() {
         return $this->cache->remember('services_list', 15, function() {
             $categories = [
                 'web' => ['httpd', 'ea-php82-php-fpm', 'varnish'],
                 'database' => ['mariadb10.6', 'elasticsearch', 'redis'],
-                'security' => ['sshd', 'firewalld'],
+                'security' => ['sshd', 'csf', 'lfd'],
                 'system' => ['crond', 'rsyslog'],
             ];
 

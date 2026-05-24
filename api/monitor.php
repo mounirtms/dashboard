@@ -50,7 +50,9 @@ $allowedActions = [
     'system_advanced', 'phpfpm_pools', 'alerts', 'cloudflare',
     'cloudflare_action', 'apache', 'cache_manage', 'logs', 'processes',
     'db_action', 'cron_action', 'process_action', 'site_action', 'indexer_action',
-    'ssh', 'services', 'network', 'notification_log'
+    'ssh', 'ssh_kill', 'ssh_kill_single', 'sshd_restart',
+    'csf', 'csf_action',
+    'services', 'network', 'notification_log'
 ];
 
 if (!in_array($action, $allowedActions)) {
@@ -192,6 +194,21 @@ try {
             break;
         case 'network':
             $data = $monitorApi->getNetworkConnections();
+            break;
+        case 'ssh_kill':
+            $data = $monitorApi->killSshSessions($_POST['skip_tty'] ?? null);
+            break;
+        case 'ssh_kill_single':
+            $data = $monitorApi->killSingleSshSession($_POST['session_id'] ?? $_GET['session_id'] ?? '');
+            break;
+        case 'sshd_restart':
+            $data = $monitorApi->restartSshd();
+            break;
+        case 'csf':
+            $data = $monitorApi->getCsfFirewall();
+            break;
+        case 'csf_action':
+            $data = $monitorApi->csfAction();
             break;
         case 'notification_log':
             $logFile = __DIR__ . '/logs/webpushr_alerts.log';
