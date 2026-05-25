@@ -5,12 +5,39 @@
  */
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+// Fix CORS - validate origin against whitelist
+$allowed_origins = [
+    'https://dashboard.technostationery.com',
+    'https://beta.technostationery.com',
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins, true)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header('Access-Control-Allow-Credentials: true');
+}
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
+}
+
+// Require authentication
+require_once __DIR__ . '/session_helper.php';
+if (empty($_SESSION['logged_in'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
+}
+
+// Add rate limiting
+require_once __DIR__ . '/RateLimiter.php';
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_actions_rate', 50, 60); // 50 requests per minute
+$userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+if (!$rateLimiter->checkOrReject($userIdentifier)) {
+    http_response_code(429);
+    echo json_encode(['error' => 'Rate limit exceeded']);
+    exit;
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? null;

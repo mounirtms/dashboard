@@ -74,7 +74,7 @@ try {
         'dbhealth' => 60,
         'redis' => 15,
         'elasticsearch' => 30,
-        'varnish' => 15,
+        'varnish' => 60,  // Increased from 15s - varnishlog parsing is heavy
         'apache' => 15,
         'system_advanced' => 60,
         'phpfpm_pools' => 15,
@@ -85,7 +85,8 @@ try {
         'network' => 10
     ];
 
-    $cacheKey = "api_" . $action . ($site ? "_$site" : "");
+    // Include site in cache key to prevent cross-site data leakage
+    $cacheKey = "api_" . $action . ($site && $site !== 'prod' ? "_$site" : "");
     if (isset($cacheableActions[$action])) {
         $data = $cache->get($cacheKey);
         if ($data !== null) {

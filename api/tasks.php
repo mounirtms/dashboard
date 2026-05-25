@@ -443,12 +443,16 @@ try {
             $stmt->execute($values);
             $updated = $stmt->rowCount();
 
+            // Fetch all task titles in a single query (fix N+1 problem)
+            $idPlaceholders = implode(',', array_fill(0, count($ids), '?'));
+            $titleStmt = $pdo->prepare("SELECT id, title FROM tasks WHERE id IN ($idPlaceholders)");
+            $titleStmt->execute($ids);
+            $taskTitles = $titleStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
             // Log activity for each updated task
-            $titleStmt = $pdo->prepare("SELECT title FROM tasks WHERE id = ?");
             $completedTasks = [];
             foreach ($ids as $taskId) {
-                $titleStmt->execute([$taskId]);
-                $taskTitle = $titleStmt->fetchColumn();
+                $taskTitle = $taskTitles[$taskId] ?? 'Unknown Task';
                 if (isset($input['status'])) {
                     $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'bulk_status_changed', ?, ?)")
                         ->execute([$taskId, $currentUser, "Bulk update: status → {$input['status']}"]);

@@ -4,6 +4,7 @@
  * Handles deployments, rollbacks, migrations across all environments
  */
 session_start();
+require_once __DIR__ . '/Config.php';
 
 if (empty($_SESSION['logged_in'])) {
     header('Content-Type: application/json');
@@ -16,11 +17,14 @@ error_reporting(0);
 ini_set('display_errors', 0);
 header('Content-Type: application/json');
 
-// ── Configuration ──
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3307');
-define('DB_USER', 'root');
-define('DB_PASS', 'YourNewStrongPassword');
+// Load configuration from centralized Config class
+Config::load();
+
+// ── Configuration from Config class ──
+define('DB_HOST', Config::get('db.host', '127.0.0.1'));
+define('DB_PORT', Config::get('db.port', '3307'));
+define('DB_USER', Config::get('db.user', 'root'));
+define('DB_PASS', Config::get('db.pass', ''));
 
 define('LOG_DIR', '/home/dashboard/public_html/logs/deployments');
 define('DEPLOY_LOG_TABLE', 'deployment_log');

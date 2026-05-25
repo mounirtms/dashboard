@@ -50,17 +50,34 @@ if (array_key_exists('direct-alert', $args)) {
     
     // Load Webpushr helper first (before telegram config which may conflict)
     $webpushrSent = false;
+    $webpushrAttempts = 0;
+    $webpushrMaxRetries = 3;
     try {
         $wpHelperPath = __DIR__ . '/../WebpushrAlertHelper.php';
         if (file_exists($wpHelperPath)) {
             require_once $wpHelperPath;
-            WebpushrAlertHelper::sendAlert(
-                $args['severity'] ?? 'WARNING',
-                "System Alert: " . ($args['message'] ?? 'Unknown issue'),
-                $args['message'] ?? 'Unknown issue',
-                $args['key'] ?? 'direct_alert'
-            );
-            $webpushrSent = true;
+            // Retry with exponential backoff if rate limited
+            while ($webpushrAttempts < $webpushrMaxRetries) {
+                $result = WebpushrAlertHelper::sendAlert(
+                    $args['severity'] ?? 'WARNING',
+                    "System Alert: " . ($args['message'] ?? 'Unknown issue'),
+                    $args['message'] ?? 'Unknown issue',
+                    $args['key'] ?? 'direct_alert'
+                );
+                if ($result['success']) {
+                    $webpushrSent = true;
+                    break;
+                } elseif (isset($result['error']) && stripos($result['error'], 'too many requests') !== false) {
+                    $webpushrAttempts++;
+                    if ($webpushrAttempts < $webpushrMaxRetries) {
+                        $delay = pow(2, $webpushrAttempts); // 2, 4, 8 seconds
+                        error_log("[alert_cron] Webpushr rate limited, retrying in {$delay}s (attempt {$webpushrAttempts}/{$webpushrMaxRetries})");
+                        sleep($delay);
+                    }
+                } else {
+                    break; // Other error, don't retry
+                }
+            }
         }
     } catch (Exception $e) {
         error_log("[alert_cron] Webpushr direct alert error: " . $e->getMessage());

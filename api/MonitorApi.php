@@ -210,14 +210,14 @@ class MonitorApi extends BaseApi {
             case 'maint_on':
                 if (file_exists("$path/bin/magento")) {
                     $res = $this->cmd("cd $path && $php bin/magento maintenance:enable 2>&1");
-                    $this->cache->forget('sites');
+                    $this->invalidateSiteCaches($site);
                     return ['success' => true, 'message' => 'Maintenance enabled', 'output' => $res['output']];
                 }
                 return ['success' => false, 'message' => 'Not a Magento site'];
             case 'maint_off':
                 if (file_exists("$path/bin/magento")) {
                     $res = $this->cmd("cd $path && $php bin/magento maintenance:disable 2>&1");
-                    $this->cache->forget('sites');
+                    $this->invalidateSiteCaches($site);
                     return ['success' => true, 'message' => 'Maintenance disabled', 'output' => $res['output']];
                 }
                 return ['success' => false, 'message' => 'Not a Magento site'];
@@ -225,14 +225,14 @@ class MonitorApi extends BaseApi {
                 $flagFile = "$path/var/.suspend.flag";
                 @mkdir("$path/var", 0755, true);
                 if (file_put_contents($flagFile, date('Y-m-d H:i:s') . " - Suspended via Dashboard")) {
-                    $this->cache->forget('sites');
+                    $this->invalidateSiteCaches($site);
                     return ['success' => true, 'message' => "Site $site suspended"];
                 }
                 return ['success' => false, 'message' => 'Failed to create suspend flag'];
             case 'resume':
                 $flagFile = "$path/var/.suspend.flag";
                 if (file_exists($flagFile) && @unlink($flagFile)) {
-                    $this->cache->forget('sites');
+                    $this->invalidateSiteCaches($site);
                     return ['success' => true, 'message' => "Site $site resumed"];
                 }
                 return ['success' => false, 'message' => 'No suspend flag found or failed to remove'];
@@ -861,19 +861,22 @@ class MonitorApi extends BaseApi {
                     $db = $this->getDb();
                     $db->select_db($dbName);
                     
+                    // Escape dbName to prevent SQL injection
+                    $db_name_escaped = $db->real_escape_string($dbName);
+                    
                     // Database size
                     $res = $db->query("SELECT ROUND(SUM(data_length+index_length)/1024/1024,2) as mb, 
                                          ROUND(SUM(data_free)/1024/1024,2) as free_mb,
                                          COUNT(*) as tables
                                          FROM information_schema.TABLES 
-                                         WHERE table_schema='$dbName'");
+                                         WHERE table_schema='$db_name_escaped'");
                     $row = $res ? $res->fetch_assoc() : null;
                     
                     // Table fragmentation
                     $res2 = $db->query("SELECT TABLE_NAME, ROUND((data_length+index_length)/1024/1024,2) as size_mb, 
                                           ROUND(data_free/1024/1024,2) as free_mb
                                           FROM information_schema.TABLES 
-                                          WHERE table_schema='$dbName' AND data_free > 0
+                                          WHERE table_schema='$db_name_escaped' AND data_free > 0
                                           ORDER BY data_free DESC LIMIT 10");
                     $fragmented = [];
                     if ($res2) {
@@ -885,7 +888,7 @@ class MonitorApi extends BaseApi {
                     // Long running queries
                     $res3 = $db->query("SELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, INFO 
                                          FROM information_schema.PROCESSLIST 
-                                         WHERE DB='$dbName' AND COMMAND != 'Sleep' AND TIME > 5
+                                         WHERE DB='$db_name_escaped' AND COMMAND != 'Sleep' AND TIME > 5
                                          ORDER BY TIME DESC LIMIT 10");
                     $slow_queries = [];
                     if ($res3) {
@@ -920,7 +923,7 @@ class MonitorApi extends BaseApi {
     }
 
     public function getVarnishStats() {
-        return $this->cache->remember('varnish_stats', 15, function() {
+        return $this->cache->remember('varnish_stats', 60, function() {
             try {
                 $varnish_active = $this->cmd_line("systemctl is-active varnish 2>/dev/null");
                 if ($varnish_active !== 'active') {
@@ -1499,57 +1502,114 @@ class MonitorApi extends BaseApi {
 
     public function getSshConnections() {
         return $this->cache->remember('ssh_connections', 10, function() {
-            // Active SSH sessions via 'who' command (more reliable than 'w')
-            $who_output = $this->cmd("who 2>/dev/null | grep -v '^\$' | head -30");
             $sessions = [];
+            $seen_pids = [];
+
+            // Method 1: Get SSH sessions from 'who' command (traditional TTY sessions)
+            $who_output = $this->cmd("who 2>/dev/null | grep -v '^\$' | head -50");
             foreach ($who_output['output'] as $line) {
                 $line = trim($line);
                 if (empty($line)) continue;
-                // who format: user tty date time (host)
                 if (preg_match('/^(\S+)\s+(\S+)\s+(\w+\s+\d+\s+[\d:]+)\s*(?:\(([^)]*)\))?\s*$/', $line, $m)) {
                     $sessions[] = [
+                        'type' => 'ssh',
                         'user' => $m[1],
                         'tty' => $m[2],
                         'from' => $m[4] ?? 'local',
                         'login_at' => $m[3],
                         'idle' => '—',
+                        'status' => 'active',
                     ];
                 }
             }
 
-            // Get SSH process PIDs for kill capability
-            $ssh_procs = $this->cmd("ps -eo pid,user,tty,etime,args 2>/dev/null | grep 'sshd:' | grep -v grep | grep -v 'root@notty'");
-            $ssh_pid_map = [];
+            // Method 2: Parse sshd processes to catch sessions without TTY
+            // This catches [priv], [net], [accepted] states that 'who' misses
+            
+            // Hoist: Get main sshd daemon PID once (not per iteration)
+            $sshd_main_pid = $this->cmd_line("pgrep -o 'sshd -D' 2>/dev/null");
+            
+            // Hoist: Build PID->PPID map once
+            $ppid_map = [];
+            $ps_ppid = $this->cmd("ps -eo pid,ppid 2>/dev/null");
+            foreach ($ps_ppid['output'] as $pline) {
+                if (preg_match('/^\s*(\d+)\s+(\d+)/', $pline, $pm)) {
+                    $ppid_map[$pm[1]] = $pm[2];
+                }
+            }
+            
+            // Hoist: Build PID->remote IP map from ss once
+            $pid_ip_map = [];
+            $ss_output = $this->cmd("ss -tnp 2>/dev/null");
+            foreach ($ss_output['output'] as $sline) {
+                if (preg_match('/pid=(\d+).*?\s+([\d.]+):(\d+)\s+([\d.]+):(\d+)/', $sline, $sm)) {
+                    if ($sm[3] == 22) { // SSH port
+                        $pid_ip_map[$sm[1]] = $sm[4];
+                    }
+                }
+            }
+            
+            $ssh_procs = $this->cmd("ps -eo pid,user,etimes,args 2>/dev/null | grep '[s]shd:' | grep -v 'sshd -D'");
             foreach ($ssh_procs['output'] as $line) {
-                if (preg_match('/^\s*(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)$/', $line, $m)) {
-                    $ssh_pid_map[$m[3]] = $m[1]; // tty -> pid
+                if (preg_match('/^\s*(\d+)\s+(\S+)\s+(\d+)\s+sshd:\s+(\S+)\s*(?:\[@?\S+\])?\s*(?:\[([^\]]+)\])?/', $line, $m)) {
+                    $pid = $m[1];
+                    $user = $m[2];
+                    $duration = (int)$m[3];
+                    $auth_user = $m[4];
+                    $state = $m[5] ?? 'unknown';
+
+                    // Skip the main sshd daemon process using pre-built map
+                    if ($auth_user === 'root' && ($state === 'priv' || $state === '')) {
+                        $parent_pid = $ppid_map[$pid] ?? null;
+                        if ($parent_pid === $sshd_main_pid) {
+                            continue; // This is the main sshd daemon
+                        }
+                    }
+
+                    // Skip if we already have this session from 'who'
+                    if (isset($seen_pids[$pid])) continue;
+                    $seen_pids[$pid] = true;
+
+                    // Determine session status
+                    $status = 'active';
+                    if ($state === 'notty' || $state === 'net') $status = 'authenticating';
+                    if ($state === 'accepted') $status = 'connecting';
+
+                    // Get remote IP from pre-built map
+                    $remote_ip = $pid_ip_map[$pid] ?? 'unknown';
+
+                    $sessions[] = [
+                        'type' => 'sshd_process',
+                        'pid' => $pid,
+                        'user' => $auth_user,
+                        'system_user' => $user,
+                        'tty' => 'notty',
+                        'from' => $remote_ip,
+                        'login_at' => date('Y-m-d H:i:s', time() - $duration),
+                        'duration_seconds' => $duration,
+                        'idle' => $this->format_duration($duration),
+                        'status' => $status,
+                    ];
                 }
             }
 
-            // Enrich sessions with PIDs
-            foreach ($sessions as &$session) {
-                if (isset($ssh_pid_map[$session['tty']])) {
-                    $session['pid'] = $ssh_pid_map[$session['tty']];
-                }
-            }
-            unset($session);
-
-            // SSH established connections
-            $ssh_conns = $this->cmd("ss -tun state established 'sport = :22 or dport = :22' 2>/dev/null");
+            // Method 3: Get established SSH connections from network sockets
+            $ssh_conns = $this->cmd("ss -tn state established 'sport = :22' 2>/dev/null");
             $established = [];
             foreach ($ssh_conns['output'] as $line) {
-                if (strpos($line, 'ESTAB') === false && strpos($line, 'udp') === false) continue;
-                if (preg_match('/.*?\s+([\d.*]+):(\d+)\s+([\d.*]+):(\d+)/', $line, $m)) {
-                    $state = strpos($line, 'ESTAB') !== false ? 'ESTAB' : 'OTHER';
+                if (preg_match('/ESTAB.*?([\d.]+):22\s+([\d.]+):(\d+)/', $line, $m)) {
                     $established[] = [
-                        'state' => $state,
+                        'state' => 'ESTABLISHED',
                         'local_ip' => $m[1],
-                        'local_port' => $m[2],
-                        'remote_ip' => $m[3],
-                        'remote_port' => $m[4],
+                        'local_port' => 22,
+                        'remote_ip' => $m[2],
+                        'remote_port' => (int)$m[3],
                     ];
                 }
             }
+
+            // Method 4: Detect Qoder-server sessions
+            $qoder_info = $this->detectQoderSessions();
 
             // Failed login attempts (support both RHEL/CentOS and Debian/Ubuntu)
             $log_file = is_file('/var/log/secure') ? '/var/log/secure' : (is_file('/var/log/auth.log') ? '/var/log/auth.log' : null);
@@ -1575,12 +1635,17 @@ class MonitorApi extends BaseApi {
             // SSH service status
             $sshd_status = $this->cmd_line("systemctl is-active sshd 2>/dev/null || systemctl is-active ssh 2>/dev/null || echo 'not-found'");
 
+            // Count unique active sessions (exclude 'connecting' and 'authenticating' for active count)
+            $active_count = count(array_filter($sessions, fn($s) => $s['status'] === 'active'));
+
             return [
                 'service_active' => ($sshd_status === 'active'),
-                'active_sessions' => count($sessions),
-                'sessions' => $sessions,
+                'active_sessions' => $active_count,
+                'total_sessions' => count($sessions),
+                'sessions' => array_values($sessions),
                 'established_connections' => count($established),
                 'connections' => $established,
+                'qoder_server' => $qoder_info,
                 'failed_logins_total' => $failed_count,
                 'recent_failed' => $failed_details,
                 'sshd_status' => $sshd_status,
@@ -1593,26 +1658,53 @@ class MonitorApi extends BaseApi {
         require_once __DIR__ . '/AuditLogger.php';
         $current_tty = trim($this->cmd_line("tty 2>/dev/null | sed 's|/dev/||'"));
         $skip_tty = $skip_tty ?: $current_tty;
-        AuditLogger::log('SSH_KILL_ALL', "skip_tty=$skip_tty", "User requested SSH session termination");
         
-        $pids_output = $this->cmd("ps -eo pid,tty,args 2>/dev/null | grep 'sshd:' | grep -v grep | grep -v 'notty' | grep -v '$skip_tty' | awk '{print \$1}'");
-        $all_pids = array_filter(array_map('trim', $pids_output['output']), 'strlen');
-        $count_before = count($all_pids);
+        // Get all sshd processes excluding main daemon and current session
+        // Use [s]shd: pattern to avoid grep matching itself
+        $ssh_procs = $this->cmd("ps -eo pid,user,tty,args 2>/dev/null | grep '[s]shd:' | grep -v 'sshd -D'");
+        
+        $pids_to_kill = [];
+        $sessions_info = [];
+        
+        foreach ($ssh_procs['output'] as $line) {
+            if (preg_match('/^\s*(\d+)\s+(\S+)\s+(\S+)\s+(.*)$/', $line, $m)) {
+                $pid = $m[1];
+                $user = $m[2];
+                $tty = $m[3];
+                $args = $m[4];
+                
+                // Skip if it's the current session
+                if ($tty === $skip_tty) continue;
+                
+                // Skip notty processes that are in early connection state (safer)
+                if ($tty === '?' && strpos($args, '[accepted]') !== false) continue;
+                
+                $pids_to_kill[] = $pid;
+                $sessions_info[] = "$pid ($user, tty=$tty)";
+            }
+        }
+        
+        $count_before = count($pids_to_kill);
         
         if ($count_before > 0) {
-            $pid_list = implode(' ', array_map('intval', $all_pids));
+            AuditLogger::log('SSH_KILL_ALL', "kill_pids=" . implode(',', $pids_to_kill) . ", skip_tty=$skip_tty", 
+                           "User requested SSH session termination: " . implode(', ', $sessions_info));
+            
+            $pid_list = implode(' ', $pids_to_kill);
             $result = $this->cmd("kill -9 $pid_list 2>&1");
             $success = $result['return'] === 0;
         } else {
             $success = true;
         }
         
-        sleep(1);
-        $remaining = $this->safe_num($this->cmd_line("who | grep -c ssh 2>/dev/null || echo 0"), 0);
+        // Single sleep and check for remaining sessions
+        usleep(500000); // 500ms instead of 2x 1s sleep
+        $remaining = $this->safe_num($this->cmd_line("ps -eo pid,tty,args 2>/dev/null | grep '[s]shd:' | grep -v 'sshd -D' | grep -v '$skip_tty' | wc -l"), 0);
         
         return [
             'success' => $success,
             'killed_count' => $count_before,
+            'killed_sessions' => $sessions_info,
             'remaining_sessions' => $remaining,
             'message' => $count_before > 0 ? "Killed $count_before SSH sessions. $remaining remaining." : "No SSH sessions to kill.",
         ];
@@ -1666,7 +1758,7 @@ class MonitorApi extends BaseApi {
             $csf_active = $this->cmd_line("systemctl is-active csf 2>/dev/null");
             $lfd_active = $this->cmd_line("systemctl is-active lfd 2>/dev/null");
             $csf_version = $this->cmd_line("csf -v 2>/dev/null | head -1");
-            $testing_mode = $this->cmd_line("grep '^TESTING' /etc/csf/csf.conf 2>/dev/null | awk -F'= ' '{print \$2}' | tr -d '"'");
+            $testing_mode = $this->cmd_line("grep '^TESTING' /etc/csf/csf.conf 2>/dev/null | awk -F'= ' '{print \$2}' | tr -d '\"'");
             $deny_count = $this->safe_num($this->cmd_line("grep -v '^#' /etc/csf/csf.deny 2>/dev/null | grep -v '^\$' | wc -l"), 0);
             $allow_count = $this->safe_num($this->cmd_line("grep -v '^#' /etc/csf/csf.allow 2>/dev/null | grep -v '^\$' | wc -l"), 0);
             $ignore_count = $this->safe_num($this->cmd_line("grep -v '^#' /etc/csf/csf.ignore 2>/dev/null | grep -v '^\$' | wc -l"), 0);
@@ -1764,7 +1856,7 @@ class MonitorApi extends BaseApi {
                 $this->cache->forget('csf_firewall');
                 return ['success' => true, 'message' => 'CSF cache refreshed'];
             case 'disable_testing':
-                $this->cmd("sed -i 's/^TESTING = "1"/TESTING = "0"/' /etc/csf/csf.conf 2>&1 && nohup csf -r > /dev/null 2>&1 & echo done", 10);
+                $this->cmd("sed -i 's/^TESTING = \"1\"/TESTING = \"0\"/' /etc/csf/csf.conf 2>&1 && nohup csf -r > /dev/null 2>&1 & echo done", 10);
                 AuditLogger::log('CSF_DISABLE_TESTING', '', "CSF testing mode disabled");
                 $this->cache->forget('csf_firewall');
                 return ['success' => true, 'message' => 'CSF testing mode disabled and firewall restarted'];
@@ -1832,25 +1924,30 @@ class MonitorApi extends BaseApi {
 
     public function getNetworkConnections() {
         return $this->cache->remember('network_connections', 10, function() {
-            // Listening ports
-            $listening_raw = $this->cmd("ss -tlnp 2>/dev/null");
+            // Listening ports - use awk to extract reliably (ss output can be very wide and get truncated)
             $listening = [];
-            foreach ($listening_raw['output'] as $line) {
-                if (strpos($line, 'LISTEN') === false) continue;
-                if (preg_match('/LISTEN\s+\d+\s+([\d.*]+):(\d+)\s+.*?users:\(\("([^"]+)",pid=(\d+)/', $line, $m)) {
-                    $listening[] = [
-                        'address' => $m[1],
-                        'port' => (int)$m[2],
-                        'process' => $m[3],
-                        'pid' => (int)$m[4],
+            $suspicious_ports = [];
+            // Use hash lookups for efficiency in hot path
+            $common_ports = [22 => true, 80 => true, 443 => true, 3306 => true, 6379 => true, 9200 => true, 9300 => true, 8080 => true, 8443 => true];
+            $suspicious_port_list = [4444 => true, 5555 => true, 6666 => true, 7777 => true, 8888 => true, 9999 => true, 1337 => true, 31337 => true, 12345 => true];
+            
+            $ports_raw = $this->cmd("ss -tlnp 2>/dev/null | awk '/LISTEN/ {split(\$4, a, \":\"); port=a[length(a)]; proc=\$0; match(proc, /users:\\(\\(\"([^\"]+)\",pid=([0-9]+)/, m); if(m[1]) print port, m[1], m[2], \$4; else print port, \"unknown\", 0, \$4}'");
+            
+            foreach ($ports_raw['output'] as $line) {
+                if (preg_match('/^(\d+)\s+(\S+)\s+(\d+)\s+(.+)$/', $line, $m)) {
+                    $port = (int)$m[1];
+                    $port_info = [
+                        'address' => trim($m[4]),
+                        'port' => $port,
+                        'process' => $m[2],
+                        'pid' => (int)$m[3],
+                        'is_common' => isset($common_ports[$port]),
                     ];
-                } elseif (preg_match('/LISTEN\s+\d+\s+([\d.*]+):(\d+)\s+/', $line, $m)) {
-                    $listening[] = [
-                        'address' => $m[1],
-                        'port' => (int)$m[2],
-                        'process' => 'unknown',
-                        'pid' => 0,
-                    ];
+                    $listening[] = $port_info;
+                    
+                    if (isset($suspicious_port_list[$port])) {
+                        $suspicious_ports[] = $port_info;
+                    }
                 }
             }
 
@@ -1879,6 +1976,49 @@ class MonitorApi extends BaseApi {
             // Protocol summary
             $tcp_count = $this->safe_num($this->cmd_line("ss -t state established 2>/dev/null | tail -n +2 | wc -l", 5), 0);
             $udp_count = $this->safe_num($this->cmd_line("ss -u state established 2>/dev/null | tail -n +2 | wc -l", 5), 0);
+            
+            // Security analysis
+            $security_alerts = [];
+            
+            // Check for ports listening on all interfaces (0.0.0.0)
+            $exposed_ports = array_filter($listening, fn($p) => $p['address'] === '0.0.0.0' || $p['address'] === '*');
+            if (!empty($exposed_ports)) {
+                $exposed_port_nums = implode(', ', array_map(fn($p) => $p['port'], $exposed_ports));
+                $security_alerts[] = [
+                    'severity' => 'warning',
+                    'message' => "Ports listening on all interfaces: $exposed_port_nums",
+                    'type' => 'exposed_ports'
+                ];
+            }
+            
+            // Check for suspicious ports
+            if (!empty($suspicious_ports)) {
+                $suspicious_nums = implode(', ', array_map(fn($p) => $p['port'], $suspicious_ports));
+                $security_alerts[] = [
+                    'severity' => 'critical',
+                    'message' => "Suspicious ports detected: $suspicious_nums",
+                    'type' => 'suspicious_ports'
+                ];
+            }
+            
+            // Check for too many established connections (potential DDoS)
+            if ($total_established > 1000) {
+                $security_alerts[] = [
+                    'severity' => 'warning',
+                    'message' => "High number of established connections: $total_established",
+                    'type' => 'high_connections'
+                ];
+            }
+            
+            // Check for SYN flood (lots of SYN-RECV)
+            $syn_recv = array_filter($states, fn($s) => $s['state'] === 'SYN-RECV');
+            if (!empty($syn_recv) && reset($syn_recv)['count'] > 100) {
+                $security_alerts[] = [
+                    'severity' => 'critical',
+                    'message' => "Potential SYN flood: " . reset($syn_recv)['count'] . " connections in SYN-RECV",
+                    'type' => 'syn_flood'
+                ];
+            }
 
             return [
                 'listening_ports' => $listening,
@@ -1890,6 +2030,11 @@ class MonitorApi extends BaseApi {
                 ],
                 'connection_states' => $states,
                 'top_remote_ips' => $top_ips,
+                'security' => [
+                    'alerts' => $security_alerts,
+                    'suspicious_ports' => $suspicious_ports,
+                    'exposed_ports' => array_values($exposed_ports ?? []),
+                ],
                 'timestamp' => time()
             ];
         });
@@ -1900,6 +2045,73 @@ class MonitorApi extends BaseApi {
         $i = 0;
         while ($bytes >= 1024 && $i < count($units) - 1) { $bytes /= 1024; $i++; }
         return round($bytes, 2) . ' ' . $units[$i];
+    }
+
+    private function format_duration($seconds) {
+        if ($seconds < 60) return $seconds . 's';
+        if ($seconds < 3600) return floor($seconds / 60) . 'm ' . ($seconds % 60) . 's';
+        if ($seconds < 86400) return floor($seconds / 3600) . 'h ' . floor(($seconds % 3600) / 60) . 'm';
+        return floor($seconds / 86400) . 'd ' . floor(($seconds % 86400) / 3600) . 'h';
+    }
+
+    /**
+     * Invalidate all caches related to a specific site
+     */
+    private function invalidateSiteCaches($site) {
+        $this->cache->forget('sites');
+        $this->cache->forget('overview');
+        $this->cache->forget('master_cockpit');
+        $this->cache->forget('services_list');
+        $this->cache->forget("crons_$site");
+    }
+
+    private function detectQoderSessions() {
+        $result = [
+            'running' => false,
+            'pid' => null,
+            'port' => null,
+            'uptime' => null,
+            'version' => null,
+            'child_processes' => 0
+        ];
+
+        // Run ps once and parse in PHP
+        $qoder_procs = $this->cmd("ps -eo pid,etimes,args 2>/dev/null | grep '[q]oder-server'");
+        $main_proc = null;
+        $child_count = 0;
+        
+        foreach ($qoder_procs['output'] as $line) {
+            if (strpos($line, 'server-main.js') !== false && strpos($line, '--start-server') !== false) {
+                $main_proc = trim($line);
+            } else {
+                $child_count++;
+            }
+        }
+        
+        if (empty($main_proc)) return $result;
+
+        if (preg_match('/^\s*(\d+)\s+(\d+)\s+(.*)/', $main_proc, $m)) {
+            $pid = $m[1];
+            $uptime_seconds = (int)$m[2];
+            $cmd_line = $m[3];
+
+            // Extract port from command line
+            if (preg_match('/--port=(\d+)/', $cmd_line, $pm)) {
+                $result['port'] = $pm[1];
+            }
+
+            // Extract version from path
+            if (preg_match('/\.qoder-server\/bin\/([a-f0-9]+)/', $cmd_line, $vm)) {
+                $result['version'] = substr($vm[1], 0, 12);
+            }
+
+            $result['running'] = true;
+            $result['pid'] = $pid;
+            $result['uptime'] = $this->format_duration($uptime_seconds);
+            $result['child_processes'] = $child_count;
+        }
+
+        return $result;
     }
 
     private function cmd($c, $timeout=5) {

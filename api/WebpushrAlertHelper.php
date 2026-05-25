@@ -57,9 +57,9 @@ class WebpushrAlertHelper {
             return ['success' => false, 'error' => 'Webpushr not configured'];
         }
 
-        // Global cooldown: max one Webpushr alert every 90 seconds
+        // Global cooldown: max one Webpushr alert every 600 seconds (10 minutes)
         $cooldownFile = __DIR__ . '/data/webpushr_cooldown.json';
-        $cooldown = 90; // seconds
+        $cooldown = 600; // seconds (increased to 10 min to avoid API rate limits from frequent monitoring)
         $now = time();
         if (file_exists($cooldownFile)) {
             $cooldownData = @json_decode(file_get_contents($cooldownFile), true);
@@ -77,7 +77,7 @@ class WebpushrAlertHelper {
                 $state = @json_decode(file_get_contents($stateFile), true) ?: [];
             }
 
-            $dedupWindow = 600; // 10 minutes
+            $dedupWindow = 1800; // 30 minutes (increased from 10 min to reduce API calls)
             if (isset($state[$alertKey]) && ($now - $state[$alertKey]) < $dedupWindow) {
                 self::log('SUPPRESSED', "$alertKey - dedup window active");
                 return ['success' => false, 'suppressed' => true, 'key' => $alertKey];

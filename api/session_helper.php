@@ -2,16 +2,16 @@
 /**
  * Global Session Helper
  * Standardizes session handling across all entry points for HTTPS/Cloudflare compatibility
- * Extended session lifetime: 30 days with persistent session support
+ * Session lifetime: 12 hours with regeneration every 4 hours for security
  */
 
 if (!function_exists('start_secure_session')) {
     function start_secure_session() {
         if (session_status() === PHP_SESSION_NONE) {
-            // 30-day session lifetime
-            $sessionLifetime = 2592000;
+            // 12-hour session lifetime (reduced from 30 days for security)
+            $sessionLifetime = 43200; // 12 hours
             ini_set('session.gc_maxlifetime', $sessionLifetime);
-            ini_set('session.cookie_lifetime', $sessionLifetime);
+            ini_set('session.cookie_lifetime', 0); // Session cookie expires when browser closes
             ini_set('session.cache_limiter', '');
             
             header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0', true);
@@ -59,8 +59,8 @@ if (!function_exists('start_secure_session')) {
 
             session_start();
 
-            // Regenerate session ID every 24h to prevent fixation
-            if (isset($_SESSION['last_regeneration']) && (time() - $_SESSION['last_regeneration'] > 86400)) {
+            // Regenerate session ID every 4 hours to prevent fixation
+            if (isset($_SESSION['last_regeneration']) && (time() - $_SESSION['last_regeneration'] > 14400)) {
                 session_regenerate_id(true);
                 $_SESSION['last_regeneration'] = time();
             } elseif (!isset($_SESSION['last_regeneration'])) {
