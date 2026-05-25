@@ -12,7 +12,8 @@ import {
   Collapse,
   TextField,
   InputAdornment,
-  IconButton
+  IconButton,
+  Badge
 } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -50,6 +51,7 @@ import {
   Close,
   Task,
   Lan,
+  TrendingUp,
 } from '@mui/icons-material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -111,6 +113,14 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    label: 'Project Management',
+    icon: <TrendingUp />,
+    children: [
+      { path: '/tasks', label: 'Tasks', icon: <Task />, badge: taskBadgeCount },
+      { path: '/tools/audit', label: 'Audit Trail', icon: <AuditIcon /> },
+    ]
+  },
+  {
     label: 'Cloudflare',
     icon: <CloudIcon />,
     children: [
@@ -127,8 +137,6 @@ const navItems: NavItem[] = [
     children: [
       { path: '/tools/db-health', label: 'DB Health', icon: <DbIcon /> },
       { path: '/tools/users', label: 'User Management', icon: <Person /> },
-      { path: '/tasks', label: 'Tasks', icon: <Task /> },
-      { path: '/tools/audit', label: 'Audit Trail', icon: <AuditIcon /> },
       { path: '/tools/actions', label: 'Emergency Actions', icon: <ActionsIcon /> },
       { path: '/settings', label: 'Dashboard Settings', icon: <SettingsIcon /> },
     ]
@@ -166,6 +174,26 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
   const [forcedExpand, setForcedExpand] = useState<Record<string, boolean>>({});
+  const [taskBadgeCount, setTaskBadgeCount] = useState(0);
+
+  // Fetch pending task count for badge
+  useEffect(() => {
+    const fetchTaskCount = async () => {
+      try {
+        const response = await fetch('/api/tasks.php?action=stats');
+        if (response.ok) {
+          const stats = await response.json();
+          setTaskBadgeCount(stats.pending || 0);
+        }
+      } catch (e) {
+        // Silently ignore badge fetch errors
+      }
+    };
+    fetchTaskCount();
+    // Refresh every 2 minutes
+    const interval = setInterval(fetchTaskCount, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Debounce search input
   useEffect(() => {
@@ -399,13 +427,24 @@ export default function Sidebar({ onClose }: SidebarProps) {
                         </ListItemIcon>
                         <ListItemText 
                           primary={
-                            <Typography sx={{ 
-                              fontSize: '0.75rem', 
-                              fontWeight: isActive(child.path) ? 700 : 400,
-                              color: isActive(child.path) ? 'primary.light' : 'text.secondary'
-                            }}>
-                              {child.label}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Typography sx={{ 
+                                fontSize: '0.75rem', 
+                                fontWeight: isActive(child.path) ? 700 : 400,
+                                color: isActive(child.path) ? 'primary.light' : 'text.secondary'
+                              }}>
+                                {child.label}
+                              </Typography>
+                              {(child as any).badge > 0 && (
+                                <Badge
+                                  badgeContent={(child as any).badge}
+                                  color="error"
+                                  sx={{ ml: 1 }}
+                                >
+                                  <Box />
+                                </Badge>
+                              )}
+                            </Box>
                           } 
                         />
                       </ListItemButton>

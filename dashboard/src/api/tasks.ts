@@ -1,5 +1,43 @@
 import apiClient from './client';
 
+// Shared constants
+export const TASK_CATEGORIES = [
+  { value: 'general', label: 'General' },
+  { value: 'development', label: 'Development' },
+  { value: 'design', label: 'Design' },
+  { value: 'testing', label: 'Testing' },
+  { value: 'documentation', label: 'Documentation' },
+  { value: 'maintenance', label: 'Maintenance' },
+] as const;
+
+export const NOTE_CATEGORIES = [
+  { value: 'tuning', label: 'Tuning', icon: '🔧', color: 'info' },
+  { value: 'fix', label: 'Fix', icon: '🐛', color: 'error' },
+  { value: 'implementation', label: 'Implementation', icon: '🚀', color: 'success' },
+  { value: 'question', label: 'Question', icon: '❓', color: 'warning' },
+  { value: 'general', label: 'General', icon: '📝', color: 'default' },
+] as const;
+
+export const TASK_STATUSES = ['pending', 'in-progress', 'completed', 'cancelled'] as const;
+export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;
+
+export const getTaskStatusColor = (status: string): 'success' | 'info' | 'error' | 'default' => {
+  switch (status) {
+    case 'completed': return 'success';
+    case 'in-progress': return 'info';
+    case 'cancelled': return 'error';
+    default: return 'default';
+  }
+};
+
+export const getTaskPriorityColor = (priority: string): 'error' | 'warning' | 'default' => {
+  switch (priority) {
+    case 'high': return 'error';
+    case 'medium': return 'warning';
+    default: return 'default';
+  }
+};
+
 export interface Task {
   id: number;
   title: string;
@@ -53,8 +91,35 @@ export interface TaskStats {
   cancelled: number;
 }
 
-export async function fetchTasks(): Promise<Task[]> {
-  const { data } = await apiClient.get('/api/tasks.php?action=list');
+export interface TaskFilters {
+  status?: string;
+  priority?: string;
+  category?: string;
+  assigned_to?: string;
+  search?: string;
+  overdue?: boolean;
+  page?: number;
+  per_page?: number;
+  sort_field?: string;
+  sort_direction?: 'asc' | 'desc';
+}
+
+export async function fetchTasks(filters?: TaskFilters): Promise<{ tasks: Task[]; total: number; page: number; per_page: number; total_pages: number }> {
+  const params = new URLSearchParams();
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.priority) params.set('priority', filters.priority);
+  if (filters?.category) params.set('category', filters.category);
+  if (filters?.assigned_to) params.set('assigned_to', filters.assigned_to);
+  if (filters?.search) params.set('search', filters.search);
+  if (filters?.overdue) params.set('overdue', '1');
+  if (filters?.page) params.set('page', String(filters.page));
+  if (filters?.per_page) params.set('per_page', String(filters.per_page));
+  if (filters?.sort_field) params.set('sort_field', filters.sort_field);
+  if (filters?.sort_direction) params.set('sort_direction', filters.sort_direction);
+  
+  const queryString = params.toString();
+  const url = `/api/tasks.php?action=list${queryString ? '&' + queryString : ''}`;
+  const { data } = await apiClient.get(url);
   return data;
 }
 

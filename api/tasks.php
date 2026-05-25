@@ -132,8 +132,76 @@ try {
 
     switch ($action) {
         case 'list':
-            $stmt = $pdo->query("SELECT * FROM tasks ORDER BY created_at DESC");
-            echo json_encode($stmt->fetchAll());
+            // Support server-side filtering, sorting, and pagination
+            $where = [];
+            $params = [];
+            
+            // Filter by status
+            if (!empty($_GET['status'])) {
+                $where[] = "status = ?";
+                $params[] = $_GET['status'];
+            }
+            
+            // Filter by priority
+            if (!empty($_GET['priority'])) {
+                $where[] = "priority = ?";
+                $params[] = $_GET['priority'];
+            }
+            
+            // Filter by category
+            if (!empty($_GET['category'])) {
+                $where[] = "category = ?";
+                $params[] = $_GET['category'];
+            }
+            
+            // Filter by assigned_to
+            if (!empty($_GET['assigned_to'])) {
+                $where[] = "assigned_to = ?";
+                $params[] = $_GET['assigned_to'];
+            }
+            
+            // Search in title and assigned_to
+            if (!empty($_GET['search'])) {
+                $search = '%' . $_GET['search'] . '%';
+                $where[] = "(title LIKE ? OR assigned_to LIKE ?)";
+                $params[] = $search;
+                $params[] = $search;
+            }
+            
+            // Filter by overdue only
+            if (!empty($_GET['overdue']) && $_GET['overdue'] === '1') {
+                $where[] = "due_date < CURDATE() AND status NOT IN ('completed', 'cancelled')";
+            }
+            
+            $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+            
+            // Sorting
+            $allowedSortFields = ['title', 'status', 'priority', 'assigned_to', 'due_date', 'category', 'created_at', 'updated_at'];
+            $sortField = in_array($_GET['sort_field'] ?? 'created_at', $allowedSortFields) ? $_GET['sort_field'] : 'created_at';
+            $sortDirection = (isset($_GET['sort_direction']) && strtoupper($_GET['sort_direction']) === 'ASC') ? 'ASC' : 'DESC';
+            
+            // Pagination
+            $page = max(1, intval($_GET['page'] ?? 1));
+            $perPage = min(100, max(10, intval($_GET['per_page'] ?? 50))); // Clamp between 10 and 100
+            $offset = ($page - 1) * $perPage;
+            
+            // Get total count for pagination
+            $countStmt = $pdo->prepare("SELECT COUNT(*) FROM tasks $whereClause");
+            $countStmt->execute($params);
+            $total = $countStmt->fetchColumn();
+            
+            // Get filtered tasks
+            $stmt = $pdo->prepare("SELECT * FROM tasks $whereClause ORDER BY $sortField $sortDirection LIMIT $perPage OFFSET $offset");
+            $stmt->execute($params);
+            $tasks = $stmt->fetchAll();
+            
+            echo json_encode([
+                'tasks' => $tasks,
+                'total' => (int)$total,
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_pages' => ceil($total / $perPage),
+            ]);
             break;
 
         case 'get':

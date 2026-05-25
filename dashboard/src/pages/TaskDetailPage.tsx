@@ -2,8 +2,7 @@ import { Box, Typography, Card, CardContent, Button, Chip, TextField, IconButton
 import { ArrowBack, Delete, Send, CheckCircle, Edit, PushPin, Reply, Code, FormatQuote, MoreVert, Save, Close, AddPhotoAlternate, OpenInNew, KeyboardArrowRight, Link as LinkIcon, UnfoldMore, LinkOff } from '@mui/icons-material';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchTask, updateTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, fetchScreenshots, deleteScreenshot, forwardNote, setNoteStatus, uploadScreenshot, getTaskLinks, linkTask, unlinkTask, type Task, type TaskNote, type TaskActivity, type TaskScreenshot, type TaskLink } from '../api/tasks';
-import { fetchTasks, type Task as TaskType } from '../api/tasks';
+import { fetchTasks, fetchTask, updateTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, fetchScreenshots, deleteScreenshot, forwardNote, setNoteStatus, uploadScreenshot, getTaskLinks, linkTask, unlinkTask, type Task, type TaskNote, type TaskActivity, type TaskScreenshot, type TaskLink, type Task as TaskType, getTaskStatusColor, NOTE_CATEGORIES, TASK_CATEGORIES } from '../api/tasks';
 import { fetchUsers, type User } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import { usePermissions } from '../hooks/usePermissions';
@@ -68,6 +67,10 @@ export default function TaskDetailPage() {
   };
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  const getCategoryConfig = (category: string) => {
+    return NOTE_CATEGORIES.find(c => c.value === category) || NOTE_CATEGORIES[4]; // general is default
+  };
 
   const relativeTime = (dateStr: string) => {
     const now = new Date();
@@ -140,14 +143,6 @@ export default function TaskDetailPage() {
     }
 
     return elements;
-  };
-
-  const categoryConfig: Record<string, { color: string; label: string; icon: string }> = {
-    tuning: { color: 'info', label: 'Tuning', icon: '🔧' },
-    fix: { color: 'error', label: 'Fix', icon: '🐛' },
-    implementation: { color: 'success', label: 'Implementation', icon: '🚀' },
-    question: { color: 'warning', label: 'Question', icon: '❓' },
-    general: { color: 'default', label: 'General', icon: '📝' },
   };
 
   const handleAddNote = async () => {
@@ -367,7 +362,6 @@ export default function TaskDetailPage() {
 
   const tabs = ['Overview', 'Notes', 'Activity', 'Settings'];
   const priorityColor = (p: string) => p === 'high' ? 'error' : p === 'medium' ? 'warning' : 'default';
-  const statusColor = (s: string) => s === 'completed' ? 'success' : s === 'in-progress' ? 'primary' : s === 'cancelled' ? 'error' : 'default';
   const actionIcons: Record<string, string> = { created: '📝', updated: '✏️', status_changed: '🔄', commented: '💬', deleted: '🗑️' };
 
   return (
@@ -383,7 +377,7 @@ export default function TaskDetailPage() {
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Chip label={task.priority.toUpperCase()} size="small" color={priorityColor(task.priority)} sx={{ fontWeight: 700 }} />
-          <Chip label={task.status.toUpperCase().replace('-', ' ')} size="small" color={statusColor(task.status)} sx={{ fontWeight: 700, cursor: 'pointer' }} onClick={handleStatusToggle} title="Click to cycle status" />
+          <Chip label={task.status.toUpperCase().replace('-', ' ')} size="small" color={getTaskStatusColor(task.status)} sx={{ fontWeight: 700, cursor: 'pointer' }} onClick={handleStatusToggle} title="Click to cycle status" />
           {task.status !== 'completed' && <Tooltip title="Mark Complete"><IconButton size="small" color="success" onClick={handleStatusToggle}><CheckCircle /></IconButton></Tooltip>}
           {(task.created_by === currentUser || permissions?.can_update_any_task) && (
             <Tooltip title="Edit"><IconButton size="small" onClick={() => setEditing(!editing)}><Edit /></IconButton></Tooltip>
@@ -436,7 +430,7 @@ export default function TaskDetailPage() {
                         >
                           #{link.linked_task_id} - {link.linked_title}
                         </Link>
-                        <Chip label={link.linked_status.replace('-', ' ')} size="small" color={statusColor(link.linked_status)} sx={{ height: 18, fontSize: '0.55rem', ml: 'auto' }} />
+                        <Chip label={link.linked_status.replace('-', ' ')} size="small" color={getTaskStatusColor(link.linked_status)} sx={{ height: 18, fontSize: '0.55rem', ml: 'auto' }} />
                         <IconButton size="small" onClick={() => handleUnlinkTask(link.id)} sx={{ p: 0.25 }}>
                           <LinkOff sx={{ fontSize: 14, color: 'text.disabled' }} />
                         </IconButton>
@@ -502,13 +496,21 @@ export default function TaskDetailPage() {
             </Box>
           )}
           
-          {notes.map(note => {
+          {(() => {
+            // Pre-group replies by parent_id to avoid O(n^2) in render loop
+            const repliesByParentId = new Map<number, TaskNote[]>();
+            notes.forEach(note => {
+              if (note.parent_id) {
+                if (!repliesByParentId.has(note.parent_id)) repliesByParentId.set(note.parent_id, []);
+                repliesByParentId.get(note.parent_id)!.push(note);
+              }
+            });
+            return notes.map(note => {
             const isRoot = !note.parent_id;
             const isEditing = editingNoteId === note.id;
             const isReplying = replyingTo === note.id;
             const isOwn = note.author === currentUser;
-            const cat = categoryConfig[note.category] || categoryConfig.general;
-            const replies = note.parent_id ? [] : notes.filter(n => n.parent_id === note.id);
+            const cat = getCategoryConfig(note.category);
 
             return (
               <Box key={note.id} sx={{ ml: note.parent_id ? 4 : 0, borderLeft: note.parent_id ? '2px solid rgba(255,255,255,0.05)' : 'none', pl: note.parent_id ? 2 : 0 }}>
@@ -640,8 +642,8 @@ export default function TaskDetailPage() {
                 </Paper>
 
                 {/* Replies */}
-                {replies.map(reply => {
-                  const replyCat = categoryConfig[reply.category] || categoryConfig.general;
+                {(repliesByParentId.get(note.id) || []).map(reply => {
+                  const replyCat = getCategoryConfig(reply.category);
                   return (
                     <Paper key={reply.id} sx={{ mt: 1, p: 1.5, backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -659,7 +661,8 @@ export default function TaskDetailPage() {
                 })}
               </Box>
             );
-          })}
+            });
+          })()}
 
           {/* New Note Input */}
           <Paper sx={{ p: 2, backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -724,8 +727,8 @@ export default function TaskDetailPage() {
                         onChange={(e) => setNoteCategory(e.target.value as any)}
                         sx={{ fontSize: '0.72rem', height: 28 }}
                       >
-                        {Object.entries(categoryConfig).map(([key, cat]) => (
-                          <MuiMenuItem key={key} value={key} sx={{ fontSize: '0.75rem' }}>{cat.icon} {cat.label}</MuiMenuItem>
+                        {NOTE_CATEGORIES.map((cat) => (
+                          <MuiMenuItem key={cat.value} value={cat.value} sx={{ fontSize: '0.75rem' }}>{cat.icon} {cat.label}</MuiMenuItem>
                         ))}
                       </Select>
                     </FormControl>
@@ -793,7 +796,7 @@ export default function TaskDetailPage() {
               <FormControl fullWidth size="small">
                 <InputLabel>Category</InputLabel>
                 <Select value={editData.category} label="Category" onChange={(e) => setEditData({ ...editData, category: e.target.value })}>
-                  <MenuItem value="general">General</MenuItem><MenuItem value="development">Development</MenuItem><MenuItem value="design">Design</MenuItem><MenuItem value="testing">Testing</MenuItem><MenuItem value="documentation">Documentation</MenuItem><MenuItem value="maintenance">Maintenance</MenuItem>
+                  {TASK_CATEGORIES.map(cat => <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>)}
                 </Select>
               </FormControl>
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>

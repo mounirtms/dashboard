@@ -3,7 +3,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { Add, Edit, Delete, CheckCircle, Refresh, FilterList, MoreVert, Notes, Download, Person, LinkOff, Schedule } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchTasks, createTask, updateTask, deleteTask, fetchTaskStats, fetchTaskNotesCount, bulkUpdate, type Task, type TaskStats } from '../api/tasks';
+import { fetchTasks, createTask, updateTask, deleteTask, fetchTaskStats, fetchTaskNotesCount, bulkUpdate, type Task, type TaskStats, getTaskStatusColor, getTaskPriorityColor, TASK_CATEGORIES, TASK_STATUSES, TASK_PRIORITIES, type TaskFilters } from '../api/tasks';
 import { fetchUsers, type User } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
@@ -26,18 +26,37 @@ export default function TasksPage() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterAssignee, setFilterAssignee] = useState('');
+  const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const [myTasksOnly, setMyTasksOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [bulkActionMenu, setBulkActionMenu] = useState<null | HTMLElement>(null);
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [moreAnchor, setMoreAnchor] = useState<null | HTMLElement>(null);
   const [formData, setFormData] = useState({ title: '', description: '', priority: 'medium' as any, status: 'pending' as any, assigned_to: '', due_date: '', category: 'general' });
+  const [pagination, setPagination] = useState({ page: 1, perPage: 25, total: 0, totalPages: 0 });
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [t, s, u, nc] = await Promise.all([fetchTasks(), fetchTaskStats(), fetchUsers(), fetchTaskNotesCount()]);
-      setTasks(t);
+      const filters: TaskFilters = {
+        page: pagination.page,
+        per_page: pagination.perPage,
+        sort_field: 'created_at',
+        sort_direction: 'desc',
+      };
+      if (filterStatus) filters.status = filterStatus;
+      if (filterPriority) filters.priority = filterPriority;
+      if (filterCategory) filters.category = filterCategory;
+      if (myTasksOnly) filters.assigned_to = currentUsername;
+      else if (filterAssignee) filters.assigned_to = filterAssignee;
+      if (search) filters.search = search;
+      if (showOverdueOnly) filters.overdue = true;
+
+      const [result, s, u, nc] = await Promise.all([fetchTasks(filters), fetchTaskStats(), fetchUsers(), fetchTaskNotesCount()]);
+      setTasks(result.tasks);
+      setPagination({ page: result.page, perPage: result.per_page, total: result.total, totalPages: result.total_pages });
       setStats(s);
       setUsers(u);
       setNotesCount(nc);
@@ -45,7 +64,7 @@ export default function TasksPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [filterStatus, filterPriority, filterCategory, filterAssignee, myTasksOnly, showOverdueOnly, search, pagination.page, pagination.perPage]);
 
   const openCreate = () => {
     setEditingTask(null);
@@ -96,17 +115,9 @@ export default function TasksPage() {
     }
   };
 
-  const filteredTasks = tasks.filter(t => {
-    if (myTasksOnly && t.assigned_to !== currentUsername) return false;
-    if (filterStatus && t.status !== filterStatus) return false;
-    if (filterPriority && t.priority !== filterPriority) return false;
-    if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !t.assigned_to?.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
-
   const exportCSV = useCallback(() => {
     const headers = ['ID', 'Title', 'Priority', 'Status', 'Assigned To', 'Due Date', 'Category', 'Created'];
-    const rows = filteredTasks.map(t => [
+    const rows = tasks.map(t => [
       t.id,
       `"${t.title.replace(/"/g, '""')}"`,
       t.priority,
@@ -124,8 +135,8 @@ export default function TasksPage() {
     a.download = `tasks_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    setSnackbar({ open: true, message: `${filteredTasks.length} tasks exported`, severity: 'success' });
-  }, [filteredTasks]);
+    setSnackbar({ open: true, message: `${tasks.length} tasks exported`, severity: 'success' });
+  }, [tasks]);
 
   const handleBulkAction = async (action: string, value?: string) => {
     if (selectedIds.length === 0) return;
@@ -146,9 +157,6 @@ export default function TasksPage() {
       setBulkActionMenu(null);
     }
   };
-
-  const priorityColor = (p: string) => p === 'high' ? 'error' : p === 'medium' ? 'warning' : 'default';
-  const statusColor = (s: string) => s === 'completed' ? 'success' : s === 'in-progress' ? 'info' : s === 'cancelled' ? 'error' : 'default';
 
   const isOverdue = (task: Task) => {
     if (!task.due_date || task.status === 'completed' || task.status === 'cancelled') return false;
@@ -176,8 +184,8 @@ export default function TasksPage() {
     { field: 'title', headerName: 'Task', flex: 1.5, renderCell: (p: GridRenderCellParams) => (
       <Typography variant="body2" sx={{ fontWeight: 600, cursor: 'pointer', '&:hover': { color: 'primary.main' } }} onClick={() => navigate(`/tasks/${p.row.id}`)}>{p.value}</Typography>
     )},
-    { field: 'priority', headerName: 'Priority', width: 100, renderCell: (p: GridRenderCellParams) => <Chip label={p.value.toUpperCase()} size="small" color={priorityColor(p.value)} sx={{ fontWeight: 700, fontSize: '0.6rem' }} /> },
-    { field: 'status', headerName: 'Status', width: 120, renderCell: (p: GridRenderCellParams) => <StatusBadge label={p.value.toUpperCase().replace('-', ' ')} color={statusColor(p.value)} /> },
+    { field: 'priority', headerName: 'Priority', width: 100, renderCell: (p: GridRenderCellParams) => <Chip label={p.value.toUpperCase()} size="small" color={getTaskPriorityColor(p.value)} sx={{ fontWeight: 700, fontSize: '0.6rem' }} /> },
+    { field: 'status', headerName: 'Status', width: 120, renderCell: (p: GridRenderCellParams) => <StatusBadge label={p.value.toUpperCase().replace('-', ' ')} color={getTaskStatusColor(p.value)} /> },
     { field: 'assigned_to', headerName: 'Assigned', width: 120, renderCell: (p: GridRenderCellParams) => (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         {p.value ? <Avatar sx={{ width: 20, height: 20, fontSize: '0.6rem', bgcolor: 'primary.main' }}>{p.value.charAt(0).toUpperCase()}</Avatar> : null}
@@ -286,8 +294,27 @@ export default function TasksPage() {
               </Select>
             </FormControl>
 
+            {/* Category Filter */}
+            <FormControl size="small" sx={{ minWidth: 130 }}>
+              <Select value={filterCategory} displayEmpty onChange={(e) => setFilterCategory(e.target.value)} sx={{ fontSize: '0.75rem' }}>
+                <MenuItem value="">All Categories</MenuItem>
+                {TASK_CATEGORIES.map(cat => <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>)}
+              </Select>
+            </FormControl>
+
+            {/* Overdue Filter */}
+            <Chip
+              label="Overdue"
+              onClick={() => setShowOverdueOnly(!showOverdueOnly)}
+              color={showOverdueOnly ? 'error' : 'default'}
+              variant={showOverdueOnly ? 'filled' : 'outlined'}
+              clickable
+              size="small"
+              sx={{ fontSize: '0.7rem', height: 24 }}
+            />
+
             <Tooltip title="Clear Filters">
-              <IconButton size="small" onClick={() => { setSearch(''); setFilterStatus(''); setFilterPriority(''); setMyTasksOnly(false); }}>
+              <IconButton size="small" onClick={() => { setSearch(''); setFilterStatus(''); setFilterPriority(''); setFilterCategory(''); setFilterAssignee(''); setMyTasksOnly(false); setShowOverdueOnly(false); }}>
                 <FilterList sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
@@ -311,13 +338,35 @@ export default function TasksPage() {
       {/* Bulk Action Bar */}
       {selectedIds.length > 0 && (
         <Card sx={{ mb: 2, py: 1, px: 2, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.3)' }}>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
             <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main' }}>{selectedIds.length} selected</Typography>
             <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', mr: 0.5 }}>Set status:</Typography>
               <Button size="small" variant="outlined" onClick={() => handleBulkAction('status', 'in-progress')} disabled={bulkUpdating}>In Progress</Button>
               <Button size="small" variant="outlined" color="success" onClick={() => handleBulkAction('status', 'completed')} disabled={bulkUpdating}>Complete</Button>
               <Button size="small" variant="outlined" color="error" onClick={() => handleBulkAction('status', 'cancelled')} disabled={bulkUpdating}>Cancel</Button>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', mr: 0.5 }}>Set priority:</Typography>
+              <Button size="small" variant="outlined" color="error" onClick={() => handleBulkAction('priority', 'high')} disabled={bulkUpdating}>High</Button>
+              <Button size="small" variant="outlined" color="warning" onClick={() => handleBulkAction('priority', 'medium')} disabled={bulkUpdating}>Medium</Button>
+              <Button size="small" variant="outlined" onClick={() => handleBulkAction('priority', 'low')} disabled={bulkUpdating}>Low</Button>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', mr: 0.5 }}>Assign to:</Typography>
+              <Select
+                size="small"
+                value=""
+                displayEmpty
+                onChange={(e) => { if (e.target.value) handleBulkAction('assigned_to', e.target.value); }}
+                sx={{ fontSize: '0.75rem', height: 24, minWidth: 120 }}
+              >
+                <MenuItem value="" disabled>Unchanged</MenuItem>
+                <MenuItem value="">Unassigned</MenuItem>
+                {users.filter(u => u.is_active).map(u => (
+                  <MenuItem key={u.id} value={u.username}>{u.full_name || u.username}</MenuItem>
+                ))}
+              </Select>
             </Box>
             <IconButton size="small" onClick={() => setSelectedIds([])} sx={{ ml: 'auto' }}>
               <LinkOff sx={{ fontSize: 16 }} />
@@ -329,7 +378,7 @@ export default function TasksPage() {
       {/* DataGrid */}
       <Card sx={{ flexGrow: 1, mb: 2 }}>
         <DataGrid 
-          rows={filteredTasks} 
+          rows={tasks} 
           columns={columns} 
           getRowId={(r) => r.id} 
           density="compact" 
@@ -397,7 +446,7 @@ export default function TasksPage() {
               </Select></FormControl>
               <TextField label="Due Date" fullWidth size="small" type="date" value={formData.due_date} onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
             </Box>
-            <FormControl fullWidth size="small"><InputLabel>Category</InputLabel><Select value={formData.category} label="Category" onChange={(e) => setFormData({ ...formData, category: e.target.value })}><MenuItem value="general">General</MenuItem><MenuItem value="development">Development</MenuItem><MenuItem value="design">Design</MenuItem><MenuItem value="testing">Testing</MenuItem><MenuItem value="documentation">Documentation</MenuItem><MenuItem value="maintenance">Maintenance</MenuItem></Select></FormControl>
+            <FormControl fullWidth size="small"><InputLabel>Category</InputLabel><Select value={formData.category} label="Category" onChange={(e) => setFormData({ ...formData, category: e.target.value })}>{TASK_CATEGORIES.map(cat => <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>)}</Select></FormControl>
           </Box>
         </DialogContent>
         <DialogActions>
