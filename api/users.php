@@ -10,8 +10,8 @@ require_once __DIR__ . '/PermissionChecker.php';
 require_once __DIR__ . '/Mailer.php';
 Config::load();
 
-// Authentication check (Admin only)
-if (empty($_SESSION['logged_in']) || !PermissionChecker::isAdmin()) {
+// Authentication check (requires can_manage_users permission)
+if (empty($_SESSION['logged_in']) || !PermissionChecker::hasPermission('can_manage_users')) {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized access']);
     exit;
@@ -241,7 +241,15 @@ try {
             break;
 
         case 'toggle_status':
-            $id = $_GET['id'] ?? 0;
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true) ?? [];
+            $id = $input['id'] ?? 0;
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'User ID is required']);
+                break;
+            }
+
             $stmt = $pdo->prepare("UPDATE users SET is_active = 1 - is_active WHERE id = ?");
             $stmt->execute([$id]);
 

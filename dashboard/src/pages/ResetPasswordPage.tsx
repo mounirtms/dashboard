@@ -3,8 +3,7 @@ import { Box, Typography, TextField, Button, Card, CardContent, CircularProgress
 import { Lock, Visibility, VisibilityOff, CheckCircle } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client.ts';
-
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\+\-=\[\]/\\~`;]).{8,}$/;
+import { PASSWORD_REGEX, PASSWORD_REQUIREMENTS } from '../utils/validation';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -50,8 +49,8 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError(null);
 
-    if (!passwordRegex.test(newPassword)) {
-      setError('Password must be at least 8 characters with uppercase, lowercase, number, and special character.');
+    if (!PASSWORD_REGEX.test(newPassword)) {
+      setError(PASSWORD_REQUIREMENTS);
       return;
     }
     if (newPassword !== confirmPassword) {

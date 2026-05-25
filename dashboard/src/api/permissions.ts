@@ -18,6 +18,7 @@ export interface RolePermissions {
   can_delete_own_notes: boolean;
   can_delete_any_note: boolean;
   can_pin_notes: boolean;
+  can_add_task_notes: boolean;
   can_manage_users: boolean;
   // Push notification permissions
   can_access_push_notifications: boolean;

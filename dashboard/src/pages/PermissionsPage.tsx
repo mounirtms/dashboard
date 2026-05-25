@@ -13,6 +13,7 @@ const PERMISSION_GROUPS = [
       { key: 'can_access_cache_control', label: 'Cache Control' },
       { key: 'can_access_process_explorer', label: 'Process Explorer' },
       { key: 'can_access_permissions_page', label: 'Permissions Matrix' },
+      { key: 'can_access_cloudflare', label: 'Cloudflare Management' },
     ] as const,
   },
   {
@@ -22,6 +23,7 @@ const PERMISSION_GROUPS = [
       { key: 'can_update_own_tasks', label: 'Update own tasks' },
       { key: 'can_update_any_task', label: 'Update any task' },
       { key: 'can_delete_tasks', label: 'Delete tasks' },
+      { key: 'can_add_task_notes', label: 'Add task notes/screenshots' },
     ] as const,
   },
   {
@@ -164,7 +166,7 @@ export default function PermissionsPage() {
       <Card>
         <CardContent sx={{ py: 2 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>Role Descriptions</Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 2 }}>
             <Box>
               <Chip label="Admin" size="small" color="error" sx={{ mb: 1, fontWeight: 700 }} />
               <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>Full access to all pages, tasks, notes, and user management.</Typography>
@@ -180,6 +182,10 @@ export default function PermissionsPage() {
             <Box>
               <Chip label="Viewer" size="small" sx={{ mb: 1, fontWeight: 700 }} />
               <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>Read-only access to most pages. Can create tasks and manage own notes.</Typography>
+            </Box>
+            <Box>
+              <Chip label="Marketing" size="small" color="secondary" sx={{ mb: 1, fontWeight: 700 }} />
+              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>Can manage push notifications, view subscriber analytics, and manage segments. No task or user access.</Typography>
             </Box>
           </Box>
         </CardContent>

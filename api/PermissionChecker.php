@@ -30,6 +30,7 @@ class PermissionChecker {
         'can_delete_own_notes',
         'can_delete_any_note',
         'can_pin_notes',
+        'can_add_task_notes',
         'can_manage_users',
         // Push notification permissions
         'can_access_push_notifications',

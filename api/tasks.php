@@ -477,6 +477,12 @@ try {
             break;
 
         case 'bulk_update':
+            if (!PermissionChecker::hasPermission('can_update_any_task')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to bulk update tasks']);
+                break;
+            }
+
             $rawInput = file_get_contents('php://input');
             $input = json_decode($rawInput, true) ?? [];
 
@@ -566,6 +572,12 @@ $taskListItems
             break;
 
         case 'link_task':
+            if (!PermissionChecker::hasPermission('can_update_any_task')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to link tasks']);
+                break;
+            }
+
             $rawInput = file_get_contents('php://input');
             $input = json_decode($rawInput, true) ?? [];
 
@@ -621,6 +633,12 @@ $taskListItems
             break;
 
         case 'unlink_task':
+            if (!PermissionChecker::hasPermission('can_update_any_task')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to unlink tasks']);
+                break;
+            }
+
             $rawInput = file_get_contents('php://input');
             $input = json_decode($rawInput, true) ?? [];
 
@@ -952,6 +970,15 @@ $taskListItems
                 break;
             }
 
+            // Check permission: note author or can_edit_any_note
+            $isAuthor = ($note['author'] === $currentUser);
+            $canEditAny = PermissionChecker::hasPermission('can_edit_any_note');
+            if (!$isAuthor && !$canEditAny) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You can only forward your own notes']);
+                break;
+            }
+
             // Create forwarded note on target task
             $forwardedContent = "[Forwarded from Task #{$note['task_id']} by {$currentUser}]\n\n" . $note['content'];
             $stmt = $pdo->prepare("INSERT INTO task_notes (task_id, author, content, category, is_pinned, status, parent_id) VALUES (?, ?, ?, ?, 0, 'active', ?)");
@@ -985,12 +1012,21 @@ $taskListItems
                 break;
             }
 
-            $stmt = $pdo->prepare("SELECT task_id FROM task_notes WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT task_id, author FROM task_notes WHERE id = ?");
             $stmt->execute([$id]);
             $noteData = $stmt->fetch();
             if (!$noteData) {
                 http_response_code(404);
                 echo json_encode(['error' => 'Note not found']);
+                break;
+            }
+
+            // Check permission: note author or can_edit_any_note
+            $isAuthor = ($noteData['author'] === $currentUser);
+            $canEditAny = PermissionChecker::hasPermission('can_edit_any_note');
+            if (!$isAuthor && !$canEditAny) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You can only change status of your own notes']);
                 break;
             }
 

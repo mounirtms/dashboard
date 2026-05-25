@@ -60,7 +60,7 @@ export async function resetUserPassword(id: number): Promise<any> {
 }
 
 export async function toggleUserStatus(id: number): Promise<any> {
-  const { data } = await apiClient.get(`/api/users.php?action=toggle_status&id=${id}`);
+  const { data } = await apiClient.post('/api/users.php?action=toggle_status', { id });
   return data;
 }
 

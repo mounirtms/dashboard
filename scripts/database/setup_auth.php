@@ -39,7 +39,7 @@ try {
             password_hash VARCHAR(255) NOT NULL,
             email VARCHAR(100) DEFAULT '',
             full_name VARCHAR(100) DEFAULT '',
-            role ENUM('admin', 'viewer') DEFAULT 'viewer',
+            role ENUM('admin', 'editor', 'moderator', 'viewer', 'marketing') DEFAULT 'viewer',
             is_active TINYINT(1) DEFAULT 1,
             last_login DATETIME NULL,
             login_attempts INT UNSIGNED DEFAULT 0,
@@ -85,13 +85,68 @@ try {
     ");
     echo "   Table created.\n\n";
 
+    // Create role_permissions table
+    echo "5. Creating 'role_permissions' table...\n";
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS role_permissions (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            role ENUM('admin', 'editor', 'moderator', 'viewer', 'marketing') NOT NULL UNIQUE,
+            can_access_users_page TINYINT(1) DEFAULT 0,
+            can_access_settings_page TINYINT(1) DEFAULT 0,
+            can_access_emergency_actions TINYINT(1) DEFAULT 0,
+            can_access_cache_control TINYINT(1) DEFAULT 0,
+            can_access_process_explorer TINYINT(1) DEFAULT 0,
+            can_access_permissions_page TINYINT(1) DEFAULT 0,
+            can_access_cloudflare TINYINT(1) DEFAULT 0,
+            can_create_tasks TINYINT(1) DEFAULT 0,
+            can_update_own_tasks TINYINT(1) DEFAULT 0,
+            can_update_any_task TINYINT(1) DEFAULT 0,
+            can_delete_tasks TINYINT(1) DEFAULT 0,
+            can_edit_own_notes TINYINT(1) DEFAULT 0,
+            can_edit_any_note TINYINT(1) DEFAULT 0,
+            can_delete_own_notes TINYINT(1) DEFAULT 0,
+            can_delete_any_note TINYINT(1) DEFAULT 0,
+            can_pin_notes TINYINT(1) DEFAULT 0,
+            can_add_task_notes TINYINT(1) DEFAULT 0,
+            can_manage_users TINYINT(1) DEFAULT 0,
+            can_access_push_notifications TINYINT(1) DEFAULT 0,
+            can_send_notifications TINYINT(1) DEFAULT 0,
+            can_view_subscribers TINYINT(1) DEFAULT 0,
+            can_manage_segments TINYINT(1) DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_role (role)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+    echo "   Table created.\n\n";
+
+    // Insert default roles
+    echo "6. Setting up default role permissions...\n";
+    $roles = ['admin', 'editor', 'moderator', 'viewer', 'marketing'];
+    foreach ($roles as $role) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM role_permissions WHERE role = ?");
+        $stmt->execute([$role]);
+        if ($stmt->fetchColumn() == 0) {
+            $pdo->prepare("INSERT INTO role_permissions (role) VALUES (?)")->execute([$role]);
+            echo "   Created role: $role\n";
+        }
+    }
+    echo "   Roles ready.\n\n";
+
+    // Set admin to full access
+    echo "7. Setting admin full access...\n";
+    $columns = $pdo->query("SHOW COLUMNS FROM role_permissions LIKE 'can_%'")->fetchAll(PDO::FETCH_COLUMN);
+    $setClauses = implode(' = 1, ', $columns) . ' = 1';
+    $pdo->exec("UPDATE role_permissions SET $setClauses WHERE role = 'admin'");
+    echo "   Admin full access set.\n\n";
+
     // Check if admin user already exists
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
     $stmt->execute([DEFAULT_USERNAME]);
     $count = $stmt->fetchColumn();
 
     if ($count == 0) {
-        echo "5. Creating default admin user...\n";
+        echo "8. Creating default admin user...\n";
         $hash = password_hash(DEFAULT_PASSWORD, PASSWORD_BCRYPT, ['cost' => 12]);
         $stmt = $pdo->prepare("INSERT INTO users (username, password_hash, role, full_name) VALUES (?, ?, 'admin', 'Administrator')");
         $stmt->execute([DEFAULT_USERNAME, $hash]);

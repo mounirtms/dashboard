@@ -5,8 +5,7 @@ import { useState, useEffect } from 'react';
 import { fetchUsers, createUser, updateUser, deleteUser, resetUserPassword, toggleUserStatus, type CreateUserInput, type UpdateUserInput, type UserRole } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
-
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\+\-=\[\]/\\~`;]).{8,}$/;
+import { validatePassword, validatePasswordMatch } from '../utils/validation';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -74,11 +73,13 @@ export default function UsersPage() {
     if (!formFullName.trim()) {
       errors.full_name = 'Full name is required';
     }
-    if (!passwordRegex.test(formPassword)) {
-      errors.password = 'Min 8 chars, uppercase, lowercase, number, special char';
+    const pwError = validatePassword(formPassword);
+    if (pwError) {
+      errors.password = pwError;
     }
-    if (formPassword !== formConfirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+    const matchError = validatePasswordMatch(formPassword, formConfirmPassword);
+    if (matchError) {
+      errors.confirmPassword = matchError;
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;

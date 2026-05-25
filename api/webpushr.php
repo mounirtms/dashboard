@@ -29,6 +29,15 @@ require_once __DIR__ . '/config.php';
 $config = Config::load();
 $webpushrConfig = $config['webpushr'] ?? [];
 
+// Permission helper
+function requirePermission($permission) {
+    if (!PermissionChecker::hasPermission($permission)) {
+        http_response_code(403);
+        echo json_encode(['error' => "Permission required: $permission"]);
+        exit;
+    }
+}
+
 // Database connection for subscription management
 function getAuthDb() {
     static $pdo = null;
@@ -160,6 +169,7 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 switch ($action) {
     case 'send':
+        requirePermission('can_send_notifications');
         $rawInput = file_get_contents('php://input');
         $input = json_decode($rawInput, true) ?? $_POST;
         
@@ -229,6 +239,7 @@ switch ($action) {
         break;
     
     case 'send_test':
+        requirePermission('can_send_notifications');
         $env = $_POST['env'] ?? 'production';
         $title = $_POST['title'] ?? '🧪 Test Notification';
         $message = $_POST['message'] ?? 'This is a test push notification from the dashboard.';
@@ -255,6 +266,7 @@ switch ($action) {
         break;
     
     case 'stats':
+        requirePermission('can_view_subscribers');
         // Fetch stats from Webpushr API for the default environment
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
@@ -303,6 +315,7 @@ switch ($action) {
         break;
     
     case 'segments':
+        requirePermission('can_manage_segments');
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
         if (!$envConfig) {
@@ -345,6 +358,7 @@ switch ($action) {
         break;
     
     case 'send_bulk':
+        requirePermission('can_send_notifications');
         $env = $_POST['env'] ?? 'production';
         $notifications = json_decode($_POST['notifications'] ?? '[]', true);
         
@@ -392,6 +406,7 @@ switch ($action) {
         break;
     
     case 'send_scheduled':
+        requirePermission('can_send_notifications');
         $env = $_POST['env'] ?? 'production';
         $title = $_POST['title'] ?? '';
         $message = $_POST['message'] ?? '';
@@ -551,6 +566,7 @@ switch ($action) {
         break;
     
     case 'delivery_stats':
+        requirePermission('can_view_subscribers');
         // Fetch delivery/analytics stats from WebPushr
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
@@ -569,6 +585,7 @@ switch ($action) {
         break;
     
     case 'subscriber_analytics':
+        requirePermission('can_view_subscribers');
         // Fetch subscriber count and analytics
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
@@ -609,6 +626,7 @@ switch ($action) {
         break;
     
     case 'get_subscribers':
+        requirePermission('can_view_subscribers');
         // Get list of subscribers with pagination and filtering
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
@@ -659,6 +677,7 @@ switch ($action) {
         break;
     
     case 'get_geo_analytics':
+        requirePermission('can_view_subscribers');
         // Get geographic breakdown (country/city) from subscribers
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
@@ -708,6 +727,7 @@ switch ($action) {
         break;
     
     case 'get_device_analytics':
+        requirePermission('can_view_subscribers');
         // Get device type breakdown
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
@@ -741,6 +761,7 @@ switch ($action) {
         break;
     
     case 'get_browser_analytics':
+        requirePermission('can_view_subscribers');
         // Get browser breakdown
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
@@ -774,6 +795,7 @@ switch ($action) {
         break;
     
     case 'get_os_analytics':
+        requirePermission('can_view_subscribers');
         // Get operating system breakdown
         $env = $_GET['env'] ?? 'production';
         $envConfig = getEnvConfig($env);
