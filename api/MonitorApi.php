@@ -2114,6 +2114,201 @@ class MonitorApi extends BaseApi {
         return $result;
     }
 
+    /**
+     * Get per-user activity monitoring data
+     */
+    public function getUserActivity() {
+        return $this->cache->remember('user_activity', 30, function() {
+            $db = $this->getDb();
+            $knownUsers = ['dev', 'beta', 'technadminy7', 'dnd', 'dashboard', 'pim'];
+            $users = [];
+
+            foreach ($knownUsers as $username) {
+                $homeDir = "/home/$username";
+                $userData = [
+                    'username' => $username,
+                    'home_exists' => is_dir($homeDir),
+                ];
+
+                // Disk usage with file-based cache (5 min TTL)
+                $cacheFile = "/tmp/user_disk_{$username}.txt";
+                if (is_dir($homeDir)) {
+                    if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < 300) {
+                        $userData['disk_usage'] = trim(@file_get_contents($cacheFile));
+                    } else {
+                        $disk = $this->cmd_line("timeout 5 du -sm $homeDir 2>/dev/null | awk '{print \$1\"M\"}'", 6);
+                        $userData['disk_usage'] = $disk ?: '—';
+                        if ($disk) @file_put_contents($cacheFile, $disk);
+                    }
+                } else {
+                    $userData['disk_usage'] = 'N/A';
+                }
+
+                // Process count
+                $userData['process_count'] = (int)$this->cmd_line("ps -u $username --no-headers 2>/dev/null | wc -l", 2);
+
+                // SSH sessions
+                $who = $this->cmd("who 2>/dev/null | grep '^$username '");
+                $userData['ssh_sessions'] = count($who['output'] ?? []);
+                $userData['ssh_details'] = $who['output'] ?? [];
+
+                // Dashboard user info
+                try {
+                    $db->select_db('dashboard_auth');
+                    $stmt = $db->prepare("SELECT id, username, full_name, role, last_login, is_active, created_at FROM users WHERE username = ?");
+                    $stmt->execute([$username]);
+                    $dashUser = $stmt->get_result()->fetch_assoc();
+                    if ($dashUser) {
+                        $userData['dashboard_user'] = $dashUser;
+                        // Active session count
+                        $stmt2 = $db->prepare("SELECT COUNT(*) as cnt FROM sessions WHERE user_id = ?");
+                        $stmt2->execute([$dashUser['id']]);
+                        $sessCount = $stmt2->get_result()->fetch_assoc();
+                        $userData['active_sessions'] = (int)($sessCount['cnt'] ?? 0);
+                    } else {
+                        $userData['active_sessions'] = 0;
+                    }
+                } catch (Exception $e) {
+                    $userData['active_sessions'] = 0;
+                }
+
+                // Last system login from /var/log/secure
+                $userData['last_system_login'] = $this->cmd_line("grep 'Accepted.*$username' /var/log/secure 2>/dev/null | tail -1 | awk '{print \$1, \$2, \$3}'", 2) ?: '—';
+
+                $users[] = $userData;
+            }
+
+            // Active dashboard sessions
+            $sessions = [];
+            try {
+                $db->select_db('dashboard_auth');
+                $res = $db->query("
+                    SELECT s.*, u.username, u.role 
+                    FROM sessions s 
+                    LEFT JOIN users u ON s.user_id = u.id 
+                    ORDER BY s.last_activity DESC 
+                    LIMIT 50
+                ");
+                if ($res) {
+                    while ($row = $res->fetch_assoc()) {
+                        $sessions[] = $row;
+                    }
+                }
+            } catch (Exception $e) {}
+
+            // Global stats
+            $totalSshUsers = (int)$this->cmd_line("who | wc -l", 2);
+            $totalProcs = (int)$this->cmd_line("ps -e --no-headers | wc -l", 2);
+            $load = sys_getloadavg();
+
+            return [
+                'users' => $users,
+                'sessions' => $sessions,
+                'global' => [
+                    'total_ssh_users' => $totalSshUsers,
+                    'total_processes' => $totalProcs,
+                    'load_1min' => round($load[0], 2),
+                    'load_5min' => round($load[1], 2),
+                    'load_15min' => round($load[2], 2),
+                    'timestamp' => time()
+                ]
+            ];
+        });
+    }
+
+    /**
+     * Get bash history for a specific user
+     */
+    public function getBashHistory() {
+        $username = $_GET['username'] ?? '';
+
+        if (empty($username)) {
+            return ['error' => 'Username required'];
+        }
+
+        // Prevent path traversal
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+            return ['error' => 'Invalid username'];
+        }
+
+        $homeDir = "/home/$username";
+        $bashHistory = "$homeDir/.bash_history";
+
+        if (!is_file($bashHistory)) {
+            // Try alternative locations
+            $alternatives = [
+                "$homeDir/.bash_history",
+                "/root/.bash_history",
+            ];
+            foreach ($alternatives as $alt) {
+                if (is_file($alt)) {
+                    $bashHistory = $alt;
+                    break;
+                }
+            }
+            if (!is_file($bashHistory)) {
+                return [
+                    'username' => $username,
+                    'history' => [],
+                    'message' => 'No bash history found',
+                    'path' => "$homeDir/.bash_history"
+                ];
+            }
+        }
+
+        $lines = min((int)($_GET['lines'] ?? 100), 500);
+        $offset = max((int)($_GET['offset'] ?? 0), 0);
+
+        $rawLines = @file($bashHistory, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if ($rawLines === false) {
+            return ['error' => 'Cannot read history file'];
+        }
+
+        $commands = [];
+        $currentCmd = '';
+        $currentTimestamp = null;
+
+        foreach (array_reverse($rawLines) as $line) {
+            if (preg_match('/^#(\d{10})$/', $line, $m)) {
+                if ($currentCmd !== '') {
+                    $commands[] = [
+                        'timestamp' => $currentTimestamp ? date('Y-m-d H:i:s', (int)$currentTimestamp) : 'unknown',
+                        'epoch' => $currentTimestamp,
+                        'command' => $currentCmd,
+                    ];
+                }
+                $currentTimestamp = $m[1];
+                $currentCmd = '';
+            } else {
+                if ($currentCmd !== '') {
+                    $currentCmd = $line . "\n" . $currentCmd;
+                } else {
+                    $currentCmd = $line;
+                }
+            }
+        }
+        if ($currentCmd !== '') {
+            $commands[] = [
+                'timestamp' => $currentTimestamp ? date('Y-m-d H:i:s', (int)$currentTimestamp) : 'unknown',
+                'epoch' => $currentTimestamp,
+                'command' => $currentCmd,
+            ];
+        }
+
+        $total = count($commands);
+        $paged = array_slice($commands, $offset, $lines);
+
+        return [
+            'username' => $username,
+            'path' => $bashHistory,
+            'history' => $paged,
+            'total' => $total,
+            'offset' => $offset,
+            'lines' => $lines,
+            'has_more' => ($offset + $lines) < $total,
+        ];
+    }
+
     private function cmd($c, $timeout=5) {
         $desc = [0=>['pipe','r'], 1=>['pipe','w'], 2=>['pipe','w']];
         $proc = @proc_open($c, $desc, $pipes);

@@ -52,7 +52,8 @@ $allowedActions = [
     'db_action', 'cron_action', 'process_action', 'site_action', 'indexer_action',
     'ssh', 'ssh_kill', 'ssh_kill_single', 'sshd_restart',
     'csf', 'csf_action',
-    'services', 'network', 'notification_log'
+    'services', 'network', 'notification_log',
+    'user_activity', 'bash_history'
 ];
 
 if (!in_array($action, $allowedActions)) {
@@ -82,7 +83,9 @@ try {
         'cloudflare' => 60,
         'ssh' => 10,
         'services' => 15,
-        'network' => 10
+        'network' => 10,
+        'user_activity' => 30,
+        'bash_history' => 15
     ];
 
     // Include site in cache key to prevent cross-site data leakage
@@ -231,6 +234,12 @@ try {
                 }
             }
             $data = ['success' => true, 'logs' => $logs, 'total' => count($logs)];
+            break;
+        case 'user_activity':
+            $data = $monitorApi->getUserActivity();
+            break;
+        case 'bash_history':
+            $data = $monitorApi->getBashHistory();
             break;
         default: 
             $data = $monitorApi->getOverview(); 

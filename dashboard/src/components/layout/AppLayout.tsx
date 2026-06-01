@@ -10,6 +10,7 @@ import {
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
+import ErrorBoundary from '../common/ErrorBoundary';
 
 const DRAWER_WIDTH = 260;
 
@@ -91,7 +92,9 @@ export default function AppLayout() {
             flexDirection: 'column'
           }}
         >
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </Box>
 
         <Footer />

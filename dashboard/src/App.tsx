@@ -37,7 +37,10 @@ import ResetPasswordPage from './pages/ResetPasswordPage.tsx';
 import TasksPage from './pages/TasksPage.tsx';
 import TaskDetailPage from './pages/TaskDetailPage.tsx';
 import PermissionsPage from './pages/PermissionsPage.tsx';
+import SystemAuditPage from './pages/SystemAuditPage.tsx';
+import PlansPage from './pages/PlansPage.tsx';
 import SystemHealthPage from './pages/SystemHealthPage.tsx';
+import UserActivityPage from './pages/UserActivityPage.tsx';
 
 export default function App() {
   return (
@@ -72,6 +75,7 @@ export default function App() {
                 <Route path="sites" element={<SitesPage />} />
                 <Route path="infrastructure" element={<InfrastructurePage />} />
                 <Route path="log-explorer" element={<LogViewerPage />} />
+                <Route path="monitoring/users" element={<UserActivityPage />} />
                 <Route path="terminal-ai" element={<TerminalAiPage />} />
                 <Route path="system-health" element={<SystemHealthPage />} />
                 
@@ -102,6 +106,8 @@ export default function App() {
                 {/* Tools (non-admin) */}
                 <Route path="tools/db-health" element={<DbHealthPage />} />
                 <Route path="tools/audit" element={<AuditTrailPage />} />
+                <Route path="tools/system-audit" element={<SystemAuditPage />} />
+                <Route path="plans" element={<PlansPage />} />
                 <Route path="tasks" element={<TasksPage />} />
                 <Route path="tasks/:id" element={<TaskDetailPage />} />
                 

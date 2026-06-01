@@ -1,7 +1,8 @@
 import { Box, Typography, Card, CardContent, Select, MenuItem, FormControl, InputLabel, Button, IconButton, Tooltip, TextField, Snackbar, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Paper } from '@mui/material';
 import { Assignment, Refresh, FileDownload, ClearAll, Search, ArrowDownward } from '@mui/icons-material';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import apiClient from '../api/client';
+import { fetchBashHistory, BashHistoryEntry } from '../api/monitor';
 import LoadingState from '../components/common/LoadingState';
 import ConsoleOutput from '../components/common/ConsoleOutput';
 
@@ -83,8 +84,13 @@ export default function LogViewerPage() {
   const [levelFilter, setLevelFilter] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const [bashUser, setBashUser] = useState('dev');
+  const [bashHistory, setBashHistory] = useState<BashHistoryEntry[]>([]);
+  const [textSearch, setTextSearch] = useState('');
   const logEndRef = useRef<HTMLDivElement>(null);
   const fetchRef = useRef(false);
+
+  const BASH_USERS = ['dev', 'beta', 'technadminy7', 'dnd', 'dashboard', 'pim'];
 
   const SITES = [
     { key: '', name: 'Global / Server' },
@@ -105,6 +111,28 @@ export default function LogViewerPage() {
     fetchRef.current = true;
     setLoading(true);
     setError(null);
+    
+    // Bash history uses a different endpoint
+    if (type === 'bash') {
+      fetchBashHistory(bashUser, Math.min(lines, 500))
+        .then((data) => {
+          if (data.error) {
+            setError(data.error);
+            setLogData(null);
+          } else {
+            setError(null);
+            setBashHistory(data.history || []);
+            setLogData({ lines: data.history, source: 'bash', total: data.total, path: data.path });
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          setError('Failed to fetch bash history');
+          setSnackbar({ open: true, message: 'Failed to fetch bash history', severity: 'error' });
+        })
+        .finally(() => { setLoading(false); fetchRef.current = false; });
+      return;
+    }
     
     // Notification logs use a different endpoint
     if (type === 'notification') {
@@ -159,7 +187,7 @@ export default function LogViewerPage() {
   useEffect(() => {
     fetchLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, site, lines, logDate]);
+  }, [type, site, lines, logDate, bashUser]);
 
   // Auto-refresh interval - separate from dependency changes
   useEffect(() => {
@@ -227,6 +255,7 @@ export default function LogViewerPage() {
                   <MenuItem value="auth">Auth / Security</MenuItem>
                   <MenuItem value="notification">Notification Events</MenuItem>
                   <MenuItem value="app">Application (JSON)</MenuItem>
+                  <MenuItem value="bash">User Bash History</MenuItem>
                 </>
               )}
             </Select>
@@ -245,6 +274,15 @@ export default function LogViewerPage() {
             }}
             sx={{ width: 80 }}
           />
+
+          {type === 'bash' && (
+            <FormControl size="small" sx={{ minWidth: 130 }}>
+              <InputLabel>User</InputLabel>
+              <Select value={bashUser} label="User" onChange={(e) => setBashUser(e.target.value)}>
+                {BASH_USERS.map(u => <MenuItem key={u} value={u}>{u}</MenuItem>)}
+              </Select>
+            </FormControl>
+          )}
 
           {type === 'app' && (
             <>
@@ -318,6 +356,43 @@ export default function LogViewerPage() {
         </Box>
       </Box>
 
+      {/* Text Search Bar */}
+      <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+        <TextField
+          size="small"
+          placeholder="Search in logs... (Ctrl+F)"
+          value={textSearch}
+          onChange={(e) => setTextSearch(e.target.value)}
+          sx={{ flex: 1, maxWidth: 400 }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <Box sx={{ mr: 1, color: 'text.disabled' }}>
+                  <Search sx={{ fontSize: 16 }} />
+                </Box>
+              ),
+            }
+          }}
+        />
+        {logData?.lines && logData.lines.length > 0 && type !== 'bash' && (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {(() => {
+              const rawLines = logData.lines as string[];
+              const errorCount = rawLines.filter((l: string) => /(ERROR|CRITICAL|FATAL|EXCEPTION)/i.test(l)).length;
+              const warnCount = rawLines.filter((l: string) => /WARN/i.test(l)).length;
+              const infoCount = rawLines.filter((l: string) => /(INFO|NOTICE)/i.test(l)).length;
+              return (
+                <>
+                  {errorCount > 0 && <Chip label={`${errorCount} errors`} size="small" sx={{ bgcolor: 'rgba(248,113,113,0.15)', color: '#f87171', fontWeight: 600, fontSize: '0.65rem', height: 20 }} />}
+                  {warnCount > 0 && <Chip label={`${warnCount} warnings`} size="small" sx={{ bgcolor: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontWeight: 600, fontSize: '0.65rem', height: 20 }} />}
+                  <Chip label={`${infoCount} info`} size="small" sx={{ bgcolor: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontWeight: 600, fontSize: '0.65rem', height: 20 }} />}
+                </>
+              );
+            })()}
+          </Box>
+        )}
+      </Box>
+
       <Box sx={{ flexGrow: 1, minHeight: 0 }}>
         {error ? (
           <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -346,7 +421,10 @@ export default function LogViewerPage() {
           </Box>
         ) : (
           <ConsoleOutput
-            lines={logData?.lines || []}
+            lines={(logData?.lines || []).filter((line: string) => {
+              if (!textSearch) return true;
+              return line.toLowerCase().includes(textSearch.toLowerCase());
+            })}
             autoScroll={autoRefresh}
             showHeader={false}
           />

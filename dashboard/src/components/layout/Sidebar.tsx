@@ -76,6 +76,7 @@ const navItems: NavItem[] = [
       { path: '/cache-control', label: 'Cache Control', icon: <Cached /> },
       { path: '/process-explorer', label: 'Process Explorer', icon: <Terminal /> },
       { path: '/log-explorer', label: 'Log Explorer', icon: <DocsIcon /> },
+      { path: '/monitoring/users', label: 'User Activity', icon: <Person /> },
       { path: '/system-health', label: 'System Health', icon: <Lan /> },
     ]
   },
@@ -116,6 +117,7 @@ const navItems: NavItem[] = [
     label: 'Project Management',
     icon: <TrendingUp />,
     children: [
+      { path: '/plans', label: 'Plans & Roadmap', icon: <TrendingUp /> },
       { path: '/tasks', label: 'Tasks', icon: <Task />, badge: taskBadgeCount },
       { path: '/tools/audit', label: 'Audit Trail', icon: <AuditIcon /> },
     ]
@@ -137,6 +139,7 @@ const navItems: NavItem[] = [
     children: [
       { path: '/tools/db-health', label: 'DB Health', icon: <DbIcon /> },
       { path: '/tools/users', label: 'User Management', icon: <Person /> },
+      { path: '/tools/system-audit', label: 'System Audit', icon: <SecurityIcon /> },
       { path: '/tools/actions', label: 'Emergency Actions', icon: <ActionsIcon /> },
       { path: '/settings', label: 'Dashboard Settings', icon: <SettingsIcon /> },
     ]
