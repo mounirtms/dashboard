@@ -200,9 +200,9 @@ fi
 # MariaDB Check
 # ═══════════════════════════════════════════════════════════════════════════
 
-MYSQL_MEMORY=$(ps aux | grep mariadbd | grep -v grep | awk '{print $6}' 2>/dev/null || echo "0")
-MYSQL_MEMORY_MB=$((MYSQL_MEMORY / 1024))
-if [ "$MYSQL_MEMORY_MB" -gt 6000 ]; then
+MYSQL_MEMORY=$(ps aux | grep mariadbd | grep -v grep | awk '{sum += $6} END {print sum+0}' 2>/dev/null || echo "0")
+MYSQL_MEMORY_MB=$(echo "$MYSQL_MEMORY" | awk '{printf "%d", $1/1024}')
+if [ -n "$MYSQL_MEMORY_MB" ] && [ "$MYSQL_MEMORY_MB" -gt 6000 ] 2>/dev/null; then
     send_alert "WARNING" "MariaDB using ${MYSQL_MEMORY_MB}MB RAM"
 fi
 

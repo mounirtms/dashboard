@@ -199,6 +199,10 @@ class Config {
                 throw new Exception($mysqli->connect_error);
             }
 
+            // Set charset and performance options
+            $mysqli->set_charset('utf8mb4');
+            $mysqli->query("SET sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
+
             return $mysqli;
         } catch (Exception $e) {
             error_log("Database connection error: " . $e->getMessage());

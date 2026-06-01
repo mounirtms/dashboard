@@ -11,4 +11,11 @@ export const ADMIN_PATHS = new Set([
   '/cache-control',
   '/process-explorer',
   '/tools/permissions',
+  // Critical monitoring pages - admin only
+  '/monitoring/users',
+  '/tools/system-audit',
+  '/plans',
+  // Infrastructure control
+  '/scripts',
+  '/cicd',
 ]);
