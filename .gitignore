@@ -27,3 +27,21 @@ dashboard/package-lock.json
 assets_legacy/
 config/webpushr.keys
 api/Logger.php
+
+# Build outputs
+dashboard/build/
+dashboard/dist/
+assets/index-*.js
+assets/index-*.css
+
+# User data
+uploads/
+
+# Root-level docs (keep only README)
+*.md
+!README.md
+
+# Operational scripts
+fix-*.sh
+verify-*.sh
+scripts/
