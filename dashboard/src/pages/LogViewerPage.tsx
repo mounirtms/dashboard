@@ -385,7 +385,7 @@ export default function LogViewerPage() {
                 <>
                   {errorCount > 0 && <Chip label={`${errorCount} errors`} size="small" sx={{ bgcolor: 'rgba(248,113,113,0.15)', color: '#f87171', fontWeight: 600, fontSize: '0.65rem', height: 20 }} />}
                   {warnCount > 0 && <Chip label={`${warnCount} warnings`} size="small" sx={{ bgcolor: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontWeight: 600, fontSize: '0.65rem', height: 20 }} />}
-                  <Chip label={`${infoCount} info`} size="small" sx={{ bgcolor: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontWeight: 600, fontSize: '0.65rem', height: 20 }} />}
+                  <Chip label={`${infoCount} info`} size="small" sx={{ bgcolor: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontWeight: 600, fontSize: '0.65rem', height: 20 }} />
                 </>
               );
             })()}

@@ -1,5 +1,5 @@
 import { Box, Typography, Card, CardContent, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Shield, Storage, Security, BugReport, AlertTriangle, CheckCircle } from '@mui/icons-material';
+import { Shield, Storage, Security, BugReport, Warning as WarningIcon, CheckCircle } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
@@ -67,10 +67,10 @@ export default function SystemAuditPage() {
       apiClient.get('/api/monitor.php?action=ssh'),
       apiClient.get('/api/monitor.php?action=alerts'),
     ]).then(([overviewRes, servicesRes, sshRes, alertsRes]) => {
-      const overview = overviewRes.status === 'fulfilled' ? overviewRes.value : {};
-      const services = servicesRes.status === 'fulfilled' ? servicesRes.value : {};
-      const ssh = sshRes.status === 'fulfilled' ? sshRes.value : {};
-      const alerts = alertsRes.status === 'fulfilled' ? alertsRes.value : {};
+      const overview = (overviewRes.status === 'fulfilled' ? overviewRes.value.data : {}) as any;
+      const services = (servicesRes.status === 'fulfilled' ? servicesRes.value.data : {}) as any;
+      const ssh = (sshRes.status === 'fulfilled' ? sshRes.value.data : {}) as any;
+      const alerts = (alertsRes.status === 'fulfilled' ? alertsRes.value.data : {}) as any;
 
       const auditData: AuditData = {
         services: services.services || overview.services || {},
@@ -163,7 +163,7 @@ export default function SystemAuditPage() {
           <AuditCard
             title="Blocked IPs"
             value={data?.security.blocked_ips || 0}
-            icon={<AlertTriangle sx={{ fontSize: 20 }} />}
+            icon={<WarningIcon sx={{ fontSize: 20 }} />}
             color="#8b5cf6"
           />
         </Grid>

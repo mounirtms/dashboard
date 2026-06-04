@@ -20,6 +20,8 @@ class PermissionChecker {
         'can_access_cache_control',
         'can_access_process_explorer',
         'can_access_permissions_page',
+        'can_access_ssh_monitor',
+        'can_access_command_audit',
         'can_access_cloudflare',
         'can_access_user_activity',
         'can_access_system_audit',

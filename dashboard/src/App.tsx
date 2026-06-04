@@ -41,6 +41,8 @@ import SystemAuditPage from './pages/SystemAuditPage.tsx';
 import PlansPage from './pages/PlansPage.tsx';
 import SystemHealthPage from './pages/SystemHealthPage.tsx';
 import UserActivityPage from './pages/UserActivityPage.tsx';
+import SshSessionsPage from './pages/SshSessionsPage.tsx';
+import ServerCommandHistoryPage from './pages/ServerCommandHistoryPage.tsx';
 
 export default function App() {
   return (
@@ -62,6 +64,8 @@ export default function App() {
                 <Route path="cache-control" element={<CacheControlPage />} />
                 <Route path="process-explorer" element={<ProcessExplorerPage />} />
                 <Route path="tools/permissions" element={<PermissionsPage />} />
+                <Route path="monitoring/ssh" element={<SshSessionsPage />} />
+                <Route path="monitoring/commands" element={<ServerCommandHistoryPage />} />
               </Route>
             </Route>
 

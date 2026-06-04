@@ -45,7 +45,7 @@ import {
   Description as DocsIcon,
   Api as ApiIcon,
   Terminal,
-  History as AuditIcon,
+  History as HistoryIcon,
   AutoAwesome,
   Search,
   Close,
@@ -61,6 +61,7 @@ interface NavItem {
   label: string;
   icon: React.ReactNode;
   path?: string;
+  badge?: number;
   children?: NavItem[];
 }
 
@@ -76,6 +77,8 @@ const navItems: NavItem[] = [
       { path: '/cache-control', label: 'Cache Control', icon: <Cached /> },
       { path: '/process-explorer', label: 'Process Explorer', icon: <Terminal /> },
       { path: '/log-explorer', label: 'Log Explorer', icon: <DocsIcon /> },
+      { path: '/monitoring/ssh', label: 'SSH Sessions', icon: <SecurityIcon /> },
+      { path: '/monitoring/commands', label: 'Command History', icon: <HistoryIcon /> },
       { path: '/monitoring/users', label: 'User Activity', icon: <Person /> },
       { path: '/system-health', label: 'System Health', icon: <Lan /> },
     ]
@@ -118,8 +121,8 @@ const navItems: NavItem[] = [
     icon: <TrendingUp />,
     children: [
       { path: '/plans', label: 'Plans & Roadmap', icon: <TrendingUp /> },
-      { path: '/tasks', label: 'Tasks', icon: <Task />, badge: taskBadgeCount },
-      { path: '/tools/audit', label: 'Audit Trail', icon: <AuditIcon /> },
+      { path: '/tasks', label: 'Tasks', icon: <Task /> },
+      { path: '/tools/audit', label: 'Audit Trail', icon: <HistoryIcon /> },
     ]
   },
   {
@@ -241,22 +244,28 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const deepFilterItems = useCallback((items: NavItem[]): NavItem[] => {
     return items.reduce<NavItem[]>((acc, item) => {
       if (!isNavItemVisible(item)) return acc;
-      if (item.children) {
-        const visibleChildren = deepFilterItems(item.children);
+      
+      const itemWithBadge = { ...item };
+      if (itemWithBadge.path === '/tasks') {
+        itemWithBadge.badge = taskBadgeCount;
+      }
+
+      if (itemWithBadge.children) {
+        const visibleChildren = deepFilterItems(itemWithBadge.children);
         if (visibleChildren.length === 0) return acc;
         // Also apply search filtering to children
         const searchedChildren = debouncedQuery
           ? visibleChildren.filter(child => matchesSearch(child.label, debouncedQuery))
           : visibleChildren;
         if (searchedChildren.length === 0) return acc;
-        acc.push({ ...item, children: searchedChildren });
+        acc.push({ ...itemWithBadge, children: searchedChildren });
       } else {
-        if (debouncedQuery && !matchesSearch(item.label, debouncedQuery)) return acc;
-        acc.push(item);
+        if (debouncedQuery && !matchesSearch(itemWithBadge.label, debouncedQuery)) return acc;
+        acc.push(itemWithBadge);
       }
       return acc;
     }, []);
-  }, [isNavItemVisible, matchesSearch, debouncedQuery]);
+  }, [isNavItemVisible, matchesSearch, debouncedQuery, taskBadgeCount]);
 
   const displayItems = deepFilterItems(navItems);
 

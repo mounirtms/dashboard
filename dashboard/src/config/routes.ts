@@ -13,6 +13,8 @@ export const ADMIN_PATHS = new Set([
   '/tools/permissions',
   // Critical monitoring pages - admin only
   '/monitoring/users',
+  '/monitoring/ssh',
+  '/monitoring/commands',
   '/tools/system-audit',
   '/plans',
   // Infrastructure control

@@ -245,7 +245,7 @@ export default function TaskDetailPage() {
     if (!id) return;
     setLoading(true);
     Promise.all([fetchTask(+id), fetchTaskNotes(+id), fetchTaskActivity(+id), fetchUsers(), fetchScreenshots(+id), fetchTasks(), getTaskLinks(+id)])
-      .then(([t, n, a, u, s, allT, links]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setScreenshots(s); setAllTasks(allT); setTaskLinks(links); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
+      .then(([t, n, a, u, s, allT, links]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setScreenshots(s); setAllTasks(allT.tasks); setTaskLinks(links); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
   }, [id]);
