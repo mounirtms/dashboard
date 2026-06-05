@@ -63,7 +63,7 @@ function clearCache($type) {
     
     switch ($type) {
         case 'varnish':
-            $output = shell_exec("varnishadm 'ban req.url ~ .' 2>&1");
+            $output = shell_exec("sudo /usr/bin/varnishadm 'ban req.url ~ .' 2>&1");
             $result = ['type' => 'varnish', 'output' => $output];
             break;
             
@@ -78,7 +78,7 @@ function clearCache($type) {
             break;
             
         case 'all':
-            shell_exec("varnishadm 'ban req.url ~ .' 2>&1");
+            shell_exec("sudo /usr/bin/varnishadm 'ban req.url ~ .' 2>&1");
             shell_exec("redis-cli FLUSHALL 2>&1");
             $result = ['type' => 'all', 'message' => 'All caches cleared'];
             break;

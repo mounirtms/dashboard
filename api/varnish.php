@@ -78,7 +78,7 @@ function getVarnishStats() {
  * Get Varnish backend health
  */
 function getVarnishBackends() {
-    $output = shell_exec('varnishadm backend.list 2>&1');
+    $output = shell_exec('sudo /usr/bin/varnishadm backend.list 2>&1');
     
     if (!$output) {
         return [
@@ -176,9 +176,9 @@ function purgeCache($url = null) {
     $host = $parsed['host'] ?? 'localhost';
     $path = $parsed['path'] ?? '/';
     
-    // Execute purge via varnishadm
+    // Execute purge via sudo /usr/bin/varnishadm
     $command = sprintf(
-        'varnishadm "ban req.url ~ %s && req.http.host ~ %s" 2>&1',
+        'sudo /usr/bin/varnishadm "ban req.url ~ %s && req.http.host ~ %s" 2>&1',
         escapeshellarg($path),
         escapeshellarg($host)
     );

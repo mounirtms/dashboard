@@ -306,7 +306,7 @@ class MonitorApi extends BaseApi {
                 return $this->cloudflareAction();
 
             case 'varnish_purge_all':
-                $results['output'] = $this->cmd("varnishadm \"ban req.http.host ~ .*\" 2>&1")['output'];
+                $results['output'] = $this->cmd("sudo /usr/bin/varnishadm \"ban req.http.host ~ .*\" 2>&1")['output'];
                 $results['success'] = true;
                 return $results;
 
@@ -321,9 +321,9 @@ class MonitorApi extends BaseApi {
                 $url = Config::get("paths.{$site}_url");
                 if ($url) {
                     $host = parse_url($url, PHP_URL_HOST);
-                    $results['output'] = $this->cmd("varnishadm \"ban req.http.host ~ $host\" 2>&1")['output'];
+                    $results['output'] = $this->cmd("sudo /usr/bin/varnishadm \"ban req.http.host ~ $host\" 2>&1")['output'];
                 } else {
-                    $results['output'] = $this->cmd("varnishadm \"ban req.http.host ~ .*\" 2>&1")['output'];
+                    $results['output'] = $this->cmd("sudo /usr/bin/varnishadm \"ban req.http.host ~ .*\" 2>&1")['output'];
                 }
                 break;
             case 'opcache_reset':
@@ -362,7 +362,7 @@ class MonitorApi extends BaseApi {
 
     public function getScripts() {
         $baseDir = Config::get('paths.scripts', '/home/dashboard/public_html/scripts');
-        $categories = ['maintenance', 'emergency', 'automation', 'database', 'magento'];
+        $categories = ['maintenance', 'emergency', 'automation', 'database', 'magento', 'optimization', 'monitoring'];
         $scripts = [];
 
         foreach ($categories as $cat) {
@@ -838,7 +838,7 @@ class MonitorApi extends BaseApi {
         $safeArgs = escapeshellcmd($args);
         $ext = pathinfo($real, PATHINFO_EXTENSION);
         $php = Config::get('php_bin');
-        $cmd = $ext === 'php' ? "$php '$real' $safeArgs 2>&1" : "bash '$real' $safeArgs 2>&1";
+        $cmd = $ext === 'php' ? "$php '$real' $safeArgs 2>&1" : "sudo /usr/bin/bash '$real' $safeArgs 2>&1";
         
         $result = $this->cmd($cmd, 60);
         return [
@@ -953,7 +953,7 @@ class MonitorApi extends BaseApi {
                 $storage_pct = $storage_total > 0 ? round(($storage_used / $storage_total) * 100, 1) : 0;
 
                 // Backend health
-                $backend_list = $this->cmd_line("varnishadm backend.list 2>&1", 3);
+                $backend_list = $this->cmd_line("sudo /usr/bin/varnishadm backend.list 2>&1", 3);
                 $backend_healthy = true;
                 if (strpos($backend_list, 'Sick') !== false || strpos($backend_list, 'dead') !== false) {
                     $backend_healthy = false;
@@ -1540,7 +1540,7 @@ class MonitorApi extends BaseApi {
             
             // Hoist: Build PID->remote IP map from ss once
             $pid_ip_map = [];
-            $ss_output = $this->cmd("ss -tnp 2>/dev/null");
+            $ss_output = $this->cmd("sudo /usr/sbin/ss -tnp 2>/dev/null");
             foreach ($ss_output['output'] as $sline) {
                 if (preg_match('/pid=(\d+).*?\s+([\d.]+):(\d+)\s+([\d.]+):(\d+)/', $sline, $sm)) {
                     if ($sm[3] == 22) { // SSH port
@@ -1691,7 +1691,7 @@ class MonitorApi extends BaseApi {
                            "User requested SSH session termination: " . implode(', ', $sessions_info));
             
             $pid_list = implode(' ', $pids_to_kill);
-            $result = $this->cmd("kill -9 $pid_list 2>&1");
+            $result = $this->cmd("sudo /usr/bin/kill -9 $pid_list 2>&1");
             $success = $result['return'] === 0;
         } else {
             $success = true;
@@ -1723,7 +1723,7 @@ class MonitorApi extends BaseApi {
             if ($pid <= 10) return ['success' => false, 'message' => 'Invalid PID'];
             $pid_tty = trim($this->cmd_line("ps -o tty= -p $pid 2>/dev/null"));
             if ($pid_tty === $current_tty) return ['success' => false, 'message' => 'Cannot kill your own session'];
-            $result = $this->cmd("kill -9 $pid 2>&1");
+            $result = $this->cmd("sudo /usr/bin/kill -9 $pid 2>&1");
             AuditLogger::log('SSH_KILL_PID', "pid=$pid", "User killed SSH session PID $pid");
             return ['success' => $result['return'] === 0, 'message' => $result['return'] === 0 ? "Session killed" : "Failed to kill session"];
         }
@@ -1734,7 +1734,7 @@ class MonitorApi extends BaseApi {
         }
         
         $pid = trim($pid);
-        $result = $this->cmd("kill -9 $pid 2>&1");
+        $result = $this->cmd("sudo /usr/bin/kill -9 $pid 2>&1");
         AuditLogger::log('SSH_KILL_TTY', "tty=$session_identifier pid=$pid", "User killed SSH session $session_identifier");
         return ['success' => $result['return'] === 0, 'message' => $result['return'] === 0 ? "Session $session_identifier killed" : "Failed to kill session"];
     }
@@ -1742,7 +1742,7 @@ class MonitorApi extends BaseApi {
     public function restartSshd() {
         require_once __DIR__ . '/AuditLogger.php';
         AuditLogger::log('SSHD_RESTART', '', "SSH daemon restart requested via dashboard");
-        $result = $this->cmd("systemctl restart sshd 2>&1", 15);
+        $result = $this->cmd("sudo /usr/bin/systemctl restart sshd 2>&1", 15);
         usleep(2000000);
         $new_status = $this->cmd_line("systemctl is-active sshd 2>/dev/null");
         
@@ -2259,9 +2259,23 @@ class MonitorApi extends BaseApi {
         $lines = min((int)($_GET['lines'] ?? 100), 500);
         $offset = max((int)($_GET['offset'] ?? 0), 0);
 
-        $rawLines = @file($bashHistory, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        if ($rawLines === false) {
-            return ['error' => 'Cannot read history file'];
+        // Use sudo cat to overcome permission issues with other users' history files
+        $rawResult = $this->cmd("sudo /usr/bin/cat " . escapeshellarg($bashHistory) . " 2>/dev/null");
+        $rawLines = $rawResult['output'] ?? [];
+        
+        if (empty($rawLines) || $rawResult['return'] !== 0) {
+            // Fallback for files the user DOES have access to without sudo
+            $rawLines = @file($bashHistory, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+        }
+
+        if (empty($rawLines)) {
+            return [
+                'username' => $username,
+                'path' => $bashHistory,
+                'history' => [],
+                'total' => 0,
+                'message' => 'History is empty or inaccessible'
+            ];
         }
 
         $commands = [];
@@ -2270,15 +2284,16 @@ class MonitorApi extends BaseApi {
 
         foreach (array_reverse($rawLines) as $line) {
             if (preg_match('/^#(\d{10})$/', $line, $m)) {
+                $currentTimestamp = $m[1];
                 if ($currentCmd !== '') {
                     $commands[] = [
-                        'timestamp' => $currentTimestamp ? date('Y-m-d H:i:s', (int)$currentTimestamp) : 'unknown',
+                        'timestamp' => date('Y-m-d H:i:s', (int)$currentTimestamp),
                         'epoch' => $currentTimestamp,
                         'command' => $currentCmd,
                     ];
+                    $currentCmd = '';
                 }
-                $currentTimestamp = $m[1];
-                $currentCmd = '';
+                $currentTimestamp = null;
             } else {
                 if ($currentCmd !== '') {
                     $currentCmd = $line . "\n" . $currentCmd;
@@ -2287,6 +2302,9 @@ class MonitorApi extends BaseApi {
                 }
             }
         }
+        
+        // Handle the case where the very first command in the file didn't have a timestamp 
+        // OR the loop finished with a command that didn't have a #timestamp line (old format)
         if ($currentCmd !== '') {
             $commands[] = [
                 'timestamp' => $currentTimestamp ? date('Y-m-d H:i:s', (int)$currentTimestamp) : 'unknown',

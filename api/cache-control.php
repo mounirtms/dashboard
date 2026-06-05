@@ -317,7 +317,7 @@ function purgeCache() {
             exec("$php $magento/bin/magento cache:clean 2>&1", $output, $exit_code);
             break;
         case 'varnish':
-            exec("varnishadm 'ban req.http.host ~ \".*\"' 2>&1", $output, $exit_code);
+            exec("sudo /usr/bin/varnishadm 'ban req.http.host ~ \".*\"' 2>&1", $output, $exit_code);
             break;
         case 'redis':
             exec("redis-cli FLUSHDB 2>&1", $output, $exit_code);
@@ -325,7 +325,7 @@ function purgeCache() {
         case 'all':
         default:
             exec("$php $magento/bin/magento cache:clean 2>&1", $output, $exit_code);
-            exec("varnishadm 'ban req.http.host ~ \".*\"' 2>&1", $output, $exit_code);
+            exec("sudo /usr/bin/varnishadm 'ban req.http.host ~ \".*\"' 2>&1", $output, $exit_code);
             break;
     }
 
