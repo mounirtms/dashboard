@@ -96,6 +96,7 @@ export interface TaskFilters {
   priority?: string;
   category?: string;
   assigned_to?: string;
+  department?: string;
   search?: string;
   overdue?: boolean;
   page?: number;
@@ -116,6 +117,7 @@ export async function fetchTasks(filters?: TaskFilters): Promise<{ tasks: Task[]
   if (filters?.per_page) params.set('per_page', String(filters.per_page));
   if (filters?.sort_field) params.set('sort_field', filters.sort_field);
   if (filters?.sort_direction) params.set('sort_direction', filters.sort_direction);
+  if (filters?.department) params.set('department', filters.department);
   
   const queryString = params.toString();
   const url = `/api/tasks.php?action=list${queryString ? '&' + queryString : ''}`;
