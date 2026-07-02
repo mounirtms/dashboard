@@ -60,6 +60,9 @@ Header set Content-Security-Policy "default-src 'self' https:; script-src 'self'
   # Skip phpMyAdmin and other system directories
   RewriteCond %{REQUEST_URI} !^/phpmyadmin
   
+  # Skip build assets (JS/CSS bundles)
+  RewriteCond %{REQUEST_URI} !^/build/
+  
   # Serve webpushr service worker as real file
   RewriteCond %{REQUEST_URI} !^/webpushr-sw\.js$
   
@@ -72,3 +75,11 @@ Header set Content-Security-Policy "default-src 'self' https:; script-src 'self'
   RewriteCond %{REQUEST_FILENAME} !-l
   RewriteRule . /index.html [L]
 </IfModule>
+# Block .git access
+RewriteRule "\.git" - [F,L]
+RewriteRule ^\.git - [F,L]
+
+# Block direct access to non-API PHP files (security)
+<FilesMatch "\.(phtml|inc)$">
+    Require all denied
+</FilesMatch>

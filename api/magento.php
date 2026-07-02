@@ -31,6 +31,12 @@ $environments = [
         'api_url' => Config::get('paths.beta_url', 'https://beta.technostationery.com') . '/rest/V1',
         'token' => Config::get('magento.beta.token', ''),
     ],
+    'tsdnd' => [
+        'name' => 'TSDND',
+        'base_url' => Config::get('paths.tsdnd_url', 'https://tsdnd.technostationery.com'),
+        'api_url' => Config::get('paths.tsdnd_url', 'https://tsdnd.technostationery.com') . '/rest/V1',
+        'token' => Config::get('magento.tsdnd.token', ''),
+    ],
     'dev' => [
         'name' => 'Development',
         'base_url' => Config::get('paths.dev_url', 'https://dev.technostationery.com'),
@@ -134,7 +140,63 @@ switch ($action) {
     case 'system':
         handleSystemInfo($envConfig);
         break;
-    
+
+    case 'product_save':
+        handleProductSave($envConfig);
+        break;
+
+    case 'product_delete':
+        handleProductDelete($envConfig);
+        break;
+
+    case 'product_bulk':
+        handleProductBulk($envConfig);
+        break;
+
+    case 'customer_save':
+        handleCustomerSave($envConfig);
+        break;
+
+    case 'customer_delete':
+        handleCustomerDelete($envConfig);
+        break;
+
+    case 'order_action':
+        handleOrderAction($envConfig);
+        break;
+
+    case 'cms_page_save':
+        handleCmsPageSave($envConfig);
+        break;
+
+    case 'cms_page_delete':
+        handleCmsPageDelete($envConfig);
+        break;
+
+    case 'cms_blocks':
+        handleCmsBlocks($envConfig, $pageSize, $currentPage);
+        break;
+
+    case 'cms_block_save':
+        handleCmsBlockSave($envConfig);
+        break;
+
+    case 'cms_block_delete':
+        handleCmsBlockDelete($envConfig);
+        break;
+
+    case 'media_upload':
+        handleMediaUpload($envConfig);
+        break;
+
+    case 'categories_tree':
+        handleCategoriesTree($envConfig);
+        break;
+
+    case 'store_config':
+        handleStoreConfig($envConfig);
+        break;
+
     default:
         http_response_code(400);
         echo json_encode([
@@ -142,7 +204,10 @@ switch ($action) {
             'valid_actions' => [
                 'login', 'test', 'status', 'products', 'orders', 'customers',
                 'categories', 'invoices', 'stock', 'cms', 'execute', 'indexer',
-                'cache', 'system'
+                'cache', 'system', 'product_save', 'product_delete', 'product_bulk',
+                'customer_save', 'customer_delete', 'order_action',
+                'cms_page_save', 'cms_page_delete', 'cms_blocks', 'cms_block_save',
+                'cms_block_delete', 'media_upload', 'categories_tree', 'store_config'
             ]
         ]);
         exit;
@@ -271,38 +336,39 @@ function handleStatus($envConfig, $env) {
 /**
  * Proxy request to Magento API
  */
-function magentoRequest($envConfig, $method, $endpoint, $token = null, $params = []) {
+function magentoRequest($envConfig, $method, $endpoint, $token = null, $params = [], $body = null) {
     $token = $token ?: ($envConfig['token'] ?? '');
     $apiUrl = rtrim($envConfig['api_url'], '/');
-    
-    // Build URL with query params
+
     $url = $apiUrl . $endpoint;
     if (!empty($params)) {
         $url .= '?' . http_build_query($params);
     }
-    
+
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 120);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    
-    $headers = [
-        'Content-Type: application/json',
-    ];
-    
+
+    $headers = ['Content-Type: application/json'];
     if (!empty($token)) {
         $headers[] = 'Authorization: Bearer ' . $token;
     }
-    
+
+    if ($body !== null && in_array($method, ['POST', 'PUT'])) {
+        $jsonBody = is_string($body) ? $body : json_encode($body);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonBody);
+    }
+
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    
+
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
     curl_close($ch);
-    
+
     return [
         'response' => $response,
         'http_code' => $httpCode,
@@ -588,15 +654,288 @@ function handleCache($envConfig) {
  */
 function handleSystemInfo($envConfig) {
     $token = $_GET['token'] ?? $envConfig['token'] ?? '';
-    
+
     if (empty($token)) {
         http_response_code(401);
         echo json_encode(['error' => 'Magento API token not configured']);
         return;
     }
-    
+
     $result = magentoRequest($envConfig, 'GET', '/store/storeConfigs', $token);
-    
+
     http_response_code($result['http_code']);
     echo $result['response'] ?: json_encode(['error' => $result['error']]);
+}
+
+function requireToken($envConfig) {
+    $token = $_GET['token'] ?? $envConfig['token'] ?? '';
+    if (empty($token)) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Magento API token not configured']);
+        return null;
+    }
+    return $token;
+}
+
+function getRequestBody() {
+    $raw = file_get_contents('php://input');
+    if (empty($raw)) return null;
+    return json_decode($raw, true);
+}
+
+function proxyResult($result) {
+    http_response_code($result['http_code']);
+    echo $result['response'] ?: json_encode(['error' => $result['error']]);
+}
+
+function handleProductSave($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $body = getRequestBody();
+    if (empty($body) || empty($body['product'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Product data required in request body']);
+        return;
+    }
+
+    $sku = $body['product']['sku'] ?? $_GET['sku'] ?? '';
+    if (empty($sku)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'SKU required']);
+        return;
+    }
+
+    $method = isset($body['product']['id']) ? 'PUT' : 'POST';
+    $result = magentoRequest($envConfig, $method, '/products/' . urlencode($sku), $token, [], $body);
+    proxyResult($result);
+}
+
+function handleProductDelete($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $sku = $_GET['sku'] ?? '';
+    if (empty($sku)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'SKU required']);
+        return;
+    }
+
+    $result = magentoRequest($envConfig, 'DELETE', '/products/' . urlencode($sku), $token);
+    proxyResult($result);
+}
+
+function handleProductBulk($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $body = getRequestBody();
+    if (empty($body)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Bulk operation data required']);
+        return;
+    }
+
+    $result = magentoRequest($envConfig, 'POST', '/products/bulk', $token, [], $body);
+    proxyResult($result);
+}
+
+function handleCustomerSave($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $body = getRequestBody();
+    if (empty($body) || empty($body['customer'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Customer data required']);
+        return;
+    }
+
+    $customerId = $body['customer']['id'] ?? null;
+    if ($customerId) {
+        $result = magentoRequest($envConfig, 'PUT', '/customers/' . $customerId, $token, [], $body);
+    } else {
+        $result = magentoRequest($envConfig, 'POST', '/customers', $token, [], $body);
+    }
+    proxyResult($result);
+}
+
+function handleCustomerDelete($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $id = $_GET['id'] ?? '';
+    if (empty($id)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Customer ID required']);
+        return;
+    }
+
+    $result = magentoRequest($envConfig, 'DELETE', '/customers/' . (int)$id, $token);
+    proxyResult($result);
+}
+
+function handleOrderAction($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $orderId = $_GET['id'] ?? '';
+    $op = $_GET['op'] ?? '';
+
+    if (empty($orderId) || empty($op)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Order ID and operation required (op: cancel, hold, unhold, ship, invoice, comment)']);
+        return;
+    }
+
+    $endpoints = [
+        'cancel'  => ['POST', "/orders/{$orderId}/cancel"],
+        'hold'    => ['POST', "/orders/{$orderId}/hold"],
+        'unhold'  => ['POST', "/orders/{$orderId}/unhold"],
+        'ship'    => ['POST', "/order/{$orderId}/ship"],
+        'invoice' => ['POST', "/order/{$orderId}/invoice"],
+    ];
+
+    if ($op === 'comment') {
+        $body = getRequestBody();
+        $result = magentoRequest($envConfig, 'POST', "/orders/{$orderId}/comments", $token, [], $body);
+    } elseif (isset($endpoints[$op])) {
+        [$method, $endpoint] = $endpoints[$op];
+        $body = ($op === 'ship' || $op === 'invoice') ? getRequestBody() : null;
+        $result = magentoRequest($envConfig, $method, $endpoint, $token, [], $body);
+    } else {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid operation', 'valid' => array_keys($endpoints + ['comment' => true])]);
+        return;
+    }
+
+    proxyResult($result);
+}
+
+function handleCmsPageSave($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $body = getRequestBody();
+    if (empty($body) || empty($body['page'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'CMS page data required']);
+        return;
+    }
+
+    $pageId = $body['page']['id'] ?? null;
+    if ($pageId) {
+        $result = magentoRequest($envConfig, 'PUT', '/cmsPage/' . $pageId, $token, [], $body);
+    } else {
+        $result = magentoRequest($envConfig, 'POST', '/cmsPage', $token, [], $body);
+    }
+    proxyResult($result);
+}
+
+function handleCmsPageDelete($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $id = $_GET['id'] ?? '';
+    if (empty($id)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'CMS page ID required']);
+        return;
+    }
+
+    $result = magentoRequest($envConfig, 'DELETE', '/cmsPage/' . (int)$id, $token);
+    proxyResult($result);
+}
+
+function handleCmsBlocks($envConfig, $pageSize, $currentPage) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $params = [
+        'searchCriteria[pageSize]' => $pageSize,
+        'searchCriteria[currentPage]' => $currentPage,
+    ];
+
+    $result = magentoRequest($envConfig, 'GET', '/cmsBlock/search', $token, $params);
+    proxyResult($result);
+}
+
+function handleCmsBlockSave($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $body = getRequestBody();
+    if (empty($body) || empty($body['block'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'CMS block data required']);
+        return;
+    }
+
+    $blockId = $body['block']['id'] ?? null;
+    if ($blockId) {
+        $result = magentoRequest($envConfig, 'PUT', '/cmsBlock/' . $blockId, $token, [], $body);
+    } else {
+        $result = magentoRequest($envConfig, 'POST', '/cmsBlock', $token, [], $body);
+    }
+    proxyResult($result);
+}
+
+function handleCmsBlockDelete($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $id = $_GET['id'] ?? '';
+    if (empty($id)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'CMS block ID required']);
+        return;
+    }
+
+    $result = magentoRequest($envConfig, 'DELETE', '/cmsBlock/' . (int)$id, $token);
+    proxyResult($result);
+}
+
+function handleMediaUpload($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $sku = $_GET['sku'] ?? '';
+    if (empty($sku)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Product SKU required']);
+        return;
+    }
+
+    $body = getRequestBody();
+    if (empty($body) || empty($body['entry'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Media entry data required (entry.media_type, entry.label, entry.file with base64)']);
+        return;
+    }
+
+    $result = magentoRequest($envConfig, 'POST', '/products/' . urlencode($sku) . '/media', $token, [], $body);
+    proxyResult($result);
+}
+
+function handleCategoriesTree($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $result = magentoRequest($envConfig, 'GET', '/categories', $token);
+    proxyResult($result);
+}
+
+function handleStoreConfig($envConfig) {
+    $token = requireToken($envConfig);
+    if (!$token) return;
+
+    $method = $_SERVER['REQUEST_METHOD'];
+    if ($method === 'PUT') {
+        $body = getRequestBody();
+        $result = magentoRequest($envConfig, 'PUT', '/store/storeConfigs', $token, [], $body);
+    } else {
+        $result = magentoRequest($envConfig, 'GET', '/store/storeConfigs', $token);
+    }
+    proxyResult($result);
 }

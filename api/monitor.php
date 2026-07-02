@@ -31,7 +31,7 @@ $cache = new CacheManager(
 $monitorApi = new MonitorApi($cache);
 
 // Rate limiting
-$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 500, 60);
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 2000, 60);
 $userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
 if (!$rateLimiter->checkOrReject($userIdentifier)) {
     http_response_code(429);
@@ -53,7 +53,9 @@ $allowedActions = [
     'ssh', 'ssh_kill', 'ssh_kill_single', 'sshd_restart',
     'csf', 'csf_action',
     'services', 'network', 'notification_log',
-    'user_activity', 'bash_history'
+    'user_activity', 'bash_history',
+    'security_scan', 'security_scan_run', 'security_harden', 'security_harden_run',
+    'ecomscan', 'ecomscan_run'
 ];
 
 if (!in_array($action, $allowedActions)) {
@@ -220,14 +222,16 @@ try {
             if (file_exists($logFile)) {
                 $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
                 foreach (array_slice(array_reverse($lines), 0, 200) as $line) {
-                    // Format: [2024-01-01 12:00:00] SEVERITY: Title | Message | Status: sent
-                    if (preg_match('/\[(.*?)\]\s+(INFO|WARNING|CRITICAL):\s+(.*?)\s*\|\s*(.*?)\s*\|\s*Status:\s*(sent|suppressed|failed)/', $line, $matches)) {
+                    // Format: [2026-06-09 17:35:02] [WARNING] System Alert: title - details (sent)
+                    if (preg_match('/\[(.*?)\]\s+\[(COOLDOWN|INFO|WARNING|CRITICAL)\]\s+(.*?)(?:\s*-\s*(.*?))?(?:\s*\((\w+)\))?\s*$/', $line, $matches)) {
+                        $severity = $matches[2] === 'COOLDOWN' ? 'info' : strtolower($matches[2]);
+                        $status = !empty($matches[5]) ? $matches[5] : 'unknown';
                         $logs[] = [
                             'timestamp' => $matches[1],
-                            'severity' => strtolower($matches[2]),
+                            'severity' => $severity,
                             'title' => trim($matches[3]),
-                            'message' => trim($matches[4]),
-                            'status' => $matches[5],
+                            'message' => trim($matches[4] ?? ''),
+                            'status' => $status,
                             'channel' => 'webpushr'
                         ];
                     }
@@ -240,6 +244,31 @@ try {
             break;
         case 'bash_history':
             $data = $monitorApi->getBashHistory();
+            break;
+        case 'security_scan':
+            $data = $monitorApi->getSecurityScan();
+            break;
+        case 'security_scan_run':
+            require_once __DIR__ . '/AuditLogger.php';
+            AuditLogger::log('SECURITY', 'scan_run', "Account: " . ($_GET['account'] ?? 'all'));
+            $data = $monitorApi->runSecurityScan();
+            break;
+        case 'security_harden':
+            $data = $monitorApi->getSecurityHardenStatus();
+            break;
+        case 'security_harden_run':
+            require_once __DIR__ . '/AuditLogger.php';
+            $checkOnly = ($_POST['check_only'] ?? $_GET['check_only'] ?? '') === 'true';
+            AuditLogger::log('SECURITY', 'harden_run', "Account: " . ($_GET['account'] ?? 'all') . " check_only: " . ($checkOnly ? 'yes' : 'no'));
+            $data = $monitorApi->runSecurityHarden();
+            break;
+        case 'ecomscan':
+            $data = $monitorApi->getEcomscanReport();
+            break;
+        case 'ecomscan_run':
+            require_once __DIR__ . '/AuditLogger.php';
+            AuditLogger::log('SECURITY', 'ecomscan_run', "Account: " . ($_GET['account'] ?? 'all'));
+            $data = $monitorApi->runEcomscan();
             break;
         default: 
             $data = $monitorApi->getOverview(); 

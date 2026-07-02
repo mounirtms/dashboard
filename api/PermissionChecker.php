@@ -44,6 +44,17 @@ class PermissionChecker {
         'can_send_notifications',
         'can_view_subscribers',
         'can_manage_segments',
+        // Magento / Commerce permissions
+        'can_access_magento_products',
+        'can_edit_products',
+        'can_bulk_products',
+        'can_access_magento_customers',
+        'can_edit_customers',
+        'can_access_magento_orders',
+        'can_manage_orders',
+        'can_access_magento_cms',
+        'can_edit_cms',
+        'can_access_magento_settings',
     ];
 
     /**
@@ -53,12 +64,7 @@ class PermissionChecker {
         if (self::$pdo === null) {
             require_once __DIR__ . '/config.php';
             Config::load();
-            $db = Config::get('db');
-            self::$pdo = new PDO(
-                "mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth;charset=utf8mb4",
-                $db['user'], $db['pass'],
-                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]
-            );
+            self::$pdo = Config::getPDO('dashboard_auth');
         }
         return self::$pdo;
     }
@@ -69,11 +75,36 @@ class PermissionChecker {
     private static function loadPermissions() {
         if (self::$permissions === null) {
             $pdo = self::getDb();
+            self::ensureColumns($pdo);
             $stmt = $pdo->query("SELECT * FROM role_permissions");
             self::$permissions = [];
             foreach ($stmt->fetchAll() as $row) {
                 self::$permissions[$row['role']] = $row;
             }
+        }
+    }
+
+    private static function ensureColumns(PDO $pdo) {
+        $cacheFile = __DIR__ . '/logs/schema_check.cache';
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < 3600) {
+            return;
+        }
+
+        try {
+            $stmt = $pdo->query("SHOW COLUMNS FROM role_permissions");
+            $existing = array_column($stmt->fetchAll(), 'Field');
+            foreach (self::VALID_PERMISSIONS as $col) {
+                if (!in_array($col, $existing)) {
+                    $default = str_starts_with($col, 'can_access_magento_settings') ? 0 : 1;
+                    $pdo->exec("ALTER TABLE role_permissions ADD COLUMN `$col` TINYINT(1) NOT NULL DEFAULT $default");
+                }
+            }
+            if (!is_dir(dirname($cacheFile))) {
+                mkdir(dirname($cacheFile), 0755, true);
+            }
+            file_put_contents($cacheFile, date('Y-m-d H:i:s'));
+        } catch (Exception $e) {
+            error_log("[PermissionChecker] Column migration failed: " . $e->getMessage());
         }
     }
 

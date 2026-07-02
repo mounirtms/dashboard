@@ -18,6 +18,7 @@ DUMP="/opt/mariadb10.6/mariadb/bin/mysqldump -u root -p'YourNewStrongPassword' -
 declare -A DBS=(
     [prod]="technadminy7_dBT8x12y22"
     [beta]="beta_dBT8x12y22"
+    [dev]="dev_dBT8x12y22"
     [pim]="akeneo_pim"
 )
 
@@ -28,7 +29,7 @@ DB="${DBS[$ENV]}"
 if [ -z "$DB" ]; then
     echo "Usage: $0 <action> <env>"
     echo "Actions: backup, restore, size, tables, optimize, repair, kill-queries"
-    echo "Envs:    prod, beta, pim"
+    echo "Envs:    prod, beta, dev, pim"
     exit 1
 fi
 
@@ -101,6 +102,6 @@ case "$ACTION" in
     *)
         echo "Usage: $0 <action> <env>"
         echo "Actions: backup, restore, size, tables, optimize, repair, kill-queries"
-        echo "Envs:    prod, beta, pim"
+        echo "Envs:    prod, beta, dev, pim"
         ;;
 esac

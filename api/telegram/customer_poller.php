@@ -3,7 +3,7 @@
  * Customer Bot Poller
  * 
  * Cron-based polling for customer bot.
- * Run every minute: */1 * * * * php /home/dashboard/public_html/api/telegram/customer_poller.php
+ * Run every minute via cron: * * * * * php /home/dashboard/public_html/api/telegram/customer_poller.php
  */
 
 require_once __DIR__ . '/customer/CustomerBot.php';

@@ -1,0 +1,16 @@
+{
+  "scan_time": "2026-07-01T03:06:01+01:00",
+  "scanner": "sansec_ecomscan",
+  "accounts": [
+    "technadminy7",
+    "dev",
+    "tsdnd"
+  ],
+  "summary": {
+    "total_issues": 0,
+    "critical_confidence": 0,
+    "malware": 0,
+    "vulnerabilities": 0
+  },
+  "findings": []
+}

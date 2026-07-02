@@ -43,12 +43,39 @@ const PERMISSION_GROUPS = [
     ] as const,
   },
   {
+    label: 'System & DevOps',
+    permissions: [
+      { key: 'can_access_ssh_monitor', label: 'SSH Monitor' },
+      { key: 'can_access_command_audit', label: 'Command Audit' },
+      { key: 'can_access_user_activity', label: 'User Activity' },
+      { key: 'can_access_system_audit', label: 'System Audit' },
+      { key: 'can_access_plans', label: 'Plans' },
+      { key: 'can_access_cicd', label: 'CI/CD' },
+      { key: 'can_access_script_runner', label: 'Script Runner' },
+    ] as const,
+  },
+  {
     label: 'Push Notifications',
     permissions: [
       { key: 'can_access_push_notifications', label: 'Access Push Notifications page' },
       { key: 'can_send_notifications', label: 'Send push notifications' },
       { key: 'can_view_subscribers', label: 'View subscriber analytics' },
       { key: 'can_manage_segments', label: 'Manage subscriber segments' },
+    ] as const,
+  },
+  {
+    label: 'Magento / Commerce',
+    permissions: [
+      { key: 'can_access_magento_products', label: 'View products catalog' },
+      { key: 'can_edit_products', label: 'Create/update/delete products' },
+      { key: 'can_bulk_products', label: 'Bulk product operations & image upload' },
+      { key: 'can_access_magento_customers', label: 'View customers' },
+      { key: 'can_edit_customers', label: 'Create/update/delete customers' },
+      { key: 'can_access_magento_orders', label: 'View orders' },
+      { key: 'can_manage_orders', label: 'Cancel/ship/invoice orders' },
+      { key: 'can_access_magento_cms', label: 'View CMS pages & blocks' },
+      { key: 'can_edit_cms', label: 'Create/update/delete CMS content' },
+      { key: 'can_access_magento_settings', label: 'Magento connection settings' },
     ] as const,
   },
 ];

@@ -50,7 +50,7 @@ $environments = [
         'name' => 'Development',
         'path' => '/home/dev/public_html',
         'user' => 'dev',
-        'db' => '',
+        'db' => 'dev_dBT8x12y22',
         'url' => 'https://dev.technostationery.com',
         'protected' => false,
     ],

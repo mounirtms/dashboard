@@ -31,14 +31,8 @@ class Mailer {
     private static function getPDO() {
         require_once __DIR__ . '/config.php';
         Config::load();
-        $db = Config::get('db');
         
-        return new PDO(
-            "mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth",
-            $db['user'],
-            $db['pass'],
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-        );
+        return Config::getPDO('dashboard_auth');
     }
 
     /**
@@ -96,35 +90,206 @@ class Mailer {
             return false;
         }
 
-        // Load settings from database or use defaults
         $settings = self::loadSettings();
-        
-        // Check if email is enabled
+
         if (($settings['enabled'] ?? 'true') === 'false') {
             error_log("[Mailer] Email notifications are disabled");
             EmailNotificationLogger::log('disabled', $to, $subject, false, 'Email notifications disabled');
             return false;
         }
-        
+
         $fromEmail = self::sanitizeHeader($settings['from_email'] ?? self::FROM_EMAIL);
         $fromName = self::sanitizeHeader($settings['from_name'] ?? self::FROM_NAME);
+        $type = self::extractTypeFromSubject($subject);
 
+        // Try SMTP if configured
+        $smtpHost = $settings['smtp_host'] ?? '';
+        if (!empty($smtpHost)) {
+            $result = self::sendViaSMTP($to, $subject, $htmlBody, $fromEmail, $fromName, $settings);
+            if ($result['success']) {
+                EmailNotificationLogger::log($type, $to, $subject, true, null);
+                error_log("[Mailer] SMTP sent to $to | Subject: $subject");
+                return true;
+            }
+            error_log("[Mailer] SMTP failed: " . $result['error']);
+            EmailNotificationLogger::log($type, $to, $subject, false, 'SMTP: ' . $result['error']);
+            return false;
+        }
+
+        // Try PHP mail()
         $headers = [
             'From: ' . $fromName . ' <' . $fromEmail . '>',
             'Reply-To: ' . $fromEmail,
             'MIME-Version: 1.0',
             'Content-Type: text/html; charset=UTF-8',
-            'X-Mailer: TechnoDashboard/1.0'
+            'X-Mailer: TechnoDashboard/1.0',
         ];
 
-        $result = mail($to, $subject, $htmlBody, implode("\r\n", $headers));
-        
-        // Log the attempt
-        $type = self::extractTypeFromSubject($subject);
-        EmailNotificationLogger::log($type, $to, $subject, $result, $result ? null : 'mail() function returned false');
-        
-        error_log("[Mailer] Sent to $to | Subject: $subject | Result: " . ($result ? 'Accepted by MTA' : 'FAIL'));
-        return $result;
+        $result = @mail($to, $subject, $htmlBody, implode("\r\n", $headers));
+
+        if ($result) {
+            EmailNotificationLogger::log($type, $to, $subject, true, null);
+            error_log("[Mailer] mail() sent to $to | Subject: $subject");
+            return true;
+        }
+
+        // Fallback: sendmail -t
+        $sendmail = '/usr/sbin/sendmail';
+        if (is_executable($sendmail)) {
+            $result = self::sendViaSendmail($to, $subject, $htmlBody, $fromEmail, $fromName, $sendmail);
+            if ($result['success']) {
+                EmailNotificationLogger::log($type, $to, $subject, true, null);
+                error_log("[Mailer] sendmail sent to $to | Subject: $subject");
+                return true;
+            }
+            error_log("[Mailer] sendmail failed: " . $result['error']);
+            EmailNotificationLogger::log($type, $to, $subject, false, 'sendmail: ' . $result['error']);
+            return false;
+        }
+
+        EmailNotificationLogger::log($type, $to, $subject, false, 'mail() returned false, no sendmail available');
+        error_log("[Mailer] FAIL: mail() returned false and no sendmail at $sendmail");
+        return false;
+    }
+
+    /**
+     * Send via sendmail binary (cPanel fallback)
+     */
+    private static function sendViaSendmail($to, $subject, $htmlBody, $fromEmail, $fromName, $sendmail) {
+        $message = "From: $fromName <$fromEmail>\r\n";
+        $message .= "To: $to\r\n";
+        $message .= "Reply-To: $fromEmail\r\n";
+        $message .= "Subject: $subject\r\n";
+        $message .= "MIME-Version: 1.0\r\n";
+        $message .= "Content-Type: text/html; charset=UTF-8\r\n";
+        $message .= "X-Mailer: TechnoDashboard/1.0\r\n";
+        $message .= "\r\n";
+        $message .= $htmlBody;
+
+        $cmd = escapeshellcmd($sendmail) . ' -t -oi -f ' . escapeshellarg($fromEmail);
+        $proc = popen($cmd, 'w');
+        if ($proc === false) {
+            return ['success' => false, 'error' => 'popen() failed'];
+        }
+        fwrite($proc, $message);
+        $exitCode = pclose($proc);
+
+        return ['success' => $exitCode === 0, 'error' => "exit code $exitCode"];
+    }
+
+    /**
+     * Send via SMTP socket (lightweight, no external library)
+     */
+    private static function sendViaSMTP($to, $subject, $htmlBody, $fromEmail, $fromName, $settings) {
+        $host = $settings['smtp_host'] ?? '';
+        $port = (int)($settings['smtp_port'] ?? 587);
+        $user = $settings['smtp_user'] ?? '';
+        $pass = $settings['smtp_pass'] ?? '';
+        $encryption = $settings['smtp_encryption'] ?? 'tls';
+
+        $socketHost = ($encryption === 'ssl') ? 'ssl://' . $host : $host;
+        $socket = @fsockopen($socketHost, $port, $errno, $errstr, 10);
+        if (!$socket) {
+            return ['success' => false, 'error' => "Connection failed: $errstr ($errno)"];
+        }
+
+        stream_set_timeout($socket, 15);
+
+        $read = function() use ($socket) {
+            $response = '';
+            while ($line = fgets($socket, 515)) {
+                $response .= $line;
+                if (substr($line, 3, 1) === ' ') break;
+            }
+            return $response;
+        };
+
+        $write = function($cmd) use ($socket) {
+            fwrite($socket, $cmd . "\r\n");
+        };
+
+        try {
+            $read(); // Read server greeting
+
+            $hostname = gethostname() ?: 'localhost';
+            $write("EHLO $hostname");
+            $ehlo = $read();
+
+            // STARTTLS
+            if ($encryption === 'tls' && stripos($ehlo, 'STARTTLS') !== false) {
+                $write('STARTTLS');
+                $tlsResp = $read();
+                if (strpos($tlsResp, '220') !== 0) {
+                    return ['success' => false, 'error' => 'STARTTLS rejected'];
+                }
+                stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+                $write("EHLO $hostname");
+                $read();
+            }
+
+            // AUTH LOGIN
+            if (!empty($user) && !empty($pass)) {
+                $write('AUTH LOGIN');
+                $authResp = $read();
+                if (strpos($authResp, '334') !== 0) {
+                    return ['success' => false, 'error' => 'AUTH LOGIN not supported'];
+                }
+                $write(base64_encode($user));
+                $read();
+                $write(base64_encode($pass));
+                $authResult = $read();
+                if (strpos($authResult, '235') !== 0) {
+                    return ['success' => false, 'error' => 'Authentication failed: ' . trim($authResult)];
+                }
+            }
+
+            // Send mail
+            $write("MAIL FROM:<$fromEmail>");
+            $mailFrom = $read();
+            if (strpos($mailFrom, '250') !== 0) {
+                return ['success' => false, 'error' => 'MAIL FROM rejected'];
+            }
+
+            $write("RCPT TO:<$to>");
+            $rcptTo = $read();
+            if (strpos($rcptTo, '250') !== 0) {
+                return ['success' => false, 'error' => 'RCPT TO rejected'];
+            }
+
+            $write('DATA');
+            $dataResp = $read();
+            if (strpos($dataResp, '354') !== 0) {
+                return ['success' => false, 'error' => 'DATA rejected'];
+            }
+
+            $headers = "From: $fromName <$fromEmail>\r\n";
+            $headers .= "To: $to\r\n";
+            $headers .= "Reply-To: $fromEmail\r\n";
+            $headers .= "Subject: $subject\r\n";
+            $headers .= "MIME-Version: 1.0\r\n";
+            $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+            $headers .= "Date: " . date('r') . "\r\n";
+            $headers .= "X-Mailer: TechnoDashboard/1.0\r\n";
+            $headers .= "\r\n";
+            $headers .= $htmlBody;
+            $headers .= "\r\n.";
+
+            $write($headers);
+            $sendResult = $read();
+
+            $write('QUIT');
+            $read();
+            fclose($socket);
+
+            if (strpos($sendResult, '250') !== 0) {
+                return ['success' => false, 'error' => 'Message rejected: ' . trim($sendResult)];
+            }
+
+            return ['success' => true, 'error' => null];
+        } catch (\Exception $e) {
+            @fclose($socket);
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
     
     /**
@@ -136,11 +301,13 @@ class Mailer {
         if (strpos($subject, 'Task Status Updated') === 0) return 'task_status_change';
         if (strpos($subject, 'Task Completed') === 0) return 'task_completed';
         if (strpos($subject, 'New Note on Task') === 0) return 'task_note';
-        if (strpos($subject, 'High Priority Task') === 0) return 'admin_high_priority';
-        if (strpos($subject, 'Task Completion Report') === 0) return 'admin_completion';
-        if (strpos($subject, 'Bulk Task Completion') === 0) return 'admin_bulk_completion';
+        if (strpos($subject, 'New Login') === 0) return 'login_notification';
+        if (strpos($subject, 'Reset Your Dashboard') === 0 || strpos($subject, 'Your Dashboard Password Has Been Reset') === 0) return 'password_reset';
+        if (strpos($subject, 'Dashboard Password Changed') === 0) return 'password_changed';
+        if (strpos($subject, 'Welcome to') === 0) return 'account_created';
         if (strpos($subject, 'System Report') === 0) return 'admin_system_report';
         if (strpos($subject, 'Major Update') === 0) return 'admin_major_update';
+        if (strpos($subject, 'Test Email') === 0) return 'test_email';
         return 'other';
     }
 
@@ -472,7 +639,12 @@ HTML;
             'from_name' => self::FROM_NAME,
             'admin_email_1' => self::ADMIN_EMAILS[0],
             'admin_email_2' => self::ADMIN_EMAILS[1],
-            'enabled' => 'true'
+            'enabled' => 'true',
+            'smtp_host' => '',
+            'smtp_port' => '587',
+            'smtp_user' => '',
+            'smtp_pass' => '',
+            'smtp_encryption' => 'tls',
         ];
         self::$settingsCacheTime = time();
         
@@ -485,7 +657,7 @@ HTML;
     public static function saveSettings($settings) {
         try {
             $pdo = self::getPDO();
-            
+
             // Create table if it doesn't exist
             $pdo->exec("CREATE TABLE IF NOT EXISTS email_settings (
                 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -494,14 +666,18 @@ HTML;
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 INDEX idx_key (setting_key)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            
-            // Save settings
+
+            // Don't overwrite smtp_pass with empty value
+            if (isset($settings['smtp_pass']) && $settings['smtp_pass'] === '') {
+                unset($settings['smtp_pass']);
+            }
+
             $pdo->beginTransaction();
-            
+
             foreach ($settings as $key => $value) {
                 $stmt = $pdo->prepare(
-                    "INSERT INTO email_settings (setting_key, setting_value) 
-                     VALUES (:key, :value) 
+                    "INSERT INTO email_settings (setting_key, setting_value)
+                     VALUES (:key, :value)
                      ON DUPLICATE KEY UPDATE setting_value = :value2"
                 );
                 $stmt->execute([
@@ -510,15 +686,13 @@ HTML;
                     ':value2' => $value
                 ]);
             }
-            
+
             $pdo->commit();
-            
-            // Clear cache
             self::$settingsCache = null;
-            
+
             error_log("[Mailer] Email settings saved successfully");
             return ['success' => true, 'message' => 'Email settings saved'];
-            
+
         } catch (\Exception $e) {
             if (isset($pdo) && $pdo->inTransaction()) {
                 $pdo->rollBack();
@@ -538,7 +712,13 @@ HTML;
             'from_name' => $settings['from_name'] ?? self::FROM_NAME,
             'admin_email_1' => $settings['admin_email_1'] ?? self::ADMIN_EMAILS[0],
             'admin_email_2' => $settings['admin_email_2'] ?? self::ADMIN_EMAILS[1],
-            'enabled' => $settings['enabled'] ?? 'true'
+            'enabled' => $settings['enabled'] ?? 'true',
+            'smtp_host' => $settings['smtp_host'] ?? '',
+            'smtp_port' => $settings['smtp_port'] ?? '587',
+            'smtp_user' => $settings['smtp_user'] ?? '',
+            'smtp_pass' => '',
+            'smtp_encryption' => $settings['smtp_encryption'] ?? 'tls',
+            'smtp_pass_set' => !empty($settings['smtp_pass']),
         ];
     }
 

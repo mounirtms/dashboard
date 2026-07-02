@@ -20,11 +20,7 @@ if (empty($_SESSION['logged_in']) || !PermissionChecker::hasPermission('can_mana
 $action = $_GET['action'] ?? '';
 
 try {
-    $db = Config::get('db');
-    $pdo = new PDO("mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth", $db['user'], $db['pass'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
+    $pdo = Config::getPDO('dashboard_auth');
 
     switch ($action) {
         case 'list':

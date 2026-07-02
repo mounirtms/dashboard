@@ -1,0 +1,450 @@
+{
+  "scan_time": "2026-06-14T03:01:47+01:00",
+  "last_manual_update": "2026-06-14T00:30:00+01:00",
+  "accounts": [
+    "technadminy7",
+    "dev",
+    "beta",
+    "tsdnd"
+  ],
+  "summary": {
+    "total_issues": 33,
+    "critical": 23,
+    "high": 6,
+    "medium": 1,
+    "low": 3
+  },
+  "remediations": [
+    {
+      "timestamp": "2026-06-13T20:00:00+01:00",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "SessionReaper PHP8 PHAR backdoor removed",
+      "detail": "Deleted pub/media/customer_address/5/0/5081e627ea7d2b.php8 - obfuscated PHP backdoor with mixed-case <?pHP tag and hex2bin encoding"
+    },
+    {
+      "timestamp": "2026-06-13T20:00:00+01:00",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "Monolog deserialization payload removed",
+      "detail": "Deleted pub/media/customer_address/s/e/sess_zah9z6ppc8q1sh5aq8j5liyri2bxj06b - SessionReaper attack payload using Monolog\\Handler\\SyslogUdpHandler deserialization chain to download webshell"
+    },
+    {
+      "timestamp": "2026-06-13T20:30:00+01:00",
+      "account": "technadminy7",
+      "category": "configuration",
+      "title": "Protected extensions list hardened in database",
+      "detail": "Updated core_config_data general/file/protected_extensions with 34 blocked file types including php8, phps, ini, user.ini, bash, ksh, csh, exe, dll, bat, cmd, hta - closing the upload vector exploited by SessionReaper"
+    },
+    {
+      "timestamp": "2026-06-13T21:00:00+01:00",
+      "account": "technadminy7",
+      "category": "permissions",
+      "title": "Critical file ownership corrected",
+      "detail": "Fixed root-owned app/etc/config.php and 3 composer autoload files to technadminy7:technadminy7 - resolved Apache 500 / Varnish 503 outage"
+    },
+    {
+      "timestamp": "2026-06-13T21:30:00+01:00",
+      "account": "technadminy7",
+      "category": "permissions",
+      "title": "World-writable files reduced from 314 to 2",
+      "detail": "Massive permission hardening pass reduced world-writable files by 99.4%"
+    }
+  ],
+  "composer_audit": {
+    "scan_time": "2026-06-13T22:00:00+01:00",
+    "total_cves": 22,
+    "packages_affected": 7,
+    "critical": [
+      {
+        "name": "twig/twig",
+        "version": "v3.23.0",
+        "cves": 16,
+        "severity": "CRITICAL",
+        "latest": "v3.23.1",
+        "impact": "Remote code execution via template injection"
+      }
+    ],
+    "high": [
+      {
+        "name": "symfony/process",
+        "version": "v6.4.20",
+        "cves": 1,
+        "severity": "HIGH",
+        "latest": "v6.4.21",
+        "impact": "Command injection in Process class"
+      },
+      {
+        "name": "symfony/http-foundation",
+        "version": "v6.4.20",
+        "cves": 1,
+        "severity": "HIGH",
+        "latest": "v6.4.21",
+        "impact": "Session fixation vulnerability"
+      }
+    ],
+    "medium": [
+      {
+        "name": "symfony/validator",
+        "version": "v6.4.20",
+        "cves": 1,
+        "severity": "MEDIUM",
+        "latest": "v6.4.21",
+        "impact": "Constraint validation bypass"
+      }
+    ],
+    "low": [
+      {
+        "name": "symfony/translation",
+        "version": "v6.4.20",
+        "cves": 1,
+        "severity": "LOW",
+        "latest": "v6.4.21"
+      },
+      {
+        "name": "symfony/console",
+        "version": "v6.4.20",
+        "cves": 1,
+        "severity": "LOW",
+        "latest": "v6.4.21"
+      },
+      {
+        "name": "symfony/routing",
+        "version": "v6.4.20",
+        "cves": 1,
+        "severity": "LOW",
+        "latest": "v6.4.21"
+      }
+    ],
+    "abandoned_packages": 13,
+    "third_party_modules": 118,
+    "recommendation": "URGENT: Run 'composer update twig/twig' to upgrade to v3.23.1+ and address 16 critical CVEs including remote code execution"
+  },
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "Skimmer/backdoor - eval(base64_decode) in media",
+      "detail": "eval(base64_decode found in /home/technadminy7/public_html/pub/media/custom_options/quote/8/6/865index.php",
+      "timestamp": "2026-06-14T03:00:05+01:00",
+      "status": "open",
+      "action_required": "Investigate and remove immediately - possible new compromise vector"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "SessionReaper PHP8 PHAR backdoor",
+      "detail": "php_phar_backdoor_embedded_entry_23aaa in pub/media/customer_address/5/0/5081e627ea7d2b.php8",
+      "timestamp": "2026-06-13T19:45:00+01:00",
+      "status": "remediated"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "Monolog deserialization payload (SessionReaper)",
+      "detail": "uploaded_session_file in pub/media/customer_address/s/e/sess_zah9z6ppc8q1sh5aq8j5liyri2bxj06b - PHP deserialization chain targeting webshell",
+      "timestamp": "2026-06-13T19:45:00+01:00",
+      "status": "remediated"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "vulnerability",
+      "title": "File upload endpoint accepted dangerous extensions",
+      "detail": "Magento Uploader::checkAllowedExtension() returns true for ALL extensions when allowedExtensions list is empty. Default protected list was missing php8, phps, ini, user.ini",
+      "timestamp": "2026-06-13T20:30:00+01:00",
+      "status": "remediated"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "vulnerability",
+      "title": "Twig v3.23.0 - 16 critical CVEs including RCE",
+      "detail": "Remote code execution via template injection. Upgrade to v3.23.1+ immediately.",
+      "timestamp": "2026-06-13T22:00:00+01:00",
+      "status": "open"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/technadminy7/public_html/pub/static/frontend/Magento/luma/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:16+01:00",
+      "status": "review_needed"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/technadminy7/public_html/pub/static/frontend/Magento/blank/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:16+01:00",
+      "status": "review_needed"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/technadminy7/public_html/pub/static/frontend/Sm/themecore/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:16+01:00",
+      "status": "review_needed"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/technadminy7/public_html/pub/static/frontend/Sm/market/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:16+01:00",
+      "status": "review_needed"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/technadminy7/public_html/pub/static/frontend/Sm/smtheme_mobile/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:16+01:00",
+      "status": "review_needed"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "dev",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/dev/public_html/pub/static/frontend/Magento/luma/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "dev",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/dev/public_html/pub/static/frontend/Magento/blank/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "dev",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/dev/public_html/pub/static/frontend/Sm/themecore/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "dev",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/dev/public_html/pub/static/frontend/Sm/market/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "dev",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/dev/public_html/pub/static/frontend/Sm/smtheme_mobile/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Magento/luma/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Magento/luma/en_US/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Magento/blank/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Magento/blank/en_US/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Sm/themecore/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Sm/themecore/en_US/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Sm/market/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Sm/market/en_US/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Sm/smtheme_mobile/fr_FR/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "malware",
+      "title": "PHP file in static directory",
+      "detail": "/home/tsdnd/public_html/pub/static/frontend/Sm/smtheme_mobile/en_US/Mab_CheckoutCustomization/template/payment/discount.phtml",
+      "timestamp": "2026-06-14T03:01:17+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "technadminy7",
+      "category": "permissions",
+      "title": "World-writable files",
+      "detail": "2 world-writable files found (reduced from 314)",
+      "timestamp": "2026-06-14T03:01:46+01:00"
+    },
+    {
+      "severity": "CRITICAL",
+      "account": "tsdnd",
+      "category": "permissions",
+      "title": "World-writable files",
+      "detail": "28 world-writable files found",
+      "timestamp": "2026-06-14T03:01:47+01:00"
+    },
+    {
+      "severity": "HIGH",
+      "account": "technadminy7",
+      "category": "vulnerability",
+      "title": "Symfony Process v6.4.20 - Command injection",
+      "detail": "Command injection vulnerability in Process class. Upgrade to v6.4.21.",
+      "timestamp": "2026-06-13T22:00:00+01:00",
+      "status": "open"
+    },
+    {
+      "severity": "HIGH",
+      "account": "technadminy7",
+      "category": "vulnerability",
+      "title": "Symfony HttpFoundation v6.4.20 - Session fixation",
+      "detail": "Session fixation vulnerability. Upgrade to v6.4.21.",
+      "timestamp": "2026-06-13T22:00:00+01:00",
+      "status": "open"
+    },
+    {
+      "severity": "HIGH",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "Suspicious JavaScript pattern",
+      "detail": "new Image().src.*http in /home/technadminy7/public_html/pub/static/frontend/Magento/luma/fr_FR/js/bundle/bundle1.min.js",
+      "timestamp": "2026-06-14T03:01:28+01:00"
+    },
+    {
+      "severity": "HIGH",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "Suspicious JavaScript pattern",
+      "detail": "new Image().src.*http in /home/technadminy7/public_html/pub/static/frontend/Magento/blank/fr_FR/js/bundle/bundle1.min.js",
+      "timestamp": "2026-06-14T03:01:28+01:00"
+    },
+    {
+      "severity": "HIGH",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "Suspicious JavaScript pattern",
+      "detail": "new Image().src.*http in /home/technadminy7/public_html/pub/static/frontend/Sm/themecore/fr_FR/js/bundle/bundle1.min.js",
+      "timestamp": "2026-06-14T03:01:28+01:00"
+    },
+    {
+      "severity": "HIGH",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "Suspicious JavaScript pattern",
+      "detail": "new Image().src.*http in /home/technadminy7/public_html/pub/static/frontend/Sm/market/fr_FR/js/bundle/bundle1.min.js",
+      "timestamp": "2026-06-14T03:01:28+01:00"
+    },
+    {
+      "severity": "HIGH",
+      "account": "technadminy7",
+      "category": "malware",
+      "title": "Suspicious JavaScript pattern",
+      "detail": "new Image().src.*http in /home/technadminy7/public_html/pub/static/frontend/Sm/smtheme_mobile/fr_FR/js/bundle/bundle1.min.js",
+      "timestamp": "2026-06-14T03:01:28+01:00"
+    },
+    {
+      "severity": "HIGH",
+      "account": "dev",
+      "category": "exposure",
+      "title": "Backup files in web root",
+      "detail": "4 backup files exposed",
+      "timestamp": "2026-06-14T03:01:46+01:00"
+    },
+    {
+      "severity": "MEDIUM",
+      "account": "technadminy7",
+      "category": "integrity",
+      "title": "Modified core files",
+      "detail": "8 Magento core files modified recently",
+      "timestamp": "2026-06-14T03:01:45+01:00"
+    },
+    {
+      "severity": "LOW",
+      "account": "technadminy7",
+      "category": "integrity",
+      "title": "New code files",
+      "detail": "4 new files in app/code this week",
+      "timestamp": "2026-06-14T03:01:45+01:00"
+    },
+    {
+      "severity": "LOW",
+      "account": "dev",
+      "category": "integrity",
+      "title": "New code files",
+      "detail": "20 new files in app/code this week",
+      "timestamp": "2026-06-14T03:01:46+01:00"
+    },
+    {
+      "severity": "LOW",
+      "account": "tsdnd",
+      "category": "integrity",
+      "title": "New code files",
+      "detail": "20 new files in app/code this week",
+      "timestamp": "2026-06-14T03:01:46+01:00"
+    }
+  ]
+}

@@ -57,6 +57,9 @@ $EXCLUDE_PATHS = [
     '/rest/',
     '/graphql',
     '/newsletter/',
+    '/search/',
+    '/catalogsearch/',
+    '/gifs-rules/',
 ];
 $EXCLUDE_EXTENSIONS = ['.xml', '.json', '.pdf', '.zip', '.gz', '.tar'];
 
@@ -165,7 +168,7 @@ function warm_device_urls($urls, $device_key, $device_info, $varnish_host, $doma
             CURLOPT_HEADER => true,
             CURLOPT_NOBODY => false,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_TIMEOUT => $timeout,
             CURLOPT_CONNECTTIMEOUT => 8,
             CURLOPT_USERAGENT => $device_info['ua'],

@@ -203,6 +203,12 @@ export interface EmailSettings {
   admin_email_1: string;
   admin_email_2: string;
   enabled: string;
+  smtp_host: string;
+  smtp_port: string;
+  smtp_user: string;
+  smtp_pass: string;
+  smtp_encryption: string;
+  smtp_pass_set?: boolean;
 }
 
 export async function fetchEmailSettings(): Promise<EmailSettings> {

@@ -72,7 +72,7 @@ create_backup_dirs() {
     sudo chmod 755 "$BACKUP_DIR"
     
     # Create subdirectories
-    mkdir -p "$BACKUP_DIR"/{system,accounts,products,pim,beta,logs,source}
+    mkdir -p "$BACKUP_DIR"/{system,accounts,products,pim,beta,logs,source,configs}
     
     success "Backup directories created"
 }
@@ -219,6 +219,274 @@ create_file_backups() {
     fi
 }
 
+# Backup system configurations (server-level configs not covered by WHM backups)
+backup_system_configurations() {
+    log "Creating system configurations backup..."
+
+    local CFG_DIR="$BACKUP_DIR/configs"
+    mkdir -p "$CFG_DIR"/{varnish,apache,redis,mariadb,systemd,projects,cron,csf,sysctl,limits,php,php-fpm,cpanel,ssh,logrotate,imunify360}
+
+    # === Varnish ===
+    if [ -d "/etc/varnish" ]; then
+        log "Backing up Varnish configurations..."
+        for f in default.vcl backends.vcl technostationery.vcl varnish.params varnish.params.optimized secret; do
+            if [ -f "/etc/varnish/$f" ]; then
+                cp "/etc/varnish/$f" "$CFG_DIR/varnish/" 2>/dev/null || true
+            fi
+        done
+        success "Varnish configs backed up"
+    else
+        warning "Varnish config directory not found, skipping"
+    fi
+
+    # === Apache ===
+    log "Backing up Apache configurations..."
+    local APACHE_CONF="/usr/local/apache/conf"
+
+    for f in httpd.conf php.conf mime.types; do
+        if [ -f "$APACHE_CONF/$f" ]; then
+            cp "$APACHE_CONF/$f" "$CFG_DIR/apache/" 2>/dev/null || true
+        fi
+    done
+    for d in includes userdata modsec conf.d; do
+        if [ -d "$APACHE_CONF/$d" ]; then
+            cp -a "$APACHE_CONF/$d" "$CFG_DIR/apache/$d" 2>/dev/null || true
+        fi
+    done
+    success "Apache configs backed up"
+
+    # === Redis ===
+    log "Backing up Redis configurations..."
+    for f in /etc/redis.conf /etc/redis_optimization.conf /etc/redis-sentinel.conf; do
+        if [ -f "$f" ]; then
+            cp "$f" "$CFG_DIR/redis/" 2>/dev/null || true
+        fi
+    done
+    success "Redis configs backed up"
+
+    # === MariaDB 10.6 ===
+    log "Backing up MariaDB configurations..."
+    if [ -f "/etc/my.cnf" ]; then
+        cp /etc/my.cnf "$CFG_DIR/mariadb/" 2>/dev/null || true
+    fi
+    if [ -d "/etc/my.cnf.d" ]; then
+        for f in magento-optimized.cnf client.cnf server.cnf mysql-clients.cnf spider.cnf enable_encryption.preset server-cert.pem server-key.pem; do
+            if [ -f "/etc/my.cnf.d/$f" ]; then
+                cp "/etc/my.cnf.d/$f" "$CFG_DIR/mariadb/" 2>/dev/null || true
+            fi
+        done
+    fi
+    if [ -f "/opt/mariadb10.6/my.cnf" ]; then
+        cp /opt/mariadb10.6/my.cnf "$CFG_DIR/mariadb/my.cnf.mariadb10.6" 2>/dev/null || true
+    fi
+    success "MariaDB configs backed up"
+
+    # === Systemd service overrides ===
+    log "Backing up systemd service overrides..."
+    local SYSTEMD_DIR="/etc/systemd/system"
+    for f in varnish.service varnish.service.backup mariadb10.6.service; do
+        if [ -f "$SYSTEMD_DIR/$f" ]; then
+            cp "$SYSTEMD_DIR/$f" "$CFG_DIR/systemd/" 2>/dev/null || true
+        fi
+    done
+    for d in varnish.service.d varnishncsa.service.d redis.service.d redis-sentinel.service.d mariadb.service.d; do
+        if [ -d "$SYSTEMD_DIR/$d" ]; then
+            cp -a "$SYSTEMD_DIR/$d" "$CFG_DIR/systemd/$d" 2>/dev/null || true
+        fi
+    done
+    success "Systemd overrides backed up"
+
+    # === CSF Firewall ===
+    if [ -d "/etc/csf" ]; then
+        log "Backing up CSF firewall configurations..."
+        for f in csf.conf csf.allow csf.deny csf.ignore csf.blocklists csf.cloudflare \
+                 csf.dirwatch csf.fignore csf.pignore csf.rignore csf.signore \
+                 csf.logignore csf.syslogs csf.smtpauth csf.resellers csf.redirect \
+                 csf.rblconf regex.custom.pm imh.allow imh.ignore cpanel.allow cpanel.ignore; do
+            if [ -f "/etc/csf/$f" ]; then
+                cp "/etc/csf/$f" "$CFG_DIR/csf/" 2>/dev/null || true
+            fi
+        done
+        success "CSF firewall configs backed up"
+    else
+        warning "CSF config directory not found, skipping"
+    fi
+
+    # === Sysctl kernel tuning ===
+    log "Backing up sysctl kernel tuning..."
+    if [ -f "/etc/sysctl.conf" ]; then
+        cp /etc/sysctl.conf "$CFG_DIR/sysctl/" 2>/dev/null || true
+    fi
+    if [ -d "/etc/sysctl.d" ]; then
+        for f in /etc/sysctl.d/*.conf; do
+            if [ -f "$f" ]; then
+                cp "$f" "$CFG_DIR/sysctl/" 2>/dev/null || true
+            fi
+        done
+    fi
+    success "Sysctl tuning configs backed up"
+
+    # === Security limits (ulimits) ===
+    log "Backing up security limits..."
+    if [ -f "/etc/security/limits.conf" ]; then
+        cp /etc/security/limits.conf "$CFG_DIR/limits/" 2>/dev/null || true
+    fi
+    if [ -d "/etc/security/limits.d" ]; then
+        for f in /etc/security/limits.d/*.conf; do
+            if [ -f "$f" ]; then
+                cp "$f" "$CFG_DIR/limits/" 2>/dev/null || true
+            fi
+        done
+    fi
+    success "Security limits backed up"
+
+    # === EA-PHP (EasyApache PHP 8.2 and 8.3) ===
+    log "Backing up PHP configurations..."
+    for php_ver in ea-php82 ea-php83; do
+        local PHP_ROOT="/opt/cpanel/$php_ver/root/etc"
+        if [ -d "$PHP_ROOT" ]; then
+            mkdir -p "$CFG_DIR/php/$php_ver/php.d"
+            if [ -f "$PHP_ROOT/php.ini" ]; then
+                cp "$PHP_ROOT/php.ini" "$CFG_DIR/php/$php_ver/" 2>/dev/null || true
+            fi
+            for ini in 10-opcache.ini 50-redis.ini imagick.ini 20-intl.ini; do
+                if [ -f "$PHP_ROOT/php.d/$ini" ]; then
+                    cp "$PHP_ROOT/php.d/$ini" "$CFG_DIR/php/$php_ver/php.d/" 2>/dev/null || true
+                fi
+            done
+        fi
+    done
+    success "PHP configs backed up"
+
+    # === PHP-FPM pool configs (per domain) ===
+    log "Backing up PHP-FPM pool configurations..."
+    for php_ver in ea-php81 ea-php82 ea-php83; do
+        local FPM_DIR="/opt/cpanel/$php_ver/root/etc/php-fpm.d"
+        if [ -d "$FPM_DIR" ]; then
+            mkdir -p "$CFG_DIR/php-fpm/$php_ver"
+            for f in "$FPM_DIR"/*.conf; do
+                if [ -f "$f" ]; then
+                    cp "$f" "$CFG_DIR/php-fpm/$php_ver/" 2>/dev/null || true
+                fi
+            done
+        fi
+    done
+    if [ -d "/var/cpanel/ApachePHPFPM" ]; then
+        for f in system_pool_defaults.yaml default_accounts_to_fpm; do
+            if [ -f "/var/cpanel/ApachePHPFPM/$f" ]; then
+                cp "/var/cpanel/ApachePHPFPM/$f" "$CFG_DIR/php-fpm/" 2>/dev/null || true
+            fi
+        done
+    fi
+    success "PHP-FPM pool configs backed up"
+
+    # === cPanel user account definitions ===
+    log "Backing up cPanel user definitions..."
+    if [ -d "/var/cpanel/users" ]; then
+        for f in /var/cpanel/users/*; do
+            if [ -f "$f" ]; then
+                cp "$f" "$CFG_DIR/cpanel/" 2>/dev/null || true
+            fi
+        done
+    fi
+    success "cPanel user definitions backed up"
+
+    # === SSH ===
+    log "Backing up SSH configuration..."
+    if [ -f "/etc/ssh/sshd_config" ]; then
+        cp /etc/ssh/sshd_config "$CFG_DIR/ssh/" 2>/dev/null || true
+    fi
+    success "SSH config backed up"
+
+    # === Logrotate (custom configs for services) ===
+    log "Backing up logrotate configurations..."
+    if [ -d "/etc/logrotate.d" ]; then
+        for f in varnish redis magento akeneo-pim \
+                 ea-php82-php-fpm ea-php83-php-fpm \
+                 apache backups.conf imunify360-antivirus imunify-core; do
+            if [ -f "/etc/logrotate.d/$f" ]; then
+                cp "/etc/logrotate.d/$f" "$CFG_DIR/logrotate/" 2>/dev/null || true
+            fi
+        done
+    fi
+    success "Logrotate configs backed up"
+
+    # === Imunify360 ===
+    if [ -d "/etc/imunify360/user_config" ]; then
+        log "Backing up Imunify360 configuration..."
+        cp -a /etc/imunify360/user_config "$CFG_DIR/imunify360/" 2>/dev/null || true
+        success "Imunify360 config backed up"
+    else
+        warning "Imunify360 config not found, skipping"
+    fi
+
+    # === Project .env and .htaccess files ===
+    log "Backing up project configuration files..."
+
+    if [ -d "/home/dashboard/public_html" ]; then
+        mkdir -p "$CFG_DIR/projects/dashboard"
+        if [ -f "/home/dashboard/public_html/.env" ]; then
+            cp "/home/dashboard/public_html/.env" "$CFG_DIR/projects/dashboard/" 2>/dev/null || true
+        fi
+        find /home/dashboard/public_html -name ".htaccess" -exec bash -c '
+            rel="${1#/home/dashboard/public_html/}"
+            dest_dir="$2/$(dirname "$rel")"
+            mkdir -p "$dest_dir"
+            cp "$1" "$dest_dir/"
+        ' _ {} "$CFG_DIR/projects/dashboard" \; 2>/dev/null || true
+    fi
+
+    if [ -d "/home/pim/public_html" ] && [ -f "/home/pim/public_html/.env" ]; then
+        mkdir -p "$CFG_DIR/projects/pim"
+        cp "/home/pim/public_html/.env" "$CFG_DIR/projects/pim/" 2>/dev/null || true
+    fi
+
+    if [ -d "/home/betapublic_html" ]; then
+        mkdir -p "$CFG_DIR/projects/beta"
+        if [ -f "/home/betapublic_html/.htaccess" ]; then
+            cp "/home/betapublic_html/.htaccess" "$CFG_DIR/projects/beta/" 2>/dev/null || true
+        fi
+        if [ -f "/home/betapublic_html/app/etc/env.php" ]; then
+            mkdir -p "$CFG_DIR/projects/beta/app/etc"
+            cp "/home/betapublic_html/app/etc/env.php" "$CFG_DIR/projects/beta/app/etc/" 2>/dev/null || true
+        fi
+        if [ -f "/home/betapublic_html/app/etc/config.php" ]; then
+            mkdir -p "$CFG_DIR/projects/beta/app/etc"
+            cp "/home/betapublic_html/app/etc/config.php" "$CFG_DIR/projects/beta/app/etc/" 2>/dev/null || true
+        fi
+    fi
+
+    if [ -d "/home/dev/public_html" ]; then
+        mkdir -p "$CFG_DIR/projects/dev"
+        if [ -f "/home/dev/public_html/.htaccess" ]; then
+            cp "/home/dev/public_html/.htaccess" "$CFG_DIR/projects/dev/" 2>/dev/null || true
+        fi
+        if [ -f "/home/dev/public_html/app/etc/env.php" ]; then
+            mkdir -p "$CFG_DIR/projects/dev/app/etc"
+            cp "/home/dev/public_html/app/etc/env.php" "$CFG_DIR/projects/dev/app/etc/" 2>/dev/null || true
+        fi
+    fi
+
+    success "Project configs backed up"
+
+    # === Crontabs ===
+    log "Backing up crontabs..."
+    crontab -l > "$CFG_DIR/cron/root_crontab.txt" 2>/dev/null || true
+    for user in technadminy7 beta pim dev dashboard; do
+        crontab -u "$user" -l > "$CFG_DIR/cron/${user}_crontab.txt" 2>/dev/null || true
+    done
+    success "Crontabs backed up"
+
+    # === Create combined archive ===
+    log "Creating system configs archive..."
+    tar -czf "$CFG_DIR/server-configs-$DATETIME.tar.gz" -C "$CFG_DIR" \
+        varnish apache redis mariadb systemd projects cron \
+        csf sysctl limits php php-fpm cpanel ssh logrotate imunify360 \
+        2>/dev/null || warning "Failed to create combined configs archive"
+
+    success "System configurations backup completed"
+}
+
 # Upload backup directly to iDrive
 upload_to_idrive() {
     log "Uploading backup to iDrive..."
@@ -285,7 +553,16 @@ upload_to_idrive() {
             --delete || die "Failed to upload logs directory to iDrive"
         success "Logs directory uploaded to iDrive"
     fi
-    
+
+    # Upload configs directory
+    if [ -d "$BACKUP_DIR/configs" ] && [ "$(ls -A "$BACKUP_DIR/configs")" ]; then
+        log "Uploading configs directory..."
+        sudo "$AWS_CMD" s3 sync "$BACKUP_DIR/configs" "$S3_BUCKET/$DATE/configs/" \
+            --endpoint-url "$S3_ENDPOINT" \
+            --delete || die "Failed to upload configs directory to iDrive"
+        success "Configs directory uploaded to iDrive"
+    fi
+
     success "Backup uploaded to iDrive"
 }
 
@@ -368,7 +645,10 @@ main() {
     
     # Create file backups
     create_file_backups
-    
+
+    # Backup system configurations
+    backup_system_configurations
+
     # Upload to iDrive
     upload_to_idrive
     

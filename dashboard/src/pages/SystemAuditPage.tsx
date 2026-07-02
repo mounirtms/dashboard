@@ -5,7 +5,8 @@ import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 
 interface AuditData {
-  services: Record<string, string>;
+  services: Record<string, { name: string; status: string; enabled: boolean; pid: number; uptime_seconds: number }[]>;
+  service_summary: { total: number; active: number; inactive: number; failed: number };
   databases: Array<{ name: string; size_mb: number; tables: number }>;
   disk_usage: Array<{ path: string; usage_pct: number; used: string; available: string }>;
   security: { failed_logins_24h: number; ssh_attempts: number; blocked_ips: number };
@@ -73,11 +74,12 @@ export default function SystemAuditPage() {
       const alerts = (alertsRes.status === 'fulfilled' ? alertsRes.value.data : {}) as any;
 
       const auditData: AuditData = {
-        services: services.services || overview.services || {},
+        services: services.categories || {},
+        service_summary: services.summary || { total: 0, active: 0, inactive: 0, failed: 0 },
         databases: [],
         disk_usage: [],
         security: {
-          failed_logins_24h: ssh.failed_logins_24h || 0,
+          failed_logins_24h: ssh.failed_logins_24h || ssh.failed_logins_total || 0,
           ssh_attempts: ssh.total_attempts_24h || 0,
           blocked_ips: ssh.blocked_ips || 0,
         },
@@ -97,12 +99,12 @@ export default function SystemAuditPage() {
 
       // Parse disk from overview
       if (overview.disk) {
-        const raw = overview.disk.raw || overview.disk.pct || '0%';
+        const pctStr = overview.disk.pct || '0%';
         auditData.disk_usage = [{
           path: '/',
-          usage_pct: parseInt(raw) || 0,
+          usage_pct: parseInt(pctStr) || 0,
           used: overview.disk.used || '0',
-          available: overview.disk.available || '0',
+          available: overview.disk.free || '0',
         }];
       }
 
@@ -118,8 +120,14 @@ export default function SystemAuditPage() {
   if (loading && !data) return <LoadingState message="Running system audit..." />;
 
   const services = data?.services || {};
-  const downServices = Object.entries(services).filter(([, s]) => !['running', 'active', 'healthy'].includes(s.toLowerCase()));
-  const okCount = Object.keys(services).length - downServices.length;
+  const summary = data?.service_summary || { total: 0, active: 0, inactive: 0, failed: 0 };
+  const downServices: { category: string; name: string; status: string }[] = [];
+  Object.entries(services).forEach(([cat, svcs]) => {
+    (svcs as any[]).forEach((s) => {
+      if (s.status !== 'active') downServices.push({ category: cat, name: s.name, status: s.status });
+    });
+  });
+  const okCount = summary.active;
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -145,7 +153,7 @@ export default function SystemAuditPage() {
         <Grid size={{ xs: 6, md: 3 }}>
           <AuditCard
             title="Services"
-            value={`${okCount}/${Object.keys(services).length}`}
+            value={`${okCount}/${summary.total}`}
             icon={<Shield sx={{ fontSize: 20 }} />}
             color="#10b981"
             subtitle={downServices.length > 0 ? `${downServices.length} down` : 'All healthy'}
@@ -193,12 +201,17 @@ export default function SystemAuditPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {Object.entries(services).map(([name, status]) => (
-                  <TableRow key={name} sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.75 }}>{name}</TableCell>
-                    <TableCell sx={{ py: 0.75 }}><StatusChip status={String(status)} /></TableCell>
-                  </TableRow>
-                ))}
+                {Object.entries(services).map(([category, svcs]) =>
+                  (svcs as any[]).map((svc) => (
+                    <TableRow key={`${category}-${svc.name}`} sx={{ '&:last-child td': { borderBottom: 0 } }}>
+                      <TableCell sx={{ fontSize: '0.75rem', py: 0.75 }}>
+                        <Typography component="span" sx={{ color: 'text.disabled', fontSize: '0.65rem', mr: 0.5 }}>{category}:</Typography>
+                        {svc.name}
+                      </TableCell>
+                      <TableCell sx={{ py: 0.75 }}><StatusChip status={svc.status} /></TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -226,8 +239,8 @@ export default function SystemAuditPage() {
                 {downServices.length > 0 && (
                   <Box sx={{ mt: 1 }}>
                     <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>Down Services:</Typography>
-                    {downServices.map(([name, status]) => (
-                      <Chip key={name} label={`${name}: ${status}`} size="small" sx={{ mr: 1, mb: 0.5, bgcolor: 'rgba(248,113,113,0.15)', color: '#f87171', fontWeight: 600 }} />
+                    {downServices.map((svc) => (
+                      <Chip key={`${svc.category}-${svc.name}`} label={`${svc.name}: ${svc.status}`} size="small" sx={{ mr: 1, mb: 0.5, bgcolor: 'rgba(248,113,113,0.15)', color: '#f87171', fontWeight: 600 }} />
                     ))}
                   </Box>
                 )}

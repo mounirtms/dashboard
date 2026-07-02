@@ -32,6 +32,7 @@ import {
   Phone as PhoneIcon,
   Tablet as TabletIcon,
 } from '@mui/icons-material';
+import apiClient from '../api/client';
 
 const InfraMonitoring = () => {
   const [varnishStats, setVarnishStats] = useState<any>(null);
@@ -47,17 +48,12 @@ const InfraMonitoring = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/monitor.php?action=varnish');
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      const { data } = await apiClient.get('/api/monitor.php?action=varnish');
       setVarnishStats(data);
       setLastUpdate(new Date());
     } catch (err: any) {
       console.error('Failed to fetch Varnish stats:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to fetch Varnish stats');
     } finally {
       setLoading(false);
     }
@@ -65,10 +61,7 @@ const InfraMonitoring = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await fetch('/api/monitor.php?action=logs&type=varnish&lines=50');
-      if (!response.ok) throw new Error('Failed to fetch logs');
-      
-      const data = await response.json();
+      const { data } = await apiClient.get('/api/monitor.php?action=logs&type=varnish&lines=50');
       if (data.lines) {
         setLogs(data.lines);
       }
@@ -81,17 +74,16 @@ const InfraMonitoring = () => {
     if (!window.confirm('Are you sure you want to purge ALL Varnish cache?')) return;
     
     try {
-      const response = await fetch('/api/monitor.php?action=cache_manage&site=prod&op=varnish_purge');
-      const data = await response.json();
+      const { data } = await apiClient.get('/api/monitor.php?action=cache_manage&site=prod&op=varnish_purge');
       
       if (data.success) {
         alert('Cache purged successfully!');
         fetchVarnishStats();
       } else {
-        alert('Failed to purge cache: ' + data.error);
+        alert('Failed to purge cache: ' + (data.error || 'Unknown error'));
       }
     } catch (err: any) {
-      alert('Error: ' + err.message);
+      alert('Error: ' + (err.message || 'Unknown error'));
     }
   };
 

@@ -512,7 +512,11 @@ class MonitorApi extends BaseApi {
             return ['error' => "Log file not found: $logPath", 'available_types' => array_keys($logMap), 'path' => $logPath];
         }
 
-        $cmd = "tail -n $lines " . escapeshellarg($logPath) . " 2>&1";
+        // Use sudo for root-owned system logs (requires sudoers entry)
+        $rootOwnedLogs = ['/var/log/secure', '/var/log/cron', '/var/log/messages', '/var/log/mariadb/mariadb.log'];
+        $useSudo = in_array($logPath, $rootOwnedLogs) || !is_readable($logPath);
+        $tailCmd = $useSudo ? "sudo /usr/bin/tail" : "tail";
+        $cmd = "$tailCmd -n $lines " . escapeshellarg($logPath) . " 2>&1";
         $output = $this->cmd($cmd);
 
         return [
@@ -966,7 +970,11 @@ class MonitorApi extends BaseApi {
                     'tablet' => ['hits' => 0, 'misses' => 0]
                 ];
                 
-                exec("timeout 2s varnishlog -d -g request -i ReqHeader -i RespHeader 2>/dev/null | grep -E 'User-Agent|X-Magento-Cache-Debug' | head -1000", $device_lines);
+                $device_lines = [];
+                $raw = $this->cmd_line("timeout 2s varnishlog -d -g request -i ReqHeader -i RespHeader 2>/dev/null | grep -E 'User-Agent|X-Magento-Cache-Debug' | head -1000", 5);
+                if ($raw) {
+                    $device_lines = explode("\n", $raw);
+                }
                 
                 $current_device = null;
                 $is_hit = null;
@@ -1510,9 +1518,11 @@ class MonitorApi extends BaseApi {
             foreach ($who_output['output'] as $line) {
                 $line = trim($line);
                 if (empty($line)) continue;
-                if (preg_match('/^(\S+)\s+(\S+)\s+(\w+\s+\d+\s+[\d:]+)\s*(?:\(([^)]*)\))?\s*$/', $line, $m)) {
+                // Match both ISO format (2026-06-10 09:05) and traditional (Jun 10 09:05)
+                if (preg_match('/^(\S+)\s+(\S+)\s+(\d{4}-\d{2}-\d{2}\s+\d+:\d+|\w+\s+\d+\s+[\d:]+)\s*(?:\(([^)]*)\))?\s*$/', $line, $m)) {
                     $sessions[] = [
                         'type' => 'ssh',
+                        'pid' => '',
                         'user' => $m[1],
                         'tty' => $m[2],
                         'from' => $m[4] ?? 'local',
@@ -1538,13 +1548,15 @@ class MonitorApi extends BaseApi {
                 }
             }
             
-            // Hoist: Build PID->remote IP map from ss once
+            // Hoist: Build PID->remote IP map from ss/netstat without sudo
             $pid_ip_map = [];
-            $ss_output = $this->cmd("sudo /usr/sbin/ss -tnp 2>/dev/null");
+            $ss_output = $this->cmd("ss -tnp 2>/dev/null | grep ':22 '");
             foreach ($ss_output['output'] as $sline) {
-                if (preg_match('/pid=(\d+).*?\s+([\d.]+):(\d+)\s+([\d.]+):(\d+)/', $sline, $sm)) {
-                    if ($sm[3] == 22) { // SSH port
-                        $pid_ip_map[$sm[1]] = $sm[4];
+                if (preg_match('/pid=(\d+)/', $sline, $pm)) {
+                    if (preg_match('/\s([\d.]+):(\d+)\s+([\d.]+):(\d+)/', $sline, $sm)) {
+                        if ($sm[2] == 22 || $sm[4] == 22) {
+                            $pid_ip_map[$pm[1]] = ($sm[2] == 22) ? $sm[3] : $sm[1];
+                        }
                     }
                 }
             }
@@ -1594,7 +1606,7 @@ class MonitorApi extends BaseApi {
             }
 
             // Method 3: Get established SSH connections from network sockets
-            $ssh_conns = $this->cmd("ss -tn state established 'sport = :22' 2>/dev/null");
+            $ssh_conns = $this->cmd("ss -tn state established 2>/dev/null | grep ':22 '");
             $established = [];
             foreach ($ssh_conns['output'] as $line) {
                 if (preg_match('/ESTAB.*?([\d.]+):22\s+([\d.]+):(\d+)/', $line, $m)) {
@@ -1617,10 +1629,19 @@ class MonitorApi extends BaseApi {
             $failed_details = [];
             
             if ($log_file) {
-                $failed_count = $this->safe_num($this->cmd_line("grep -c 'Failed password' $log_file 2>/dev/null || echo 0", 5), 0);
+                $useSudo = !is_readable($log_file);
+                $grep = $useSudo ? "sudo /usr/bin/grep" : "grep";
+                $tail = $useSudo ? "sudo /usr/bin/tail" : "tail";
+                
+                $failed_count = $this->safe_num($this->cmd_line("$grep -c 'Failed password' $log_file 2>/dev/null || echo 0", 10), 0);
+                
+                // Failed logins in last 24 hours
+                $yesterday = date('M  j', strtotime('-1 day'));
+                $today = date('M  j');
+                $failed_24h = $this->safe_num($this->cmd_line("$grep 'Failed password' $log_file 2>/dev/null | grep -E '^($today|$yesterday)' | tail -500 | wc -l", 10), 0);
                 
                 // Recent failed logins
-                $failed_recent = $this->cmd("tail -500 $log_file 2>/dev/null | grep 'Failed password' | tail -10");
+                $failed_recent = $this->cmd("$tail -500 $log_file 2>/dev/null | grep 'Failed password' | tail -10");
                 foreach ($failed_recent['output'] as $line) {
                     if (preg_match('/Failed password for (invalid user )?(\S+) from ([\d.]+)/', $line, $m)) {
                         $failed_details[] = [
@@ -1635,6 +1656,12 @@ class MonitorApi extends BaseApi {
             // SSH service status
             $sshd_status = $this->cmd_line("systemctl is-active sshd 2>/dev/null || systemctl is-active ssh 2>/dev/null || echo 'not-found'");
 
+            // Blocked IPs from CSF
+            $blocked_ips = 0;
+            if (is_file('/etc/csf/csf.deny')) {
+                $blocked_ips = $this->safe_num($this->cmd_line("grep -c -v '^#' /etc/csf/csf.deny 2>/dev/null || echo 0", 3), 0);
+            }
+
             // Count unique active sessions (exclude 'connecting' and 'authenticating' for active count)
             $active_count = count(array_filter($sessions, fn($s) => $s['status'] === 'active'));
 
@@ -1647,6 +1674,9 @@ class MonitorApi extends BaseApi {
                 'connections' => $established,
                 'qoder_server' => $qoder_info,
                 'failed_logins_total' => $failed_count,
+                'failed_logins_24h' => $failed_24h ?? 0,
+                'total_attempts_24h' => ($failed_24h ?? 0) + $active_count,
+                'blocked_ips' => $blocked_ips,
                 'recent_failed' => $failed_details,
                 'sshd_status' => $sshd_status,
                 'timestamp' => time()
@@ -2120,18 +2150,19 @@ class MonitorApi extends BaseApi {
     public function getUserActivity() {
         return $this->cache->remember('user_activity', 30, function() {
             $db = $this->getDb();
-            $knownUsers = ['dev', 'beta', 'technadminy7', 'dnd', 'dashboard', 'pim'];
+            $knownUsers = ['root', 'dev', 'beta', 'technadminy7', 'dnd', 'dashboard', 'pim', 'salah'];
             $users = [];
 
             foreach ($knownUsers as $username) {
-                $homeDir = "/home/$username";
+                $homeDir = ($username === 'root') ? '/root' : "/home/$username";
                 $userData = [
                     'username' => $username,
                     'home_exists' => is_dir($homeDir),
                 ];
 
                 // Disk usage with file-based cache (5 min TTL)
-                $cacheFile = "/tmp/user_disk_{$username}.txt";
+                $cacheKey = str_replace('/', '_', $username);
+                $cacheFile = "/tmp/user_disk_{$cacheKey}.txt";
                 if (is_dir($homeDir)) {
                     if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < 300) {
                         $userData['disk_usage'] = trim(@file_get_contents($cacheFile));
@@ -2173,7 +2204,12 @@ class MonitorApi extends BaseApi {
                 }
 
                 // Last system login from /var/log/secure
-                $userData['last_system_login'] = $this->cmd_line("grep 'Accepted.*$username' /var/log/secure 2>/dev/null | tail -1 | awk '{print \$1, \$2, \$3}'", 2) ?: '—';
+                $secureLog = is_readable('/var/log/secure') ? '/var/log/secure' : null;
+                if ($secureLog) {
+                    $userData['last_system_login'] = $this->cmd_line("grep 'Accepted.*$username' $secureLog 2>/dev/null | tail -1 | awk '{print \$1, \$2, \$3}'", 3) ?: '—';
+                } else {
+                    $userData['last_system_login'] = $this->cmd_line("sudo /usr/bin/grep 'Accepted.*$username' /var/log/secure 2>/dev/null | tail -1 | awk '{print \$1, \$2, \$3}'", 3) ?: '—';
+                }
 
                 $users[] = $userData;
             }
@@ -2231,7 +2267,7 @@ class MonitorApi extends BaseApi {
             return ['error' => 'Invalid username'];
         }
 
-        $homeDir = "/home/$username";
+        $homeDir = ($username === 'root') ? '/root' : "/home/$username";
         $bashHistory = "$homeDir/.bash_history";
 
         if (!is_file($bashHistory)) {
@@ -2260,11 +2296,14 @@ class MonitorApi extends BaseApi {
         $offset = max((int)($_GET['offset'] ?? 0), 0);
 
         // Use sudo cat to overcome permission issues with other users' history files
-        $rawResult = $this->cmd("sudo /usr/bin/cat " . escapeshellarg($bashHistory) . " 2>/dev/null");
+        $sudoCmd = ($username === 'root') 
+            ? "sudo /usr/bin/cat /root/.bash_history"
+            : "sudo /usr/bin/cat " . escapeshellarg($bashHistory);
+        $rawResult = $this->cmd($sudoCmd . " 2>/dev/null");
         $rawLines = $rawResult['output'] ?? [];
         
-        if (empty($rawLines) || $rawResult['return'] !== 0) {
-            // Fallback for files the user DOES have access to without sudo
+        // Only fallback if sudo actually failed to produce output
+        if (empty($rawLines)) {
             $rawLines = @file($bashHistory, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
         }
 
@@ -2345,7 +2384,147 @@ class MonitorApi extends BaseApi {
         return trim(implode("\n", $r['output'])); 
     }
 
-    private function safe_num($v, $d=0) { 
-        return is_numeric($v) ? round($v+0, $d) : $d; 
+    private function safe_num($v, $d=0) {
+        return is_numeric($v) ? round($v+0, $d) : $d;
+    }
+
+    public function getSecurityScan() {
+        $reportFile = '/home/dashboard/public_html/reports/security_scan_latest.json';
+        if (!file_exists($reportFile)) {
+            return ['status' => 'no_scan', 'message' => 'No scan has been run yet. Click "Run Scan" to start.'];
+        }
+
+        $data = json_decode(file_get_contents($reportFile), true);
+        if (!$data) {
+            return ['status' => 'error', 'message' => 'Failed to parse scan report'];
+        }
+
+        $data['status'] = 'complete';
+        $data['report_age'] = time() - filemtime($reportFile);
+        return $data;
+    }
+
+    public function runSecurityScan() {
+        $account = $_POST['account'] ?? $_GET['account'] ?? '';
+        $script = '/home/dashboard/public_html/scripts/maintenance/malware_scan.sh';
+
+        $args = '--json';
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta', 'tsdnd'])) {
+            $args .= " --account $account";
+        }
+
+        $result = $this->cmd("bash $script $args 2>&1", 300);
+        $output = implode("\n", $result['output']);
+
+        // Try to parse JSON from output (the script outputs JSON at the end)
+        $jsonStart = strrpos($output, '{');
+        if ($jsonStart !== false) {
+            $jsonStr = substr($output, $jsonStart);
+            $data = json_decode($jsonStr, true);
+            if ($data) {
+                $data['status'] = 'complete';
+                return $data;
+            }
+        }
+
+        return [
+            'status' => $result['return'] === 0 ? 'complete' : 'error',
+            'output' => $output,
+            'return_code' => $result['return']
+        ];
+    }
+
+    public function runSecurityHarden() {
+        $account = $_POST['account'] ?? $_GET['account'] ?? '';
+        $checkOnly = ($_POST['check_only'] ?? $_GET['check_only'] ?? '') === 'true';
+        $script = '/home/dashboard/public_html/scripts/maintenance/security_harden.sh';
+
+        $args = '';
+        if ($checkOnly) $args .= ' --check-only';
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta', 'tsdnd'])) {
+            $args .= " --account $account";
+        }
+
+        $result = $this->cmd("bash $script $args 2>&1", 300);
+
+        return [
+            'status' => $result['return'] === 0 ? 'complete' : 'error',
+            'output' => implode("\n", $result['output']),
+            'return_code' => $result['return']
+        ];
+    }
+
+    public function getSecurityHardenStatus() {
+        $logDir = '/home/dashboard/public_html/logs';
+        $latest = null;
+        $latestTime = 0;
+
+        foreach (glob("$logDir/security_hardening_*.log") as $file) {
+            $mtime = filemtime($file);
+            if ($mtime > $latestTime) {
+                $latestTime = $mtime;
+                $latest = $file;
+            }
+        }
+
+        if (!$latest) {
+            return ['status' => 'never_run', 'message' => 'Hardening has never been run'];
+        }
+
+        $content = file_get_contents($latest);
+        $issuesFound = 0;
+        $issuesFixed = 0;
+
+        if (preg_match('/Issues Found:\s*(\d+)/', $content, $m)) $issuesFound = (int)$m[1];
+        if (preg_match('/Issues Fixed:\s*(\d+)/', $content, $m)) $issuesFixed = (int)$m[1];
+
+        return [
+            'status' => 'complete',
+            'last_run' => date('Y-m-d H:i:s', $latestTime),
+            'issues_found' => $issuesFound,
+            'issues_fixed' => $issuesFixed,
+            'output' => $content
+        ];
+    }
+
+    public function getEcomscanReport() {
+        $reportFile = '/home/dashboard/public_html/reports/ecomscan_latest.json';
+        if (!file_exists($reportFile)) {
+            return ['status' => 'no_scan', 'message' => 'No eComscan has been run yet'];
+        }
+        $data = json_decode(file_get_contents($reportFile), true);
+        if (!$data) {
+            return ['status' => 'error', 'message' => 'Failed to parse eComscan report'];
+        }
+        $data['status'] = 'complete';
+        $data['report_age'] = time() - filemtime($reportFile);
+        return $data;
+    }
+
+    public function runEcomscan() {
+        $account = $_POST['account'] ?? $_GET['account'] ?? '';
+        $script = '/home/dashboard/public_html/scripts/maintenance/ecomscan_all.sh';
+        $args = '--json';
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'tsdnd'])) {
+            $args .= " --account $account";
+        }
+        $result = $this->cmd("bash $script $args 2>&1", 600);
+        $output = implode("\n", $result['output']);
+
+        $jsonStart = strpos($output, '{');
+        if ($jsonStart !== false) {
+            $jsonStr = substr($output, $jsonStart);
+            $data = json_decode($jsonStr, true);
+            if ($data) {
+                $data['status'] = 'complete';
+                return $data;
+            }
+        }
+
+        return [
+            'status' => $result['return'] === 0 ? 'complete' : 'error',
+            'output' => $output,
+            'return_code' => $result['return']
+        ];
     }
 }

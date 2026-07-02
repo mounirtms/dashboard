@@ -1,0 +1,83 @@
+{
+  "scan_time": "2026-06-17T03:06:00+01:00",
+  "scanner": "sansec_ecomscan",
+  "accounts": [
+    "technadminy7",
+    "dev",
+    "tsdnd"
+  ],
+  "summary": {
+    "total_issues": 6,
+    "critical_confidence": 6,
+    "malware": 0,
+    "vulnerabilities": 6
+  },
+  "findings": [
+    {
+      "account": "technadminy7",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "copy_fail",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/copy-fail"
+    },
+    {
+      "account": "technadminy7",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "dirty_frag",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/dirty-frag"
+    },
+    {
+      "account": "dev",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "copy_fail",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/copy-fail"
+    },
+    {
+      "account": "dev",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "dirty_frag",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/dirty-frag"
+    },
+    {
+      "account": "tsdnd",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "copy_fail",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/copy-fail"
+    },
+    {
+      "account": "tsdnd",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "dirty_frag",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/dirty-frag"
+    }
+  ]
+}

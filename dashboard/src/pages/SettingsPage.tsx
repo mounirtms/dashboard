@@ -1,8 +1,8 @@
 import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip, Select, MenuItem, FormControl, InputLabel, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings } from '@mui/icons-material';
+import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings, ErrorOutlined, Lock } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchSettings, saveSettings, fetchPushSubscriptions, unsubscribeDevice, type UserSettings, type PushSubscription } from '../api/settings';
-import { fetchEmailSettings, saveEmailSettings, testEmailSettings, type EmailSettings } from '../api/notifications';
+import { fetchEmailSettings, saveEmailSettings, testEmailSettings, fetchEmailLogs, fetchEmailLogStats, clearEmailLogs, type EmailSettings, type EmailLog, type EmailLogStats } from '../api/notifications';
 import { useWebpushrSubscription } from '../hooks/useWebpushrSubscription';
 
 interface TabPanelProps {
@@ -44,12 +44,21 @@ export default function SettingsPage() {
     from_name: 'Techno Dashboard',
     admin_email_1: 'admin@dashboard.technostationery.com',
     admin_email_2: 'webmaster@techno-dz.com',
-    enabled: 'true'
+    enabled: 'true',
+    smtp_host: '',
+    smtp_port: '587',
+    smtp_user: '',
+    smtp_pass: '',
+    smtp_encryption: 'tls'
   };
   const [emailSettings, setEmailSettings] = useState<EmailSettings>(defaultEmailSettings);
   const [emailSaving, setEmailSaving] = useState(false);
   const [emailTestLoading, setEmailTestLoading] = useState(false);
   const [emailTestResult, setEmailTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+  const [emailLogStats, setEmailLogStats] = useState<EmailLogStats | null>(null);
+  const [emailLogsLoading, setEmailLogsLoading] = useState(false);
   
   // Push subscriptions
   const [subscriptions, setSubscriptions] = useState<PushSubscription[]>([]);
@@ -178,6 +187,36 @@ export default function SettingsPage() {
 
   const handleEmailChange = (field: keyof EmailSettings, value: string) => {
     setEmailSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  const loadEmailLogs = useCallback(async () => {
+    setEmailLogsLoading(true);
+    try {
+      const [logsRes, statsRes] = await Promise.all([
+        fetchEmailLogs(50),
+        fetchEmailLogStats()
+      ]);
+      setEmailLogs(logsRes.logs || []);
+      setEmailLogStats(statsRes);
+    } catch (err) {
+      console.error('Failed to load email logs:', err);
+    } finally {
+      setEmailLogsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab === 3) loadEmailLogs();
+  }, [tab, loadEmailLogs]);
+
+  const handleClearEmailLogs = async () => {
+    try {
+      await clearEmailLogs();
+      setEmailLogs([]);
+      setEmailLogStats(null);
+    } catch (err) {
+      console.error('Failed to clear email logs:', err);
+    }
   };
 
   const getDeviceIcon = (deviceType: string) => {
@@ -411,25 +450,25 @@ export default function SettingsPage() {
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Email Configuration</Typography>
                 <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 2 }}>Configure sender email and admin recipients for system notifications</Typography>
                 <Box sx={{ display: 'grid', gap: 2 }}>
-                  <TextField 
-                    label="From Email" 
-                    size="small" 
+                  <TextField
+                    label="From Email"
+                    size="small"
                     value={emailSettings.from_email}
                     onChange={(e) => handleEmailChange('from_email', e.target.value)}
                     placeholder="e.g., alerts@dashboard.technostationery.com"
                   />
-                  <TextField 
-                    label="From Name" 
-                    size="small" 
+                  <TextField
+                    label="From Name"
+                    size="small"
                     value={emailSettings.from_name}
                     onChange={(e) => handleEmailChange('from_name', e.target.value)}
                     placeholder="e.g., Techno Dashboard"
                   />
                   <FormControlLabel
                     control={
-                      <Switch 
-                        checked={emailSettings.enabled === 'true'} 
-                        onChange={(e) => handleEmailChange('enabled', e.target.checked ? 'true' : 'false')} 
+                      <Switch
+                        checked={emailSettings.enabled === 'true'}
+                        onChange={(e) => handleEmailChange('enabled', e.target.checked ? 'true' : 'false')}
                       />
                     }
                     label={<Box><Typography variant="body2" sx={{ fontWeight: 600 }}>Enable Email Notifications</Typography><Typography variant="caption" color="text.disabled">Send email alerts for critical events</Typography></Box>}
@@ -440,9 +479,9 @@ export default function SettingsPage() {
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Admin Recipients</Typography>
                 <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 2 }}>Email addresses that receive admin notifications</Typography>
                 <Box sx={{ display: 'grid', gap: 2 }}>
-                  <TextField 
-                    label="Primary Admin Email" 
-                    size="small" 
+                  <TextField
+                    label="Primary Admin Email"
+                    size="small"
                     value={emailSettings.admin_email_1}
                     onChange={(e) => handleEmailChange('admin_email_1', e.target.value)}
                     placeholder="e.g., admin@dashboard.technostationery.com"
@@ -456,24 +495,24 @@ export default function SettingsPage() {
                       }
                     }}
                   />
-                  <TextField 
-                    label="Secondary Admin Email" 
-                    size="small" 
+                  <TextField
+                    label="Secondary Admin Email"
+                    size="small"
                     value={emailSettings.admin_email_2}
                     onChange={(e) => handleEmailChange('admin_email_2', e.target.value)}
                     placeholder="e.g., webmaster@techno-dz.com"
                   />
                   <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                    <Button 
-                      variant="contained" 
+                    <Button
+                      variant="contained"
                       startIcon={saving || emailSaving ? <Refresh sx={{ animation: 'spin 1s linear infinite' }} /> : <Save />}
                       onClick={handleEmailSave}
                       disabled={emailSaving}
                     >
                       {emailSaving ? 'Saving...' : 'Save Settings'}
                     </Button>
-                    <Button 
-                      variant="outlined" 
+                    <Button
+                      variant="outlined"
                       startIcon={<Send />}
                       onClick={handleEmailTest}
                       disabled={emailTestLoading}
@@ -482,8 +521,8 @@ export default function SettingsPage() {
                     </Button>
                   </Box>
                   {emailTestResult && (
-                    <Alert 
-                      severity={emailTestResult.success ? 'success' : 'error'} 
+                    <Alert
+                      severity={emailTestResult.success ? 'success' : 'error'}
                       sx={{ mt: 2 }}
                       onClose={() => setEmailTestResult(null)}
                     >
@@ -493,6 +532,154 @@ export default function SettingsPage() {
                 </Box>
               </Grid>
             </Grid>
+
+            <Divider sx={{ my: 4 }} />
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+              <Lock sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
+              SMTP Configuration
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 2 }}>
+              Optional: configure an external SMTP server for reliable email delivery. Leave empty to use the server's built-in mail system.
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  label="SMTP Host"
+                  size="small"
+                  fullWidth
+                  value={emailSettings.smtp_host}
+                  onChange={(e) => handleEmailChange('smtp_host', e.target.value)}
+                  placeholder="e.g., smtp.gmail.com"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 2 }}>
+                <TextField
+                  label="Port"
+                  size="small"
+                  fullWidth
+                  value={emailSettings.smtp_port}
+                  onChange={(e) => handleEmailChange('smtp_port', e.target.value)}
+                  placeholder="587"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Encryption</InputLabel>
+                  <Select
+                    value={emailSettings.smtp_encryption}
+                    label="Encryption"
+                    onChange={(e) => handleEmailChange('smtp_encryption', e.target.value)}
+                  >
+                    <MenuItem value="tls">STARTTLS</MenuItem>
+                    <MenuItem value="ssl">SSL/TLS</MenuItem>
+                    <MenuItem value="none">None</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 12, md: 3 }} />
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  label="SMTP Username"
+                  size="small"
+                  fullWidth
+                  value={emailSettings.smtp_user}
+                  onChange={(e) => handleEmailChange('smtp_user', e.target.value)}
+                  placeholder="e.g., alerts@dashboard.technostationery.com"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  label="SMTP Password"
+                  size="small"
+                  fullWidth
+                  type={showSmtpPass ? 'text' : 'password'}
+                  value={emailSettings.smtp_pass}
+                  onChange={(e) => handleEmailChange('smtp_pass', e.target.value)}
+                  placeholder={emailSettings.smtp_pass_set ? '(saved - enter new to change)' : 'Optional'}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => setShowSmtpPass(!showSmtpPass)} edge="end" size="small">
+                            {showSmtpPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }
+                  }}
+                />
+              </Grid>
+            </Grid>
+            {emailSettings.smtp_host && (
+              <Alert severity="info" sx={{ mt: 2, fontSize: '0.75rem' }}>
+                SMTP delivery will be attempted first via <strong>{emailSettings.smtp_host}:{emailSettings.smtp_port}</strong>, with fallback to server mail if it fails.
+              </Alert>
+            )}
+
+            <Divider sx={{ my: 4 }} />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Email Notification Log</Typography>
+                <Typography variant="caption" sx={{ color: 'text.disabled' }}>Recent email delivery history for debugging</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button size="small" startIcon={emailLogsLoading ? <Refresh sx={{ animation: 'spin 1s linear infinite' }} /> : <Refresh />} onClick={loadEmailLogs} disabled={emailLogsLoading}>
+                  Refresh
+                </Button>
+                {emailLogs.length > 0 && (
+                  <Button size="small" color="error" variant="outlined" startIcon={<Delete />} onClick={handleClearEmailLogs}>
+                    Clear
+                  </Button>
+                )}
+              </Box>
+            </Box>
+
+            {emailLogStats && (
+              <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <Chip size="small" label={`Total: ${emailLogStats.total}`} variant="outlined" />
+                <Chip size="small" icon={<CheckCircle />} label={`Success: ${emailLogStats.success}`} color="success" variant="outlined" />
+                <Chip size="small" icon={<ErrorOutlined />} label={`Failed: ${emailLogStats.failed}`} color="error" variant="outlined" />
+              </Box>
+            )}
+
+            {emailLogs.length === 0 ? (
+              <Alert severity="info" sx={{ fontSize: '0.8rem' }}>No email notifications logged yet.</Alert>
+            ) : (
+              <TableContainer component={Paper} variant="outlined" sx={{ border: '1px solid', borderColor: 'divider', maxHeight: 400 }}>
+                <Table size="small" stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>Time</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>To</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Subject</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {emailLogs.map((log, idx) => (
+                      <TableRow key={idx} hover>
+                        <TableCell sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap' }}>{log.timestamp}</TableCell>
+                        <TableCell>
+                          <Chip size="small" label={log.type} variant="outlined" sx={{ fontSize: '0.65rem', height: 20 }} />
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '0.75rem' }}>{log.to}</TableCell>
+                        <TableCell sx={{ fontSize: '0.75rem', maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.subject}</TableCell>
+                        <TableCell>
+                          {log.success ? (
+                            <Chip size="small" icon={<CheckCircle />} label="Sent" color="success" sx={{ fontSize: '0.65rem', height: 20 }} />
+                          ) : (
+                            <Chip size="small" icon={<ErrorOutlined />} label={log.error || 'Failed'} color="error" sx={{ fontSize: '0.65rem', height: 20 }} />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
           </TabPanel>
 
           <TabPanel value={tab} index={4}>

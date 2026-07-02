@@ -72,3 +72,101 @@ export async function fetchBashHistory(username: string, lines = 50, offset = 0)
   );
   return data;
 }
+
+export interface SecurityFinding {
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  account: string;
+  category: string;
+  title: string;
+  detail: string;
+  timestamp: string;
+}
+
+export interface SecurityScanResult {
+  status: 'complete' | 'no_scan' | 'error' | 'running';
+  message?: string;
+  scan_time?: string;
+  accounts?: string[];
+  summary?: {
+    total_issues: number;
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+  };
+  findings?: SecurityFinding[];
+  report_age?: number;
+}
+
+export interface SecurityHardenResult {
+  status: 'complete' | 'never_run' | 'error';
+  message?: string;
+  last_run?: string;
+  issues_found?: number;
+  issues_fixed?: number;
+  output?: string;
+}
+
+export async function fetchSecurityScan(): Promise<SecurityScanResult> {
+  const { data } = await apiClient.get('/api/monitor.php?action=security_scan');
+  return data;
+}
+
+export async function runSecurityScan(account?: string): Promise<SecurityScanResult> {
+  const params = account ? `&account=${encodeURIComponent(account)}` : '';
+  const { data } = await apiClient.get(`/api/monitor.php?action=security_scan_run${params}`);
+  return data;
+}
+
+export async function fetchSecurityHarden(): Promise<SecurityHardenResult> {
+  const { data } = await apiClient.get('/api/monitor.php?action=security_harden');
+  return data;
+}
+
+export async function runSecurityHarden(account?: string, checkOnly = false): Promise<SecurityHardenResult> {
+  const params = new URLSearchParams();
+  if (account) params.set('account', account);
+  if (checkOnly) params.set('check_only', 'true');
+  const qs = params.toString() ? `&${params.toString()}` : '';
+  const { data } = await apiClient.get(`/api/monitor.php?action=security_harden_run${qs}`);
+  return data;
+}
+
+export interface EcomscanFinding {
+  account: string;
+  check: string;
+  class: string;
+  name: string;
+  description: string;
+  path: string;
+  snippet: string;
+  confidence: number;
+  moreinfo: string;
+}
+
+export interface EcomscanResult {
+  status: 'complete' | 'no_scan' | 'error';
+  message?: string;
+  scan_time?: string;
+  scanner?: string;
+  accounts?: string[];
+  summary?: {
+    total_issues: number;
+    critical_confidence: number;
+    malware: number;
+    vulnerabilities: number;
+  };
+  findings?: EcomscanFinding[];
+  report_age?: number;
+}
+
+export async function fetchEcomscan(): Promise<EcomscanResult> {
+  const { data } = await apiClient.get('/api/monitor.php?action=ecomscan');
+  return data;
+}
+
+export async function runEcomscan(account?: string): Promise<EcomscanResult> {
+  const params = account ? `&account=${encodeURIComponent(account)}` : '';
+  const { data } = await apiClient.get(`/api/monitor.php?action=ecomscan_run${params}`);
+  return data;
+}

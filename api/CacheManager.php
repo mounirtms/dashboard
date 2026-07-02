@@ -71,6 +71,13 @@ class CacheManager {
     }
 
     /**
+     * Delete a value from cache (alias for delete)
+     */
+    public function forget(string $key): bool {
+        return $this->delete($key);
+    }
+
+    /**
      * Delete a value from cache
      */
     public function delete(string $key): bool {

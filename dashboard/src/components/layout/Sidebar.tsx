@@ -52,6 +52,7 @@ import {
   Task,
   Lan,
   TrendingUp,
+  CloudDownload,
 } from '@mui/icons-material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -71,7 +72,7 @@ const navItems: NavItem[] = [
     label: 'Monitoring',
     icon: <OverviewIcon />,
     children: [
-      { path: '/', label: 'System Overview', icon: <SystemIcon /> },
+      { path: '/system-overview', label: 'System Overview', icon: <SystemIcon /> },
       { path: '/sites', label: 'Managed Sites', icon: <SitesIcon /> },
       { path: '/infrastructure', label: 'Infrastructure', icon: <InfrastructureIcon /> },
       { path: '/cache-control', label: 'Cache Control', icon: <Cached /> },
@@ -88,8 +89,13 @@ const navItems: NavItem[] = [
     icon: <CommerceIcon />,
     children: [
       { path: '/commerce/sales', label: 'Sales Overview', icon: <CommerceIcon /> },
+      { path: '/commerce/products', label: 'Products', icon: <Inventory /> },
+      { path: '/commerce/customers', label: 'Customers', icon: <Person /> },
+      { path: '/commerce/orders', label: 'Orders', icon: <CommerceIcon /> },
       { path: '/commerce/inventory', label: 'Inventory', icon: <Inventory /> },
+      { path: '/commerce/cms', label: 'CMS & Content', icon: <DocsIcon /> },
       { path: '/commerce/indexers', label: 'Indexers', icon: <Refresh /> },
+      { path: '/commerce/settings', label: 'Magento Settings', icon: <SettingsIcon /> },
     ]
   },
   {
@@ -140,6 +146,7 @@ const navItems: NavItem[] = [
     label: 'Tools',
     icon: <ActionsIcon />,
     children: [
+      { path: '/tools/backups', label: 'Server Backups', icon: <CloudDownload /> },
       { path: '/tools/db-health', label: 'DB Health', icon: <DbIcon /> },
       { path: '/tools/users', label: 'User Management', icon: <Person /> },
       { path: '/tools/system-audit', label: 'System Audit', icon: <SecurityIcon /> },
@@ -161,6 +168,9 @@ const navItems: NavItem[] = [
     children: [
       { path: '/docs/index.html', label: 'System Docs', icon: <DocsIcon /> },
       { path: '/docs/ARCHITECTURE.md', label: 'Architecture', icon: <DocsIcon /> },
+      { path: '/reports/view.php?file=security_audit_report.html', label: 'Security Audit Report', icon: <SecurityIcon /> },
+      { path: '/reports/view.php?file=ssh_hardening_report.html', label: 'SSH Hardening Report', icon: <SecurityIcon /> },
+      { path: '/reports/view.php?file=2fa_setup_guide.html', label: '2FA Setup Guide', icon: <SecurityIcon /> },
       { path: '/api/info.php', label: 'API Explorer', icon: <ApiIcon /> },
     ]
   }
@@ -418,7 +428,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
                     {item.children.map((child) => (
                       <ListItemButton
                         key={child.path}
-                        {...(child.path?.startsWith('/docs') || child.path?.startsWith('/api') 
+                        {...(child.path?.startsWith('/docs') || child.path?.startsWith('/api') || child.path?.startsWith('/reports') 
                           ? { component: 'a', href: child.path } 
                           : { component: Link, to: child.path! }
                         )}

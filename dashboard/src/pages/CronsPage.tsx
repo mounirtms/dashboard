@@ -8,6 +8,7 @@ const SITES = [
   { key: '', name: 'System (crontab)' },
   { key: 'prod', name: 'Production' },
   { key: 'beta', name: 'Beta' },
+  { key: 'tsdnd', name: 'TSDND' },
   { key: 'dev', name: 'Dev' },
   { key: 'pim', name: 'PIM' },
 ];

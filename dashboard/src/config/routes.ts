@@ -16,8 +16,11 @@ export const ADMIN_PATHS = new Set([
   '/monitoring/ssh',
   '/monitoring/commands',
   '/tools/system-audit',
+  '/tools/backups',
   '/plans',
   // Infrastructure control
   '/scripts',
   '/cicd',
+  // Magento admin
+  '/commerce/settings',
 ]);

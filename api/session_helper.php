@@ -40,21 +40,16 @@ if (!function_exists('start_secure_session')) {
             }
 
             $secure = isset($_SERVER['HTTPS']) || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') || (isset($_SERVER['HTTP_CF_VISITOR']) && strpos($_SERVER['HTTP_CF_VISITOR'], 'https') !== false);
-            $host = $_SERVER['HTTP_HOST'] ?? '';
-            
-            // Only set domain cookie for subdomain access, otherwise leave empty for same-host
-            $domain = '';
-            if (strpos($host, 'technostationery.com') !== false && strpos($host, 'dashboard.') !== false) {
-                $domain = '.technostationery.com';
-            }
+
+            // Keep session cookie scoped to dashboard subdomain only
+            // Do NOT set domain=.technostationery.com as it conflicts with production Magento sessions
 
             session_set_cookie_params([
                 'lifetime' => $sessionLifetime,
                 'path' => '/',
-                'domain' => $domain,
                 'secure' => $secure,
                 'httponly' => true,
-                'samesite' => $secure ? 'None' : 'Lax'
+                'samesite' => 'Lax'
             ]);
 
             session_start();

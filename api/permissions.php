@@ -64,11 +64,7 @@ try {
             try {
                 require_once __DIR__ . '/config.php';
                 Config::load();
-                $db = Config::get('db');
-                $auditPdo = new PDO("mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth", $db['user'], $db['pass'], [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-                ]);
+                $auditPdo = Config::getPDO('dashboard_auth');
                 $stmt = $auditPdo->prepare("INSERT INTO audit_log (user_id, action, ip_address, user_agent, details) VALUES (?, 'permission_changed', ?, ?, ?)");
                 $stmt->execute([
                     $_SESSION['user_id'] ?? null,

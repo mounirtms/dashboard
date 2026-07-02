@@ -9,6 +9,7 @@
 class EnvironmentHelper {
     private $config;
     private $connections = [];
+    private static $attrCache = [];
 
     public function __construct(array $config) {
         $this->config = $config;
@@ -55,8 +56,10 @@ class EnvironmentHelper {
             return null;
         }
 
+        require_once dirname(__DIR__) . '/DatabasePool.php';
+
         $dbConfig = $this->config['database'];
-        $db = @new mysqli(
+        $db = DatabasePool::getMySQLi(
             $dbConfig['host'],
             $envConfig['db_user'] ?? $dbConfig['user'],
             $envConfig['db_pass'] ?? $dbConfig['pass'],
@@ -64,7 +67,7 @@ class EnvironmentHelper {
             $dbConfig['port']
         );
 
-        if ($db->connect_error) {
+        if (!$db) {
             return null;
         }
 
@@ -474,6 +477,32 @@ class EnvironmentHelper {
     }
 
     /**
+     * Get cached attribute IDs to avoid N+1 queries
+     */
+    private function getAttributeIds(string $env, array $codes): array {
+        $cacheKey = "$env:" . implode(',', sort($codes));
+        
+        if (isset(self::$attrCache[$cacheKey])) {
+            return self::$attrCache[$cacheKey];
+        }
+
+        $db = $this->getDb($env);
+        if (!$db) return [];
+
+        $placeholders = implode(',', array_map(fn($x) => "'$x'", $codes));
+        $r = $db->query("SELECT attribute_id, attribute_code FROM eav_attribute WHERE entity_type_id = 4 AND attribute_code IN ($placeholders)");
+        $attrIds = [];
+        if ($r) {
+            while ($row = $r->fetch_assoc()) {
+                $attrIds[$row['attribute_code']] = $row['attribute_id'];
+            }
+        }
+
+        self::$attrCache[$cacheKey] = $attrIds;
+        return $attrIds;
+    }
+
+    /**
      * Search products by name or SKU
      */
     public function searchProducts(string $env, string $query, int $limit = 10): array {
@@ -482,14 +511,8 @@ class EnvironmentHelper {
 
         $searchTerm = $db->real_escape_string($query);
 
-        // Get attribute IDs
-        $r = $db->query("SELECT attribute_id, attribute_code FROM eav_attribute WHERE entity_type_id = 4 AND attribute_code IN ('name', 'status', 'visibility')");
-        $attrIds = [];
-        if ($r) {
-            while ($row = $r->fetch_assoc()) {
-                $attrIds[$row['attribute_code']] = $row['attribute_id'];
-            }
-        }
+        // Get cached attribute IDs (avoids N+1 query)
+        $attrIds = $this->getAttributeIds($env, ['name', 'status', 'visibility']);
 
         $nameAttr = $attrIds['name'] ?? 73;
         $statusAttr = $attrIds['status'] ?? 97;
@@ -530,14 +553,8 @@ class EnvironmentHelper {
         $db = $this->getDb($env);
         if (!$db) return null;
 
-        // Get attribute IDs
-        $r = $db->query("SELECT attribute_id, attribute_code FROM eav_attribute WHERE entity_type_id = 4 AND attribute_code IN ('name', 'description', 'short_description', 'status', 'visibility', 'image')");
-        $attrIds = [];
-        if ($r) {
-            while ($row = $r->fetch_assoc()) {
-                $attrIds[$row['attribute_code']] = $row['attribute_id'];
-            }
-        }
+        // Get cached attribute IDs (avoids N+1 query)
+        $attrIds = $this->getAttributeIds($env, ['name', 'description', 'short_description', 'status', 'visibility', 'image']);
 
         $nameAttr = $attrIds['name'] ?? 73;
         $descAttr = $attrIds['description'] ?? 74;

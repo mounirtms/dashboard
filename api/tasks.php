@@ -20,11 +20,7 @@ if (empty($_SESSION['logged_in'])) {
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 try {
-    $db = Config::get('db');
-    $pdo = new PDO("mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth", $db['user'], $db['pass'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
+    $pdo = Config::getPDO('dashboard_auth');
 
     // Lightweight schema check — DDL lives in migrate.php, run via CLI
     $schemaVersion = '20260614';
@@ -542,22 +538,34 @@ try {
             $titleStmt->execute($ids);
             $taskTitles = $titleStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-            // Log activity for each updated task
+            // Batch insert activity logs instead of looping (avoids N+1 queries)
             $completedTasks = [];
+            $activityValues = [];
+            $activityParams = [];
+            
             foreach ($ids as $taskId) {
                 $taskTitle = $taskTitles[$taskId] ?? 'Unknown Task';
                 if (isset($input['status'])) {
-                    $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'bulk_status_changed', ?, ?)")
-                        ->execute([$taskId, $currentUser, "Bulk update: status → {$input['status']}"]);
+                    $activityValues[] = "(?, 'bulk_status_changed', ?, ?)";
+                    $activityParams[] = $taskId;
+                    $activityParams[] = $currentUser;
+                    $activityParams[] = "Bulk update: status → {$input['status']}";
                     
-                    // Track completed tasks for admin notification
                     if ($input['status'] === 'completed') {
                         $completedTasks[] = $taskTitle;
                     }
                 } else {
-                    $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'bulk_updated', ?, ?)")
-                        ->execute([$taskId, $currentUser, "Bulk updated: $taskTitle"]);
+                    $activityValues[] = "(?, 'bulk_updated', ?, ?)";
+                    $activityParams[] = $taskId;
+                    $activityParams[] = $currentUser;
+                    $activityParams[] = "Bulk updated: $taskTitle";
                 }
+            }
+            
+            // Execute single batch insert instead of multiple queries
+            if (!empty($activityValues)) {
+                $sql = "INSERT INTO task_activity (task_id, action, actor, details) VALUES " . implode(',', $activityValues);
+                $pdo->prepare($sql)->execute($activityParams);
             }
             
             // Send admin notification for bulk completion

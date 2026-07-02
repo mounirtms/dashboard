@@ -25,6 +25,17 @@ export interface RolePermissions {
   can_send_notifications: boolean;
   can_view_subscribers: boolean;
   can_manage_segments: boolean;
+  // Magento / Commerce permissions
+  can_access_magento_products: boolean;
+  can_edit_products: boolean;
+  can_bulk_products: boolean;
+  can_access_magento_customers: boolean;
+  can_edit_customers: boolean;
+  can_access_magento_orders: boolean;
+  can_manage_orders: boolean;
+  can_access_magento_cms: boolean;
+  can_edit_cms: boolean;
+  can_access_magento_settings: boolean;
   created_at: string;
   updated_at: string;
 }

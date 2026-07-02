@@ -241,11 +241,17 @@ export default function TaskDetailPage() {
     }
   };
 
+  const loadAllTasks = useCallback(() => {
+    if (allTasks.length === 0) {
+      fetchTasks().then(result => setAllTasks(result.tasks)).catch(console.error);
+    }
+  }, [allTasks.length]);
+
   const loadData = useCallback(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([fetchTask(+id), fetchTaskNotes(+id), fetchTaskActivity(+id), fetchUsers(), fetchScreenshots(+id), fetchTasks(), getTaskLinks(+id)])
-      .then(([t, n, a, u, s, allT, links]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setScreenshots(s); setAllTasks(allT.tasks); setTaskLinks(links); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
+    Promise.all([fetchTask(+id), fetchTaskNotes(+id), fetchTaskActivity(+id), fetchUsers(), fetchScreenshots(+id), getTaskLinks(+id)])
+      .then(([t, n, a, u, s, links]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setScreenshots(s); setTaskLinks(links); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
   }, [id]);
@@ -412,7 +418,7 @@ export default function TaskDetailPage() {
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Linked Tasks ({taskLinks.length})</Typography>
-                <Button size="small" startIcon={<LinkIcon sx={{ fontSize: 14 }} />} onClick={() => setLinkDialogOpen(true)}>Link Task</Button>
+                <Button size="small" startIcon={<LinkIcon sx={{ fontSize: 14 }} />} onClick={() => { setLinkDialogOpen(true); loadAllTasks(); }}>Link Task</Button>
               </Box>
               {taskLinks.length === 0 ? (
                 <Typography variant="caption" sx={{ color: 'text.disabled' }}>No linked tasks yet. Link related, blocking, or duplicate tasks.</Typography>
@@ -835,7 +841,7 @@ export default function TaskDetailPage() {
             <Divider />
             
             {/* Forward note */}
-            <MuiMenuItem onClick={() => { setForwardingNote(activeNoteMenu); setForwardDialogOpen(true); setNoteMenuAnchor(null); }}>
+            <MuiMenuItem onClick={() => { setForwardingNote(activeNoteMenu); setForwardDialogOpen(true); setNoteMenuAnchor(null); loadAllTasks(); }}>
               <Send sx={{ fontSize: 16, mr: 1 }} />
               Forward to Task...
             </MuiMenuItem>

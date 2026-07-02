@@ -90,12 +90,13 @@ export default function LogViewerPage() {
   const logEndRef = useRef<HTMLDivElement>(null);
   const fetchRef = useRef(false);
 
-  const BASH_USERS = ['dev', 'beta', 'technadminy7', 'dnd', 'dashboard', 'pim'];
+  const BASH_USERS = ['root', 'dev', 'beta', 'tsdnd', 'technadminy7', 'dnd', 'dashboard', 'pim', 'salah'];
 
   const SITES = [
     { key: '', name: 'Global / Server' },
     { key: 'prod', name: 'Production' },
     { key: 'beta', name: 'Beta Store' },
+    { key: 'tsdnd', name: 'TSDND' },
     { key: 'dev', name: 'Development' },
     { key: 'pim', name: 'PIM Akeneo' },
   ];

@@ -31,12 +31,7 @@ Config::load();
 function getDb() {
     static $pdo = null;
     if ($pdo === null) {
-        $db = Config::get('db');
-        $dsn = "mysql:host=" . $db['host'] . ";port=" . $db['port'] . ";dbname=dashboard_auth;charset=utf8mb4";
-        $pdo = new PDO($dsn, $db['user'], $db['pass'], [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);
+        $pdo = Config::getPDO('dashboard_auth');
     }
     return $pdo;
 }

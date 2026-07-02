@@ -9,9 +9,6 @@
  */
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -19,12 +16,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Require authentication
+require_once __DIR__ . '/../session_helper.php';
+if (empty($_SESSION['logged_in'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Authentication required']);
+    exit;
+}
+
 // Load configuration
 $config = include __DIR__ . '/../../config/cloudflare.php';
 
-if (!$config || (!isset($config['api_key']) && !isset($config['api_token']))) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Cloudflare configuration not found']);
+if (!$config || (empty($config['api_key']) && empty($config['api_token']))) {
+    echo json_encode([
+        'success' => false,
+        'error' => 'Cloudflare API credentials not configured. Please add valid API keys in the Cloudflare dashboard settings.',
+        'setup_required' => true
+    ]);
     exit;
 }
 

@@ -9,7 +9,7 @@ session_start();
 header('Content-Type: application/json');
 header('Cache-Control: no-cache, must-revalidate');
 
-require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/session_helper.php';
 if (empty($_SESSION['logged_in'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
@@ -17,6 +17,35 @@ if (empty($_SESSION['logged_in'])) {
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'stats';
+
+function run_cmd($cmd, $timeout = 10) {
+    $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $process = @proc_open("timeout {$timeout} {$cmd}", $descriptors, $pipes);
+    if (!is_resource($process)) return '';
+    fclose($pipes[0]);
+    $output = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    proc_close($process);
+    return trim($output ?? '');
+}
+
+function run_cmd_lines($cmd, $timeout = 10) {
+    $raw = run_cmd($cmd, $timeout);
+    return $raw ? explode("\n", $raw) : [];
+}
+
+function run_cmd_with_status($cmd, $timeout = 10) {
+    $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $process = @proc_open("timeout {$timeout} {$cmd}", $descriptors, $pipes);
+    if (!is_resource($process)) return ['', 1];
+    fclose($pipes[0]);
+    $output = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    $exit_code = proc_close($process);
+    return [trim($output ?? ''), $exit_code];
+}
 
 switch ($action) {
     case 'stats':
@@ -46,7 +75,7 @@ function getCacheStats() {
     $stats = ['timestamp' => date('Y-m-d H:i:s')];
 
     // ─── Varnish Stats ──────────────────────────────────────────────
-    exec('varnishstat -1 2>/dev/null', $varnish_lines);
+    $varnish_lines = run_cmd_lines('varnishstat -1 2>/dev/null');
     $v = [];
     foreach ($varnish_lines as $line) {
         $parts = preg_split('/\s+/', trim($line));
@@ -168,7 +197,7 @@ function getDeviceHitRates() {
 
     // Parse recent varnishlog entries for device + cache status
     // Uses same regex patterns as VCL for consistency
-    exec("timeout 3s varnishlog -d -g request -i ReqHeader -i RespHeader 2>/dev/null | grep -E 'User-Agent|X-Magento-Cache-Debug|RespBytes' | head -3000", $lines);
+    $lines = run_cmd_lines("varnishlog -d -g request -i ReqHeader -i RespHeader 2>/dev/null | grep -E 'User-Agent|X-Magento-Cache-Debug|RespBytes' | head -3000", 3);
 
     $current_device = null;
     $is_hit = null;
@@ -233,7 +262,7 @@ function getDeviceHitRates() {
 function getRedisStats() {
     $result = [];
     try {
-        $info = shell_exec('redis-cli INFO memory 2>/dev/null | grep -E "used_memory_human|used_memory_peak_human|keys|db0"');
+        $info = run_cmd('redis-cli INFO memory 2>/dev/null | grep -E "used_memory_human|used_memory_peak_human|keys|db0"');
         if ($info) {
             foreach (explode("\n", trim($info)) as $line) {
                 if (strpos($line, ':') !== false) {
@@ -254,8 +283,7 @@ function getMagentoCacheStatus() {
     $magento = '/home/technadminy7/public_html';
     $php = '/opt/cpanel/ea-php82/root/usr/bin/php';
 
-    $output = [];
-    exec("$php $magento/bin/magento cache:status 2>/dev/null", $output);
+    $output = run_cmd_lines("$php $magento/bin/magento cache:status 2>/dev/null");
 
     $caches = [];
     foreach ($output as $line) {
@@ -266,13 +294,13 @@ function getMagentoCacheStatus() {
 
     return [
         'caches' => $caches,
-        'mode' => trim(shell_exec("$php $magento/bin/magento deploy:mode:show 2>/dev/null | tail -1")),
+        'mode' => run_cmd("$php $magento/bin/magento deploy:mode:show 2>/dev/null | tail -1"),
     ];
 }
 
 function getTopCachedUrls() {
     $urls = [];
-    exec("timeout 3s varnishlog -d -i ReqURL 2>/dev/null | grep 'ReqURL' | awk '{print \$NF}' | sort | uniq -c | sort -rn | head -20", $lines);
+    $lines = run_cmd_lines("varnishlog -d -i ReqURL 2>/dev/null | grep 'ReqURL' | awk '{print \$NF}' | sort | uniq -c | sort -rn | head -20", 3);
     foreach ($lines as $line) {
         if (preg_match('/^\s*(\d+)\s+(.*)/', trim($line), $m)) {
             $urls[] = ['url' => $m[2], 'count' => (int)$m[1]];
@@ -285,7 +313,7 @@ function getRecentCacheActivity() {
     $activity = ['last_hour_hits' => 0, 'last_hour_misses' => 0, 'last_5min_hits' => 0, 'last_5min_misses' => 0];
 
     // Count HIT/MISS in recent varnishlog
-    exec("timeout 2s varnishlog -d -i RespHeader -I 'X-Magento-Cache-Debug' 2>/dev/null | grep 'X-Magento-Cache-Debug' | tail -500", $lines);
+    $lines = run_cmd_lines("varnishlog -d -i RespHeader -I 'X-Magento-Cache-Debug' 2>/dev/null | grep 'X-Magento-Cache-Debug' | tail -500", 2);
 
     foreach ($lines as $line) {
         if (strpos($line, 'HIT') !== false) {
@@ -309,30 +337,32 @@ function purgeCache() {
     $magento = '/home/technadminy7/public_html';
     $php = '/opt/cpanel/ea-php82/root/usr/bin/php';
 
-    $output = [];
+    $output_text = '';
     $exit_code = 0;
 
     switch ($type) {
         case 'magento':
-            exec("$php $magento/bin/magento cache:clean 2>&1", $output, $exit_code);
+            [$output_text, $exit_code] = run_cmd_with_status("$php $magento/bin/magento cache:clean 2>&1");
             break;
         case 'varnish':
-            exec("sudo /usr/bin/varnishadm 'ban req.http.host ~ \".*\"' 2>&1", $output, $exit_code);
+            [$output_text, $exit_code] = run_cmd_with_status("sudo /usr/bin/varnishadm 'ban req.http.host ~ \".*\"' 2>&1");
             break;
         case 'redis':
-            exec("redis-cli FLUSHDB 2>&1", $output, $exit_code);
+            [$output_text, $exit_code] = run_cmd_with_status("redis-cli FLUSHDB 2>&1");
             break;
         case 'all':
         default:
-            exec("$php $magento/bin/magento cache:clean 2>&1", $output, $exit_code);
-            exec("sudo /usr/bin/varnishadm 'ban req.http.host ~ \".*\"' 2>&1", $output, $exit_code);
+            [$out1, $code1] = run_cmd_with_status("$php $magento/bin/magento cache:clean 2>&1");
+            [$out2, $code2] = run_cmd_with_status("sudo /usr/bin/varnishadm 'ban req.http.host ~ \".*\"' 2>&1");
+            $output_text = $out1 . "\n" . $out2;
+            $exit_code = max($code1, $code2);
             break;
     }
 
     return [
         'success' => $exit_code === 0,
         'type' => $type,
-        'output' => implode("\n", $output),
+        'output' => $output_text,
     ];
 }
 
@@ -344,7 +374,7 @@ function startWarmup() {
     $php = '/opt/cpanel/ea-php82/root/usr/bin/php';
     $script = '/home/dashboard/public_html/scripts/warmup_per_device.php';
 
-    exec("nohup $php $script --urls=$urls --parallel=$parallel > $log_file 2>&1 & echo $!");
+    run_cmd("nohup $php $script --urls=$urls --parallel=$parallel > $log_file 2>&1 & echo \$!", 5);
 
     return [
         'success' => true,
@@ -355,11 +385,11 @@ function startWarmup() {
 
 function getWarmupStatus() {
     // Check for running warmup processes
-    exec("ps aux | grep warmup_per_device | grep -v grep", $procs);
-    $running = !empty($procs);
+    $procs = run_cmd_lines("ps aux | grep warmup_per_device | grep -v grep");
+    $running = !empty($procs) && !empty($procs[0]);
 
     // Find latest warmup log
-    $latest_log = trim(shell_exec("ls -t /home/dashboard/public_html/logs/warmup_per_device_*.log 2>/dev/null | head -1"));
+    $latest_log = run_cmd("ls -t /home/dashboard/public_html/logs/warmup_per_device_*.log 2>/dev/null | head -1");
 
     $status = ['running' => $running, 'log_file' => $latest_log];
 

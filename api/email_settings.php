@@ -39,16 +39,15 @@ switch ($action) {
         // Save email settings
         $rawInput = file_get_contents('php://input');
         $input = json_decode($rawInput, true);
-        
+
         if ($input === null && json_last_error() !== JSON_ERROR_NONE) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Invalid JSON in request body: ' . json_last_error_msg()]);
             exit;
         }
-        
+
         $input = $input ?? [];
-        
-        // Validate required fields using InputValidator
+
         $validationRules = [
             'from_email' => 'required|email',
             'from_name' => 'required|max:100',
@@ -56,26 +55,31 @@ switch ($action) {
             'admin_email_2' => 'email',
             'enabled' => 'in:true,false,1,0'
         ];
-        
+
         $errors = InputValidator::validateArray($input, $validationRules);
         if (!empty($errors)) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => implode(', ', $errors)]);
             exit;
         }
-        
-        // Sanitize from_name to prevent header injection
+
         $input['from_name'] = str_replace(["\r", "\n"], '', $input['from_name']);
-        
-        // Save settings
-        $result = Mailer::saveSettings([
+
+        $settingsToSave = [
             'from_email' => $input['from_email'],
             'from_name' => $input['from_name'],
             'admin_email_1' => $input['admin_email_1'],
             'admin_email_2' => $input['admin_email_2'] ?? '',
-            'enabled' => $input['enabled'] ?? 'true'
-        ]);
-        
+            'enabled' => $input['enabled'] ?? 'true',
+            'smtp_host' => $input['smtp_host'] ?? '',
+            'smtp_port' => $input['smtp_port'] ?? '587',
+            'smtp_user' => $input['smtp_user'] ?? '',
+            'smtp_pass' => $input['smtp_pass'] ?? '',
+            'smtp_encryption' => $input['smtp_encryption'] ?? 'tls',
+        ];
+
+        $result = Mailer::saveSettings($settingsToSave);
+
         if ($result['success']) {
             echo json_encode($result);
         } else {

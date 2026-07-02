@@ -43,6 +43,12 @@ import SystemHealthPage from './pages/SystemHealthPage.tsx';
 import UserActivityPage from './pages/UserActivityPage.tsx';
 import SshSessionsPage from './pages/SshSessionsPage.tsx';
 import ServerCommandHistoryPage from './pages/ServerCommandHistoryPage.tsx';
+import BackupsPage from './pages/BackupsPage.tsx';
+import MagentoProductsPage from './pages/MagentoProductsPage.tsx';
+import MagentoCustomersPage from './pages/MagentoCustomersPage.tsx';
+import MagentoOrdersPage from './pages/MagentoOrdersPage.tsx';
+import MagentoCmsPage from './pages/MagentoCmsPage.tsx';
+import MagentoSettingsPage from './pages/MagentoSettingsPage.tsx';
 
 export default function App() {
   return (
@@ -66,6 +72,8 @@ export default function App() {
                 <Route path="tools/permissions" element={<PermissionsPage />} />
                 <Route path="monitoring/ssh" element={<SshSessionsPage />} />
                 <Route path="monitoring/commands" element={<ServerCommandHistoryPage />} />
+                <Route path="tools/backups" element={<BackupsPage />} />
+                <Route path="commerce/settings" element={<MagentoSettingsPage />} />
               </Route>
             </Route>
 
@@ -85,7 +93,11 @@ export default function App() {
                 
                 {/* Commerce */}
                 <Route path="commerce/sales" element={<SalesOverviewPage />} />
+                <Route path="commerce/products" element={<MagentoProductsPage />} />
+                <Route path="commerce/customers" element={<MagentoCustomersPage />} />
+                <Route path="commerce/orders" element={<MagentoOrdersPage />} />
                 <Route path="commerce/inventory" element={<InventoryPage />} />
+                <Route path="commerce/cms" element={<MagentoCmsPage />} />
                 <Route path="commerce/indexers" element={<IndexersPage />} />
                 
                 {/* Dev & CI/CD */}

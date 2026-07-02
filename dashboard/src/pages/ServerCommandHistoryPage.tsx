@@ -17,7 +17,7 @@ export default function ServerCommandHistoryPage() {
   const [search, setSearch] = useState('');
   const [limit, setLimit] = useState(200);
 
-  const BASH_USERS = ['dev', 'beta', 'technadminy7', 'dnd', 'dashboard', 'pim', 'root'];
+  const BASH_USERS = ['root', 'dev', 'beta', 'tsdnd', 'technadminy7', 'dnd', 'dashboard', 'pim', 'salah'];
 
   const loadHistory = useCallback(() => {
     setLoading(true);
