@@ -28,8 +28,9 @@ export default function TasksPage() {
   const [filterPriority, setFilterPriority] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterAssignee, setFilterAssignee] = useState('');
+  const [filterDepartment, setFilterDepartment] = useState('');
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
-  const [myTasksOnly, setMyTasksOnly] = useState(false);
+  const [myTasksOnly, setMyTasksOnly] = useState(true);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [bulkActionMenu, setBulkActionMenu] = useState<null | HTMLElement>(null);
   const [bulkUpdating, setBulkUpdating] = useState(false);
@@ -51,6 +52,7 @@ export default function TasksPage() {
       if (filterCategory) filters.category = filterCategory;
       if (myTasksOnly) filters.assigned_to = currentUsername;
       else if (filterAssignee) filters.assigned_to = filterAssignee;
+      if (filterDepartment) filters.department = filterDepartment;
       if (search) filters.search = search;
       if (showOverdueOnly) filters.overdue = true;
 
@@ -78,17 +80,24 @@ export default function TasksPage() {
     setDialogOpen(true);
   };
 
-  const handleSave = async () => {
+  const [duplicateWarning, setDuplicateWarning] = useState<{ show: boolean; existingId: number | null }>({ show: false, existingId: null });
+
+  const handleSave = async (forceCreate = false) => {
     if (!formData.title.trim()) { setSnackbar({ open: true, message: 'Title is required', severity: 'error' }); return; }
     try {
       if (editingTask) {
         await updateTask({ id: editingTask.id, ...formData });
         setSnackbar({ open: true, message: 'Task updated', severity: 'success' });
       } else {
-        await createTask(formData);
+        const result = await createTask({ ...formData, force_create: forceCreate });
+        if (result.duplicate_warning && !forceCreate) {
+          setDuplicateWarning({ show: true, existingId: result.existing_task_id });
+          return;
+        }
         setSnackbar({ open: true, message: 'Task created', severity: 'success' });
       }
       setDialogOpen(false);
+      setDuplicateWarning({ show: false, existingId: null });
       loadData();
     } catch (e: any) {
       setSnackbar({ open: true, message: e.response?.data?.error || e.message, severity: 'error' });
@@ -226,7 +235,7 @@ export default function TasksPage() {
     { field: 'category', headerName: 'Category', width: 100, renderCell: (p: GridRenderCellParams) => <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>{p.value}</Typography> },
     { field: 'actions', headerName: '', width: 120, sortable: false, renderCell: (p: GridRenderCellParams) => {
       const isOwner = p.row.created_by === currentUsername;
-      const canEdit = isOwner || permissions?.can_update_any_task;
+      const canEdit = isOwner; // Only the task owner can edit
       const canDelete = permissions?.can_delete_tasks;
       return (
         <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -299,6 +308,24 @@ export default function TasksPage() {
               <Select value={filterCategory} displayEmpty onChange={(e) => setFilterCategory(e.target.value)} sx={{ fontSize: '0.75rem' }}>
                 <MenuItem value="">All Categories</MenuItem>
                 {TASK_CATEGORIES.map(cat => <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>)}
+              </Select>
+            </FormControl>
+
+            {/* Assignee Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <Select value={filterAssignee} displayEmpty onChange={(e) => setFilterAssignee(e.target.value)} sx={{ fontSize: '0.75rem' }}>
+                <MenuItem value="">All Assignees</MenuItem>
+                {users.filter(u => u.is_active).map(u => <MenuItem key={u.username} value={u.username}>{u.full_name || u.username}</MenuItem>)}
+              </Select>
+            </FormControl>
+
+            {/* Department / Role Filter */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <Select value={filterDepartment} displayEmpty onChange={(e) => setFilterDepartment(e.target.value)} sx={{ fontSize: '0.75rem' }}>
+                <MenuItem value="">All Departments</MenuItem>
+                {Array.from(new Set(users.map(u => u.role))).map(r => (
+                  <MenuItem key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</MenuItem>
+                ))}
               </Select>
             </FormControl>
 
@@ -451,7 +478,32 @@ export default function TasksPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleSave}>{editingTask ? 'Save' : 'Create'}</Button>
+          <Button variant="contained" onClick={() => handleSave(false)}>{editingTask ? 'Save' : 'Create'}</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Duplicate Warning Dialog */}
+      <Dialog open={duplicateWarning.show} onClose={() => setDuplicateWarning({ show: false, existingId: null })}>
+        <DialogTitle>Duplicate Task Detected</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            A task with the title "<strong>{formData.title}</strong>" was already created in the last 24 hours
+            {duplicateWarning.existingId && <> (Task #{duplicateWarning.existingId})</>}.
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Would you like to create it anyway, or view the existing task?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDuplicateWarning({ show: false, existingId: null })}>Cancel</Button>
+          {duplicateWarning.existingId && (
+            <Button onClick={() => { setDuplicateWarning({ show: false, existingId: null }); setDialogOpen(false); navigate(`/tasks/${duplicateWarning.existingId}`); }}>
+              View Existing
+            </Button>
+          )}
+          <Button variant="contained" color="warning" onClick={() => { setDuplicateWarning({ show: false, existingId: null }); handleSave(true); }}>
+            Create Anyway
+          </Button>
         </DialogActions>
       </Dialog>
 

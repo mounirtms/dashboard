@@ -26,100 +26,35 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 
-    // Create tables if they don't exist
-    $pdo->exec("CREATE TABLE IF NOT EXISTS tasks (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        description TEXT,
-        priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
-        status ENUM('pending', 'in-progress', 'completed', 'cancelled') DEFAULT 'pending',
-        assigned_to VARCHAR(100) DEFAULT '',
-        due_date DATE NULL,
-        category VARCHAR(50) DEFAULT 'general',
-        created_by VARCHAR(50),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_status (status),
-        INDEX idx_priority (priority),
-        INDEX idx_created (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS task_notes (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        task_id INT UNSIGNED NOT NULL,
-        author VARCHAR(50) NOT NULL,
-        content TEXT NOT NULL,
-        category ENUM('tuning', 'fix', 'implementation', 'question', 'general') DEFAULT 'general',
-        is_pinned TINYINT(1) DEFAULT 0,
-        parent_id INT UNSIGNED NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-        INDEX idx_task (task_id),
-        INDEX idx_pinned (is_pinned)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    // Add missing columns for existing databases
-    try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN category ENUM('tuning', 'fix', 'implementation', 'question', 'general') DEFAULT 'general' AFTER content"); } catch (\Exception $e) {}
-    try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN is_pinned TINYINT(1) DEFAULT 0 AFTER category"); } catch (\Exception $e) {}
-    try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at"); } catch (\Exception $e) {}
-    try { $pdo->exec("ALTER TABLE task_notes ADD INDEX idx_pinned (is_pinned)"); } catch (\Exception $e) {}
-    try { $pdo->exec("ALTER TABLE task_notes ADD COLUMN status ENUM('draft', 'active', 'reviewed', 'action-required') DEFAULT 'active' AFTER is_pinned"); } catch (\Exception $e) {}
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS task_screenshots (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        task_id INT UNSIGNED NOT NULL,
-        author VARCHAR(50) NOT NULL,
-        file_path VARCHAR(500) NOT NULL,
-        caption VARCHAR(500) DEFAULT '',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-        INDEX idx_task (task_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS task_activity (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        task_id INT UNSIGNED NOT NULL,
-        action VARCHAR(50) NOT NULL,
-        actor VARCHAR(50),
-        details TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-        INDEX idx_task (task_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS task_links (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        task_id INT UNSIGNED NOT NULL,
-        linked_task_id INT UNSIGNED NOT NULL,
-        link_type ENUM('blocks', 'blocked-by', 'related', 'duplicate-of') DEFAULT 'related',
-        created_by VARCHAR(50),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-        FOREIGN KEY (linked_task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-        INDEX idx_task (task_id),
-        INDEX idx_linked (linked_task_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    // Push notification subscriptions table
-    $pdo->exec("CREATE TABLE IF NOT EXISTS push_subscriptions (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        user_id INT UNSIGNED NOT NULL,
-        subscription_endpoint TEXT NOT NULL,
-        subscription_p256dh VARCHAR(255) NOT NULL,
-        subscription_auth VARCHAR(255) NOT NULL,
-        browser VARCHAR(50),
-        device_type VARCHAR(50),
-        os VARCHAR(50),
-        last_used DATETIME,
-        is_active TINYINT(1) DEFAULT 1,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_subscription (subscription_endpoint(255)),
-        INDEX idx_user (user_id),
-        INDEX idx_active (is_active)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    // Lightweight schema check — DDL lives in migrate.php, run via CLI
+    $schemaVersion = '20260614';
+    $cacheFile = __DIR__ . '/logs/task_schema.cache';
+    if (!file_exists($cacheFile) || file_get_contents($cacheFile) !== $schemaVersion) {
+        $check = $pdo->query("SHOW TABLES LIKE 'tasks'");
+        if ($check->rowCount() === 0) {
+            http_response_code(503);
+            echo json_encode(['error' => 'Database schema not initialized. Run api/migrate.php via CLI.']);
+            exit;
+        }
+        if (!is_dir(dirname($cacheFile))) mkdir(dirname($cacheFile), 0755, true);
+        file_put_contents($cacheFile, $schemaVersion);
+    }
 
     $currentUser = $_SESSION['username'] ?? 'system';
+
+    $VALID_PRIORITIES = ['low', 'medium', 'high'];
+    $VALID_STATUSES = ['pending', 'in-progress', 'completed', 'cancelled'];
+    $VALID_CATEGORIES = ['general', 'development', 'design', 'testing', 'documentation', 'maintenance'];
+
+    // Rate limiter for mutations (30/min per user)
+    $rateLimiter = null;
+    $checkRateLimit = function() use (&$rateLimiter, $currentUser) {
+        if ($rateLimiter === null) {
+            require_once __DIR__ . '/RateLimiter.php';
+            $rateLimiter = new RateLimiter('/tmp/rate_limits', 30, 60);
+        }
+        return $rateLimiter->checkOrReject('tasks_' . $currentUser);
+    };
 
     // Helper function to get user email and name
     $getUserInfo = function($username) use ($pdo) {
@@ -158,6 +93,13 @@ try {
             if (!empty($_GET['assigned_to'])) {
                 $where[] = "assigned_to = ?";
                 $params[] = $_GET['assigned_to'];
+            }
+
+            // Filter by department (match assigned user's role)
+            if (!empty($_GET['department'])) {
+                // Uses users.role as department — no schema changes required
+                $where[] = "assigned_to IN (SELECT username FROM users WHERE role = ?)";
+                $params[] = $_GET['department'];
             }
             
             // Search in title and assigned_to
@@ -223,26 +165,58 @@ try {
                 echo json_encode(['error' => 'You do not have permission to create tasks']);
                 break;
             }
+            if (!$checkRateLimit()) break;
 
             $rawInput = file_get_contents('php://input');
             $input = json_decode($rawInput, true) ?? [];
 
             $title = trim($input['title'] ?? '');
-            if (empty($title)) {
+            if (empty($title) || strlen($title) > 255) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Title is required']);
+                echo json_encode(['error' => 'Title is required (max 255 characters)']);
+                break;
+            }
+            $title = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+
+            $priority = $input['priority'] ?? 'medium';
+            if (!in_array($priority, $VALID_PRIORITIES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid priority. Valid: ' . implode(', ', $VALID_PRIORITIES)]);
+                break;
+            }
+
+            $status = $input['status'] ?? 'pending';
+            if (!in_array($status, $VALID_STATUSES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid status. Valid: ' . implode(', ', $VALID_STATUSES)]);
+                break;
+            }
+
+            $category = $input['category'] ?? 'general';
+            if (!in_array($category, $VALID_CATEGORIES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid category. Valid: ' . implode(', ', $VALID_CATEGORIES)]);
+                break;
+            }
+
+            // Duplicate detection: same title by same creator within 24 hours
+            $dupStmt = $pdo->prepare("SELECT id FROM tasks WHERE LOWER(title) = LOWER(?) AND created_by = ? AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR) LIMIT 1");
+            $dupStmt->execute([$title, $currentUser]);
+            $existingTask = $dupStmt->fetch();
+            if ($existingTask && empty($input['force_create'])) {
+                echo json_encode(['duplicate_warning' => true, 'existing_task_id' => (int)$existingTask['id'], 'message' => 'A task with this title was created in the last 24 hours. Send force_create=true to proceed.']);
                 break;
             }
 
             $stmt = $pdo->prepare("INSERT INTO tasks (title, description, priority, status, assigned_to, due_date, category, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $title,
-                $input['description'] ?? '',
-                $input['priority'] ?? 'medium',
-                $input['status'] ?? 'pending',
+                htmlspecialchars($input['description'] ?? '', ENT_QUOTES, 'UTF-8'),
+                $priority,
+                $status,
                 $input['assigned_to'] ?? '',
                 $input['due_date'] ?? null,
-                $input['category'] ?? 'general',
+                $category,
                 $currentUser
             ]);
             $taskId = $pdo->lastInsertId();
@@ -327,6 +301,8 @@ try {
             break;
 
         case 'update':
+            if (!$checkRateLimit()) break;
+
             $rawInput = file_get_contents('php://input');
             $input = json_decode($rawInput, true) ?? [];
 
@@ -342,18 +318,41 @@ try {
             $oldStmt->execute([$id]);
             $oldTask = $oldStmt->fetch();
 
-            // Permission check: only task owner or users with can_update_any_task can update
+            // Permission check: only the task owner may update (no edit by others)
             $isOwner = ($currentUser === $oldTask['created_by']);
-            if ($isOwner) {
-                if (!PermissionChecker::hasPermission('can_update_own_tasks')) {
-                    http_response_code(403);
-                    echo json_encode(['error' => 'You do not have permission to update your own tasks']);
-                    break;
-                }
-            } else {
-                if (!PermissionChecker::hasPermission('can_update_any_task')) {
-                    http_response_code(403);
-                    echo json_encode(['error' => 'You can only update your own tasks']);
+            if (!$isOwner) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Only the task owner can update this task']);
+                break;
+            }
+            // Owner-level permission required
+            if (!PermissionChecker::hasPermission('can_update_own_tasks')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'You do not have permission to update your own tasks']);
+                break;
+            }
+
+            // Validate enum fields before building query
+            if (isset($input['priority']) && !in_array($input['priority'], $VALID_PRIORITIES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid priority. Valid: ' . implode(', ', $VALID_PRIORITIES)]);
+                break;
+            }
+            if (isset($input['status']) && !in_array($input['status'], $VALID_STATUSES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid status. Valid: ' . implode(', ', $VALID_STATUSES)]);
+                break;
+            }
+            if (isset($input['category']) && !in_array($input['category'], $VALID_CATEGORIES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid category. Valid: ' . implode(', ', $VALID_CATEGORIES)]);
+                break;
+            }
+            if (isset($input['title'])) {
+                $input['title'] = htmlspecialchars(trim($input['title']), ENT_QUOTES, 'UTF-8');
+                if (empty($input['title']) || strlen($input['title']) > 255) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Title is required (max 255 characters)']);
                     break;
                 }
             }
@@ -447,6 +446,8 @@ try {
             break;
 
         case 'delete':
+            if (!$checkRateLimit()) break;
+
             $rawInput = file_get_contents('php://input');
             $input = json_decode($rawInput, true) ?? [];
 
@@ -482,6 +483,7 @@ try {
                 echo json_encode(['error' => 'You do not have permission to bulk update tasks']);
                 break;
             }
+            if (!$checkRateLimit()) break;
 
             $rawInput = file_get_contents('php://input');
             $input = json_decode($rawInput, true) ?? [];
@@ -490,6 +492,23 @@ try {
             if (empty($ids) || !is_array($ids)) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Task IDs array is required']);
+                break;
+            }
+
+            // Validate enum fields
+            if (isset($input['status']) && !in_array($input['status'], $VALID_STATUSES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid status. Valid: ' . implode(', ', $VALID_STATUSES)]);
+                break;
+            }
+            if (isset($input['priority']) && !in_array($input['priority'], $VALID_PRIORITIES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid priority. Valid: ' . implode(', ', $VALID_PRIORITIES)]);
+                break;
+            }
+            if (isset($input['category']) && !in_array($input['category'], $VALID_CATEGORIES)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid category. Valid: ' . implode(', ', $VALID_CATEGORIES)]);
                 break;
             }
 
@@ -1044,6 +1063,7 @@ $taskListItems
     }
 
 } catch (Exception $e) {
+    error_log("[tasks.php] Unhandled error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => 'An internal error occurred. Please try again later.']);
 }

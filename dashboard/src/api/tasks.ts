@@ -128,7 +128,7 @@ export async function fetchTask(id: number): Promise<Task> {
   return data;
 }
 
-export async function createTask(input: Partial<Task>): Promise<any> {
+export async function createTask(input: Partial<Task> & { force_create?: boolean }): Promise<any> {
   const { data } = await apiClient.post('/api/tasks.php?action=create', input);
   return data;
 }
