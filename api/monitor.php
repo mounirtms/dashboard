@@ -50,7 +50,7 @@ $allowedActions = [
     'system_advanced', 'phpfpm_pools', 'alerts', 'cloudflare',
     'cloudflare_action', 'apache', 'cache_manage', 'logs', 'processes',
     'db_action', 'cron_action', 'process_action', 'site_action', 'indexer_action',
-    'ssh', 'ssh_kill', 'ssh_kill_single', 'sshd_restart',
+    'ssh', 'ssh_kill', 'ssh_kill_single', 'sshd_restart', 'ssh_users', 'ssh_user_add', 'ssh_user_remove',
     'csf', 'csf_action',
     'services', 'network', 'notification_log',
     'user_activity', 'bash_history',
@@ -209,6 +209,19 @@ try {
             break;
         case 'sshd_restart':
             $data = $monitorApi->restartSshd();
+            break;
+        case 'ssh_users':
+            $data = $monitorApi->getSshUsers();
+            break;
+        case 'ssh_user_add':
+            require_once __DIR__ . '/AuditLogger.php';
+            AuditLogger::log('SSH_USER_ADD', $_POST['username'] ?? 'unknown', 'Added to SSH AllowUsers');
+            $data = $monitorApi->addSshUser($_POST['username'] ?? '');
+            break;
+        case 'ssh_user_remove':
+            require_once __DIR__ . '/AuditLogger.php';
+            AuditLogger::log('SSH_USER_REMOVE', $_POST['username'] ?? 'unknown', 'Removed from SSH AllowUsers');
+            $data = $monitorApi->removeSshUser($_POST['username'] ?? '');
             break;
         case 'csf':
             $data = $monitorApi->getCsfFirewall();

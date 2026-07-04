@@ -2150,7 +2150,7 @@ class MonitorApi extends BaseApi {
     public function getUserActivity() {
         return $this->cache->remember('user_activity', 30, function() {
             $db = $this->getDb();
-            $knownUsers = ['root', 'dev', 'beta', 'technadminy7', 'dnd', 'dashboard', 'pim', 'salah'];
+            $knownUsers = ['root', 'technadminy7', 'dashboard', 'salah', 'dev', 'dnd', 'pim'];
             $users = [];
 
             foreach ($knownUsers as $username) {
@@ -2409,7 +2409,7 @@ class MonitorApi extends BaseApi {
         $script = '/home/dashboard/public_html/scripts/maintenance/malware_scan.sh';
 
         $args = '--json';
-        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta', 'tsdnd'])) {
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta'])) {
             $args .= " --account $account";
         }
 
@@ -2441,7 +2441,7 @@ class MonitorApi extends BaseApi {
 
         $args = '';
         if ($checkOnly) $args .= ' --check-only';
-        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta', 'tsdnd'])) {
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta'])) {
             $args .= " --account $account";
         }
 
@@ -2505,7 +2505,7 @@ class MonitorApi extends BaseApi {
         $account = $_POST['account'] ?? $_GET['account'] ?? '';
         $script = '/home/dashboard/public_html/scripts/maintenance/ecomscan_all.sh';
         $args = '--json';
-        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'tsdnd'])) {
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev'])) {
             $args .= " --account $account";
         }
         $result = $this->cmd("bash $script $args 2>&1", 600);
@@ -2525,6 +2525,172 @@ class MonitorApi extends BaseApi {
             'status' => $result['return'] === 0 ? 'complete' : 'error',
             'output' => $output,
             'return_code' => $result['return']
+        ];
+    }
+
+    /**
+     * Get SSH AllowUsers list and details from sshd_config
+     */
+    public function getSshUsers() {
+        $sshdConfig = '/etc/ssh/sshd_config';
+        $allowedUsers = [];
+        $permitRootLogin = 'unknown';
+        $passwordAuth = true;
+
+        if (is_readable($sshdConfig)) {
+            $lines = file($sshdConfig, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (preg_match('/^AllowUsers\s+(.+)$/i', $line, $m)) {
+                    $allowedUsers = preg_split('/\s+/', trim($m[1]));
+                }
+                if (preg_match('/^PermitRootLogin\s+(\S+)$/i', $line, $m)) {
+                    $permitRootLogin = strtolower(trim($m[1]));
+                }
+                if (preg_match('/^PasswordAuthentication\s+(yes|no)$/i', $line, $m)) {
+                    $passwordAuth = strtolower(trim($m[1])) === 'yes';
+                }
+            }
+        }
+
+        $userDetails = [];
+        foreach ($allowedUsers as $username) {
+            $username = trim($username);
+            if (empty($username)) continue;
+            $homeDir = ($username === 'root') ? '/root' : "/home/$username";
+            $hasKey = file_exists("$homeDir/.ssh/authorized_keys") &&
+                      filesize("$homeDir/.ssh/authorized_keys") > 0;
+
+            // Check wheel/sudo group
+            $groupsRaw = $this->cmd_line("id -Gn $username 2>/dev/null", 3);
+            $groups = $groupsRaw ? explode(' ', trim($groupsRaw)) : [];
+            $inWheel = in_array('wheel', $groups) || in_array('sudo', $groups);
+
+            // Last login from secure log
+            $lastLogin = $this->cmd_line(
+                "grep 'Accepted.*for $username from' /var/log/secure 2>/dev/null | tail -1 | awk '{print \$1, \$2, \$3}'",
+                3
+            );
+            if (!$lastLogin) {
+                $lastLogin = $this->cmd_line("last -n 1 $username 2>/dev/null | head -1 | awk '{print \$4, \$5, \$6, \$7}'", 3);
+            }
+
+            $userDetails[] = [
+                'username'   => $username,
+                'exists'     => is_dir($homeDir),
+                'in_wheel'   => $inWheel,
+                'in_sudo'    => $inWheel,
+                'has_key'    => $hasKey,
+                'last_login' => $lastLogin ?: '—',
+                'status'     => is_dir($homeDir) ? 'active' : 'unknown',
+            ];
+        }
+
+        return [
+            'allowed_users'    => $allowedUsers,
+            'user_details'     => $userDetails,
+            'permit_root_login'=> $permitRootLogin,
+            'password_auth'    => $passwordAuth,
+            'timestamp'        => time(),
+        ];
+    }
+
+    /**
+     * Add a user to SSH AllowUsers in sshd_config and reload
+     */
+    public function addSshUser(string $username) {
+        $username = preg_replace('/[^a-z0-9_-]/', '', strtolower(trim($username)));
+        if (empty($username)) {
+            return ['success' => false, 'message' => 'Invalid username'];
+        }
+
+        $sshdConfig = '/etc/ssh/sshd_config';
+        $content = file_get_contents($sshdConfig);
+        if ($content === false) {
+            return ['success' => false, 'message' => 'Cannot read sshd_config'];
+        }
+
+        // Check if already present
+        if (preg_match('/^AllowUsers\s+.*\b' . preg_quote($username, '/') . '\b/m', $content)) {
+            return ['success' => false, 'message' => "User '$username' is already in AllowUsers"];
+        }
+
+        // Append username to existing AllowUsers line
+        $new = preg_replace(
+            '/^(AllowUsers\s+.*)$/m',
+            "$1 $username",
+            $content
+        );
+
+        if ($new === $content) {
+            // No AllowUsers line exists — add one
+            $new .= "\nAllowUsers $username\n";
+        }
+
+        // Write with backup
+        copy($sshdConfig, $sshdConfig . '.bak.' . date('Ymd_His'));
+        if (file_put_contents($sshdConfig, $new) === false) {
+            return ['success' => false, 'message' => 'Failed to write sshd_config'];
+        }
+
+        // Validate and reload
+        $test = $this->cmd('sshd -t 2>&1', 5);
+        if ($test['return'] !== 0) {
+            file_put_contents($sshdConfig, $content); // rollback
+            return ['success' => false, 'message' => 'sshd config validation failed — rolled back: ' . implode(' ', $test['output'])];
+        }
+
+        $reload = $this->cmd('systemctl reload sshd 2>&1', 10);
+        return [
+            'success' => $reload['return'] === 0,
+            'message' => $reload['return'] === 0
+                ? "User '$username' added to SSH AllowUsers and SSHD reloaded"
+                : 'Config updated but SSHD reload failed'
+        ];
+    }
+
+    /**
+     * Remove a user from SSH AllowUsers in sshd_config and reload
+     */
+    public function removeSshUser(string $username) {
+        $username = preg_replace('/[^a-z0-9_-]/', '', strtolower(trim($username)));
+        if (empty($username) || $username === 'root') {
+            return ['success' => false, 'message' => 'Cannot remove root or invalid username'];
+        }
+
+        $sshdConfig = '/etc/ssh/sshd_config';
+        $content = file_get_contents($sshdConfig);
+        if ($content === false) {
+            return ['success' => false, 'message' => 'Cannot read sshd_config'];
+        }
+
+        $new = preg_replace(
+            '/^(AllowUsers\s+)(.*)/me',
+            '"$1" . trim(preg_replace(\'/\b' . preg_quote($username, '/') . '\b\s*/\', \'\', "$2"))',
+            $content
+        );
+
+        if ($new === $content) {
+            return ['success' => false, 'message' => "User '$username' not found in AllowUsers"];
+        }
+
+        copy($sshdConfig, $sshdConfig . '.bak.' . date('Ymd_His'));
+        if (file_put_contents($sshdConfig, $new) === false) {
+            return ['success' => false, 'message' => 'Failed to write sshd_config'];
+        }
+
+        $test = $this->cmd('sshd -t 2>&1', 5);
+        if ($test['return'] !== 0) {
+            file_put_contents($sshdConfig, $content);
+            return ['success' => false, 'message' => 'sshd config validation failed — rolled back'];
+        }
+
+        $reload = $this->cmd('systemctl reload sshd 2>&1', 10);
+        return [
+            'success' => $reload['return'] === 0,
+            'message' => $reload['return'] === 0
+                ? "User '$username' removed from SSH AllowUsers and SSHD reloaded"
+                : 'Config updated but SSHD reload failed'
         ];
     }
 }

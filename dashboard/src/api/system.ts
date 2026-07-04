@@ -352,6 +352,24 @@ export async function restartSshd(): Promise<any> {
   return data;
 }
 
+// SSH User Management
+export async function getSshUsers(): Promise<any> {
+  const { data } = await apiClient.get('/api/monitor.php?action=ssh_users');
+  if (data.error) throw new Error(data.message || data.error);
+  return data;
+}
+
+export async function addSshUser(username: string): Promise<any> {
+  const { data } = await apiClient.post('/api/monitor.php?action=ssh_user_add', { username });
+  return data;
+}
+
+export async function removeSshUser(username: string): Promise<any> {
+  const { data } = await apiClient.post('/api/monitor.php?action=ssh_user_remove', { username });
+  return data;
+}
+
+
 // CSF Firewall
 export async function fetchCsfFirewall(): Promise<CsfFirewallData> {
   const { data } = await apiClient.get('/api/monitor.php?action=csf');
