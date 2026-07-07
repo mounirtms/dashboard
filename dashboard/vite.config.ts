@@ -4,7 +4,12 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/',
+
+  // CRITICAL: base must match the URL path where /build/ is served from.
+  // Apache serves /build/ at /build/, so all asset URLs inside JS bundles
+  // become /build/assets/... which is where they physically live.
+  base: '/build/',
+
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -16,57 +21,40 @@ export default defineConfig({
       '@utils': resolve(__dirname, 'src/utils'),
     },
   },
+
   build: {
-    // Build directly into the live public_html/build — single source of truth
-    outDir: '../../public_html/build',
+    // Build to a dashboard-owned temp dir to avoid permission issues
+    // when public_html/build/assets/ is owned by a different process user.
+    // post-build.sh copies the output to public_html/build/.
+    outDir: '/tmp/dashboard-build',
     emptyOutDir: true,
     sourcemap: false,
-    // Raise the warning threshold slightly — MUI is large by nature
     chunkSizeWarningLimit: 600,
+
     rollupOptions: {
       output: {
-        // Manual chunk splitting for optimal caching
         manualChunks(id: string) {
-          // Core React runtime — changes rarely
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom'))
             return 'vendor-react';
-          }
-          // React-Router
-          if (id.includes('node_modules/react-router')) {
+          if (id.includes('node_modules/react-router'))
             return 'vendor-router';
-          }
-          // MUI core + emotion
-          if (
-            id.includes('node_modules/@mui/material') ||
-            id.includes('node_modules/@emotion')
-          ) {
+          if (id.includes('node_modules/@mui/material') || id.includes('node_modules/@emotion'))
             return 'vendor-mui';
-          }
-          // MUI icons (very large — split separately)
-          if (id.includes('node_modules/@mui/icons-material')) {
+          if (id.includes('node_modules/@mui/icons-material'))
             return 'vendor-mui-icons';
-          }
-          // MUI DataGrid
-          if (id.includes('node_modules/@mui/x-data-grid')) {
+          if (id.includes('node_modules/@mui/x-data-grid'))
             return 'vendor-mui-datagrid';
-          }
-          // Recharts
-          if (id.includes('node_modules/recharts')) {
+          if (id.includes('node_modules/recharts'))
             return 'vendor-recharts';
-          }
-          // Axios + other small utilities
-          if (id.includes('node_modules/axios')) {
+          if (id.includes('node_modules/axios'))
             return 'vendor-axios';
-          }
-          // Everything else in node_modules → vendor-misc
-          if (id.includes('node_modules/')) {
+          if (id.includes('node_modules/'))
             return 'vendor-misc';
-          }
         },
       },
     },
   },
-  // Improve dev-server HMR stability
+
   server: {
     hmr: { overlay: true },
     watch: { usePolling: false },

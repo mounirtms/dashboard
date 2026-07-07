@@ -1,0 +1,19 @@
+# /build/.htaccess — Static SPA assets — NO PHP, correct MIME types
+RemoveHandler .html .htm
+RemoveType    .html .htm
+<FilesMatch "\.html?$">
+    SetHandler default-handler
+</FilesMatch>
+AddType application/javascript  .js .mjs
+AddType text/css                .css
+AddType image/png               .png
+AddType image/svg+xml           .svg
+AddType image/x-icon            .ico
+Options -Indexes
+<IfModule mod_rewrite.c>
+    RewriteEngine Off
+</IfModule>
+<FilesMatch "\.(js|css|png|svg|ico|woff2?)$">
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+AddDefaultCharset UTF-8

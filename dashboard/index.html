@@ -1,36 +1,95 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="description" content="TechnoStationery Server Dashboard" />
   <title>Techno Server Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://cdn.webpushr.com" />
+  <style>
+    body{margin:0;background:#0a0e1a;color:#e2e8f0;font-family:system-ui,sans-serif}
+    #root:empty::before{content:'';display:block;width:44px;height:44px;border:3px solid #1e2d45;border-top-color:#3b82f6;border-radius:50%;animation:_spin .8s linear infinite;position:fixed;top:50%;left:50%;margin:-22px 0 0 -22px}
+    @keyframes _spin{to{transform:rotate(360deg)}}
+  </style>
+  <!-- SW cache-busting: unregister any stale/broken service workers that may have cached
+       wrong assets (e.g. from when webpushr-sw.js was missing and returned text/html).
+       Runs synchronously before module scripts so broken SWs can't intercept asset loads. -->
+  <script>
+    (function() {
+      // Build stamp injected by post-build.sh — bump forces stale SW eviction
+      var BUILD_STAMP = '__BUILD_STAMP__';
+      var STAMP_KEY   = '_tsm_build';
+      var prev = localStorage.getItem(STAMP_KEY);
+      if (prev !== BUILD_STAMP) {
+        // New deploy detected — unregister ALL service workers and clear ALL caches
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(reg) {
+              reg.unregister();
+              console.log('[TSM] Unregistered stale SW:', reg.scope);
+            });
+          });
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            keys.forEach(function(key) {
+              caches.delete(key);
+              console.log('[TSM] Cleared cache:', key);
+            });
+          });
+        }
+        localStorage.setItem(STAMP_KEY, BUILD_STAMP);
+        console.log('[TSM] Build stamp updated:', BUILD_STAMP);
+      }
+    })();
+  </script>
 </head>
-
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
   <!-- start webpushr tracking code -->
-  <script>(function (w, d, s, id) {
-      if (typeof (w.webpushr) !== 'undefined') return; w.webpushr = w.webpushr || function () { (w.webpushr.q = w.webpushr.q || []).push(arguments) }; var js, fjs = d.getElementsByTagName(s)[0]; js = d.createElement(s); js.id = id; js.async = 1; js.src = "https://cdn.webpushr.com/app.min.js";
-      fjs.parentNode.appendChild(js);
+  <script>
+    // Webpushr SDK — loads app.min.js asynchronously.
+    // The queue wrapper (w.webpushr = function(){...push...}) ensures calls made before
+    // SDK load are buffered and replayed once app.min.js is ready — no 'apply' TypeError.
+    (function (w, d, s, id) {
+      if (typeof (w.webpushr) !== 'undefined') return;
+      w.webpushr = w.webpushr || function () { (w.webpushr.q = w.webpushr.q || []).push(arguments); };
+      var js, fjs = d.getElementsByTagName(s)[0];
+      js = d.createElement(s); js.id = id; js.async = 1;
+      js.src = 'https://cdn.webpushr.com/app.min.js';
+      js.onerror = function() { console.warn('[TSM] Webpushr app.min.js failed to load'); };
+      fjs.parentNode.insertBefore(js, fjs);
     }(window, document, 'script', 'webpushr-jssdk'));
-    webpushr('setup', { 'key': 'BBgwdueYTwU-xcs46oY7Z0dKLTckJS3cbjWvReJNjfJSpwTMy002Eg0GQeeaj1V2843vSWajKY1XVun_h6Yzqq8' });</script>
+    webpushr('setup', { 'key': 'BBgwdueYTwU-xcs46oY7Z0dKLTckJS3cbjWvReJNjfJSpwTMy002Eg0GQeeaj1V2843vSWajKY1XVun_h6Yzqq8' });
+  </script>
   <!-- end webpushr tracking code -->
   <script>
-    // Auto-prompt for push notification subscription after page loads
+    // Trigger subscription prompt once — debounced, only fires when SDK is fully ready
     (function() {
       if (sessionStorage.getItem('webpushr_prompted')) return;
-      var check = setInterval(function() {
-        if (typeof webpushr === 'function') {
-          clearInterval(check);
-          setTimeout(function() { webpushr('subscribe'); sessionStorage.setItem('webpushr_prompted', '1'); }, 3000);
+      var attempts = 0;
+      var t = setInterval(function() {
+        attempts++;
+        // webpushr must be a function (SDK loaded) AND have processed its queue
+        if (typeof webpushr === 'function' && (!webpushr.q || webpushr.q.length === 0)) {
+          clearInterval(t);
+          setTimeout(function() {
+            try {
+              webpushr('subscribe');
+              sessionStorage.setItem('webpushr_prompted', '1');
+            } catch(e) {
+              console.warn('[TSM] webpushr subscribe error:', e);
+            }
+          }, 3000);
         }
+        if (attempts > 50) clearInterval(t); // give up after 10s
       }, 200);
-      setTimeout(function() { clearInterval(check); }, 10000);
     })();
   </script>
 </body>
-
 </html>

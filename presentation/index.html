@@ -4,7 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TechnoStationery Executive Audit — Jan–Jul 2026</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Chart.js 4.4.0 — synchronous CDN load with fallback guard -->
+<script>
+window._chartJsReady = false;
+window._chartJsQueue = [];
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+        onerror="console.error('[TSM] Chart.js CDN load failed — charts will not render')"></script>
+<script>
+// Set ready flag right after CDN script tag (synchronous — fires if CDN succeeded)
+if (typeof Chart !== 'undefined') {
+  window._chartJsReady = true;
+} else {
+  console.warn('[TSM] Chart.js not available after CDN tag');
+}
+</script>
 <style>
 :root{
   --bg:#0a0e1a;--panel:#111827;--panel2:#1a2234;--border:#1e2d45;
@@ -170,7 +184,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 #algeria-map{width:100%;height:100%}
 #algeria-map .wilaya{fill:#1a2a4a;stroke:#2a3a5a;stroke-width:.5;cursor:pointer;transition:fill .2s}
 #algeria-map .wilaya:hover{fill:#3b82f6}
-#mapTooltip{position:absolute;background:#0d1625;border:1px solid var(--accent);border-radius:6px;padding:8px 12px;font-size:12px;color:#fff;pointer-events:none;display:none;z-index:100;white-space:nowrap}
+#mapTooltip{position:absolute;background:rgba(13,22,37,0.96);border:1px solid var(--accent);border-radius:6px;padding:8px 12px;font-size:12px;color:#e2e8f0;pointer-events:none;display:none;z-index:200;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.5);backdrop-filter:blur(4px)}
 
 /* ── CHART CONTAINERS ── */
 .chart-wrap{position:relative;flex:1;min-height:0}
@@ -879,79 +893,93 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="grid-32" style="flex:1;gap:16px">
     <div class="panel" style="display:flex;flex-direction:column;padding:8px;position:relative">
       <div id="mapTooltip"></div>
-      <svg id="algeria-map" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" style="flex:1;width:100%;height:100%">
-        <!-- Wilaya paths — simplified outlines -->
-        <g class="wilaya" id="w01" data-name="Adrar" data-orders="8" data-pct="0.9%"><path d="M120,380 L180,370 L200,420 L190,480 L140,490 L110,450 Z"/></g>
-        <g class="wilaya" id="w02" data-name="Chlef" data-orders="32" data-pct="3.7%"><path d="M220,180 L260,170 L275,200 L255,220 L225,215 Z"/></g>
-        <g class="wilaya" id="w03" data-name="Laghouat" data-orders="18" data-pct="2.1%"><path d="M260,280 L310,270 L325,310 L305,340 L260,335 Z"/></g>
-        <g class="wilaya" id="w04" data-name="Oum El Bouaghi" data-orders="24" data-pct="2.7%"><path d="M450,200 L490,190 L505,225 L480,245 L450,235 Z"/></g>
-        <g class="wilaya" id="w05" data-name="Batna" data-orders="41" data-pct="4.7%"><path d="M460,240 L510,230 L525,270 L500,295 L460,285 Z"/></g>
-        <g class="wilaya" id="w06" data-name="Béjaïa" data-orders="38" data-pct="4.3%"><path d="M370,155 L410,145 L420,175 L400,195 L370,185 Z"/></g>
-        <g class="wilaya" id="w07" data-name="Biskra" data-orders="29" data-pct="3.3%"><path d="M420,300 L475,285 L490,325 L465,355 L415,345 Z"/></g>
-        <g class="wilaya" id="w08" data-name="Béchar" data-orders="11" data-pct="1.3%"><path d="M90,290 L150,280 L165,330 L145,370 L90,360 Z"/></g>
-        <g class="wilaya" id="w09" data-name="Blida" data-orders="67" data-pct="7.7%"><path d="M275,185 L310,178 L318,205 L300,218 L278,210 Z"/></g>
-        <g class="wilaya" id="w10" data-name="Bouira" data-orders="35" data-pct="4.0%"><path d="M330,170 L368,162 L378,192 L358,208 L330,198 Z"/></g>
-        <g class="wilaya" id="w11" data-name="Tamanrasset" data-orders="4" data-pct="0.5%"><path d="M210,480 L290,468 L305,540 L280,570 L205,560 Z"/></g>
-        <g class="wilaya" id="w12" data-name="Tébessa" data-orders="19" data-pct="2.2%"><path d="M510,250 L555,240 L568,280 L545,308 L508,298 Z"/></g>
-        <g class="wilaya" id="w13" data-name="Tlemcen" data-orders="27" data-pct="3.1%"><path d="M120,195 L165,185 L178,220 L155,240 L122,232 Z"/></g>
-        <g class="wilaya" id="w14" data-name="Tiaret" data-orders="22" data-pct="2.5%"><path d="M195,225 L240,215 L252,250 L232,270 L196,262 Z"/></g>
-        <g class="wilaya" id="w15" data-name="Tizi Ouzou" data-orders="52" data-pct="5.9%"><path d="M342,148 L382,140 L392,168 L372,182 L342,172 Z"/></g>
-        <g class="wilaya" id="w16" data-name="Alger" data-orders="148" data-pct="16.9%"><path d="M305,152 L342,144 L350,170 L332,184 L306,176 Z"/></g>
-        <g class="wilaya" id="w17" data-name="Djelfa" data-orders="26" data-pct="3.0%"><path d="M295,248 L345,238 L358,278 L335,302 L293,292 Z"/></g>
-        <g class="wilaya" id="w18" data-name="Jijel" data-orders="21" data-pct="2.4%"><path d="M415,138 L452,130 L462,158 L442,172 L415,164 Z"/></g>
-        <g class="wilaya" id="w19" data-name="Sétif" data-orders="44" data-pct="5.0%"><path d="M415,178 L458,168 L470,205 L448,225 L415,215 Z"/></g>
-        <g class="wilaya" id="w20" data-name="Saïda" data-orders="14" data-pct="1.6%"><path d="M165,240 L205,230 L218,265 L198,282 L166,274 Z"/></g>
-        <g class="wilaya" id="w21" data-name="Skikda" data-orders="28" data-pct="3.2%"><path d="M465,158 L505,148 L518,180 L495,198 L465,188 Z"/></g>
-        <g class="wilaya" id="w22" data-name="Sidi Bel Abbès" data-orders="18" data-pct="2.1%"><path d="M140,220 L178,210 L190,245 L168,262 L140,254 Z"/></g>
-        <g class="wilaya" id="w23" data-name="Annaba" data-orders="36" data-pct="4.1%"><path d="M520,175 L558,165 L570,198 L548,215 L520,206 Z"/></g>
-        <g class="wilaya" id="w24" data-name="Guelma" data-orders="20" data-pct="2.3%"><path d="M492,205 L530,195 L542,228 L520,248 L490,240 Z"/></g>
-        <g class="wilaya" id="w25" data-name="Constantine" data-orders="55" data-pct="6.3%"><path d="M485,168 L520,160 L532,192 L510,210 L484,200 Z"/></g>
-        <g class="wilaya" id="w26" data-name="Médéa" data-orders="29" data-pct="3.3%"><path d="M268,210 L308,200 L320,235 L298,252 L268,244 Z"/></g>
-        <g class="wilaya" id="w27" data-name="Mostaganem" data-orders="16" data-pct="1.8%"><path d="M180,185 L218,175 L228,205 L208,220 L180,212 Z"/></g>
-        <g class="wilaya" id="w28" data-name="M'Sila" data-orders="31" data-pct="3.5%"><path d="M360,238 L408,228 L422,268 L398,292 L358,282 Z"/></g>
-        <g class="wilaya" id="w29" data-name="Mascara" data-orders="13" data-pct="1.5%"><path d="M160,258 L198,248 L210,283 L188,300 L160,292 Z"/></g>
-        <g class="wilaya" id="w30" data-name="Ouargla" data-orders="12" data-pct="1.4%"><path d="M370,360 L430,345 L445,400 L418,435 L365,425 Z"/></g>
-        <g class="wilaya" id="w31" data-name="Oran" data-orders="72" data-pct="8.2%"><path d="M138,168 L180,158 L192,190 L170,208 L138,200 Z"/></g>
-        <g class="wilaya" id="w32" data-name="El Bayadh" data-orders="9" data-pct="1.0%"><path d="M182,302 L235,290 L248,335 L225,360 L180,350 Z"/></g>
-        <g class="wilaya" id="w33" data-name="Illizi" data-orders="2" data-pct="0.2%"><path d="M480,430 L560,415 L575,490 L548,520 L475,510 Z"/></g>
-        <g class="wilaya" id="w34" data-name="Bordj Bou Arréridj" data-orders="23" data-pct="2.6%"><path d="M388,198 L428,188 L440,222 L418,242 L388,232 Z"/></g>
-        <g class="wilaya" id="w35" data-name="Boumerdès" data-orders="42" data-pct="4.8%"><path d="M316,148 L352,140 L362,166 L342,180 L316,170 Z"/></g>
-        <g class="wilaya" id="w36" data-name="El Tarf" data-orders="15" data-pct="1.7%"><path d="M548,165 L585,155 L595,188 L572,205 L548,196 Z"/></g>
-        <g class="wilaya" id="w37" data-name="Tindouf" data-orders="3" data-pct="0.3%"><path d="M40,340 L100,328 L112,380 L88,410 L38,400 Z"/></g>
-        <g class="wilaya" id="w38" data-name="Tissemsilt" data-orders="10" data-pct="1.1%"><path d="M210,248 L248,238 L260,272 L240,290 L210,282 Z"/></g>
-        <g class="wilaya" id="w39" data-name="El Oued" data-orders="17" data-pct="1.9%"><path d="M475,338 L528,322 L542,368 L515,398 L470,388 Z"/></g>
-        <g class="wilaya" id="w40" data-name="Khenchela" data-orders="16" data-pct="1.8%"><path d="M498,278 L540,265 L552,305 L528,332 L495,322 Z"/></g>
-        <g class="wilaya" id="w41" data-name="Souk Ahras" data-orders="14" data-pct="1.6%"><path d="M532,218 L570,208 L582,242 L558,262 L530,252 Z"/></g>
-        <g class="wilaya" id="w42" data-name="Tipaza" data-orders="33" data-pct="3.8%"><path d="M258,158 L295,150 L305,178 L285,192 L258,184 Z"/></g>
-        <g class="wilaya" id="w43" data-name="Mila" data-orders="22" data-pct="2.5%"><path d="M460,190 L498,180 L510,215 L488,232 L458,222 Z"/></g>
-        <g class="wilaya" id="w44" data-name="Aïn Defla" data-orders="19" data-pct="2.2%"><path d="M242,192 L280,182 L292,215 L272,230 L242,222 Z"/></g>
-        <g class="wilaya" id="w45" data-name="Naâma" data-orders="7" data-pct="0.8%"><path d="M118,272 L162,260 L174,305 L150,328 L116,318 Z"/></g>
-        <g class="wilaya" id="w46" data-name="Aïn Témouchent" data-orders="12" data-pct="1.4%"><path d="M120,215 L158,205 L168,238 L148,254 L118,246 Z"/></g>
-        <g class="wilaya" id="w47" data-name="Ghardaïa" data-orders="14" data-pct="1.6%"><path d="M295,352 L348,338 L362,382 L335,412 L290,402 Z"/></g>
-        <g class="wilaya" id="w48" data-name="Relizane" data-orders="17" data-pct="1.9%"><path d="M188,208 L228,198 L240,232 L218,248 L188,240 Z"/></g>
-        <!-- New wilayas 49-58 -->
-        <g class="wilaya" id="w49" data-name="Timimoun" data-orders="5" data-pct="0.6%"><path d="M125,408 L178,395 L192,445 L168,475 L122,465 Z"/></g>
-        <g class="wilaya" id="w50" data-name="Bordj Badji Mokhtar" data-orders="2" data-pct="0.2%"><path d="M155,500 L220,488 L235,548 L208,568 L152,558 Z"/></g>
-        <g class="wilaya" id="w51" data-name="Ouled Djellal" data-orders="8" data-pct="0.9%"><path d="M358,308 L408,295 L422,338 L395,365 L355,355 Z"/></g>
-        <g class="wilaya" id="w52" data-name="Béni Abbès" data-orders="4" data-pct="0.5%"><path d="M78,350 L125,338 L138,385 L112,412 L76,402 Z"/></g>
-        <g class="wilaya" id="w53" data-name="In Salah" data-orders="3" data-pct="0.3%"><path d="M245,448 L305,435 L320,492 L292,520 L242,510 Z"/></g>
-        <g class="wilaya" id="w54" data-name="In Guezzam" data-orders="1" data-pct="0.1%"><path d="M295,525 L365,510 L380,568 L350,578 L290,568 Z"/></g>
-        <g class="wilaya" id="w55" data-name="Touggourt" data-orders="10" data-pct="1.1%"><path d="M430,368 L480,352 L495,398 L468,428 L425,418 Z"/></g>
-        <g class="wilaya" id="w56" data-name="Djanet" data-orders="2" data-pct="0.2%"><path d="M555,448 L618,430 L632,500 L605,528 L550,518 Z"/></g>
-        <g class="wilaya" id="w57" data-name="El M'Ghair" data-orders="9" data-pct="1.0%"><path d="M515,348 L562,332 L576,378 L550,408 L512,398 Z"/></g>
-        <g class="wilaya" id="w58" data-name="El Meniaa" data-orders="6" data-pct="0.7%"><path d="M315,400 L368,385 L382,432 L355,460 L312,450 Z"/></g>
-        <!-- Legend -->
-        <text x="620" y="30" fill="#94a3b8" font-size="11" font-family="Segoe UI">Orders</text>
-        <rect x="618" y="38" width="14" height="10" fill="#1a2a4a" rx="2"/>
-        <text x="636" y="48" fill="#64748b" font-size="10" font-family="Segoe UI">&lt;10</text>
-        <rect x="618" y="54" width="14" height="10" fill="#1e4080" rx="2"/>
-        <text x="636" y="64" fill="#64748b" font-size="10" font-family="Segoe UI">10–30</text>
-        <rect x="618" y="70" width="14" height="10" fill="#2563a8" rx="2"/>
-        <text x="636" y="80" fill="#64748b" font-size="10" font-family="Segoe UI">30–55</text>
-        <rect x="618" y="86" width="14" height="10" fill="#3b82f6" rx="2"/>
-        <text x="636" y="96" fill="#64748b" font-size="10" font-family="Segoe UI">55–75</text>
-        <rect x="618" y="102" width="14" height="10" fill="#60a5fa" rx="2"/>
-        <text x="636" y="112" fill="#64748b" font-size="10" font-family="Segoe UI">&gt;75</text>
+      <svg id="algeria-map" viewBox="0 0 680 580" xmlns="http://www.w3.org/2000/svg" style="flex:1;width:100%;height:100%;display:block">
+        <!-- Background fill for Algeria bounding area -->
+        <rect x="30" y="10" width="620" height="555" rx="6" fill="#0d1625" stroke="#1e2d45" stroke-width="1"/>
+        <!-- Country border outline (rough silhouette) -->
+        <path d="M75,80 L130,55 L200,45 L300,35 L400,30 L480,32 L545,38 L595,50 L620,72 L635,100 L640,135
+                 L638,180 L625,215 L615,245 L610,280 L608,320 L605,360 L600,400 L590,440 L580,475 L565,510
+                 L545,535 L510,548 L470,555 L420,558 L370,555 L310,548 L260,545 L210,540 L180,530 L150,510
+                 L110,490 L80,460 L55,430 L40,395 L35,355 L38,315 L42,270 L50,225 L58,180 L65,135 L72,100 Z"
+              fill="none" stroke="#2a3a5a" stroke-width="1.5" opacity="0.6"/>
+        <!-- Wilaya paths — scaled to 680×580 viewBox, geographically approximate -->
+        <!-- NORTH COAST BAND (y≈40-155) -->
+        <g class="wilaya" id="w13" data-name="Tlemcen" data-orders="27" data-pct="3.1%"><path d="M38,100 L78,92 L88,128 L78,148 L38,145 Z"/></g>
+        <g class="wilaya" id="w46" data-name="Aïn Témouchent" data-orders="12" data-pct="1.4%"><path d="M78,88 L110,82 L120,112 L108,132 L78,128 Z"/></g>
+        <g class="wilaya" id="w31" data-name="Oran" data-orders="72" data-pct="8.2%"><path d="M108,68 L152,60 L165,95 L152,118 L108,114 Z"/></g>
+        <g class="wilaya" id="w22" data-name="Sidi Bel Abbès" data-orders="18" data-pct="2.1%"><path d="M75,145 L118,138 L130,168 L118,188 L75,184 Z"/></g>
+        <g class="wilaya" id="w27" data-name="Mostaganem" data-orders="16" data-pct="1.8%"><path d="M148,55 L188,48 L198,78 L186,100 L148,96 Z"/></g>
+        <g class="wilaya" id="w02" data-name="Chlef" data-orders="32" data-pct="3.7%"><path d="M183,62 L232,55 L244,90 L230,112 L183,108 Z"/></g>
+        <g class="wilaya" id="w48" data-name="Relizane" data-orders="17" data-pct="1.9%"><path d="M183,108 L230,100 L242,135 L228,155 L183,150 Z"/></g>
+        <g class="wilaya" id="w44" data-name="Aïn Defla" data-orders="19" data-pct="2.2%"><path d="M228,72 L270,65 L282,98 L268,118 L228,114 Z"/></g>
+        <g class="wilaya" id="w42" data-name="Tipaza" data-orders="33" data-pct="3.8%"><path d="M262,45 L300,38 L310,68 L298,88 L262,84 Z"/></g>
+        <g class="wilaya" id="w09" data-name="Blida" data-orders="67" data-pct="7.7%"><path d="M296,48 L332,42 L342,72 L330,90 L296,86 Z"/></g>
+        <g class="wilaya" id="w16" data-name="Alger" data-orders="148" data-pct="16.9%"><path d="M330,38 L368,32 L378,62 L366,80 L330,76 Z"/></g>
+        <g class="wilaya" id="w35" data-name="Boumerdès" data-orders="42" data-pct="4.8%"><path d="M364,40 L400,34 L410,64 L398,82 L364,78 Z"/></g>
+        <g class="wilaya" id="w15" data-name="Tizi Ouzou" data-orders="52" data-pct="5.9%"><path d="M396,38 L438,32 L448,62 L434,80 L396,76 Z"/></g>
+        <g class="wilaya" id="w06" data-name="Béjaïa" data-orders="38" data-pct="4.3%"><path d="M434,38 L472,32 L482,65 L468,82 L434,78 Z"/></g>
+        <g class="wilaya" id="w18" data-name="Jijel" data-orders="21" data-pct="2.4%"><path d="M468,35 L508,28 L518,60 L504,76 L468,72 Z"/></g>
+        <g class="wilaya" id="w21" data-name="Skikda" data-orders="28" data-pct="3.2%"><path d="M503,32 L545,26 L556,58 L540,74 L503,70 Z"/></g>
+        <g class="wilaya" id="w23" data-name="Annaba" data-orders="36" data-pct="4.1%"><path d="M540,28 L580,22 L592,54 L575,70 L540,66 Z"/></g>
+        <g class="wilaya" id="w36" data-name="El Tarf" data-orders="15" data-pct="1.7%"><path d="M575,28 L618,22 L628,52 L612,68 L575,64 Z"/></g>
+        <!-- UPPER-NORTH INTERIOR (y≈88-190) -->
+        <g class="wilaya" id="w29" data-name="Mascara" data-orders="13" data-pct="1.5%"><path d="M118,138 L162,130 L174,162 L160,182 L118,178 Z"/></g>
+        <g class="wilaya" id="w38" data-name="Tissemsilt" data-orders="10" data-pct="1.1%"><path d="M225,118 L268,110 L280,145 L266,165 L225,160 Z"/></g>
+        <g class="wilaya" id="w14" data-name="Tiaret" data-orders="22" data-pct="2.5%"><path d="M158,160 L228,152 L240,190 L225,210 L158,205 Z"/></g>
+        <g class="wilaya" id="w26" data-name="Médéa" data-orders="29" data-pct="3.3%"><path d="M265,88 L332,80 L344,118 L330,138 L265,132 Z"/></g>
+        <g class="wilaya" id="w10" data-name="Bouira" data-orders="35" data-pct="4.0%"><path d="M328,80 L395,74 L408,108 L393,128 L328,122 Z"/></g>
+        <g class="wilaya" id="w34" data-name="Bordj Bou Arréridj" data-orders="23" data-pct="2.6%"><path d="M393,76 L450,70 L462,105 L447,123 L393,118 Z"/></g>
+        <g class="wilaya" id="w43" data-name="Mila" data-orders="22" data-pct="2.5%"><path d="M447,66 L488,60 L500,92 L486,110 L447,106 Z"/></g>
+        <g class="wilaya" id="w25" data-name="Constantine" data-orders="55" data-pct="6.3%"><path d="M484,60 L526,54 L538,86 L523,104 L484,100 Z"/></g>
+        <g class="wilaya" id="w24" data-name="Guelma" data-orders="20" data-pct="2.3%"><path d="M521,62 L564,56 L576,90 L560,108 L521,104 Z"/></g>
+        <g class="wilaya" id="w41" data-name="Souk Ahras" data-orders="14" data-pct="1.6%"><path d="M557,56 L610,50 L622,84 L606,102 L557,98 Z"/></g>
+        <!-- CENTRE (y≈130-270) -->
+        <g class="wilaya" id="w20" data-name="Saïda" data-orders="14" data-pct="1.6%"><path d="M115,182 L162,174 L174,210 L158,230 L115,225 Z"/></g>
+        <g class="wilaya" id="w45" data-name="Naâma" data-orders="7" data-pct="0.8%"><path d="M42,186 L118,178 L130,225 L115,248 L42,242 Z"/></g>
+        <g class="wilaya" id="w17" data-name="Djelfa" data-orders="26" data-pct="3.0%"><path d="M222,138 L330,130 L344,175 L328,198 L222,192 Z"/></g>
+        <g class="wilaya" id="w28" data-name="M'Sila" data-orders="31" data-pct="3.5%"><path d="M326,120 L422,112 L436,158 L420,180 L326,174 Z"/></g>
+        <g class="wilaya" id="w04" data-name="Oum El Bouaghi" data-orders="24" data-pct="2.7%"><path d="M447,100 L506,94 L520,132 L503,152 L447,146 Z"/></g>
+        <g class="wilaya" id="w05" data-name="Batna" data-orders="41" data-pct="4.7%"><path d="M502,96 L564,90 L577,132 L560,152 L502,146 Z"/></g>
+        <g class="wilaya" id="w12" data-name="Tébessa" data-orders="19" data-pct="2.2%"><path d="M558,90 L634,84 L646,130 L628,150 L558,144 Z"/></g>
+        <g class="wilaya" id="w40" data-name="Khenchela" data-orders="16" data-pct="1.8%"><path d="M558,148 L622,140 L634,182 L617,202 L558,196 Z"/></g>
+        <!-- SEMI-ARID INTERIOR (y≈192-340) -->
+        <g class="wilaya" id="w32" data-name="El Bayadh" data-orders="9" data-pct="1.0%"><path d="M38,238 L165,228 L178,285 L162,310 L38,304 Z"/></g>
+        <g class="wilaya" id="w03" data-name="Laghouat" data-orders="18" data-pct="2.1%"><path d="M162,192 L330,182 L345,240 L328,265 L162,258 Z"/></g>
+        <g class="wilaya" id="w07" data-name="Biskra" data-orders="29" data-pct="3.3%"><path d="M420,152 L565,144 L580,198 L562,222 L420,215 Z"/></g>
+        <g class="wilaya" id="w39" data-name="El Oued" data-orders="17" data-pct="1.9%"><path d="M563,142 L636,136 L648,195 L630,218 L563,212 Z"/></g>
+        <!-- SAHARAN ZONE (y≈260-490) -->
+        <g class="wilaya" id="w47" data-name="Ghardaïa" data-orders="14" data-pct="1.6%"><path d="M162,262 L345,252 L360,325 L342,352 L162,345 Z"/></g>
+        <g class="wilaya" id="w51" data-name="Ouled Djellal" data-orders="8" data-pct="0.9%"><path d="M325,218 L500,208 L515,265 L498,290 L325,283 Z"/></g>
+        <g class="wilaya" id="w30" data-name="Ouargla" data-orders="12" data-pct="1.4%"><path d="M500,200 L636,190 L648,268 L630,295 L500,288 Z"/></g>
+        <g class="wilaya" id="w55" data-name="Touggourt" data-orders="10" data-pct="1.1%"><path d="M498,268 L560,260 L572,310 L555,335 L498,328 Z"/></g>
+        <g class="wilaya" id="w57" data-name="El M'Ghair" data-orders="9" data-pct="1.0%"><path d="M558,265 L636,256 L648,308 L630,333 L558,326 Z"/></g>
+        <!-- DEEP SOUTH (y≈345-558) -->
+        <g class="wilaya" id="w08" data-name="Béchar" data-orders="11" data-pct="1.3%"><path d="M38,298 L165,288 L178,385 L160,412 L38,405 Z"/></g>
+        <g class="wilaya" id="w49" data-name="Timimoun" data-orders="5" data-pct="0.6%"><path d="M162,345 L345,335 L360,415 L342,442 L162,435 Z"/></g>
+        <g class="wilaya" id="w58" data-name="El Meniaa" data-orders="6" data-pct="0.7%"><path d="M342,325 L502,315 L516,400 L498,428 L342,420 Z"/></g>
+        <g class="wilaya" id="w01" data-name="Adrar" data-orders="8" data-pct="0.9%"><path d="M38,400 L165,390 L178,495 L160,522 L38,515 Z"/></g>
+        <g class="wilaya" id="w52" data-name="Béni Abbès" data-orders="4" data-pct="0.5%"><path d="M38,295 L42,302 L40,400 L38,400 Z"/></g>
+        <g class="wilaya" id="w37" data-name="Tindouf" data-orders="3" data-pct="0.3%"><path d="M38,145 L44,148 L42,295 L38,295 Z"/></g>
+        <g class="wilaya" id="w11" data-name="Tamanrasset" data-orders="4" data-pct="0.5%"><path d="M162,432 L498,422 L510,540 L490,555 L162,548 Z"/></g>
+        <g class="wilaya" id="w53" data-name="In Salah" data-orders="3" data-pct="0.3%"><path d="M498,395 L558,385 L570,470 L552,495 L498,488 Z"/></g>
+        <g class="wilaya" id="w50" data-name="Bordj Badji Mokhtar" data-orders="2" data-pct="0.2%"><path d="M165,490 L295,480 L308,548 L288,558 L165,550 Z"/></g>
+        <g class="wilaya" id="w54" data-name="In Guezzam" data-orders="1" data-pct="0.1%"><path d="M290,545 L450,535 L462,558 L288,558 Z"/></g>
+        <g class="wilaya" id="w33" data-name="Illizi" data-orders="2" data-pct="0.2%"><path d="M558,388 L640,378 L648,540 L628,555 L558,548 Z"/></g>
+        <g class="wilaya" id="w56" data-name="Djanet" data-orders="2" data-pct="0.2%"><path d="M445,532 L560,522 L572,555 L445,558 Z"/></g>
+                <!-- Legend — top-right corner (x=500 in 680 viewBox) -->
+        <rect x="496" y="16" width="96" height="110" rx="5" fill="rgba(11,17,28,0.85)" stroke="#1e2d45" stroke-width="1"/>
+        <text x="504" y="32" fill="#94a3b8" font-size="11" font-family="Segoe UI" font-weight="600">Orders</text>
+        <rect x="504" y="38" width="12" height="10" fill="#1a2a4a" rx="2"/>
+        <text x="520" y="48" fill="#64748b" font-size="10" font-family="Segoe UI">&lt;10</text>
+        <rect x="504" y="52" width="12" height="10" fill="#1e4080" rx="2"/>
+        <text x="520" y="62" fill="#64748b" font-size="10" font-family="Segoe UI">10–30</text>
+        <rect x="504" y="66" width="12" height="10" fill="#2563a8" rx="2"/>
+        <text x="520" y="76" fill="#64748b" font-size="10" font-family="Segoe UI">30–55</text>
+        <rect x="504" y="80" width="12" height="10" fill="#3b82f6" rx="2"/>
+        <text x="520" y="90" fill="#64748b" font-size="10" font-family="Segoe UI">55–75</text>
+        <rect x="504" y="94" width="12" height="10" fill="#60a5fa" rx="2"/>
+        <text x="520" y="104" fill="#64748b" font-size="10" font-family="Segoe UI">&gt;75</text>
+        <text x="504" y="118" fill="#8b5cf6" font-size="9" font-family="Segoe UI">● hover for detail</text>
       </svg>
     </div>
     <div class="col">
@@ -1864,6 +1892,12 @@ const initialized = {};
 
 function initChartsForSlide(sid) {
   if (initialized[sid]) return;
+  // Guard: Chart.js CDN must be loaded before creating any Chart instance
+  if (typeof Chart === 'undefined') {
+    console.warn('[TSM] Chart.js not ready — will retry on next slide visit for', sid);
+    initialized[sid] = false; // allow retry
+    return;
+  }
   initialized[sid] = true;
 
   const FONT = { color: '#94a3b8', family: "'Segoe UI', sans-serif" };
