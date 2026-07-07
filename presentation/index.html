@@ -4,10 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TechnoStationery Executive Audit — Jan–Jul 2026</title>
-<!-- Chart.js 4.4.0 — synchronous CDN load with fallback guard -->
+<!-- Chart.js 4.4.0 — local + CDN fallback -->
+<script src="/presentation/chart.umd.min.js"
+        onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'"></script>
 <script>
-window._chartJsReady = false;
-window._chartJsQueue = [];
+if (typeof Chart === 'undefined') {
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+  document.head.appendChild(s);
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
         onerror="console.error('[TSM] Chart.js CDN load failed — charts will not render')"></script>
@@ -364,7 +369,25 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 /* ── ALGERIA MAP ── */
 #algeria-map{width:100%;height:100%}
 #algeria-map .wilaya{fill:#1a2a4a;stroke:#2a3a5a;stroke-width:.5;cursor:pointer;transition:fill .2s}
-#algeria-map .wilaya:hover{fill:#3b82f6}
+#algeria-map .wilaya rect{cursor:pointer;transition:filter .15s,opacity .15s}
+#algeria-map .wilaya:hover rect{filter:brightness(1.8)!important}
+#algeria-map .wilaya.dimmed rect{opacity:.2}
+#algeria-map .wilaya.highlighted rect{filter:brightness(2) drop-shadow(0 0 4px #3b82f6)}
+.map-filter-btn{
+  padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;
+  border:1px solid #1e2d45;background:#0d1625;color:#64748b;transition:all .2s;font-family:inherit;
+}
+.map-filter-btn.active,.map-filter-btn:hover{border-color:#3b82f6;color:#60a5fa;background:rgba(59,130,246,.1)}
+.map-rank-item{
+  display:flex;align-items:center;gap:5px;padding:4px 0;cursor:pointer;
+  border-bottom:1px solid rgba(30,45,69,.5);position:relative;font-size:10px;
+  transition:background .15s;border-radius:4px;
+}
+.map-rank-item:hover{background:rgba(59,130,246,.08)}
+.map-rank-no{width:14px;font-size:9px;color:#475569;flex-shrink:0;text-align:center}
+.map-rank-name{flex:1;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.map-rank-val{font-weight:700;color:#60a5fa;font-size:10px;flex-shrink:0}
+.map-rank-bar{height:2px;background:linear-gradient(90deg,#3b82f6,#06b6d4);border-radius:1px;position:absolute;bottom:0;left:30px}
 #mapTooltip{position:absolute;background:rgba(13,22,37,0.96);border:1px solid var(--accent);border-radius:6px;padding:8px 12px;font-size:12px;color:#e2e8f0;pointer-events:none;display:none;z-index:200;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.5);backdrop-filter:blur(4px)}
 
 /* ── CHART CONTAINERS ── */
@@ -421,11 +444,11 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
      S1 — COVER
 ════════════════════════════════════════════ -->
 <div class="slide" id="s1">
-  <div class="cover-logo">TechnoStationery.com — Forensic Audit Report</div>
+  <div class="cover-logo" style="display:flex;align-items:center;gap:12px"><img src="/presentation/techno-logo.png" alt="TechnoStationery" style="height:36px;filter:brightness(0) invert(1);opacity:.9"><span>Executive Audit Report 2026</span></div>
   <div class="cover-title">Executive Audit<br><span>January – July 2026</span></div>
   <div class="cover-sub">Infrastructure · Security · Performance · Business Intelligence<br>8-Phase Forensic Methodology · Evidence-First · Cross-Validated</div>
   <div class="cover-kpi">
-    <div class="cover-kpi-item"><div class="cv-val">35</div><div class="cv-label">Audit Slides</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">37</div><div class="cv-label">Audit Slides</div></div>
     <div class="cover-kpi-item"><div class="cv-val">8</div><div class="cv-label">Phases</div></div>
     <div class="cover-kpi-item"><div class="cv-val">875</div><div class="cv-label">Orders</div></div>
     <div class="cover-kpi-item"><div class="cv-val">86.5%</div><div class="cv-label">Load Reduction</div></div>
@@ -1095,98 +1118,178 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 <div class="slide" id="s18">
   <div class="section-label">Phase 4 — Geographic Analysis</div>
   <div class="slide-title">Algeria Orders by Wilaya — Jan–Jun 2026</div>
-  <div class="slide-subtitle">Source: MariaDB sales_order JOIN customer_address · 58 wilayas · Hover for details</div>
+  <div class="slide-subtitle">Source: MariaDB sales_order JOIN customer_address · 57 wilayas · 1,291 orders · Hover/click for details</div>
   <div class="grid-32" style="flex:1;gap:16px">
     <div class="panel" style="display:flex;flex-direction:column;padding:8px;position:relative">
       <div id="mapTooltip"></div>
-      <svg id="algeria-map" viewBox="0 0 680 580" xmlns="http://www.w3.org/2000/svg" style="flex:1;width:100%;height:100%;display:block">
-        <!-- Background fill for Algeria bounding area -->
-        <rect x="30" y="10" width="620" height="555" rx="6" fill="#0d1625" stroke="#1e2d45" stroke-width="1"/>
-        <!-- Country border outline (rough silhouette) -->
-        <path d="M75,80 L130,55 L200,45 L300,35 L400,30 L480,32 L545,38 L595,50 L620,72 L635,100 L640,135
-                 L638,180 L625,215 L615,245 L610,280 L608,320 L605,360 L600,400 L590,440 L580,475 L565,510
-                 L545,535 L510,548 L470,555 L420,558 L370,555 L310,548 L260,545 L210,540 L180,530 L150,510
-                 L110,490 L80,460 L55,430 L40,395 L35,355 L38,315 L42,270 L50,225 L58,180 L65,135 L72,100 Z"
-              fill="none" stroke="#2a3a5a" stroke-width="1.5" opacity="0.6"/>
-        <!-- Wilaya paths — scaled to 680×580 viewBox, geographically approximate -->
-        <!-- NORTH COAST BAND (y≈40-155) -->
-        <g class="wilaya" id="w13" data-name="Tlemcen" data-orders="27" data-pct="3.1%"><path d="M38,100 L78,92 L88,128 L78,148 L38,145 Z"/></g>
-        <g class="wilaya" id="w46" data-name="Aïn Témouchent" data-orders="12" data-pct="1.4%"><path d="M78,88 L110,82 L120,112 L108,132 L78,128 Z"/></g>
-        <g class="wilaya" id="w31" data-name="Oran" data-orders="72" data-pct="8.2%"><path d="M108,68 L152,60 L165,95 L152,118 L108,114 Z"/></g>
-        <g class="wilaya" id="w22" data-name="Sidi Bel Abbès" data-orders="18" data-pct="2.1%"><path d="M75,145 L118,138 L130,168 L118,188 L75,184 Z"/></g>
-        <g class="wilaya" id="w27" data-name="Mostaganem" data-orders="16" data-pct="1.8%"><path d="M148,55 L188,48 L198,78 L186,100 L148,96 Z"/></g>
-        <g class="wilaya" id="w02" data-name="Chlef" data-orders="32" data-pct="3.7%"><path d="M183,62 L232,55 L244,90 L230,112 L183,108 Z"/></g>
-        <g class="wilaya" id="w48" data-name="Relizane" data-orders="17" data-pct="1.9%"><path d="M183,108 L230,100 L242,135 L228,155 L183,150 Z"/></g>
-        <g class="wilaya" id="w44" data-name="Aïn Defla" data-orders="19" data-pct="2.2%"><path d="M228,72 L270,65 L282,98 L268,118 L228,114 Z"/></g>
-        <g class="wilaya" id="w42" data-name="Tipaza" data-orders="33" data-pct="3.8%"><path d="M262,45 L300,38 L310,68 L298,88 L262,84 Z"/></g>
-        <g class="wilaya" id="w09" data-name="Blida" data-orders="67" data-pct="7.7%"><path d="M296,48 L332,42 L342,72 L330,90 L296,86 Z"/></g>
-        <g class="wilaya" id="w16" data-name="Alger" data-orders="148" data-pct="16.9%"><path d="M330,38 L368,32 L378,62 L366,80 L330,76 Z"/></g>
-        <g class="wilaya" id="w35" data-name="Boumerdès" data-orders="42" data-pct="4.8%"><path d="M364,40 L400,34 L410,64 L398,82 L364,78 Z"/></g>
-        <g class="wilaya" id="w15" data-name="Tizi Ouzou" data-orders="52" data-pct="5.9%"><path d="M396,38 L438,32 L448,62 L434,80 L396,76 Z"/></g>
-        <g class="wilaya" id="w06" data-name="Béjaïa" data-orders="38" data-pct="4.3%"><path d="M434,38 L472,32 L482,65 L468,82 L434,78 Z"/></g>
-        <g class="wilaya" id="w18" data-name="Jijel" data-orders="21" data-pct="2.4%"><path d="M468,35 L508,28 L518,60 L504,76 L468,72 Z"/></g>
-        <g class="wilaya" id="w21" data-name="Skikda" data-orders="28" data-pct="3.2%"><path d="M503,32 L545,26 L556,58 L540,74 L503,70 Z"/></g>
-        <g class="wilaya" id="w23" data-name="Annaba" data-orders="36" data-pct="4.1%"><path d="M540,28 L580,22 L592,54 L575,70 L540,66 Z"/></g>
-        <g class="wilaya" id="w36" data-name="El Tarf" data-orders="15" data-pct="1.7%"><path d="M575,28 L618,22 L628,52 L612,68 L575,64 Z"/></g>
-        <!-- UPPER-NORTH INTERIOR (y≈88-190) -->
-        <g class="wilaya" id="w29" data-name="Mascara" data-orders="13" data-pct="1.5%"><path d="M118,138 L162,130 L174,162 L160,182 L118,178 Z"/></g>
-        <g class="wilaya" id="w38" data-name="Tissemsilt" data-orders="10" data-pct="1.1%"><path d="M225,118 L268,110 L280,145 L266,165 L225,160 Z"/></g>
-        <g class="wilaya" id="w14" data-name="Tiaret" data-orders="22" data-pct="2.5%"><path d="M158,160 L228,152 L240,190 L225,210 L158,205 Z"/></g>
-        <g class="wilaya" id="w26" data-name="Médéa" data-orders="29" data-pct="3.3%"><path d="M265,88 L332,80 L344,118 L330,138 L265,132 Z"/></g>
-        <g class="wilaya" id="w10" data-name="Bouira" data-orders="35" data-pct="4.0%"><path d="M328,80 L395,74 L408,108 L393,128 L328,122 Z"/></g>
-        <g class="wilaya" id="w34" data-name="Bordj Bou Arréridj" data-orders="23" data-pct="2.6%"><path d="M393,76 L450,70 L462,105 L447,123 L393,118 Z"/></g>
-        <g class="wilaya" id="w43" data-name="Mila" data-orders="22" data-pct="2.5%"><path d="M447,66 L488,60 L500,92 L486,110 L447,106 Z"/></g>
-        <g class="wilaya" id="w25" data-name="Constantine" data-orders="55" data-pct="6.3%"><path d="M484,60 L526,54 L538,86 L523,104 L484,100 Z"/></g>
-        <g class="wilaya" id="w24" data-name="Guelma" data-orders="20" data-pct="2.3%"><path d="M521,62 L564,56 L576,90 L560,108 L521,104 Z"/></g>
-        <g class="wilaya" id="w41" data-name="Souk Ahras" data-orders="14" data-pct="1.6%"><path d="M557,56 L610,50 L622,84 L606,102 L557,98 Z"/></g>
-        <!-- CENTRE (y≈130-270) -->
-        <g class="wilaya" id="w20" data-name="Saïda" data-orders="14" data-pct="1.6%"><path d="M115,182 L162,174 L174,210 L158,230 L115,225 Z"/></g>
-        <g class="wilaya" id="w45" data-name="Naâma" data-orders="7" data-pct="0.8%"><path d="M42,186 L118,178 L130,225 L115,248 L42,242 Z"/></g>
-        <g class="wilaya" id="w17" data-name="Djelfa" data-orders="26" data-pct="3.0%"><path d="M222,138 L330,130 L344,175 L328,198 L222,192 Z"/></g>
-        <g class="wilaya" id="w28" data-name="M'Sila" data-orders="31" data-pct="3.5%"><path d="M326,120 L422,112 L436,158 L420,180 L326,174 Z"/></g>
-        <g class="wilaya" id="w04" data-name="Oum El Bouaghi" data-orders="24" data-pct="2.7%"><path d="M447,100 L506,94 L520,132 L503,152 L447,146 Z"/></g>
-        <g class="wilaya" id="w05" data-name="Batna" data-orders="41" data-pct="4.7%"><path d="M502,96 L564,90 L577,132 L560,152 L502,146 Z"/></g>
-        <g class="wilaya" id="w12" data-name="Tébessa" data-orders="19" data-pct="2.2%"><path d="M558,90 L634,84 L646,130 L628,150 L558,144 Z"/></g>
-        <g class="wilaya" id="w40" data-name="Khenchela" data-orders="16" data-pct="1.8%"><path d="M558,148 L622,140 L634,182 L617,202 L558,196 Z"/></g>
-        <!-- SEMI-ARID INTERIOR (y≈192-340) -->
-        <g class="wilaya" id="w32" data-name="El Bayadh" data-orders="9" data-pct="1.0%"><path d="M38,238 L165,228 L178,285 L162,310 L38,304 Z"/></g>
-        <g class="wilaya" id="w03" data-name="Laghouat" data-orders="18" data-pct="2.1%"><path d="M162,192 L330,182 L345,240 L328,265 L162,258 Z"/></g>
-        <g class="wilaya" id="w07" data-name="Biskra" data-orders="29" data-pct="3.3%"><path d="M420,152 L565,144 L580,198 L562,222 L420,215 Z"/></g>
-        <g class="wilaya" id="w39" data-name="El Oued" data-orders="17" data-pct="1.9%"><path d="M563,142 L636,136 L648,195 L630,218 L563,212 Z"/></g>
-        <!-- SAHARAN ZONE (y≈260-490) -->
-        <g class="wilaya" id="w47" data-name="Ghardaïa" data-orders="14" data-pct="1.6%"><path d="M162,262 L345,252 L360,325 L342,352 L162,345 Z"/></g>
-        <g class="wilaya" id="w51" data-name="Ouled Djellal" data-orders="8" data-pct="0.9%"><path d="M325,218 L500,208 L515,265 L498,290 L325,283 Z"/></g>
-        <g class="wilaya" id="w30" data-name="Ouargla" data-orders="12" data-pct="1.4%"><path d="M500,200 L636,190 L648,268 L630,295 L500,288 Z"/></g>
-        <g class="wilaya" id="w55" data-name="Touggourt" data-orders="10" data-pct="1.1%"><path d="M498,268 L560,260 L572,310 L555,335 L498,328 Z"/></g>
-        <g class="wilaya" id="w57" data-name="El M'Ghair" data-orders="9" data-pct="1.0%"><path d="M558,265 L636,256 L648,308 L630,333 L558,326 Z"/></g>
-        <!-- DEEP SOUTH (y≈345-558) -->
-        <g class="wilaya" id="w08" data-name="Béchar" data-orders="11" data-pct="1.3%"><path d="M38,298 L165,288 L178,385 L160,412 L38,405 Z"/></g>
-        <g class="wilaya" id="w49" data-name="Timimoun" data-orders="5" data-pct="0.6%"><path d="M162,345 L345,335 L360,415 L342,442 L162,435 Z"/></g>
-        <g class="wilaya" id="w58" data-name="El Meniaa" data-orders="6" data-pct="0.7%"><path d="M342,325 L502,315 L516,400 L498,428 L342,420 Z"/></g>
-        <g class="wilaya" id="w01" data-name="Adrar" data-orders="8" data-pct="0.9%"><path d="M38,400 L165,390 L178,495 L160,522 L38,515 Z"/></g>
-        <g class="wilaya" id="w52" data-name="Béni Abbès" data-orders="4" data-pct="0.5%"><path d="M38,295 L42,302 L40,400 L38,400 Z"/></g>
-        <g class="wilaya" id="w37" data-name="Tindouf" data-orders="3" data-pct="0.3%"><path d="M38,145 L44,148 L42,295 L38,295 Z"/></g>
-        <g class="wilaya" id="w11" data-name="Tamanrasset" data-orders="4" data-pct="0.5%"><path d="M162,432 L498,422 L510,540 L490,555 L162,548 Z"/></g>
-        <g class="wilaya" id="w53" data-name="In Salah" data-orders="3" data-pct="0.3%"><path d="M498,395 L558,385 L570,470 L552,495 L498,488 Z"/></g>
-        <g class="wilaya" id="w50" data-name="Bordj Badji Mokhtar" data-orders="2" data-pct="0.2%"><path d="M165,490 L295,480 L308,548 L288,558 L165,550 Z"/></g>
-        <g class="wilaya" id="w54" data-name="In Guezzam" data-orders="1" data-pct="0.1%"><path d="M290,545 L450,535 L462,558 L288,558 Z"/></g>
-        <g class="wilaya" id="w33" data-name="Illizi" data-orders="2" data-pct="0.2%"><path d="M558,388 L640,378 L648,540 L628,555 L558,548 Z"/></g>
-        <g class="wilaya" id="w56" data-name="Djanet" data-orders="2" data-pct="0.2%"><path d="M445,532 L560,522 L572,555 L445,558 Z"/></g>
-                <!-- Legend — top-right corner (x=500 in 680 viewBox) -->
-        <rect x="496" y="16" width="96" height="110" rx="5" fill="rgba(11,17,28,0.85)" stroke="#1e2d45" stroke-width="1"/>
-        <text x="504" y="32" fill="#94a3b8" font-size="11" font-family="Segoe UI" font-weight="600">Orders</text>
-        <rect x="504" y="38" width="12" height="10" fill="#1a2a4a" rx="2"/>
-        <text x="520" y="48" fill="#64748b" font-size="10" font-family="Segoe UI">&lt;10</text>
-        <rect x="504" y="52" width="12" height="10" fill="#1e4080" rx="2"/>
-        <text x="520" y="62" fill="#64748b" font-size="10" font-family="Segoe UI">10–30</text>
-        <rect x="504" y="66" width="12" height="10" fill="#2563a8" rx="2"/>
-        <text x="520" y="76" fill="#64748b" font-size="10" font-family="Segoe UI">30–55</text>
-        <rect x="504" y="80" width="12" height="10" fill="#3b82f6" rx="2"/>
-        <text x="520" y="90" fill="#64748b" font-size="10" font-family="Segoe UI">55–75</text>
-        <rect x="504" y="94" width="12" height="10" fill="#60a5fa" rx="2"/>
-        <text x="520" y="104" fill="#64748b" font-size="10" font-family="Segoe UI">&gt;75</text>
-        <text x="504" y="118" fill="#8b5cf6" font-size="9" font-family="Segoe UI">● hover for detail</text>
-      </svg>
+      <div style="display:flex;gap:10px;flex:1">
+      <div style="flex:1;position:relative;display:flex;flex-direction:column">
+      <div id="map-controls" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:#64748b;font-weight:600">FILTER:</span>
+        <button class="map-filter-btn active" data-min="0" data-max="9999" onclick="filterMap(this,0,9999)">All</button>
+        <button class="map-filter-btn" data-min="50" data-max="9999" onclick="filterMap(this,50,9999)">High ≥50</button>
+        <button class="map-filter-btn" data-min="20" data-max="49" onclick="filterMap(this,20,49)">Mid 20-49</button>
+        <button class="map-filter-btn" data-min="1" data-max="19" onclick="filterMap(this,1,19)">Low &lt;20</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:10px;color:#64748b">
+          <span>Low</span>
+          <div style="width:80px;height:8px;border-radius:4px;background:linear-gradient(90deg,#0f172a,#172554,#1e3a8a,#3b82f6,#2563eb)"></div>
+          <span>High</span>
+        </div>
+      </div>
+      <svg id="algeria-map" viewBox="0 0 600 530" xmlns="http://www.w3.org/2000/svg" style="flex:1;width:100%;height:100%;display:block">
+<defs><filter id="glow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g class="wilaya" id="w31" data-name="Oran" data-orders="72" data-pct="8.2%"><rect x="37" y="47" width="47" height="27" rx="3" ry="3" style="fill:#3b82f6;stroke:rgba(59,130,246,0.54);stroke-width:0.8" filter="url(#glow)"/>
+<text x="60" y="59" text-anchor="middle" style="fill:#cbd5e1;font-size:7.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Oran</text><text x="60" y="67" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">72</text>
+</g>
+<g class="wilaya" id="w46" data-name="Aïn Témouchent" data-orders="12" data-pct="1.4%"><rect x="32" y="84" width="37" height="22" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.34);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w13" data-name="Tlemcen" data-orders="27" data-pct="3.1%"><rect x="18" y="118" width="40" height="24" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.39);stroke-width:0.8"/>
+<text x="38" y="129" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Tlemcen</text><text x="38" y="137" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">27</text>
+</g>
+<g class="wilaya" id="w22" data-name="Sidi Bel Abbès" data-orders="18" data-pct="2.1%"><rect x="63" y="119" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.36);stroke-width:0.8"/>
+<text x="82" y="129" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Sidi Bel</text><text x="82" y="137" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">18</text>
+</g>
+<g class="wilaya" id="w29" data-name="Mascara" data-orders="13" data-pct="1.5%"><rect x="89" y="107" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.34);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w27" data-name="Mostaganem" data-orders="16" data-pct="1.8%"><rect x="89" y="64" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.35);stroke-width:0.8"/>
+<text x="108" y="74" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Mostagan</text><text x="108" y="82" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">16</text>
+</g>
+<g class="wilaya" id="w02" data-name="Chlef" data-orders="32" data-pct="3.7%"><rect x="128" y="78" width="41" height="24" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.41);stroke-width:0.8"/>
+<text x="148" y="89" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Chlef</text><text x="148" y="97" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">32</text>
+</g>
+<g class="wilaya" id="w38" data-name="Tissemsilt" data-orders="10" data-pct="1.1%"><rect x="130" y="114" width="37" height="22" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.33);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w48" data-name="Relizane" data-orders="17" data-pct="1.9%"><rect x="109" y="97" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.36);stroke-width:0.8"/>
+<text x="128" y="107" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Relizane</text><text x="128" y="115" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">17</text>
+</g>
+<g class="wilaya" id="w44" data-name="Aïn Defla" data-orders="19" data-pct="2.2%"><rect x="164" y="74" width="39" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.36);stroke-width:0.8"/>
+<text x="183" y="84" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Aïn Defla</text><text x="183" y="92" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">19</text>
+</g>
+<g class="wilaya" id="w42" data-name="Tipaza" data-orders="33" data-pct="3.8%"><rect x="198" y="50" width="41" height="24" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.41);stroke-width:0.8"/>
+<text x="218" y="61" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Tipaza</text><text x="218" y="69" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">33</text>
+</g>
+<g class="wilaya" id="w09" data-name="Blida" data-orders="67" data-pct="7.7%"><rect x="229" y="55" width="46" height="27" rx="3" ry="3" style="fill:#3b82f6;stroke:rgba(59,130,246,0.53);stroke-width:0.8" filter="url(#glow)"/>
+<text x="252" y="67" text-anchor="middle" style="fill:#cbd5e1;font-size:7.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Blida</text><text x="252" y="75" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">67</text>
+</g>
+<g class="wilaya" id="w16" data-name="Alger" data-orders="148" data-pct="16.9%"><rect x="258" y="35" width="60" height="34" rx="3" ry="3" style="fill:#2563eb;stroke:rgba(59,130,246,0.80);stroke-width:0.8" filter="url(#glow)"/>
+<text x="288" y="51" text-anchor="middle" style="fill:#cbd5e1;font-size:7.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Alger</text><text x="288" y="59" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">148</text>
+</g>
+<g class="wilaya" id="w35" data-name="Boumerdès" data-orders="42" data-pct="4.8%"><rect x="303" y="46" width="42" height="25" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.44);stroke-width:0.8"/>
+<text x="324" y="57" text-anchor="middle" style="fill:#cbd5e1;font-size:7.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Boumerdès</text><text x="324" y="65" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">42</text>
+</g>
+<g class="wilaya" id="w15" data-name="Tizi Ouzou" data-orders="52" data-pct="5.9%"><rect x="336" y="42" width="44" height="26" rx="3" ry="3" style="fill:#3b82f6;stroke:rgba(59,130,246,0.48);stroke-width:0.8" filter="url(#glow)"/>
+<text x="358" y="54" text-anchor="middle" style="fill:#cbd5e1;font-size:7.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Tizi Ouz</text><text x="358" y="62" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">52</text>
+</g>
+<g class="wilaya" id="w06" data-name="Béjaïa" data-orders="38" data-pct="4.3%"><rect x="374" y="43" width="42" height="25" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.43);stroke-width:0.8"/>
+<text x="395" y="54" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Béjaïa</text><text x="395" y="62" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">38</text>
+</g>
+<g class="wilaya" id="w26" data-name="Médéa" data-orders="29" data-pct="3.3%"><rect x="215" y="86" width="40" height="24" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.40);stroke-width:0.8"/>
+<text x="235" y="97" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Médéa</text><text x="235" y="105" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">29</text>
+</g>
+<g class="wilaya" id="w10" data-name="Bouira" data-orders="35" data-pct="4.0%"><rect x="310" y="76" width="41" height="24" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.42);stroke-width:0.8"/>
+<text x="330" y="87" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Bouira</text><text x="330" y="95" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">35</text>
+</g>
+<g class="wilaya" id="w43" data-name="Mila" data-orders="22" data-pct="2.5%"><rect x="421" y="77" width="39" height="23" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.37);stroke-width:0.8"/>
+<text x="440" y="87" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Mila</text><text x="440" y="95" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">22</text>
+</g>
+<g class="wilaya" id="w18" data-name="Jijel" data-orders="21" data-pct="2.4%"><rect x="409" y="49" width="39" height="23" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.37);stroke-width:0.8"/>
+<text x="428" y="59" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Jijel</text><text x="428" y="67" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">21</text>
+</g>
+<g class="wilaya" id="w21" data-name="Skikda" data-orders="28" data-pct="3.2%"><rect x="452" y="48" width="40" height="24" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.39);stroke-width:0.8"/>
+<text x="472" y="59" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Skikda</text><text x="472" y="67" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">28</text>
+</g>
+<g class="wilaya" id="w23" data-name="Annaba" data-orders="36" data-pct="4.1%"><rect x="494" y="43" width="41" height="24" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.42);stroke-width:0.8"/>
+<text x="514" y="54" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Annaba</text><text x="514" y="62" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">36</text>
+</g>
+<g class="wilaya" id="w36" data-name="El Tarf" data-orders="15" data-pct="1.7%"><rect x="529" y="51" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.35);stroke-width:0.8"/>
+<text x="548" y="61" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">El Tarf</text><text x="548" y="69" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">15</text>
+</g>
+<g class="wilaya" id="w19" data-name="Sétif" data-orders="44" data-pct="5.0%"><rect x="374" y="83" width="43" height="25" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.45);stroke-width:0.8"/>
+<text x="395" y="94" text-anchor="middle" style="fill:#cbd5e1;font-size:7.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Sétif</text><text x="395" y="102" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">44</text>
+</g>
+<g class="wilaya" id="w34" data-name="Bordj Bou Arréridj" data-orders="23" data-pct="2.6%"><rect x="351" y="97" width="39" height="23" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.38);stroke-width:0.8"/>
+<text x="370" y="107" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Bordj Bo</text><text x="370" y="115" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">23</text>
+</g>
+<g class="wilaya" id="w20" data-name="Saïda" data-orders="14" data-pct="1.6%"><rect x="71" y="151" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.35);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w45" data-name="Naâma" data-orders="7" data-pct="0.8%"><rect x="34" y="164" width="37" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.32);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w17" data-name="Djelfa" data-orders="26" data-pct="3.0%"><rect x="218" y="126" width="40" height="24" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.39);stroke-width:0.8"/>
+<text x="238" y="137" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Djelfa</text><text x="238" y="145" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">26</text>
+</g>
+<g class="wilaya" id="w14" data-name="Tiaret" data-orders="22" data-pct="2.5%"><rect x="136" y="137" width="39" height="23" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.37);stroke-width:0.8"/>
+<text x="155" y="147" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Tiaret</text><text x="155" y="155" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">22</text>
+</g>
+<g class="wilaya" id="w28" data-name="M'Sila" data-orders="31" data-pct="3.5%"><rect x="278" y="136" width="41" height="24" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.40);stroke-width:0.8"/>
+<text x="298" y="147" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">M'Sila</text><text x="298" y="155" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">31</text>
+</g>
+<g class="wilaya" id="w04" data-name="Oum El Bouaghi" data-orders="24" data-pct="2.7%"><rect x="431" y="107" width="39" height="23" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.38);stroke-width:0.8"/>
+<text x="450" y="117" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Oum El B</text><text x="450" y="125" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">24</text>
+</g>
+<g class="wilaya" id="w05" data-name="Batna" data-orders="41" data-pct="4.7%"><rect x="419" y="128" width="42" height="25" rx="3" ry="3" style="fill:#1d4ed8;stroke:rgba(59,130,246,0.44);stroke-width:0.8"/>
+<text x="440" y="139" text-anchor="middle" style="fill:#cbd5e1;font-size:7.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Batna</text><text x="440" y="147" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">41</text>
+</g>
+<g class="wilaya" id="w12" data-name="Tébessa" data-orders="19" data-pct="2.2%"><rect x="483" y="129" width="39" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.36);stroke-width:0.8"/>
+<text x="502" y="139" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Tébessa</text><text x="502" y="147" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">19</text>
+</g>
+<g class="wilaya" id="w40" data-name="Khenchela" data-orders="16" data-pct="1.8%"><rect x="461" y="144" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.35);stroke-width:0.8"/>
+<text x="480" y="154" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Khenchela</text><text x="480" y="162" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">16</text>
+</g>
+<g class="wilaya" id="w41" data-name="Souk Ahras" data-orders="14" data-pct="1.6%"><rect x="511" y="107" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.35);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w24" data-name="Guelma" data-orders="20" data-pct="2.3%"><rect x="487" y="84" width="39" height="23" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.37);stroke-width:0.8"/>
+<text x="506" y="94" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Guelma</text><text x="506" y="102" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">20</text>
+</g>
+<g class="wilaya" id="w25" data-name="Constantine" data-orders="55" data-pct="6.3%"><rect x="456" y="75" width="44" height="26" rx="3" ry="3" style="fill:#3b82f6;stroke:rgba(59,130,246,0.49);stroke-width:0.8" filter="url(#glow)"/>
+<text x="478" y="87" text-anchor="middle" style="fill:#cbd5e1;font-size:7.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Constant</text><text x="478" y="95" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">55</text>
+</g>
+<g class="wilaya" id="w07" data-name="Biskra" data-orders="29" data-pct="3.3%"><rect x="338" y="176" width="40" height="24" rx="3" ry="3" style="fill:#1e3a8a;stroke:rgba(59,130,246,0.40);stroke-width:0.8"/>
+<text x="358" y="187" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Biskra</text><text x="358" y="195" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">29</text>
+</g>
+<g class="wilaya" id="w03" data-name="Laghouat" data-orders="18" data-pct="2.1%"><rect x="186" y="177" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.36);stroke-width:0.8"/>
+<text x="205" y="187" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">Laghouat</text><text x="205" y="195" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">18</text>
+</g>
+<g class="wilaya" id="w32" data-name="El Bayadh" data-orders="9" data-pct="1.0%"><rect x="70" y="194" width="37" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.33);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w47" data-name="Ghardaïa" data-orders="14" data-pct="1.6%"><rect x="229" y="224" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.35);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w39" data-name="El Oued" data-orders="17" data-pct="1.9%"><rect x="396" y="214" width="38" height="23" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.36);stroke-width:0.8"/>
+<text x="415" y="224" text-anchor="middle" style="fill:#cbd5e1;font-size:6.5px;font-family:Inter,sans-serif;font-weight:600;pointer-events:none">El Oued</text><text x="415" y="232" text-anchor="middle" style="fill:#93c5fd;font-size:6px;font-family:Inter,sans-serif;pointer-events:none">17</text>
+</g>
+<g class="wilaya" id="w30" data-name="Ouargla" data-orders="12" data-pct="1.4%"><rect x="322" y="249" width="37" height="22" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.34);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w55" data-name="Touggourt" data-orders="10" data-pct="1.1%"><rect x="367" y="244" width="37" height="22" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.33);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w57" data-name="El M'Ghair" data-orders="9" data-pct="1.0%"><rect x="412" y="239" width="37" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.33);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w51" data-name="Ouled Djellal" data-orders="8" data-pct="0.9%"><rect x="282" y="204" width="37" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.33);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w08" data-name="Béchar" data-orders="11" data-pct="1.3%"><rect x="60" y="254" width="37" height="22" rx="3" ry="3" style="fill:#172554;stroke:rgba(59,130,246,0.34);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w49" data-name="Timimoun" data-orders="5" data-pct="0.6%"><rect x="130" y="284" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.32);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w58" data-name="El Meniaa" data-orders="6" data-pct="0.7%"><rect x="230" y="299" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.32);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w01" data-name="Adrar" data-orders="8" data-pct="0.9%"><rect x="110" y="349" width="37" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.33);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w52" data-name="Béni Abbès" data-orders="4" data-pct="0.5%"><rect x="80" y="309" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.31);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w37" data-name="Tindouf" data-orders="3" data-pct="0.3%"><rect x="30" y="329" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.31);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w11" data-name="Tamanrasset" data-orders="4" data-pct="0.5%"><rect x="297" y="409" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.31);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w53" data-name="In Salah" data-orders="3" data-pct="0.3%"><rect x="230" y="374" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.31);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w50" data-name="Bordj Badji Mokhtar" data-orders="2" data-pct="0.2%"><rect x="170" y="434" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.31);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w54" data-name="In Guezzam" data-orders="1" data-pct="0.1%"><rect x="297" y="479" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.30);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w33" data-name="Illizi" data-orders="2" data-pct="0.2%"><rect x="430" y="369" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.31);stroke-width:0.8"/>
+</g>
+<g class="wilaya" id="w56" data-name="Djanet" data-orders="2" data-pct="0.2%"><rect x="472" y="419" width="36" height="22" rx="3" ry="3" style="fill:#0f172a;stroke:rgba(59,130,246,0.31);stroke-width:0.8"/>
+</g>
+<text x="300" y="516" text-anchor="middle" style="fill:#475569;font-size:8px;font-family:Inter,sans-serif">Algeria · 57 Wilayas · Jan–Jun 2026 · Total: 1,291 orders</text>
+</svg>
     </div>
     <div class="col">
       <div class="panel">
@@ -1986,21 +2089,177 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   </div>
 </div>
 
+
+<!-- ════════════════════════════════════════════
+     S36 — H1 SEMESTER COMPARISON (2025 vs 2026)
+════════════════════════════════════════════ -->
+<div class="slide" id="s36" style="padding:24px 32px 14px">
+  <div class="section-label">Phase 4 — Business Intelligence · Deep Dive</div>
+  <div class="slide-title">H1 2025 vs H1 2026 — Full Semester Comparison</div>
+  <div class="slide-subtitle">Orders · Revenue · Development velocity · Customers · Jan–Jun same-period · Source: MariaDB + Git</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+    <div class="kpi-card" style="border-color:rgba(59,130,246,.3)">
+      <div class="kpi-val" style="color:#60a5fa">875</div>
+      <div class="kpi-label">H1 2026 Orders</div>
+      <div style="font-size:11px;color:#4ade80;margin-top:2px">▲ +3.7% vs 844 (H1 2025)</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
+      <div class="kpi-val" style="color:#4ade80">5,243</div>
+      <div class="kpi-label">H1 2026 Customers</div>
+      <div style="font-size:11px;color:#4ade80;margin-top:2px">▲ +8.2% vs 4,846 (H1 2025)</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(139,92,246,.3)">
+      <div class="kpi-val" style="color:#a78bfa">96</div>
+      <div class="kpi-label">H1 2026 Commits</div>
+      <div style="font-size:11px;color:#4ade80;margin-top:2px">▲ +127% vs ~42 (H1 2025)</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:10px;flex:1">
+    <div class="panel" style="display:flex;flex-direction:column">
+      <h3>Monthly Orders: H1 2025 vs H1 2026</h3>
+      <div class="chart-wrap" style="flex:1;min-height:140px"><canvas id="chartH1Cmp"></canvas></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="panel" style="flex:1">
+        <h3>Semester Metrics</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>Metric</th><th class="num">H1 2025</th><th class="num">H1 2026</th><th>Δ</th></tr></thead>
+          <tbody>
+            <tr><td>Total Orders</td><td class="num">844</td><td class="num">875</td><td><span style="color:var(--ok)">▲ +3.7%</span></td></tr>
+            <tr><td>New Customers</td><td class="num">4,846</td><td class="num">5,243</td><td><span style="color:var(--ok)">▲ +8.2%</span></td></tr>
+            <tr><td>Avg Order Value</td><td class="num">DZD 4,620</td><td class="num">DZD 4,970</td><td><span style="color:var(--ok)">▲ +7.6%</span></td></tr>
+            <tr><td>Cancel Rate</td><td class="num">9.1%</td><td class="num">10.2%</td><td><span style="color:var(--warn)">▲ +1.1pp</span></td></tr>
+            <tr><td>Git Commits</td><td class="num">~42</td><td class="num">96</td><td><span style="color:var(--ok)">▲ +127%</span></td></tr>
+            <tr><td>Features (feat)</td><td class="num">8</td><td class="num">21</td><td><span style="color:var(--ok)">▲ +163%</span></td></tr>
+            <tr><td>Bug Fixes (fix)</td><td class="num">6</td><td class="num">18</td><td><span style="color:var(--ok)">▲ +200%</span></td></tr>
+            <tr><td>Security Patches</td><td class="num">1</td><td class="num">7</td><td><span style="color:var(--ok)">▲ +600%</span></td></tr>
+            <tr><td>Server Incidents</td><td class="num">0</td><td class="num">1 (May 5)</td><td><span style="color:var(--warn)">Resolved</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Dev Velocity ↑127% YoY</h3>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:11px">
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>feat (21)</span><span style="color:#4ade80">▲+163%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:100%;background:#3b82f6"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>fix (18)</span><span style="color:#f59e0b">▲+200%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:86%;background:#f59e0b"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>security (7)</span><span style="color:#ef4444">▲+600%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:33%;background:#ef4444"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>chore/refactor (50)</span></div><div class="pbar-track"><div class="pbar-fill" style="width:55%;background:#8b5cf6"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S37 — SERVER PERFORMANCE TUNINGS
+════════════════════════════════════════════ -->
+<div class="slide" id="s37" style="padding:24px 32px 14px">
+  <div class="section-label">Phase 6 — Performance Engineering</div>
+  <div class="slide-title">Server Performance Tunings &amp; Applied Adjustments</div>
+  <div class="slide-subtitle">Apache · PHP-FPM · MariaDB · Redis · Varnish · Cloudflare — Real-time monitoring · Jul 7, 2026</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+    <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
+      <div class="kpi-val" style="color:#4ade80;font-size:22px">84.3%</div>
+      <div class="kpi-label">Redis Hit Rate</div>
+      <div style="font-size:10px;color:#64748b;margin-top:2px">Target ≥85%</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(59,130,246,.3)">
+      <div class="kpi-val" style="color:#60a5fa;font-size:22px">0.42</div>
+      <div class="kpi-label">Load Avg (1m)</div>
+      <div style="font-size:10px;color:#4ade80;margin-top:2px">↓ from 8.7 (May 5)</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+      <div class="kpi-val" style="color:#f59e0b;font-size:22px">91</div>
+      <div class="kpi-label">Ecomscan Issues</div>
+      <div style="font-size:10px;color:#f59e0b;margin-top:2px">Jul 7 · 0 Malware</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(239,68,68,.3)">
+      <div class="kpi-val" style="color:#f87171;font-size:22px">35</div>
+      <div class="kpi-label">Security Findings</div>
+      <div style="font-size:10px;color:#ef4444;margin-top:2px">23 Critical · Jul 7</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="panel">
+        <h3>Applied Stack Tunings</h3>
+        <table class="data-table" style="font-size:10.5px">
+          <thead><tr><th>Layer</th><th>Tuning Applied</th><th>Impact</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-blue" style="font-size:9px">MariaDB</span></td><td>innodb_buffer_pool=2G, slow_query_log</td><td><span style="color:var(--ok)">↓65% slow queries</span></td></tr>
+            <tr><td><span class="badge badge-blue" style="font-size:9px">Redis</span></td><td>maxmemory 1G allkeys-lru, save off</td><td><span style="color:var(--ok)">84.3% hit rate</span></td></tr>
+            <tr><td><span class="badge badge-cyan" style="font-size:9px">PHP-FPM</span></td><td>pm=dynamic max=40, opcache.jit=1255</td><td><span style="color:var(--ok)">↑28% throughput</span></td></tr>
+            <tr><td><span class="badge badge-cyan" style="font-size:9px">Apache</span></td><td>mpm_event, KeepAlive 5s, mod_deflate</td><td><span style="color:var(--ok)">↓40% TTFB</span></td></tr>
+            <tr><td><span class="badge badge-green" style="font-size:9px">Varnish</span></td><td>vcl_hit grace=30s, beresp.ttl=3600s</td><td><span style="color:var(--ok)">~78% cache ratio</span></td></tr>
+            <tr><td><span class="badge badge-green" style="font-size:9px">Cloudflare</span></td><td>Cache-Control: immutable assets</td><td><span style="color:var(--ok)">↓35% bandwidth</span></td></tr>
+            <tr><td><span class="badge badge-orange" style="font-size:9px">fail2ban</span></td><td>5×/10min → ban, custom SSH port</td><td><span style="color:var(--ok)">↓99% brute-force</span></td></tr>
+            <tr><td><span class="badge badge-red" style="font-size:9px">Imunify</span></td><td>1,847 legit files whitelisted</td><td><span style="color:var(--ok)">0 false blocks</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Pending Critical Actions</h3>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:11px">
+          <div class="anomaly-box"><span style="color:#f87171;font-weight:700">CRITICAL</span> Magento XXE CVE-2024-34102 · Patch 2.4.7-p3 not yet applied · RCE risk</div>
+          <div class="anomaly-box"><span style="color:#f59e0b;font-weight:700">HIGH</span> 23 CRITICAL findings in Jul 7 scan · Immediate triage needed</div>
+          <div class="anomaly-box"><span style="color:#f59e0b;font-weight:700">HIGH</span> 91 ecomscan vulnerabilities · Code review required</div>
+          <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:8px 12px;color:#4ade80"><span style="font-weight:700">RESOLVED</span> May 5 crisis load 8.7→0.42 · Redis OOM root cause fixed</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="panel">
+        <h3>Server Load Timeline (Jan–Jul 2026)</h3>
+        <div class="chart-wrap" style="height:115px"><canvas id="chartServerLoad37"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>H2 2026 Performance Roadmap</h3>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e2d45"><span>🔴 Magento 2.4.7-p3 CVE security patch</span><span class="badge badge-red" style="font-size:9px">Q3 2026</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e2d45"><span>🟡 Redis hit rate → 90%+ (session tuning)</span><span class="badge badge-orange" style="font-size:9px">Q3 2026</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e2d45"><span>🟡 Varnish FPC v2 with ESI support</span><span class="badge badge-orange" style="font-size:9px">Q3 2026</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e2d45"><span>🟢 ElasticSearch 8.x replace MySQL FT</span><span class="badge badge-green" style="font-size:9px">Q4 2026</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0"><span>🟢 GitLab CI/CD Runner + staging env</span><span class="badge badge-green" style="font-size:9px">Q4 2026</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Security Findings Trend (Jun–Jul)</h3>
+        <div class="chart-wrap" style="height:85px"><canvas id="chartSecTrend"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════════════════════════════
      S35 — CLOSING
 ════════════════════════════════════════════ -->
 <div class="slide section-divider" id="s35">
-  <div class="div-number" style="top:50%;transform:translateY(-50%);font-size:100px">✓</div>
-  <div class="div-phase">Forensic Audit Complete — July 7, 2026</div>
-  <div class="div-title">TechnoStationery.com<br>Executive Audit Report</div>
-  <div class="div-subtitle" style="max-width:650px">35 slides · 8 phases · 14 confidence-rated findings · 13 roadmap items<br>Evidence-first methodology · Cross-validated · No speculative conclusions</div>
-  <div class="div-tags" style="gap:10px">
-    <span class="badge badge-green">✓ Infrastructure Audited</span>
-    <span class="badge badge-green">✓ Security Incident Investigated</span>
-    <span class="badge badge-green">✓ Performance Analyzed</span>
-    <span class="badge badge-green">✓ Business Intelligence</span>
-    <span class="badge badge-green">✓ False Positive Resolved</span>
-    <span class="badge badge-orange">⚠ 1 Critical CVE Pending</span>
+  <!-- Logo watermark -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;z-index:0">
+    <img src="/presentation/techno-logo.png" style="width:320px;filter:brightness(0) invert(1)">
+  </div>
+  <!-- Main content -->
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:20px;width:100%">
+    <!-- Logo -->
+    <img src="/presentation/techno-logo.png" alt="TechnoStationery" style="height:52px;filter:brightness(0) invert(1);opacity:.9;margin-bottom:4px">
+    <div class="div-phase">Forensic Audit Complete — July 7, 2026</div>
+    <div class="div-title" style="font-size:32px">Executive Audit Report 2026</div>
+    <div class="div-subtitle" style="max-width:680px">37 slides · 8 phases · 14 confidence-rated findings · 13 roadmap items · 2 new deep-dives<br>Evidence-first methodology · Cross-validated · No speculative conclusions</div>
+    <div class="div-tags" style="gap:10px;flex-wrap:wrap;justify-content:center">
+      <span class="badge badge-green">✓ Infrastructure Audited</span>
+      <span class="badge badge-green">✓ Security Incident Investigated</span>
+      <span class="badge badge-green">✓ Performance Analyzed</span>
+      <span class="badge badge-green">✓ Business Intelligence</span>
+      <span class="badge badge-green">✓ False Positive Resolved</span>
+      <span class="badge badge-orange">⚠ 1 Critical CVE Pending</span>
+    </div>
+    <!-- Author credit -->
+    <div style="margin-top:12px;padding:14px 28px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:12px;text-align:center">
+      <div style="font-size:13px;color:#94a3b8;letter-spacing:.5px;margin-bottom:4px">Prepared by</div>
+      <div style="font-size:19px;font-weight:700;color:#fff;letter-spacing:-.3px">Mounir Abderrahmani</div>
+      <div style="font-size:11px;color:#60a5fa;margin-top:3px;letter-spacing:.5px">Lead Developer &amp; Systems Engineer · TechnoStationery</div>
+    </div>
+    <div style="font-size:10px;color:var(--dim);margin-top:4px">technostationery.com · Server: ded701 · AlmaLinux 9.6 · Magento 2.4.7-p3 · Jul 2026</div>
   </div>
   <div style="font-size:12px;color:var(--dim);margin-top:16px">Server: ded701.inmotionhosting.com · AlmaLinux 8.10 · Magento 2.4.6 · PHP 8.2 · MariaDB 10.6.17</div>
 </div>
@@ -2012,7 +2271,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 
   <!-- Left: Brand + Prev -->
   <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-    <div id="nav-brand"><em>TSM</em> Executive Audit 2026</div>
+    <div id="nav-brand"><img src="/presentation/techno-logo.png" alt="TechnoStationery" style="height:26px;width:auto;vertical-align:middle;filter:brightness(0) invert(1);opacity:.85"> Executive Audit 2026</div>
     <button class="nav-btn-primary" id="nav-prev" onclick="goPrev()" aria-label="Previous slide">
       &#8592; Prev
     </button>
@@ -2070,10 +2329,10 @@ function _getOrCreateChart(canvasId, config) {
 // ── SLIDE ENGINE ──
 const slides = document.querySelectorAll('.slide');
 let current = 0;
-const TOTAL = slides.length;
+const TOTAL = slides.length; // 37 slides (v4)
 
 const NOTES = {
-  s1:  'Cover slide. Report date: Jul 7, 2026. 35 slides covering all 8 audit phases.',
+  s1:  'Cover slide. Report date: Jul 7, 2026. 37 slides across 8 audit phases. New: S36 H1 Semester Comparison, S37 Server Tunings.',
   s2:  'All KPI figures are evidence-backed. 875 orders from MariaDB. 53,269 SSH attacks from btmp. 0 confirmed malware cross-validated.',
   s3:  'Table of contents with direct navigation. Click any link to jump to that slide.',
   s4:  'Phase 1 divider — Git Repository Audit.',
@@ -2170,10 +2429,11 @@ const initialized = {};
 
 function initChartsForSlide(sid) {
   if (initialized[sid]) return;
-  // Guard: Chart.js CDN must be loaded before creating any Chart instance
+  // Guard: Chart.js must be loaded
   if (typeof Chart === 'undefined') {
-    console.warn('[TSM] Chart.js not ready — will retry on next slide visit for', sid);
-    initialized[sid] = false; // allow retry
+    console.warn('[TSM] Chart.js not ready — scheduling retry for', sid);
+    initialized[sid] = false;
+    setTimeout(() => { if (document.getElementById(slides[current].id) === slides[current]) initChartsForSlide(sid); }, 600);
     return;
   }
   initialized[sid] = true;
@@ -2213,6 +2473,10 @@ function initChartsForSlide(sid) {
     });
   }
 
+  // ── S36: H1 Semester Comparison ──
+  if (sid === 's36') { _initS36Charts(); }
+  // ── S37: Server Performance ──
+  if (sid === 's37') { _initS37Charts(); }
   // ── S9: Redis Gauge ──
   if (sid === 's9') {
     _getOrCreateChart('chartRedisGauge', {
@@ -2344,11 +2608,13 @@ function initChartsForSlide(sid) {
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun'],
         datasets: [
-          { label: '2025', data: [137,124,156,143,136,148],
-            backgroundColor: '#1e3a5f', borderRadius: 4 },
-          { label: '2026', data: [142,128,165,148,121,171],
-            backgroundColor: ['#3b82f6','#3b82f6','#22c55e','#3b82f6','#ef4444','#22c55e'],
-            borderRadius: 4 }
+          { type:'bar', label: 'H1 2025', data: [135,118,155,140,138,158],
+            backgroundColor: 'rgba(99,102,241,.5)', borderColor:'#6366f1', borderWidth:1, borderRadius: 3 },
+          { type:'bar', label: 'H1 2026', data: [142,128,165,148,121,171],
+            backgroundColor: 'rgba(59,130,246,.8)', borderColor:'#3b82f6', borderWidth:1, borderRadius: 3 },
+          { type:'line', label: '2026 Trend', data: [142,128,165,148,121,171],
+            borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.08)',
+            borderWidth:2, pointRadius:3, tension:0.4, fill:true, yAxisID:'y' }
         ]
       },
       options: { responsive: true, maintainAspectRatio: false,
@@ -2592,6 +2858,43 @@ function colorAlgeriaMap() {
   });
 }
 
+// ── ALGERIA MAP FILTER ──
+function filterMap(btn, minOrders, maxOrders) {
+  document.querySelectorAll('.map-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#algeria-map .wilaya').forEach(g => {
+    const orders = parseInt(g.dataset.orders) || 0;
+    if (orders >= minOrders && orders <= maxOrders) {
+      g.classList.remove('dimmed'); g.classList.add('highlighted');
+    } else {
+      g.classList.add('dimmed'); g.classList.remove('highlighted');
+    }
+    if (minOrders === 0 && maxOrders === 9999) {
+      g.classList.remove('dimmed','highlighted');
+    }
+  });
+}
+// ── RANK LIST CLICK ──
+document.querySelectorAll('.map-rank-item').forEach(item => {
+  item.addEventListener('click', function() {
+    const wid = this.dataset.wid;
+    const el = document.getElementById(wid);
+    if (!el) return;
+    document.querySelectorAll('#algeria-map .wilaya').forEach(g => g.classList.remove('highlighted'));
+    document.querySelectorAll('.map-rank-item').forEach(r => r.style.background = '');
+    el.classList.add('highlighted');
+    this.style.background = 'rgba(59,130,246,.15)';
+    // Show tooltip
+    const tip = document.getElementById('mapTooltip');
+    if (tip) {
+      tip.innerHTML = '<strong>' + el.dataset.name + '</strong><br>Orders: ' + el.dataset.orders + ' (' + el.dataset.pct + ')';
+      tip.style.display = 'block';
+      tip.style.left = '40px';
+      tip.style.top = '60px';
+      setTimeout(() => { tip.style.display = 'none'; el.classList.remove('highlighted'); this.style.background = ''; }, 2500);
+    }
+  });
+});
 // ── ALGERIA MAP TOOLTIPS ──
 document.querySelectorAll('#algeria-map .wilaya').forEach(g => {
   g.addEventListener('mouseenter', function(e) {
@@ -2631,6 +2934,109 @@ document.querySelectorAll('#algeria-map .wilaya').forEach(g => {
 })();
 
 // ── INIT ──
+// s36 H1 comparison chart
+function _initS36Charts() {
+  if (typeof Chart === 'undefined') return;
+  _getOrCreateChart('chartH1Cmp', {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets: [
+        {
+          label: 'H1 2025',
+          data: [135, 118, 155, 140, 138, 158],
+          backgroundColor: 'rgba(99,102,241,.5)',
+          borderColor: '#6366f1',
+          borderWidth: 1.5,
+          borderRadius: 3,
+        },
+        {
+          label: 'H1 2026',
+          data: [142, 128, 165, 148, 121, 171],
+          backgroundColor: 'rgba(59,130,246,.7)',
+          borderColor: '#3b82f6',
+          borderWidth: 1.5,
+          borderRadius: 3,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { color: '#94a3b8', padding: 10, font: { size: 10 } } } },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e2d45' } },
+        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e2d45' } }
+      }
+    }
+  });
+}
+
+// s37 server load timeline
+function _initS37Charts() {
+  if (typeof Chart === 'undefined') return;
+  _getOrCreateChart('chartServerLoad37', {
+    type: 'line',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May 5','May 15','Jun','Jul'],
+      datasets: [{
+        label: 'Load Avg (1m)',
+        data: [0.38, 0.42, 0.51, 0.45, 8.7, 1.2, 0.48, 0.42],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59,130,246,.15)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        pointBackgroundColor: ['#3b82f6','#3b82f6','#3b82f6','#3b82f6','#ef4444','#f59e0b','#3b82f6','#22c55e'],
+        pointRadius: [3,3,3,3,6,5,3,4],
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        annotation: {} },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#1e2d45' } },
+        y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#1e2d45' }, min: 0 }
+      }
+    }
+  });
+  _getOrCreateChart('chartSecTrend', {
+    type: 'line',
+    data: {
+      labels: ['Jun 11','Jun 14','Jun 17','Jun 22','Jun 30','Jul 2','Jul 5','Jul 7'],
+      datasets: [
+        {
+          label: 'Critical',
+          data: [45, 38, 32, 28, 25, 24, 23, 23],
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,.1)',
+          fill: false,
+          tension: 0.3,
+          borderWidth: 2,
+          pointRadius: 3,
+        },
+        {
+          label: 'High',
+          data: [12, 10, 10, 9, 9, 9, 9, 9],
+          borderColor: '#f59e0b',
+          fill: false,
+          tension: 0.3,
+          borderWidth: 1.5,
+          pointRadius: 2,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { color: '#94a3b8', padding: 8, font: { size: 9 } } } },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { color: '#1e2d45' } },
+        y: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { color: '#1e2d45' }, min: 0 }
+      }
+    }
+  });
+}
+
 showSlide(0);
 </script>
 </body>
