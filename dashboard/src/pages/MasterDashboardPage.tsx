@@ -197,10 +197,10 @@ export default function MasterDashboardPage() {
               </Typography>
               <Grid container spacing={1.5}>
                 {[
-                  { label: 'Total Commits', value: '96', icon: <Commit sx={{ fontSize: 16 }} />, color: '#3b82f6' },
-                  { label: 'Bugs Fixed', value: '32', icon: <BugReport sx={{ fontSize: 16 }} />, color: '#ef4444' },
-                  { label: 'Features', value: '38', icon: <TrendingUp sx={{ fontSize: 16 }} />, color: '#22c55e' },
-                  { label: 'Tasks Done', value: '20', icon: <TaskAlt sx={{ fontSize: 16 }} />, color: '#f59e0b' },
+                  { label: 'Total Commits', value: '112', icon: <Commit sx={{ fontSize: 16 }} />, color: '#3b82f6' },
+                  { label: 'Bugs Fixed', value: '37', icon: <BugReport sx={{ fontSize: 16 }} />, color: '#ef4444' },
+                  { label: 'Features', value: '44', icon: <TrendingUp sx={{ fontSize: 16 }} />, color: '#22c55e' },
+                  { label: 'Tasks Done', value: '31', icon: <TaskAlt sx={{ fontSize: 16 }} />, color: '#f59e0b' },
                 ].map(stat => (
                   <Grid key={stat.label} size={{ xs: 6 }}>
                     <Box sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', background: 'rgba(255,255,255,0.02)' }}>
@@ -219,7 +219,7 @@ export default function MasterDashboardPage() {
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                   Branch: <code style={{ color: '#8b5cf6' }}>main</code>
                   &nbsp;·&nbsp; Repo: <code style={{ color: '#8b5cf6' }}>mounirtms/dashboard</code>
-                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>cd2a8c6e</code>
+                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>6fc21289</code>
                 </Typography>
               </Box>
             </CardContent>
@@ -234,12 +234,14 @@ export default function MasterDashboardPage() {
                 <TaskAlt sx={{ color: '#22c55e' }} /> Sprint Progress
               </Typography>
               {[
-                { label: 'Build & Deploy Pipeline',     done: 100, color: '#22c55e' },
-                { label: 'Branch Consolidation (→main)', done: 100, color: '#3b82f6' },
-                { label: 'Security Hardening',         done: 85,  color: '#f59e0b' },
-                { label: 'Performance Tuning',         done: 72,  color: '#06b6d4' },
-                { label: 'Magento Commerce Pages',     done: 80,  color: '#8b5cf6' },
-                { label: 'Audit Presentation + PPTX',  done: 100, color: '#ec4899' },
+                { label: 'Build & Deploy Pipeline',        done: 100, color: '#22c55e' },
+                { label: 'Branch Consolidation (→main)',   done: 100, color: '#3b82f6' },
+                { label: 'Audit Presentation v3 (30 fixes)', done: 100, color: '#ec4899' },
+                { label: 'Audit Presentation v4 (37 slides)', done: 100, color: '#f472b6' },
+                { label: 'Magento Commerce Pages',         done: 100, color: '#8b5cf6' },
+                { label: 'Security Hardening',             done: 88,  color: '#f59e0b' },
+                { label: 'Performance Tuning',             done: 78,  color: '#06b6d4' },
+                { label: 'Dashboard Tuning & Analytics',   done: 65,  color: '#a78bfa' },
               ].map(item => (
                 <Box key={item.label} sx={{ mb: 1.5 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
