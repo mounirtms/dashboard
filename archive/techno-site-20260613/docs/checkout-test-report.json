@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-04-16T19:44:49.016Z",
+  "url": "https://dev.technostationery.com/checkout",
+  "results": {
+    "wrapperExists": false,
+    "cardsCount": 0,
+    "regionExists": false,
+    "errorsCount": 1,
+    "consoleLogsCount": 265
+  },
+  "errors": [
+    {
+      "message": "Failed to fetch",
+      "stack": "Uncaught (in promise) TypeError: Failed to fetch\n    at _webpushrGetPrompt (https://cdn.webpushr.com/app.min.js:1:5065)\n    at _webpushrBrowserSupport (https://cdn.webpushr.com/app.min.js:1:2258)\n    at init (https://cdn.webpushr.com/app.min.js:2:10977)\n    at setup (https://cdn.webpushr.com/app.min.js:2:10466)\n    at window.webpushr (https://cdn.webpushr.com/app.min.js:2:12721)\n    at <anonymous> (https://cdn.webpushr.com/app.min.js:1:110)\n    at _webpushrExecuteHooks (https://cdn.webpushr.com/app.min.js:1:66)\n    at <anonymous> (https://cdn.webpushr.com/app.min.js:2:12805)",
+      "timestamp": "2026-04-16T19:44:43.478Z"
+    }
+  ],
+  "consoleLogs": [],
+  "koBinding": {
+    "error": "Wrapper not found"
+  }
+}

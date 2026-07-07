@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+h1 { color: #c0392b; border-bottom: 3px solid #c0392b; padding-bottom: 10px; }
+h2 { color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 30px; }
+h3 { color: #34495e; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0 20px 0; }
+th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; }
+td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+tr:nth-child(even) { background: #f8f9fa; }
+.pass { color: #27ae60; font-weight: bold; }
+.fail { color: #c0392b; font-weight: bold; }
+.warn { color: #f39c12; font-weight: bold; }
+.info { color: #2980b9; font-weight: bold; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; color: white; }
+.badge-clean { background: #27ae60; }
+.badge-fixed { background: #2980b9; }
+.badge-removed { background: #c0392b; }
+.badge-active { background: #8e44ad; }
+.badge-warn { background: #f39c12; }
+.code { background: #f4f4f4; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 13px; overflow-x: auto; }
+.summary-box { background: #ecf0f1; border-left: 4px solid #2c3e50; padding: 15px 20px; margin: 20px 0; }
+.alert-box { background: #fdedec; border-left: 4px solid #c0392b; padding: 15px 20px; margin: 20px 0; }
+.success-box { background: #eafaf1; border-left: 4px solid #27ae60; padding: 15px 20px; margin: 20px 0; }
+ul { padding-left: 20px; }
+li { margin-bottom: 4px; }
+.footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>🛡️ Server Security Audit & Hardening Report</h1>
+<p><strong>Server:</strong> ded701.inmotionhosting.com<br>
+<strong>Date:</strong> June 12–13, 2026<br>
+<strong>Performed by:</strong> Automated Security Team (Sansec eComscan)<br>
+<strong>Reviewed by:</strong> Mounir Abderrahmani<br>
+<strong>Scope:</strong> All Magento stores, MariaDB databases, server infrastructure</p>
+
+<div class="summary-box">
+<strong>Executive Summary:</strong> Full security audit and hardening performed across all accounts. Critical malware (backdoors, skimmers, reverse shells, PHP deserialization payloads) discovered and eliminated over four rounds of scanning. File permissions hardened, <strong>reCAPTCHA v3 fully deployed on all 10 forms across all 3 stores</strong>, automated monitoring activated. <strong>June 12 afternoon audit</strong> found 3 additional malware files that survived initial cleanup — all quarantined and removed. <strong>June 13 afternoon audit</strong> eliminated 2 final Session Reaper deserialization payloads on production, patched critical Amasty_Orderattr vulnerability (CVE-2026-53787, CVSS 9.3) across all 3 stores, hardened file permissions (9,430+ production + 9,547 tsdnd generated files), secured hardcoded credentials, relocated sensitive scripts out of web-accessible directories, and deployed cron cleanup automation on all accounts. <strong>Dev and TSDND stores received identical hardening</strong>: CVE patched, vendor source removed, autoload regenerated, cron scripts relocated to scripts/, security monitors created, crontabs configured, cron_schedule tables cleaned (1,916→218 rows each). <strong>June 13 evening audit</strong> discovered and eliminated a new SessionReaper attack: an obfuscated PHP8 PHAR backdoor (<code>5081e627ea7d2b.php8</code>) and a Monolog deserialization payload uploaded through the customer address file upload endpoint. <strong>Root cause identified and patched</strong>: Magento's <code>general/file/protected_extensions</code> config was missing from the database, and the default blocklist did not include <code>.php8</code> — now 34 dangerous file types are blocked at the application level. A comprehensive <strong>module security audit</strong> identified <strong>22 CVEs across 7 Composer packages</strong>, including <strong>1 critical PHP code execution</strong> in Twig v3.23.0 (CVE-2026-46633) and 3 high-severity sandbox bypasses. 13 abandoned Composer packages flagged for replacement. All 3 stores confirmed clean by eComscan. Cloudflare API credentials need regeneration.
+</div>
+
+<!-- ==================== ACCOUNTS ==================== -->
+<h2>1. Accounts & Stores Scanned</h2>
+
+<table>
+<tr><th>Account</th><th>Type</th><th>Magento Version</th><th>Database Size</th><th>Status</th></tr>
+<tr><td>technadminy7</td><td>Production</td><td>2.4.6-p15</td><td>1,294 MB (931 tables)</td><td><span class="badge badge-clean">CLEAN</span></td></tr>
+<tr><td>dev</td><td>Development</td><td>2.4.6-p15</td><td>1,208 MB (946 tables)</td><td><span class="badge badge-clean">CLEAN</span></td></tr>
+<tr><td>tsdnd</td><td>Production (2nd store)</td><td>2.4.6-p15</td><td>1,213 MB (946 tables)</td><td><span class="badge badge-clean">CLEAN</span></td></tr>
+<tr><td>dashboard</td><td>Admin Dashboard</td><td>N/A (Node.js/PHP)</td><td>0.67 MB (12 tables)</td><td><span class="badge badge-clean">CLEAN</span></td></tr>
+<tr><td>lms</td><td>Moodle LMS</td><td>N/A</td><td>N/A</td><td><span class="badge badge-clean">CLEAN</span></td></tr>
+</table>
+
+<p><strong>Total databases scanned:</strong> 8 (including pimcore, akeneo_pim, backup_verify_test)<br>
+<strong>Total data scanned:</strong> ~8.7 GB across 4,849 tables</p>
+
+<!-- ==================== MALWARE FOUND ==================== -->
+<h2>2. Malware Found & Removed</h2>
+
+<div class="alert-box">
+<strong>⚠️ Critical threats discovered and eliminated:</strong>
+</div>
+
+<h3>2.1 File-Based Malware (June 11 — Initial Sweep)</h3>
+<table>
+<tr><th>Type</th><th>Location</th><th>Severity</th><th>Action</th></tr>
+<tr><td>PHAR Backdoor (GIF-disguised)</td><td>pub/media/customer_address/z/q/</td><td><span class="fail">CRITICAL</span></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>GIF-disguised Webshell</td><td>pub/media/custom_options/quote/6/5/654index.php</td><td><span class="fail">CRITICAL</span></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>Indonesian Shell (simple_indonesian_shell)</td><td>pub/media/custom_options/quote/6/4/</td><td><span class="fail">CRITICAL</span></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>PHP-in-GIF Backdoors (×5)</td><td>pub/media/custom_options/quote/6/4/</td><td><span class="fail">CRITICAL</span></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>SessionReaper Files (×7)</td><td>pub/media/customer_address/s/e/</td><td><span class="fail">CRITICAL</span></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>eval_wpautop Backdoor</td><td>pub/media/custom_options/quote/6/4/</td><td><span class="fail">CRITICAL</span></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+</table>
+
+<h3>2.1b File-Based Malware (June 12 Afternoon — Survived Initial Cleanup)</h3>
+<table>
+<tr><th>Type</th><th>Location</th><th>Severity</th><th>Injection Vector</th><th>Action</th></tr>
+<tr><td>Monolog Deserialization Payload</td><td>pub/media/customer_address/s/e/sess_3p0yzmiw02nqj28855nq2kncveepr6g6</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>GIF-disguised Polyshell (.pht extension)</td><td>pub/media/custom_options/quote/6/4/649658index.pht</td><td><span class="fail">CRITICAL</span></td><td>Custom options upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>PHP File Manager Webshell (disguised as .txt)</td><td>pub/media/custom_options/quote/6/4/0fe4786172.txt</td><td><span class="fail">CRITICAL</span></td><td>Custom options upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>Probe/Test Files (×8)</td><td>pub/media/customer_address/ (various subdirs)</td><td><span class="warn">LOW</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+</table>
+
+<div class="alert-box">
+<strong>Injection Vector Analysis (June 12 Afternoon):</strong><br>
+The Monolog payload was uploaded through Magento's <strong>Customer Address file upload endpoint</strong> (<code>customer/address/upload</code>). Evidence:
+<ul>
+<li>The file landed in <code>pub/media/customer_address/s/e/</code> — the exact path created by Magento's <code>FileProcessor::moveTemporaryFile()</code> using <code>Uploader::getDispersionPath()</code></li>
+<li>The filename <code>sess_3p0yzmiw02nqj28855nq2kncveepr6g6</code> mimics a PHP session file but sessions are stored in <strong>Redis</strong> (not files), confirming deliberate placement</li>
+<li>The payload contained a Monolog <code>BufferHandler</code> gadget chain designed to execute <code>shell_exec()</code> via PHP deserialization, downloading a second-stage backdoor from GitHub</li>
+<li>The <code>.pht</code> extension variant survived initial cleanup because only <code>.php/.php7/.php8/.phar</code> were targeted — now all variants including <code>.pht</code> are blocked by <code>.htaccess</code></li>
+<li>The attack <strong>failed to execute</strong> — the secondary payload was never downloaded</li>
+</ul>
+</div>
+
+<h3>2.1c File-Based Malware (June 13 Afternoon — Final Session Reaper Payloads)</h3>
+<table>
+<tr><th>Type</th><th>Location</th><th>Severity</th><th>Injection Vector</th><th>Action</th></tr>
+<tr><td>GuzzleHttp Deserialization Payload (FileCookieJar webshell)</td><td>pub/media/customer_address/s/e/sess_5uief5of4icyshy6vpx6ouf7gw0xt4v9</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>Monolog SyslogUdpHandler Deserialization Payload (remote shell download)</td><td>pub/media/customer_address/s/e/sess_ivrezji9888gvluvn8ce9zbpdh6nguek</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+</table>
+
+<div class="alert-box">
+<strong>Forensic Analysis (June 13 Afternoon):</strong><br>
+Two final Session Reaper payloads discovered in the same <code>pub/media/customer_address/s/e/</code> directory. Both part of the same attack campaign targeting <code>81e627ea7d2b.php</code> webshell creation:
+<ul>
+<li><strong>Payload 1 (GuzzleHttp):</strong> <code>GuzzleHttp\Cookie\FileCookieJar</code> deserialization gadget containing embedded PHP webshell with <code>eval(base64_decode($_REQUEST['id']))</code> and cookie-based gate. Also included file upload backdoor: <code>@copy($_FILES['file']['tmp_name'],$_FILES['file']['name'])</code>. Target: create webshell at <code>pub/81e627ea7d2b.php</code></li>
+<li><strong>Payload 2 (Monolog):</strong> <code>Monolog SyslogUdpHandler &#8594; BufferHandler gadget chain designed to execute shell_exec()</code> via PHP deserialization, downloading second-stage PHP shell from GitHub using <code>curl</code></li>
+<li>Both payloads exploited Magento's <code>customer/address/upload</code> endpoint — same vector as June 12 Monolog payload</li>
+<li>Filenames mimic PHP session files (<code>sess_*</code>) but sessions use <strong>Redis</strong> — no legitimate filesystem sessions exist</li>
+<li><strong>Exploit FAILED</strong> — target webshell <code>81e627ea7d2b.php</code> was never created (verified via filesystem scan and access logs)</li>
+<li>Access logs showed no HTTP traces of successful exploitation — attacks likely blocked by <code>.htaccess</code> PHP execution restrictions in upload directories</li>
+</ul>
+</div>
+
+<h3>2.1d File-Based Malware (June 13 Evening — SessionReaper PHP8 Backdoor & Upload Vulnerability Patch)</h3>
+<table>
+<tr><th>Type</th><th>Location</th><th>Severity</th><th>Injection Vector</th><th>Action</th></tr>
+<tr><td>Obfuscated PHP8 PHAR Backdoor (<code>&lt;?pHP</code> mixed-case tag, <code>require_once</code> + <code>hex2bin</code> obfuscation)</td><td>pub/media/customer_address/5/0/5081e627ea7d2b.php8</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>Monolog SyslogUdpHandler Deserialization Payload (downloads shell from GitHub: <code>shanerbaner82/costco</code>)</td><td>pub/media/customer_address/s/e/sess_zah9z6ppc8q1sh5aq8j5liyri2bxj06b</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+</table>
+
+<div class="alert-box">
+<strong>Root Cause Analysis — Upload Vulnerability (June 13 Evening):</strong><br>
+The SessionReaper attacks persisted because of a <strong>missing database configuration</strong> for file upload protection:
+<ul>
+<li><strong>Vulnerability:</strong> Magento's <code>general/file/protected_extensions</code> config path was <strong>not set in the database</strong>. The framework's default XML config only blocks <code>php, php3, php4, php5, php7</code> — but <strong>NOT <code>php8</code></strong>, session files (<code>sess_*</code>), or other dangerous types</li>
+<li><strong>Bypass mechanism:</strong> When <code>$allowedExtensions</code> is empty (no <code>file_extensions</code> validation rule on the attribute), Magento's <code>Uploader::checkAllowedExtension()</code> returns <code>true</code> for ALL extensions — effectively allowing any file type to be uploaded</li>
+<li><strong>The <code>.php8</code> extension</strong> was specifically chosen by the attacker to evade the default blocklist which only covered <code>php</code> through <code>php7</code></li>
+<li><strong>Session files (<code>sess_*</code>)</strong> have no file extension at all, bypassing extension-based validation entirely</li>
+</ul>
+<strong>Fix Applied:</strong>
+<ul>
+<li>Set <code>general/file/protected_extensions</code> in <code>core_config_data</code> to block <strong>34 dangerous file types</strong>: <code>php, php3, php4, php5, php7, php8, phps, phtml, pht, phar, phpt, pgif, htaccess, ini, user.ini, jsp, pl, py, asp, aspx, sh, bash, csh, ksh, cgi, exe, dll, com, bat, cmd, hta, shtml, svg, svgz</code></li>
+<li>Config cache flushed to apply immediately</li>
+<li>Defense-in-depth: <code>.htaccess</code> in upload directories continues to block PHP execution for all extensions including <code>.php8</code></li>
+<li>Defense-in-depth: <code>.user.ini</code> with <code>engine = off</code> disables PHP entirely in upload directories</li>
+</ul>
+<strong>Exploit Impact:</strong> Access logs showed the attacker attempted to reach <code>81e627ea7d2b.php</code> (target webshell) since May 5 — <strong>every attempt returned 404</strong>. The secondary payload was never downloaded. Attack <strong>failed</strong> due to defense-in-depth layers.
+</div>
+
+<h3>2.1e File-Based Malware (June 14 — PolyShell Webshell + Renewed SessionReaper Campaign)</h3>
+<table>
+<tr><th>Type</th><th>Location</th><th>Severity</th><th>Injection Vector</th><th>Action</th></tr>
+<tr><td>GIF-disguised PHP Webshell (<code>php_code_in_gif</code> / <code>uploaded_custom_options_file</code>) — <code>eval(base64_decode())</code> with cookie gate + file upload backdoor</td><td>pub/media/custom_options/quote/8/6/865index.php</td><td><span class="fail">CRITICAL</span></td><td>Product custom options file upload</td><td><span class="badge badge-removed">QUARANTINED & REMOVED</span></td></tr>
+<tr><td>GuzzleHttp FileCookieJar Deserialization Payload — writes PHP webshell to <code>pub/81e627ea7d2b.php</code></td><td>pub/media/customer_address/s/e/sess_1c8qa5votwb5lzn4menmfoogorjqf98x</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>Monolog SyslogUdpHandler Deserialization Payload — downloads shell from GitHub (<code>shanerbaner82/costco</code>)</td><td>pub/media/customer_address/s/e/sess_an4c535eromiuz5vbh26n7le3crkcyai</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>SessionReaper Session Payload (×1)</td><td>pub/media/customer_address/s/e/sess_3dth7ijafxv9wkpsacw0t2tzshr3qo7a</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>SessionReaper Session Payload (×1)</td><td>pub/media/customer_address/s/e/sess_mu0opqvtd44zbqwuzu26cxw72iyjv83e</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>SessionReaper Session Payload (×1)</td><td>pub/media/customer_address/s/e/sess_pf2w74xeera0if1oerh02wu9zpfgv5tw</td><td><span class="fail">CRITICAL</span></td><td>Customer address file upload</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+</table>
+
+<div class="alert-box">
+<strong>June 14 Analysis — Attack Persistence & New Hardening:</strong><br>
+Despite the June 13 evening <code>protected_extensions</code> fix, the attacker continued uploading through <strong>two separate vectors</strong>:
+<ul>
+<li><strong>PolyShell Webshell (custom_options):</strong> A 409-byte PHP webshell disguised as a GIF image (<code>GIF89a</code> header). Contained <code>eval(base64_decode($_REQUEST['id']))</code> with MD5 cookie gate (<code>17028f487cb2a84607646da3ad3878ec</code>) and <code>@copy()</code> file upload capability. Created June 13 at 22:29, discovered by eComscan at 03:00 June 14.</li>
+<li><strong>5 New SessionReaper Payloads:</strong> Mixed GuzzleHttp <code>FileCookieJar</code> and Monolog <code>SyslogUdpHandler</code> deserialization chains. Uploaded between June 13 22:33 and June 14 04:24 — <strong>the attacker was actively uploading new payloads hours after our fix</strong>.</li>
+<li><strong>Upload bypass:</strong> Session files (<code>sess_*</code>) have no file extension, bypassing the <code>protected_extensions</code> check entirely. The <code>custom_options</code> upload path also lacks its own extension validation.</li>
+</ul>
+<strong>Countermeasures Applied (June 14):</strong>
+<ul>
+<li><strong>Whitelist-based .htaccess</strong> in <code>pub/media/customer_address/</code> and <code>pub/media/custom_options/</code>: Deny ALL files by default, only allow whitelisted image/document types (jpg, png, gif, pdf, etc.). Explicitly blocks files without extensions (like <code>sess_*</code>).</li>
+<li><strong>Automated cleanup cron</strong>: Script runs every 30 minutes, removes PHP files, session files, and extensionless files from upload directories. Quarantines removed files to <code>/home/dashboard/public_html/quarantine/auto_cleanup/</code> for forensics.</li>
+<li><strong>.user.ini</strong> defense continues: <code>engine = off</code> prevents any PHP execution even if files bypass .htaccess</li>
+</ul>
+<strong>Target Webshell Status:</strong> <code>pub/81e627ea7d2b.php</code> was <strong>never created</strong> — confirmed absent. All deserialization attacks failed due to defense-in-depth layers blocking PHP execution in upload directories.
+</div>
+
+<h3>2.2 Process-Level Backdoor</h3>
+<table>
+<tr><th>Type</th><th>Details</th><th>Severity</th><th>Action</th></tr>
+<tr><td>Global Socket (gsocket) Reverse Shell</td><td>Disguised as <code>[rcu_preempt]</code> kernel thread. Binary: <code>/home/technadminy7/.panel/cpu/cpupre</code>. Contained gsocket library for tunneling reverse shell connections through firewalls. Active since June 1.</td><td><span class="fail">CRITICAL</span></td><td><span class="badge badge-removed">KILLED & REMOVED</span></td></tr>
+<tr><td>Persistence via .bashrc</td><td>Base64-encoded launcher injected into <code>.bashrc</code> to restart backdoor on every SSH login</td><td><span class="fail">CRITICAL</span></td><td><span class="badge badge-removed">CLEANED</span></td></tr>
+</table>
+
+<h3>2.3 Database-Level Threats</h3>
+<table>
+<tr><th>Type</th><th>Location</th><th>Action</th></tr>
+<tr><td>Backdoor Admin Account: <code>Magento2a</code></td><td>Production admin_user (created Jun 3, 1 login)</td><td><span class="badge badge-removed">DELETED</span></td></tr>
+<tr><td>Backdoor Admin Account: <code>michael</code></td><td>Production admin_user (created Jun 8, 2 logins)</td><td><span class="badge badge-removed">DELETED</span></td></tr>
+</table>
+
+<p><strong>Total malware files quarantined:</strong> 35+ files preserved in <code>/root/security/quarantine/</code> (initial sweep + round 2 + round 3) for forensic analysis</p>
+
+<!-- ==================== DATABASE SCAN ==================== -->
+<h2>3. Database Scan Results (MariaDB 10.6.17)</h2>
+
+<table>
+<tr><th>Scan Category</th><th>Production</th><th>Dev</th><th>TSDND</th></tr>
+<tr><td>CMS Blocks (injected JS/skimmers)</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>core_config_data (malicious config)</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>Email templates (injected code)</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>Product descriptions (injected JS)</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>Session table (malicious data)</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>Database triggers</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>Stored procedures</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>Scheduled events</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>Cron schedule entries</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>eComscan DB integrity</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>eComscan modules/extensions</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>eComscan generated code</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+</table>
+
+<p><strong>MariaDB hardening applied:</strong></p>
+<ul>
+<li>Anonymous users removed</li>
+<li>Test database dropped</li>
+<li>No remote root access (confirmed)</li>
+</ul>
+
+<!-- ==================== HARDENING ==================== -->
+<h2>4. Security Hardening Applied</h2>
+
+<h3>4.1 File Permissions</h3>
+<table>
+<tr><th>Action</th><th>Accounts</th><th>Status</th></tr>
+<tr><td>env.php locked to 640</td><td>All accounts</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>auth.json locked to 600</td><td>All accounts</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>World-writable files fixed (157 files)</td><td>technadminy7, dev</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Home directories set to 751</td><td>All accounts</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>SSH keys locked to 600</td><td>All accounts</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>.git directories removed from public_html</td><td>technadminy7, dev, tsdnd</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+</table>
+
+<h3>4.2 Web Server Protection</h3>
+<table>
+<tr><th>Action</th><th>Details</th><th>Status</th></tr>
+<tr><td>.htaccess protection added</td><td>app/etc/, generated/, var/ on all accounts</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>PHP execution blocked in uploads</td><td>custom_options, upload, import, customer_address, catalog, customer — ALL PHP extensions blocked including .php8</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>engine=off in .user.ini</td><td>custom_options, customer_address directories</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Whitelist .htaccess in upload dirs</td><td>customer_address + custom_options: deny ALL by default, only allow whitelisted image/document types. Blocks extensionless files (sess_*).</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Automated upload cleanup cron</td><td>Runs every 30 min: removes PHP, session, and extensionless files from customer_address + custom_options. Quarantines to dashboard.</td><td><span class="badge badge-fixed">ACTIVE</span></td></tr>
+<tr><td>Security headers added</td><td>X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, HSTS, Referrer-Policy</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Sensitive file blocking</td><td>.env, .log, .sql, .bak, composer.json/lock, auth.json all blocked via .htaccess</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+</table>
+
+<h3>4.3 Software Updates</h3>
+<table>
+<tr><th>Software</th><th>Before</th><th>After</th><th>Status</th></tr>
+<tr><td>Composer</td><td>2.8.12 (CVE)</td><td>2.10.1</td><td><span class="badge badge-fixed">UPDATED</span></td></tr>
+<tr><td>PHP 7.4</td><td>Installed (EOL)</td><td>Removed</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>PHP 8.0</td><td>Installed (EOL)</td><td>Removed</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>Sansec eComscan</td><td>v1.8.23</td><td>v1.8.23 (latest)</td><td><span class="badge badge-active">ACTIVE</span></td></tr>
+</table>
+
+<h3>4.4 Server Hardening</h3>
+<table>
+<tr><th>Action</th><th>Status</th></tr>
+<tr><td>rpcbind disabled (NFS attack surface, port 111)</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Imunify360 activated (antivirus + agent-proxy + notifier)</td><td><span class="badge badge-active">ACTIVE</span></td></tr>
+<tr><td>CSF Firewall v14.24 confirmed active</td><td><span class="badge badge-active">ACTIVE</span></td></tr>
+<tr><td>Softaculous removed (unnecessary attack surface)</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>phpinfo.php files removed (LMS, dashboard, dev)</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>DB password corrected in dashboard .env</td><td><span class="badge badge-fixed">FIXED</span></td></tr>
+</table>
+
+<h3>4.5 June 13 Afternoon — Vulnerability Patching & Code Hardening (All 3 Stores)</h3>
+<table>
+<tr><th>Action</th><th>Details</th><th>Accounts</th><th>Status</th></tr>
+<tr><td>Amasty_Orderattr disabled (CVE-2026-53787, CVSS 9.3)</td><td>Module disabled in <code>config.php</code> — unauthenticated arbitrary file upload vulnerability. Vendor source removed from <code>vendor/amasty/orderattr/</code>. Composer autoload regenerated</td><td>technadminy7, dev, tsdnd</td><td><span class="badge badge-fixed">PATCHED</span></td></tr>
+<tr><td>Generated code permissions hardened</td><td>PHP files in <code>generated/code/</code> tightened from 0777 to 0644</td><td>technadminy7 (9,430), tsdnd (9,547)</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Hardcoded DB credentials removed</td><td><code>pub/result-concours-national-dart/update_csv.php</code> had root DB credentials in plaintext — replaced with external config file (<code>DatabaseConfig</code> class)</td><td>technadminy7</td><td><span class="badge badge-fixed">FIXED</span></td></tr>
+<tr><td>Cron entry point relocated</td><td><code>magento_cron.php</code> moved from <code>pub/</code> (web-accessible) to <code>scripts/</code> (non-web-accessible). Crontab created</td><td>technadminy7, dev, tsdnd</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Cron cleanup script relocated</td><td><code>cron_cleanup.php</code> moved from <code>pub/</code> to <code>scripts/</code>. Added to crontab (every 6 hours)</td><td>technadminy7, dev, tsdnd</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Security monitor script created</td><td><code>scripts/security_monitor.sh</code> — checks env.php/config.php permissions, suspicious PHP files, disk space, exception.log size</td><td>technadminy7, dev, tsdnd</td><td><span class="badge badge-active">ACTIVE</span></td></tr>
+<tr><td>Suspect utility scripts deleted</td><td><code>send_2fa_notifications.php</code> and <code>enable_2fa_all_users.php</code> removed from filesystem (flagged by eComscan as suspect uploads)</td><td>technadminy7</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>phpinfo.php removed</td><td><code>pub/info.php</code> (<code>&lt;?php phpinfo(); ?&gt;</code>) deleted — exposes server configuration to attackers</td><td>dev</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>opcache purge script removed</td><td><code>pub/opcache-purge-mab.php</code> deleted from web-accessible directory</td><td>dev</td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td>Cron schedule cleanup</td><td>cron_schedule table purged of stale entries. Automated every 6 hours via crontab</td><td>technadminy7 (69K→1.1K), dev (1.9K→218), tsdnd (1.9K→218)</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Admin user audit (67 users)</td><td>All 67+ admin users and 3 API integrations reviewed — no unauthorized access found</td><td>technadminy7</td><td><span class="badge badge-clean">VERIFIED</span></td></tr>
+</table>
+
+<div class="alert-box">
+<strong>CVE-2026-53787 — Amasty Order Attributes Unauthenticated File Upload:</strong><br>
+<ul>
+<li><strong>Vulnerability:</strong> Unauthenticated attackers could upload arbitrary files through the order attributes file upload endpoint, achieving remote code execution</li>
+<li><strong>CVSS Score:</strong> 9.3 (Critical)</li>
+<li><strong>Remediation:</strong> Module disabled in <code>app/etc/config.php</code> (<code>'Amasty_Orderattr' => 0</code>) on all 3 stores. Vendor source code removed from <code>vendor/amasty/orderattr/</code> on all 3 stores. Composer autoload regenerated (<code>composer dump-autoload</code>) to remove stale registration references</li>
+<li><strong>Usage analysis:</strong> Zero custom order attributes configured, no orderattr-specific DB tables, no active usage detected. Module is a required dependency of <code>amasty/order-management-suite-premium</code> so cannot be removed via Composer — only disabled</li>
+<li><strong>Impact:</strong> Only Xtento PdfCustomizer had a dependency reference, with a null-safe check that handles missing module gracefully</li>
+</ul>
+</div>
+
+<h3>4.6 Dev & TSDND — Identical Hardening Applied (June 13)</h3>
+<table>
+<tr><th>Action</th><th>Dev</th><th>TSDND</th></tr>
+<tr><td>Malware scan (customer_address, custom_options)</td><td class="pass">CLEAN</td><td class="pass">CLEAN</td></tr>
+<tr><td>Amasty_Orderattr CVE-2026-53787 patched</td><td class="pass">DISABLED + REMOVED</td><td class="pass">DISABLED + REMOVED</td></tr>
+<tr><td>Composer autoload regenerated</td><td class="pass">DONE</td><td class="pass">DONE</td></tr>
+<tr><td>Generated code permissions (0777→0644)</td><td class="pass">Already clean</td><td class="pass">9,547 files fixed</td></tr>
+<tr><td>Cron scripts relocated pub/→scripts/</td><td class="pass">2 files moved</td><td class="pass">2 files moved</td></tr>
+<tr><td>security_monitor.sh created</td><td class="pass">ACTIVE</td><td class="pass">ACTIVE</td></tr>
+<tr><td>phpinfo.php removed</td><td class="pass">REMOVED</td><td class="pass">N/A (not present)</td></tr>
+<tr><td>opcache-purge-mab.php removed</td><td class="pass">REMOVED</td><td class="pass">N/A (not present)</td></tr>
+<tr><td>Cron schedule cleanup</td><td class="pass">1,916→218 rows</td><td class="pass">1,916→218 rows</td></tr>
+<tr><td>Crontab created</td><td class="pass">3 entries (cron, cleanup, monitor)</td><td class="pass">3 entries (cron, cleanup, monitor)</td></tr>
+<tr><td>eComscan final result</td><td class="pass">0 malware, 0 vuln modules, 0 suspect uploads</td><td class="pass">0 malware, 0 vuln modules, 0 suspect uploads</td></tr>
+<tr><td>Cron execution verified</td><td class="pass">3.83s (index+default)</td><td class="pass">2.17s (default only)</td></tr>
+</table>
+
+<!-- ==================== reCAPTCHA ==================== -->
+<h2>5. reCAPTCHA v3 Deployment</h2>
+
+<div class="success-box">
+<strong>Google reCAPTCHA v3 configured on ALL 10 forms across ALL 3 stores</strong><br>
+Site Key: <code>6LfoylcpAAAAAHBnRY4YCzRIOGbDGQC7tU0ZI0rF</code> | Score Threshold: 0.5 | Theme: Light
+</div>
+
+<h3>5.1 Form Configuration</h3>
+<table>
+<tr><th>Form</th><th>Config Path</th><th>Production</th><th>Dev</th><th>TSDND</th></tr>
+<tr><td>Customer Login</td><td><code>recaptcha_frontend/type_for/customer_login</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Customer Register</td><td><code>recaptcha_frontend/type_for/customer_create</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Customer Forgot Password</td><td><code>recaptcha_frontend/type_for/customer_forgot_password</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Checkout (Place Order)</td><td><code>recaptcha_frontend/type_for/place_order</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Contact Form</td><td><code>recaptcha_frontend/type_for/contact</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Newsletter</td><td><code>recaptcha_frontend/type_for/newsletter</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Product Review</td><td><code>recaptcha_frontend/type_for/product_review</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Send to Friend</td><td><code>recaptcha_frontend/type_for/sendfriend</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Admin Login</td><td><code>recaptcha_backend/type_for/user_login</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+<tr><td>Admin Forgot Password</td><td><code>recaptcha_backend/type_for/user_forgot_password</code></td><td class="pass">v3</td><td class="pass">v3</td><td class="pass">v3</td></tr>
+</table>
+
+<h3>5.2 Keys & Settings</h3>
+<table>
+<tr><th>Setting</th><th>Value</th><th>Status</th></tr>
+<tr><td>Frontend v3 Site Key (env.php)</td><td>Encrypted, decrypts to <code>6Lfoylcp...I0rF</code></td><td><span class="badge badge-fixed">VERIFIED</span></td></tr>
+<tr><td>Frontend v3 Secret Key (env.php)</td><td>Encrypted, decrypts to <code>6Lfoylcp...QLiFYv</code></td><td><span class="badge badge-fixed">VERIFIED</span></td></tr>
+<tr><td>Backend v3 Site Key (env.php)</td><td>Encrypted, decrypts to <code>6Lfoylcp...I0rF</code></td><td><span class="badge badge-fixed">VERIFIED</span></td></tr>
+<tr><td>Backend v3 Secret Key (env.php)</td><td>Encrypted, decrypts to <code>6Lfoylcp...QLiFYv</code></td><td><span class="badge badge-fixed">VERIFIED</span></td></tr>
+<tr><td>Score Threshold</td><td>0.5</td><td><span class="badge badge-fixed">SET</span></td></tr>
+<tr><td>Badge Position</td><td>inline</td><td><span class="badge badge-fixed">SET</span></td></tr>
+<tr><td>Theme</td><td>light</td><td><span class="badge badge-fixed">SET</span></td></tr>
+</table>
+
+<p><strong>Additional:</strong></p>
+<ul>
+<li>CSP whitelist includes <code>www.google.com/recaptcha/</code> and <code>*.gstatic.com</code></li>
+<li>All Magento reCAPTCHA modules enabled (25 modules including v3, Checkout, Customer, etc.)</li>
+<li>Amasty_InvisibleCaptcha module installed as additional protection layer</li>
+<li>Magento caches flushed after configuration (all 3 stores)</li>
+</ul>
+
+<!-- ==================== MONITORING ==================== -->
+<h2>6. Automated Monitoring Active</h2>
+
+<table>
+<tr><th>Cron Schedule</th><th>Task</th><th>Alert Destination</th></tr>
+<tr><td>Every hour at :55</td><td>Sansec eComscan monitoring (production)</td><td>webmaster@techno-dz.com</td></tr>
+<tr><td>Every hour at :55</td><td>Sansec eComscan monitoring (dev)</td><td>webmaster@techno-dz.com</td></tr>
+<tr><td>Every hour at :55</td><td>Sansec eComscan monitoring (tsdnd)</td><td>webmaster@techno-dz.com</td></tr>
+<tr><td>Daily at 3:00 AM</td><td>Custom malware scan + permission check + eComscan full scan</td><td>Telegram + Email</td></tr>
+<tr><td>Every 5 minutes</td><td>Magento cron (consolidated, runs from <code>scripts/</code> — all 3 stores, non-web-accessible)</td><td>var/log/cron_custom.log</td></tr>
+<tr><td>Every 6 hours</td><td>Cron schedule cleanup (<code>scripts/cron_cleanup.php</code> — all 3 stores)</td><td>var/log/cron_cleanup.log</td></tr>
+<tr><td>Hourly at :00</td><td>Security monitor (<code>scripts/security_monitor.sh</code> — all 3 stores: permissions, suspicious files, disk, logs)</td><td>var/log/security_monitor.log</td></tr>
+</table>
+
+<p><strong>Dashboard integration:</strong> Security page at <code>https://dashboard.technostationery.com/security</code> with 4 tabs:
+Cloudflare WAF, Malware Scan, eComscan, and Hardening — all runnable from the UI.</p>
+
+<!-- ==================== REMAINING ==================== -->
+<h2>7. Remaining Items & Action Required</h2>
+
+<table>
+<tr><th>Item</th><th>Risk</th><th>Action Required</th></tr>
+<tr><td>reCAPTCHA v3 configured on all 10 forms (all 3 stores)</td><td><span class="pass">RESOLVED</span></td><td>Keys encrypted, form activation set via config:set, caches flushed</td></tr>
+<tr><td>Cloudflare API Token invalid (returns "Invalid API Token")</td><td><span class="warn">MEDIUM</span></td><td>Regenerate API token from Cloudflare dashboard; Global API Key also invalid (error 9103) — both need regeneration</td></tr>
+<tr><td>Cloudflare API unreachable from server (502 Bad Gateway)</td><td><span class="warn">LOW</span></td><td>May be temporary or related to invalid credentials; verify after regenerating keys</td></tr>
+<tr><td>Linux kernel vulnerability: copy_fail</td><td><span class="warn">MEDIUM</span></td><td>Contact InMotion Hosting for kernel patch</td></tr>
+<tr><td>Linux kernel vulnerability: dirty_frag</td><td><span class="warn">MEDIUM</span></td><td>Contact InMotion Hosting for kernel patch</td></tr>
+<tr><td>Beta account deleted (was 2.4.6 unpatched)</td><td><span class="pass">RESOLVED</span></td><td>When recreating, use latest patch level</td></tr>
+<tr><td>Customer address upload endpoint exposed</td><td><span class="warn">MEDIUM</span></td><td>Review custom address attributes; restrict allowed file extensions to images/PDF only</td></tr>
+<tr><td>Magento encryption key in env.php may be compromised</td><td><span class="fail">HIGH</span></td><td>Rotate <code>crypt.key</code> in env.php to prevent forged cookie deserialization attacks</td></tr>
+<tr><td>Amasty_Orderattr CVE-2026-53787 (CVSS 9.3)</td><td><span class="pass">RESOLVED</span></td><td>Module disabled in config.php, vendor source removed. Zero active usage detected</td></tr>
+<tr><td>OpenSSL 1.1.1k EOL</td><td><span class="warn">MEDIUM</span></td><td>Requires server-level upgrade by InMotion Hosting (AlmaLinux 8 package update)</td></tr>
+<tr><td>Varnish 6.0.13 EOL</td><td><span class="warn">MEDIUM</span></td><td>Requires server-level upgrade by InMotion Hosting to Varnish 7.x</td></tr>
+</table>
+
+<!-- ==================== CLOUDFLARE ==================== -->
+<h2>7b. Cloudflare Security Status</h2>
+
+<table>
+<tr><th>Setting</th><th>Status</th><th>Notes</th></tr>
+<tr><td>Zone configured</td><td><span class="badge badge-active">ACTIVE</span></td><td>technostationery.com (Zone ID: 4919ad34...)</td></tr>
+<tr><td>Global API Key</td><td><span class="badge badge-warn">INVALID</span></td><td>Error 9103: Unknown X-Auth-Key or X-Auth-Email — may need regeneration or email may be wrong</td></tr>
+<tr><td>API Token</td><td><span class="badge badge-warn">INVALID</span></td><td>Error 1000: Invalid API Token — needs regeneration from Cloudflare dashboard</td></tr>
+<tr><td>Origin CA Key</td><td><span class="badge badge-active">CONFIGURED</span></td><td>For origin certificate management</td></tr>
+<tr><td>WAF Rules</td><td><span class="warn">UNABLE TO VERIFY</span></td><td>Cannot verify — Cloudflare API credentials are invalid; check via Cloudflare dashboard</td></tr>
+<tr><td>Turnstile Widgets</td><td><span class="warn">UNABLE TO VERIFY</span></td><td>Cannot verify — Cloudflare API credentials are invalid; check via Cloudflare dashboard</td></tr>
+<tr><td>Dashboard CF Manager</td><td><span class="badge badge-fixed">PATCHED</span></td><td>Updated to use Global API Key (api_token cleared to avoid auth failure)</td></tr>
+</table>
+
+<!-- ==================== TOOLS ==================== -->
+<h2>8. Security Tools & Scripts Deployed</h2>
+
+<table>
+<tr><th>Tool</th><th>Location</th><th>Purpose</th></tr>
+<tr><td>Sansec eComscan v1.8.23</td><td>/root/bin/ecomscan</td><td>Professional malware & vulnerability scanner (licensed)</td></tr>
+<tr><td>Security Hardening Script</td><td>scripts/maintenance/security_harden.sh</td><td>Fix permissions, .htaccess, PHP lockdown</td></tr>
+<tr><td>Malware Scanner</td><td>scripts/maintenance/malware_scan.sh</td><td>Custom skimmer/backdoor/injection detection</td></tr>
+<tr><td>eComscan Wrapper</td><td>scripts/maintenance/ecomscan_all.sh</td><td>Run eComscan across all accounts</td></tr>
+<tr><td>Daily Security Cron</td><td>scripts/automation/daily_security_scan.sh</td><td>Automated daily scan + Telegram alerts</td></tr>
+<tr><td>Dashboard Build Script</td><td>scripts/build/build-dashboard.sh</td><td>Build + deploy frontend with auto index.html update</td></tr>
+<tr><td>Quarantine Directory</td><td>/root/security/quarantine/</td><td>Preserved malware evidence for forensics</td></tr>
+<tr><td>Security Monitor</td><td>scripts/security_monitor.sh (all 3 stores)</td><td>Hourly checks: permissions, suspicious files, disk space, log sizes</td></tr>
+<tr><td>Production Cron</td><td>scripts/magento_cron.php (all 3 stores)</td><td>Consolidated cron runner (index + default groups), moved from pub/ to scripts/</td></tr>
+<tr><td>Cron Cleanup</td><td>scripts/cron_cleanup.php (all 3 stores)</td><td>Purges stale cron_schedule entries every 6 hours</td></tr>
+</table>
+
+<!-- ==================== SCAN TIMELINE ==================== -->
+<h2>9. Scan & Remediation Timeline</h2>
+
+<table>
+<tr><th>Date</th><th>Action</th></tr>
+<tr><td>Jun 11, 14:13</td><td>Initial malware scan: 2,335 issues found across 4 accounts</td></tr>
+<tr><td>Jun 11, 14:22</td><td>Quarantined PHAR backdoor + 7 SessionReaper files from production</td></tr>
+<tr><td>Jun 11, 14:45</td><td>Hardened tsdnd permissions (12 issues fixed)</td></tr>
+<tr><td>Jun 11, 15:25</td><td>Hardened production, dev, beta (31 issues fixed total)</td></tr>
+<tr><td>Jun 11, 15:29</td><td>Fixed .php8 extension bypass in .htaccess</td></tr>
+<tr><td>Jun 11, 16:37</td><td>Removed PHP 7.4, 8.0; disabled rpcbind; updated Composer</td></tr>
+<tr><td>Jun 11, 17:00</td><td>Activated Imunify360 (3 services)</td></tr>
+<tr><td>Jun 11, 17:33</td><td>Full eComscan: 0 malware, 4 kernel vulns</td></tr>
+<tr><td>Jun 11, 18:00</td><td>Full MariaDB scan: 8 databases, 0 malware in DB</td></tr>
+<tr><td>Jun 11, 18:30</td><td>Deleted backdoor admin accounts (Magento2a, michael)</td></tr>
+<tr><td>Jun 11, 19:00</td><td>Full system sweep: killed gsocket reverse shell, cleaned .bashrc</td></tr>
+<tr><td>Jun 11, 20:38</td><td>Re-scan: 0 malware confirmed</td></tr>
+<tr><td>Jun 12, 10:57</td><td>Re-scan found 18 reinfection files — quarantined immediately</td></tr>
+<tr><td>Jun 12, 11:04</td><td>Fixed .php8 bypass, hardened all upload directories</td></tr>
+<tr><td>Jun 12, 11:30</td><td>Attempted reCAPTCHA v3 deployment (modules enabled, keys added to env.php)</td></tr>
+<tr><td>Jun 12, 11:45</td><td>Scan: 0 malware. Initial report generated.</td></tr>
+<tr><td><strong>Jun 12, 14:30</strong></td><td><strong>Afternoon audit: eComscan found 8 malware + 6 vulns (some files survived cleanup)</strong></td></tr>
+<tr><td><strong>Jun 12, 15:00</strong></td><td><strong>Forensic analysis: Monolog deserialization payload identified (customer address upload vector)</strong></td></tr>
+<tr><td><strong>Jun 12, 15:23</strong></td><td><strong>Quarantined 3 surviving malware files: .pht polyshell, file manager webshell, Monolog payload</strong></td></tr>
+<tr><td><strong>Jun 12, 15:35</strong></td><td><strong>Removed 8 probe/test files from customer_address upload directory</strong></td></tr>
+<tr><td><strong>Jun 12, 15:40</strong></td><td><strong>Fixed Cloudflare dashboard config: cleared invalid API token, set Global API Key as primary</strong></td></tr>
+<tr><td><strong>Jun 12, 15:45</strong></td><td><strong>Identified reCAPTCHA v3 config gap: keys can't decrypt, no form activation in DB (all 3 stores)</strong></td></tr>
+<tr><td><strong>Jun 12, 16:00</strong></td><td><strong>Final eComscan: 0 malware confirmed. 3 kernel vulns remain (server-level)</strong></td></tr>
+<tr><td><strong>Jun 12, 16:15</strong></td><td><strong>reCAPTCHA v3 keys encrypted and updated in env.php for all 3 stores (production, dev, tsdnd)</strong></td></tr>
+<tr><td><strong>Jun 12, 16:20</strong></td><td><strong>reCAPTCHA v3 activated on all 10 forms across all 3 stores via config:set (45 configs total)</strong></td></tr>
+<tr><td><strong>Jun 12, 16:25</strong></td><td><strong>Magento caches flushed on all 3 stores. reCAPTCHA v3 config verified. Report updated.</strong></td></tr>
+<tr><td><strong>Jun 13, 09:00</strong></td><td><strong>2FA deployment: Amasty SecurityAuth configured, TOTP tokens generated for all 51 active admin users</strong></td></tr>
+<tr><td><strong>Jun 13, 09:15</strong></td><td><strong>Email transport switched from sendmail to SMTP (Laminas direct socket to 127.0.0.1:25) — fixed Exim system filter failures</strong></td></tr>
+<tr><td><strong>Jun 13, 09:20</strong></td><td><strong>Order BCC cleanup: removed 3 personal Gmail addresses from order copy_to, retained sales.ecommerce@techno-dz.com only</strong></td></tr>
+<tr><td><strong>Jun 13, 09:30</strong></td><td><strong>2FA setup guide published (French): dashboard.technostationery.com/reports/2fa_setup_guide.html</strong></td></tr>
+<tr><td><strong>Jun 13, 09:45</strong></td><td><strong>Batch 2FA notification emails sent to 22 non-delivery admin users (personalized QR code + secret + instructions) — all delivered via TLS 1.3</strong></td></tr>
+<tr><td><strong>Jun 13, 14:00</strong></td><td><strong>Afternoon audit: eComscan found 2 malware (deserialization payloads) + 1 vulnerable module (Amasty_Orderattr CVE-2026-53787)</strong></td></tr>
+<tr><td><strong>Jun 13, 14:15</strong></td><td><strong>Forensic analysis: GuzzleHttp FileCookieJar + Monolog SyslogUdpHandler payloads identified — Session Reaper campaign targeting 81e627ea7d2b.php</strong></td></tr>
+<tr><td><strong>Jun 13, 14:30</strong></td><td><strong>Both deserialization payloads quarantined and removed. Verified webshell 81e627ea7d2b.php was never created</strong></td></tr>
+<tr><td><strong>Jun 13, 14:45</strong></td><td><strong>Amasty_Orderattr disabled in config.php, vendor source removed from vendor/amasty/orderattr/. setup:di:compile + setup:upgrade run</strong></td></tr>
+<tr><td><strong>Jun 13, 15:00</strong></td><td><strong>Hardcoded root DB credentials in update_csv.php replaced with external DatabaseConfig class</strong></td></tr>
+<tr><td><strong>Jun 13, 15:15</strong></td><td><strong>magento_cron.php and cron_cleanup.php relocated from pub/ to scripts/ (non-web-accessible). Crontab updated</strong></td></tr>
+<tr><td><strong>Jun 13, 15:30</strong></td><td><strong>Generated code permissions hardened: 9,430+ files from 0777 to 0644. Security monitor script created and activated</strong></td></tr>
+<tr><td><strong>Jun 13, 15:45</strong></td><td><strong>Cron schedule cleanup: 69,294 → 1,153 rows (68K stale entries purged). Automated every 6 hours</strong></td></tr>
+<tr><td><strong>Jun 13, 16:00</strong></td><td><strong>Suspect utility scripts (2FA utilities) deleted. Admin user audit: 67+ users, 3 API integrations — all legitimate</strong></td></tr>
+<tr><td><strong>Jun 13, 16:15</strong></td><td><strong>Final eComscan: 0 malware, 0 vulnerable modules, 0 suspect uploads. 2 infrastructure vulns remain (OpenSSL EOL, Varnish EOL)</strong></td></tr>
+<tr><td><strong>Jun 13, 16:30</strong></td><td><strong>Dev & TSDND hardening started: CVE-2026-53787 patched on both (config.php disabled, vendor removed, autoload regenerated)</strong></td></tr>
+<tr><td><strong>Jun 13, 16:45</strong></td><td><strong>TSDND: 9,547 generated/code files hardened from 0777 to 0644. Cron scripts moved pub/→scripts/ on both accounts</strong></td></tr>
+<tr><td><strong>Jun 13, 17:00</strong></td><td><strong>Security monitor scripts created for dev & tsdnd. Crontabs configured (cron every 5min, cleanup every 6h, monitor hourly)</strong></td></tr>
+<tr><td><strong>Jun 13, 17:15</strong></td><td><strong>Dev: phpinfo.php + opcache-purge-mab.php removed from pub/. Cron schedule cleaned (1,916→218) on both accounts</strong></td></tr>
+<tr><td><strong>Jun 13, 17:30</strong></td><td><strong>eComscan on dev & tsdnd: 0 malware, 0 vulnerable modules, 0 suspect uploads. Cron execution verified on both</strong></td></tr>
+<tr><td><strong>Jun 13, 19:45</strong></td><td><strong>eComscan alert: PHP8 PHAR backdoor + Monolog deserialization payload detected in customer_address — SessionReaper attack continues</strong></td></tr>
+<tr><td><strong>Jun 13, 20:00</strong></td><td><strong>Both payloads quarantined. Root cause: protected_extensions config not set in database — only blocks php through php7, not php8</strong></td></tr>
+<tr><td><strong>Jun 13, 20:30</strong></td><td><strong>Fixed: inserted 34 blocked file types into core_config_data (php8, phps, ini, user.ini, bash, ksh, csh, exe, dll, bat, cmd, etc.)</strong></td></tr>
+<tr><td><strong>Jun 13, 21:00</strong></td><td><strong>Fixed root-owned config.php + 3 composer autoload files causing Apache 500 / Varnish 503 outage</strong></td></tr>
+<tr><td><strong>Jun 13, 21:30</strong></td><td><strong>World-writable files reduced from 314 to 2 on production. Mass permission hardening completed</strong></td></tr>
+<tr><td><strong>Jun 13, 22:00</strong></td><td><strong>Full Composer CVE audit: 22 CVEs across 7 packages identified. Twig v3.23.0 = 16 critical CVEs including RCE — URGENT upgrade needed</strong></td></tr>
+<tr><td><strong>Jun 13, 22:15</strong></td><td><strong>Security audit report updated with SessionReaper analysis, module CVE audit (118 third-party modules), and prioritized recommendations</strong></td></tr>
+<tr><td><strong>Jun 14, 03:00</strong></td><td><strong>eComscan alert: GIF-disguised PHP webshell (eval/base64_decode) found in custom_options/quote/8/6/865index.php — PolyShell attack</strong></td></tr>
+<tr><td><strong>Jun 14, 03:15</strong></td><td><strong>Webshell quarantined and removed. 5 new SessionReaper payloads found in customer_address (uploaded 22:33 Jun 13 – 04:24 Jun 14)</strong></td></tr>
+<tr><td><strong>Jun 14, 03:30</strong></td><td><strong>All 5 session payloads deleted. .htaccess upgraded to whitelist approach in customer_address and custom_options (deny all, allow images/docs only)</strong></td></tr>
+<tr><td><strong>Jun 14, 04:00</strong></td><td><strong>Automated cleanup cron deployed: scans upload directories every 30 minutes, removes/quarantines suspicious files. JSON + HTML reports updated</strong></td></tr>
+</table>
+
+<!-- ==================== JUNE 13 FOLLOW-UP ==================== -->
+<h2>11. June 13 — 2FA Deployment & Email Hardening</h2>
+
+<div class="success-box">
+<strong>Follow-up actions by Mounir Abderrahmani (June 13, 2026):</strong><br>
+Two-factor authentication deployed for all admin accounts, email transport hardened, and order notification BCC addresses cleaned up.
+</div>
+
+<h3>11.1 Two-Factor Authentication (2FA) Deployment</h3>
+
+<table>
+<tr><th>Item</th><th>Details</th><th>Status</th></tr>
+<tr><td>Module</td><td>Amasty SecurityAuth (TOTP-based, Google Authenticator compatible)</td><td><span class="badge badge-active">ACTIVE</span></td></tr>
+<tr><td>Algorithm</td><td>Time-based OTP (RFC 6238), 30-second window, discrepancy ±3 intervals</td><td><span class="badge badge-fixed">CONFIGURED</span></td></tr>
+<tr><td>Admin tokens generated</td><td>51 active admin users — all assigned unique TOTP secrets</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Login interception</td><td>Plugin on <code>Magento\Backend\Model\Auth</code> — requires 6-digit code when 2FA enabled</td><td><span class="badge badge-active">ACTIVE</span></td></tr>
+<tr><td>QR code generation</td><td>Per-user QR codes via image-charts.com (label: <code>username@technostationery.com</code>)</td><td><span class="badge badge-fixed">DONE</span></td></tr>
+<tr><td>Setup guide (French)</td><td><a href="https://dashboard.technostationery.com/reports/2fa_setup_guide.html">dashboard.technostationery.com/reports/2fa_setup_guide.html</a></td><td><span class="badge badge-fixed">PUBLISHED</span></td></tr>
+<tr><td>Notification emails sent</td><td>22 non-delivery admin users received personalized email with QR code + secret + instructions</td><td><span class="badge badge-fixed">SENT</span></td></tr>
+<tr><td>Grace period</td><td>June 13 – June 30, 2026 (admins activate 2FA voluntarily)</td><td><span class="badge badge-active">CURRENT</span></td></tr>
+<tr><td>Enforcement date</td><td><strong>July 1, 2026</strong> — all admin accounts forced to <code>enable=1</code>, login without 2FA code will be blocked</td><td><span class="badge badge-warn">PENDING</span></td></tr>
+<tr><td>Enforcement script</td><td>Recreate <code>scripts/enable_2fa_all_users.php</code> before July 1 (previous copy deleted as eComscan suspect upload)</td><td><span class="badge badge-warn">TODO</span></td></tr>
+</table>
+
+<h3>11.2 Email Transport Hardening</h3>
+
+<table>
+<tr><th>Item</th><th>Before</th><th>After</th><th>Status</th></tr>
+<tr><td>SMTP transport</td><td><code>sendmail</code> (PHP mail() → sendmail binary → Exim system filter)</td><td><code>smtp</code> (Laminas SMTP socket → 127.0.0.1:25, bypasses system filter)</td><td><span class="badge badge-fixed">FIXED</span></td></tr>
+<tr><td>SMTP host</td><td>Default (sendmail binary)</td><td>127.0.0.1:25 (direct SMTP to local Exim)</td><td><span class="badge badge-fixed">SET</span></td></tr>
+<tr><td>Config location</td><td>core_config_data</td><td>env.php (locked, survives <code>app:config:import</code>)</td><td><span class="badge badge-fixed">LOCKED</span></td></tr>
+<tr><td>Delivery verification</td><td>Emails failing (Exim system filter UID/GID mismatch)</td><td>Confirmed delivery to Gmail (TLS 1.3) and techno-dz.com (TLS 1.3)</td><td><span class="badge badge-fixed">VERIFIED</span></td></tr>
+</table>
+
+<h3>11.3 Order Notification BCC Cleanup</h3>
+
+<table>
+<tr><th>Item</th><th>Action</th><th>Status</th></tr>
+<tr><td><code>amine.tms2021@gmail.com</code></td><td>Removed from <code>sales_email/order/copy_to</code></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td><code>yacine.ho.tms@gmail.com</code></td><td>Removed from <code>sales_email/order/copy_to</code></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td><code>socialbx@gmail.com</code></td><td>Removed from <code>sales_email/order/copy_to</code></td><td><span class="badge badge-removed">REMOVED</span></td></tr>
+<tr><td><code>sales.ecommerce@techno-dz.com</code></td><td>Retained as sole BCC recipient for order copies</td><td><span class="badge badge-active">KEPT</span></td></tr>
+</table>
+
+<!-- ==================== ECOMSCAN SCORES ==================== -->
+<h2>11b. eComscan Score Progression</h2>
+
+<table>
+<tr><th>Metric</th><th>Jun 11 (Initial)</th><th>Jun 12 (Afternoon)</th><th>Jun 13 (Final — All 3 Stores)</th></tr>
+<tr><td>Malware files</td><td class="fail">2,335 issues</td><td class="fail">8 files (3 survived)</td><td class="pass">0 (all stores)</td></tr>
+<tr><td>Vulnerable modules</td><td class="fail">Multiple</td><td class="fail">1 (Amasty_Orderattr)</td><td class="pass">0 (all stores patched)</td></tr>
+<tr><td>Suspect uploads</td><td class="fail">Multiple</td><td class="warn">2</td><td class="pass">0 (all stores)</td></tr>
+<tr><td>Public scripts</td><td class="fail">Multiple</td><td class="warn">2</td><td class="pass">0 (all stores — moved to scripts/)</td></tr>
+<tr><td>Infrastructure vulns</td><td class="warn">4 kernel</td><td class="warn">3 kernel</td><td class="warn">2 (OpenSSL + Varnish EOL) + 2 kernel</td></tr>
+<tr><td>Database threats</td><td class="pass">0</td><td class="pass">0</td><td class="pass">0 (all stores)</td></tr>
+</table>
+
+<!-- ==================== MODULE AUDIT ==================== -->
+<h2>12b. Module Security Audit & CVE Report (June 13 Evening)</h2>
+
+<div class="alert-box">
+<strong>Composer Audit Results:</strong> 22 CVEs found across 7 packages. <strong>1 critical</strong> (PHP code execution via Twig), <strong>4 high</strong> (sandbox bypasses, DoS), <strong>4 medium</strong> (SSL bypass, memory exhaustion, sandbox escapes), <strong>13 low</strong> (weak encryption, YAML DoS, XSS). 13 abandoned packages flagged.
+</div>
+
+<h3>Critical & High Severity CVEs</h3>
+<table>
+<tr><th>Package</th><th>Version</th><th>CVE</th><th>Severity</th><th>Title</th><th>Fix</th></tr>
+<tr><td><code>twig/twig</code></td><td>v3.23.0</td><td>CVE-2026-46633</td><td><span class="fail">CRITICAL</span></td><td>PHP code injection via <code>{% use %}</code> template name</td><td>Upgrade to &ge;3.26.0</td></tr>
+<tr><td><code>twig/twig</code></td><td>v3.23.0</td><td>CVE-2026-46640</td><td><span class="fail">HIGH</span></td><td>Arbitrary PHP code execution via <code>_self.(&lt;string&gt;)</code> macro-reference</td><td>Upgrade to &ge;3.26.0</td></tr>
+<tr><td><code>twig/twig</code></td><td>v3.23.0</td><td>CVE-2026-24425</td><td><span class="fail">HIGH</span></td><td>Sandbox bypass when using a source policy</td><td>Upgrade to &ge;3.26.0</td></tr>
+<tr><td><code>twig/twig</code></td><td>v3.23.0</td><td>CVE-2026-47732</td><td><span class="fail">HIGH</span></td><td>Sandbox <code>__toString()</code> policy bypass via unguarded string coercion</td><td>Upgrade to &ge;3.26.0</td></tr>
+<tr><td><code>google/protobuf</code></td><td>v4.33.5</td><td>CVE-2026-6409</td><td><span class="fail">HIGH</span></td><td>DoS via malicious messages with negative varints or deep recursion</td><td>Upgrade to &ge;4.33.6</td></tr>
+</table>
+
+<h3>Medium Severity CVEs</h3>
+<table>
+<tr><th>Package</th><th>Version</th><th>CVE</th><th>Title</th><th>Fix</th></tr>
+<tr><td><code>hybridauth/hybridauth</code></td><td>v3.12.2</td><td>CVE-2026-4587</td><td>Improper SSL certificate validation in cURL HTTP client</td><td>Upgrade to &gt;3.12.2</td></tr>
+<tr><td><code>setasign/fpdi</code></td><td>v2.6.4</td><td>CVE-2026-45802</td><td>Memory exhaustion and endless loop (DoS) in PDF parsing</td><td>Upgrade to &ge;2.6.7</td></tr>
+<tr><td><code>twig/twig</code></td><td>v3.23.0</td><td>CVE-2026-46638</td><td><code>{% sandbox %}{% include %}</code> skips checkSecurity() on cached templates</td><td>Upgrade to &ge;3.26.0</td></tr>
+<tr><td><code>twig/twig</code></td><td>v3.23.0</td><td>CVE-2026-46634</td><td><code>template_from_string()</code> escapes sandbox via synthesized template name</td><td>Upgrade to &ge;3.26.0</td></tr>
+</table>
+
+<h3>Low Severity CVEs (13)</h3>
+<table>
+<tr><th>Package</th><th>CVE</th><th>Title</th></tr>
+<tr><td><code>firebase/php-jwt</code> v6.11.1</td><td>CVE-2025-45769</td><td>Weak encryption algorithm support</td></tr>
+<tr><td><code>symfony/yaml</code> v6.4.30</td><td>CVE-2026-45304</td><td>Exponential memory allocation via recursive alias expansion ("Billion Laughs")</td></tr>
+<tr><td><code>symfony/yaml</code> v6.4.30</td><td>CVE-2026-45305</td><td>ReDoS via catastrophic backtracking in Parser::cleanup() regex</td></tr>
+<tr><td><code>symfony/yaml</code> v6.4.30</td><td>CVE-2026-45133</td><td>Stack exhaustion via unbounded recursion in nested blocks</td></tr>
+<tr><td><code>symfony/http-client</code> v6.2.13</td><td>CVE-2024-50342</td><td>Internal address/port enumeration via NoPrivateNetworkHttpClient</td></tr>
+<tr><td><code>twig/twig</code> v3.23.0</td><td>CVE-2026-46628</td><td><code>spaceless</code> filter implicitly marks output as safe (XSS risk)</td></tr>
+<tr><td><code>twig/twig</code> v3.23.0</td><td>CVE-2026-46627</td><td>Sandbox does not protect against resource exhaustion</td></tr>
+<tr><td><code>twig/twig</code> v3.23.0</td><td>CVE-2026-46635</td><td>Sandbox property allowlist bypass via <code>column</code> filter</td></tr>
+<tr><td><code>twig/twig</code> v3.23.0</td><td>CVE-2026-47730</td><td>XSS in profiler HtmlDumper via unescaped template names</td></tr>
+<tr><td><code>twig/twig</code> v3.23.0</td><td>CVE-2026-48805</td><td>Sandbox state regression in deprecated internal wrappers</td></tr>
+<tr><td><code>twig/twig</code> v3.23.0</td><td>CVE-2026-48806</td><td>Sandbox <code>__toString()</code> bypass via dynamic mapping keys</td></tr>
+<tr><td><code>twig/twig</code> v3.23.0</td><td>CVE-2026-48807</td><td>Sandbox <code>__toString()</code> bypass via Traversable in operators</td></tr>
+<tr><td><code>twig/twig</code> v3.23.0</td><td>CVE-2026-48808</td><td>Sandbox property allowlist bypass via <code>column</code> filter (SourcePolicy)</td></tr>
+</table>
+
+<div class="alert-box">
+<strong>Twig v3.23.0 — Urgent Action Required:</strong><br>
+Twig has <strong>16 CVEs</strong> affecting the installed version, including <strong>critical PHP code execution</strong> (CVE-2026-46633). While Twig sandbox mode is primarily used by Magento's CMS/admin templates, an attacker who can inject template code (e.g., via compromised admin access or CMS block injection) could achieve <strong>remote code execution</strong>. <strong>Upgrade to Twig &ge;3.26.0 immediately</strong> via <code>composer update twig/twig</code>. Note: Verify compatibility with Magento 2.4.6-p15 before upgrading — may require a Magento patch release.
+</div>
+
+<h3>Abandoned Packages (13)</h3>
+<table>
+<tr><th>Package</th><th>Suggested Replacement</th><th>Risk</th></tr>
+<tr><td><code>laminas/laminas-mail</code></td><td><code>symfony/mailer</code></td><td><span class="warn">MEDIUM</span> — No security patches</td></tr>
+<tr><td><code>laminas/laminas-mime</code></td><td><code>symfony/mime</code></td><td><span class="warn">MEDIUM</span> — No security patches</td></tr>
+<tr><td><code>laminas/laminas-crypt</code></td><td>None</td><td><span class="warn">MEDIUM</span> — Crypto library unmaintained</td></tr>
+<tr><td><code>laminas/laminas-oauth</code></td><td>None</td><td><span class="warn">MEDIUM</span> — OAuth library unmaintained</td></tr>
+<tr><td><code>laminas/laminas-config</code></td><td>None</td><td><span class="warn">LOW</span> — Core dependency</td></tr>
+<tr><td><code>laminas/laminas-file</code></td><td>None</td><td><span class="warn">LOW</span></td></tr>
+<tr><td><code>laminas/laminas-json</code></td><td>None</td><td><span class="warn">LOW</span></td></tr>
+<tr><td><code>laminas/laminas-loader</code></td><td>None</td><td><span class="warn">LOW</span></td></tr>
+<tr><td><code>laminas/laminas-math</code></td><td>None</td><td><span class="warn">LOW</span></td></tr>
+<tr><td><code>laminas/laminas-text</code></td><td>None</td><td><span class="warn">LOW</span></td></tr>
+<tr><td><code>box/spout</code></td><td>None</td><td><span class="warn">LOW</span></td></tr>
+<tr><td><code>doctrine/annotations</code></td><td>None</td><td><span class="warn">LOW</span></td></tr>
+<tr><td><code>sebastian/phpcpd</code></td><td>None</td><td><span class="warn">LOW</span> — Dev-only tool</td></tr>
+</table>
+
+<h3>Custom Code Risk Assessment (app/code/)</h3>
+<table>
+<tr><th>Module</th><th>Risk Pattern</th><th>File</th><th>Risk Level</th></tr>
+<tr><td>Mab_Core</td><td><code>curl_exec()</code> in license validation</td><td>Helper/License.php</td><td><span class="warn">LOW</span> — Expected for license check</td></tr>
+<tr><td>Mab_SourceSelector</td><td><code>curl_exec()</code> in license validation</td><td>Helper/License.php</td><td><span class="warn">LOW</span> — Expected for license check</td></tr>
+<tr><td>Xtento_PdfCustomizer</td><td><code>file_put_contents</code> in PDF synchronization</td><td>Model/Files/Synchronization.php</td><td><span class="warn">LOW</span> — Expected for PDF template sync</td></tr>
+<tr><td>MageWorx_OrdersGrid</td><td><code>exec()</code> in file download helper</td><td>Helper/FileDownload.php</td><td><span class="info">INFO</span> — Admin-only functionality</td></tr>
+<tr><td>Multiple Sm_*</td><td><code>unserialize()</code> in 7 modules</td><td>Various helpers and blocks</td><td><span class="info">INFO</span> — Standard Magento pattern</td></tr>
+<tr><td>Mab_ modules</td><td><code>unserialize()</code> in 5 custom modules</td><td>GiftCardFix, DeliveryOptions, SocialLogin, etc.</td><td><span class="info">INFO</span> — Standard pattern</td></tr>
+</table>
+
+<h3>Third-Party Module Inventory (118 enabled modules)</h3>
+<table>
+<tr><th>Vendor</th><th>Count</th><th>Category</th><th>Notes</th></tr>
+<tr><td>Amasty</td><td>82</td><td>Full ecosystem (checkout, shipping, promo, security, import/export, SEO, reporting)</td><td>Amasty_Orderattr previously removed (CVE-2026-53787). SecurityAuth handles 2FA</td></tr>
+<tr><td>Sm_ (Magentech)</td><td>13</td><td>Theme & frontend (mega menu, search, categories)</td><td>Theme-dependent — coupled to Sm_Market theme</td></tr>
+<tr><td>Mab_ (Custom)</td><td>7</td><td>Custom integrations (Algeria products, checkout, delivery)</td><td>In-house code — review periodically</td></tr>
+<tr><td>MageWorx</td><td>3</td><td>Order editor, orders grid</td><td>Admin-only — acceptable risk</td></tr>
+<tr><td>Magefan</td><td>4</td><td>Blog, WYSIWYG, community</td><td>Standard extensions</td></tr>
+<tr><td>Mageplaza</td><td>2</td><td>Core, table rate shipping</td><td>Standard extensions</td></tr>
+<tr><td>Mirasvit</td><td>3</td><td>Core, reports, RMA</td><td>Standard extensions</td></tr>
+<tr><td>Xtento</td><td>2</td><td>PDF customizer, XtCore</td><td>PDF generation — file write ops expected</td></tr>
+<tr><td>Other</td><td>3</td><td>Tawk_Widget, BSS (2)</td><td>External JS (chat, pixel) — ensure CSP whitelisted</td></tr>
+</table>
+
+<!-- ==================== RECOMMENDATIONS ==================== -->
+<h2>12c. Recommendations (Updated June 13 Evening)</h2>
+
+<ol>
+<li><strong>CRITICAL: Upgrade Twig to &ge;3.26.0</strong> — 16 CVEs including critical PHP code execution (CVE-2026-46633). Run <code>composer update twig/twig</code> after verifying Magento 2.4.6-p15 compatibility. May require Magento patch release.</li>
+<li><strong>HIGH: Regenerate Cloudflare API credentials</strong> — Both the API Token and Global API Key are invalid. Log into <a href="https://dash.cloudflare.com">Cloudflare Dashboard</a> → My Profile → API Tokens → create a new token with Zone:Read, Zone:Edit, and Firewall:Read permissions.</li>
+<li><strong>HIGH: Rotate Magento encryption key</strong> — Generate a new <code>crypt.key</code> in <code>env.php</code> to prevent forged cookie deserialization attacks. The current key may be compromised through the prior gsocket backdoor access.</li>
+<li><strong>HIGH: Upgrade google/protobuf to &ge;4.33.6</strong> — CVE-2026-6409 (DoS via malicious protobuf messages). Run <code>composer update google/protobuf</code>.</li>
+<li><strong>MEDIUM: Upgrade setasign/fpdi to &ge;2.6.7</strong> — CVE-2026-45802 (memory exhaustion DoS). Used by Xtento PdfCustomizer.</li>
+<li><strong>MEDIUM: Restrict customer address file uploads</strong> — <code>general/file/protected_extensions</code> now blocks 34 dangerous types at the application level. Additionally, in Magento Admin → Stores → Attributes → Customer Address, restrict <code>file_extensions</code> to <code>jpg,jpeg,png,pdf</code> only. Consider disabling file upload attributes if not needed.</li>
+<li><strong>MEDIUM: Request kernel patch from InMotion Hosting</strong> — copy_fail and dirty_frag vulnerabilities require OS-level updates</li>
+<li><strong>MEDIUM: Upgrade OpenSSL</strong> — Current version 1.1.1k is EOL. Request InMotion Hosting to upgrade to OpenSSL 3.x via AlmaLinux 8 package update</li>
+<li><strong>MEDIUM: Upgrade Varnish Cache</strong> — Current version 6.0.13 is EOL. Request InMotion Hosting to upgrade to Varnish 7.x</li>
+<li><strong>Monitor reCAPTCHA scores</strong> — Check Magento Admin → Stores → Config → Security → reCAPTCHA to review bot scores and adjust threshold if needed (default 0.5)</li>
+<li><strong>Review admin user list quarterly</strong> — Remove inactive accounts to reduce attack surface</li>
+<li><strong>2FA enforcement on July 1</strong> — Recreate <code>scripts/enable_2fa_all_users.php</code> and run on July 1 to force-enable 2FA for all admin accounts.</li>
+<li><strong>Keep eComscan license active</strong> — Hourly monitoring is the strongest defense against reinfection</li>
+</ol>
+
+<div class="success-box">
+<strong>All 3 Stores: CLEAN | reCAPTCHA v3: ACTIVE | 2FA: DEPLOYED | CVE PATCHED | UPLOAD HARDENED</strong><br>
+0 malware (all stores) | 0 database threats | 0 vulnerable modules | 0 suspect uploads | reCAPTCHA v3 on 10 forms x 3 stores | 2FA tokens for 51 admins | CVE-2026-53787 patched on all 3 stores | 34 file types blocked at application level | 18,977+ generated files hardened | Cron automation on all 3 stores | 22 Composer CVEs identified (Twig upgrade pending) | Automated monitoring active
+</div>
+
+<div class="alert-box">
+<strong>Action Items Remaining (Updated June 13 Evening):</strong><br>
+1. <span class="fail">CRITICAL</span> — Upgrade Twig &ge;3.26.0 (16 CVEs including critical code execution)<br>
+2. <span class="fail">HIGH</span> — Upgrade google/protobuf &ge;4.33.6 (DoS CVE)<br>
+3. <span class="fail">HIGH</span> — Cloudflare API credentials regeneration (both invalid)<br>
+4. <span class="fail">HIGH</span> — Magento crypt.key rotation<br>
+5. <span class="warn">MEDIUM</span> — Upgrade setasign/fpdi &ge;2.6.7 (DoS CVE)<br>
+6. <span class="warn">MEDIUM</span> — Upgrade hybridauth &gt;3.12.2 (SSL validation CVE)<br>
+7. <span class="warn">MEDIUM</span> — Kernel vulnerabilities (requires InMotion Hosting patch)<br>
+8. <span class="warn">MEDIUM</span> — OpenSSL upgrade to 3.x (requires InMotion Hosting)<br>
+9. <span class="warn">MEDIUM</span> — Varnish upgrade to 7.x (requires InMotion Hosting)<br>
+10. Recreate 2FA enforcement script before July 1, 2026
+</div>
+
+<div class="footer">
+Report last updated: June 14, 2026 ~04:30 (PolyShell GIF webshell removed from custom_options, 5 new SessionReaper payloads removed from customer_address, whitelist .htaccess deployed, automated cleanup cron every 30 min, 22 CVEs across 7 Composer packages flagged — Twig v3.23.0 URGENT upgrade required)<br>
+Previous update: June 13, 2026 ~17:30 (dev & tsdnd identical hardening: CVE patch, cron relocation, permissions, security monitors, crontabs, eComscan verification)<br>
+Previous update: June 13, 2026 ~16:15 (production vulnerability patching, final malware elimination, code hardening, cron automation)<br>
+Previous update: June 13, 2026 ~09:45 (2FA deployment, email hardening, BCC cleanup — added by Mounir Abderrahmani)<br>
+Original audit: June 12, 2026 ~16:25<br>
+Report generated automatically by Server Security Audit System<br>
+Sansec eComscan License: Active | Imunify360: Active | CSF Firewall: Active | Amasty 2FA: Active<br>
+For questions: dashboard.technostationery.com/security
+</div>
+
+</body>
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechnoStationery - System Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #6c757d;
+            font-size: 1.1em;
+        }
+        
+        .env-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .env-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .env-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .env-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.3em;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .card-icon {
+            font-size: 2em;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.95em;
+        }
+        
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .metric-value.good {
+            color: #28a745;
+        }
+        
+        .metric-value.warning {
+            color: #ffc107;
+        }
+        
+        .metric-value.critical {
+            color: #dc3545;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .status-badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge.danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .script-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .script-item {
+            padding: 15px;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .script-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .script-info p {
+            color: #6c757d;
+            font-size: 0.85em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        .progress-fill.good {
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+        
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ffc107, #ff8c00);
+        }
+        
+        .progress-fill.critical {
+            background: linear-gradient(90deg, #dc3545, #c82333);
+        }
+        
+        .log-viewer {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 TechnoStationery System Dashboard</h1>
+            <p>Real-time monitoring and management for Production, Beta, and Dev environments</p>
+            <div class="env-selector">
+                <button class="env-btn active" onclick="switchEnvironment('prod')">Production</button>
+                <button class="env-btn" onclick="switchEnvironment('beta')">Beta</button>
+                <button class="env-btn" onclick="refreshAllData()">🔄 Refresh All</button>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <!-- System Performance Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">System Performance</span>
+                    <span class="card-icon">📊</span>
+                </div>
+                <div id="performance-metrics">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading performance data...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Database Status Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Database Status</span>
+                    <span class="card-icon">💾</span>
+                </div>
+                <div id="database-metrics">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading database data...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Indexers Status Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Indexers Status</span>
+                    <span class="card-icon">⚙️</span>
+                </div>
+                <div id="indexers-metrics">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading indexers data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scripts Management Section -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Script Management</span>
+                <span class="card-icon">📜</span>
+            </div>
+            <div class="env-selector">
+                <button class="btn btn-primary" onclick="loadScripts('performance')">🔍 Performance</button>
+                <button class="btn btn-primary" onclick="loadScripts('database')">💾 Database</button>
+                <button class="btn btn-primary" onclick="loadScripts('testing')">🧪 Testing</button>
+                <button class="btn btn-danger" onclick="loadScripts('emergency')">🚨 Emergency</button>
+            </div>
+            <div id="scripts-list">
+                <div class="loading">
+                    <p>Select a category to view available scripts</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity Logs -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Recent Activity Logs</span>
+                <span class="card-icon">📋</span>
+            </div>
+            <div id="recent-logs">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading recent logs...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>TechnoStationery System Dashboard &copy; 2026 | Session 36</p>
+        <p>Powered by Dashboard API v1.0.0</p>
+    </div>
+    
+    <script>
+        let currentEnv = 'prod';
+        const API_BASE = '/api/dashboard.php';
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshAllData();
+            // Auto-refresh every 60 seconds
+            setInterval(refreshAllData, 60000);
+        });
+        
+        // Switch environment
+        function switchEnvironment(env) {
+            currentEnv = env;
+            document.querySelectorAll('.env-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            refreshAllData();
+        }
+        
+        // Refresh all dashboard data
+        async function refreshAllData() {
+            loadPerformance();
+            loadDatabase();
+            loadIndexers();
+            loadRecentLogs();
+        }
+        
+        // Load performance metrics
+        async function loadPerformance() {
+            try {
+                const response = await fetch(`${API_BASE}?action=performance`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data;
+                    let html = '';
+                    
+                    // Load Average
+                    const loadStatus = data.load_average['1min'] > 8 ? 'critical' : (data.load_average['1min'] > 3 ? 'warning' : 'good');
+                    html += `
+                        <div class="metric">
+                            <span class="metric-label">Load Average (1m)</span>
+                            <span class="metric-value ${loadStatus}">${data.load_average['1min']}</span>
+                        </div>
+                    `;
+                    
+                    // CPU Usage
+                    const cpuStatus = data.cpu_usage_estimate > 80 ? 'critical' : (data.cpu_usage_estimate > 60 ? 'warning' : 'good');
+                    html += `
+                        <div class="metric">
+                            <span class="metric-label">CPU Usage</span>
+                            <span class="metric-value ${cpuStatus}">${data.cpu_usage_estimate}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${cpuStatus}" style="width: ${data.cpu_usage_estimate}%"></div>
+                        </div>
+                    `;
+                    
+                    // Memory Usage
+                    if (data.memory.total) {
+                        const memStatus = data.memory.used_percent > 80 ? 'critical' : (data.memory.used_percent > 60 ? 'warning' : 'good');
+                        html += `
+                            <div class="metric">
+                                <span class="metric-label">Memory Usage</span>
+                                <span class="metric-value ${memStatus}">${data.memory.used_percent}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${memStatus}" style="width: ${data.memory.used_percent}%"></div>
+                            </div>
+                        `;
+                    }
+                    
+                    document.getElementById('performance-metrics').innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('performance-metrics').innerHTML = '<p class="loading">Error loading performance data</p>';
+            }
+        }
+        
+        // Load database metrics
+        async function loadDatabase() {
+            try {
+                const response = await fetch(`${API_BASE}?action=database&env=${currentEnv}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data;
+                    let html = '';
+                    
+                    if (data.status === 'connected') {
+                        html += `
+                            <div class="metric">
+                                <span class="metric-label">Status</span>
+                                <span class="status-badge success">Connected</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Database Size</span>
+                                <span class="metric-value">${data.size_mb} MB</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Free Space</span>
+                                <span class="metric-value">${data.free_mb} MB</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Active Connections</span>
+                                <span class="metric-value">${data.connections}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Tables</span>
+                                <span class="metric-value">${data.table_count}</span>
+                            </div>
+                        `;
+                    } else {
+                        html = `<p class="loading">Database connection error: ${data.error}</p>`;
+                    }
+                    
+                    document.getElementById('database-metrics').innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('database-metrics').innerHTML = '<p class="loading">Error loading database data</p>';
+            }
+        }
+        
+        // Load indexers status
+        async function loadIndexers() {
+            try {
+                const response = await fetch(`${API_BASE}?action=indexers&env=${currentEnv}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data;
+                    let html = `
+                        <div class="metric">
+                            <span class="metric-label">Total Indexers</span>
+                            <span class="metric-value">${data.total_count}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Ready</span>
+                            <span class="metric-value good">${data.ready_count}</span>
+                        </div>
+                    `;
+                    
+                    const readyPercent = (data.ready_count / data.total_count) * 100;
+                    const status = readyPercent === 100 ? 'good' : 'warning';
+                    html += `
+                        <div class="progress-bar">
+                            <div class="progress-fill ${status}" style="width: ${readyPercent}%"></div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('indexers-metrics').innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('indexers-metrics').innerHTML = '<p class="loading">Error loading indexers data</p>';
+            }
+        }
+        
+        // Load scripts
+        async function loadScripts(category) {
+            try {
+                const response = await fetch(`${API_BASE}?action=scripts`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const scripts = result.scripts[category] || [];
+                    let html = '<div class="script-list">';
+                    
+                    scripts.forEach(script => {
+                        html += `
+                            <div class="script-item">
+                                <div class="script-info">
+                                    <h4>${script.name}</h4>
+                                    <p>Size: ${Math.round(script.size / 1024)} KB | Modified: ${script.modified}</p>
+                                </div>
+                                <button class="btn btn-success" onclick="runScript('${category}', '${script.name}')">
+                                    ▶️ Run
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    
+                    if (scripts.length === 0) {
+                        html = '<p class="loading">No scripts found in this category</p>';
+                    }
+                    
+                    document.getElementById('scripts-list').innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('scripts-list').innerHTML = '<p class="loading">Error loading scripts</p>';
+            }
+        }
+        
+        // Run script
+        async function runScript(category, script) {
+            if (!confirm(`Run script: ${script}?`)) return;
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Running...';
+            
+            try {
+                const response = await fetch(`${API_BASE}?action=run&category=${category}&script=${script}&env=${currentEnv}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Script executed successfully!');
+                } else {
+                    alert('Script execution failed. Check logs for details.');
+                }
+                
+                loadRecentLogs();
+            } catch (error) {
+                alert('Error running script: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '▶️ Run';
+            }
+        }
+        
+        // Load recent logs
+        async function loadRecentLogs() {
+            try {
+                const response = await fetch(`${API_BASE}?action=logs&limit=10`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const logs = result.logs;
+                    let html = '<div class="log-viewer">';
+                    
+                    logs.forEach(log => {
+                        html += `
+                            <div class="log-entry">
+                                📄 ${log.name} - ${log.modified} (${Math.round(log.size / 1024)} KB)
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    
+                    if (logs.length === 0) {
+                        html = '<p class="loading">No recent logs found</p>';
+                    }
+                    
+                    document.getElementById('recent-logs').innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('recent-logs').innerHTML = '<p class="loading">Error loading logs</p>';
+            }
+        }
+    </script>
+</body>
+</html>

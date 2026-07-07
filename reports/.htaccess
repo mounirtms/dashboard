@@ -1,0 +1,7 @@
+Order Allow,Deny
+Deny from all
+
+<FilesMatch "^(view\.php|2fa_setup_guide\.html|security_audit_report\.html|security_audit_report_20260612\.html|cicd_gitlab_runner_plan\.html)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>

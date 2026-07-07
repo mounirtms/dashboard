@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shipping Cards Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #4CAF50; }
+        .error { border-left-color: #f44336; }
+        .warning { border-left-color: #ff9800; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        h2 { margin-top: 0; }
+        .success { color: #4CAF50; }
+        .fail { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Shipping Cards Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Open the checkout page: <a href="https://dev.technostationery.com/checkout/#shipping" target="_blank">https://dev.technostationery.com/checkout/#shipping</a></li>
+            <li>Open browser Developer Console (F12)</li>
+            <li>Copy and paste the debug script below into the console</li>
+            <li>Select a wilaya (e.g., Biskra, Blida, or Alger)</li>
+            <li>Watch the console for debug output</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Debug Script (Copy to Console)</h2>
+        <pre><code>// ==== SHIPPING CARDS DEBUG SCRIPT ====
+(function() {
+    console.log('%c🔍 SHIPPING CARDS DEBUG STARTED', 'background: #4CAF50; color: white; padding: 5px 10px; font-weight: bold;');
+    
+    // Function to check component
+    function checkShippingCards() {
+        // Get UI Registry
+        var registry = require.s.contexts._.defined['uiRegistry'];
+        
+        if (!registry) {
+            console.error('❌ UI Registry not found');
+            return;
+        }
+        
+        console.log('✅ UI Registry found');
+        
+        // Find shipping cards component
+        var component = null;
+        registry.get('checkout.steps.shipping-step.shippingAddress.before-shipping-method-form.shipping-method-cards', function(comp) {
+            component = comp;
+        });
+        
+        if (!component) {
+            console.error('❌ Shipping cards component not found');
+            console.log('💡 Available components:', Object.keys(registry.get()));
+            return;
+        }
+        
+        console.log('✅ Shipping cards component found');
+        console.log('📊 Component state:', {
+            visible: component.isVisible(),
+            loading: component.isLoading(),
+            methods: component.shippingMethods().length,
+            selected: component.selectedMethod(),
+            region: component.currentRegion(),
+            error: component.errorMessage()
+        });
+        
+        // Check shipping service
+        var shippingService = require.s.contexts._.defined['Magento_Checkout/js/model/shipping-service'];
+        if (shippingService) {
+            var rates = shippingService.getShippingRates()();
+            console.log('📦 Shipping service rates:', rates);
+            console.log('📦 Number of rates:', rates ? rates.length : 0);
+            
+            if (rates && rates.length > 0) {
+                console.log('🔍 Inspecting each rate:');
+                rates.forEach(function(rate, idx) {
+                    console.log('   Rate #' + idx + ':', {
+                        carrier: rate.carrier_code,
+                        method: rate.method_code,
+                        available: rate.available,
+                        amount: rate.amount,
+                        title: rate.method_title
+                    });
+                });
+            }
+        }
+        
+        // Check wrapper element
+        var wrapper = document.querySelector('.shipping-methods-cards-wrapper');
+        if (wrapper) {
+            var styles = window.getComputedStyle(wrapper);
+            console.log('📐 Wrapper element styles:', {
+                display: styles.display,
+                visibility: styles.visibility,
+                opacity: styles.opacity,
+                height: styles.height,
+                overflow: styles.overflow
+            });
+        } else {
+            console.error('❌ Wrapper element not found in DOM');
+        }
+        
+        // Check quote
+        var quote = require.s.contexts._.defined['Magento_Checkout/js/model/quote'];
+        if (quote) {
+            var address = quote.shippingAddress();
+            console.log('📍 Quote shipping address:', {
+                regionId: address ? address.regionId : 'N/A',
+                region: address ? address.region : 'N/A',
+                regionCode: address ? address.regionCode : 'N/A',
+                countryId: address ? address.countryId : 'N/A'
+            });
+            
+            var method = quote.shippingMethod();
+            console.log('🚚 Quote shipping method:', method);
+        }
+    }
+    
+    // Run initial check
+    console.log('⏳ Running initial check...');
+    checkShippingCards();
+    
+    // Make function globally available
+    window.debugShippingCards = checkShippingCards;
+    
+    console.log('%c✅ Debug script loaded successfully', 'background: #4CAF50; color: white; padding: 5px 10px;');
+    console.log('💡 Run window.debugShippingCards() anytime to check component state');
+    console.log('💡 Or just call: debugShippingCards()');
+    
+})();
+</code></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Force Show Cards (If Not Visible)</h2>
+        <pre><code>// Force show shipping cards wrapper
+jQuery('.shipping-methods-cards-wrapper').show().css({
+    display: 'block !important',
+    visibility: 'visible !important',
+    opacity: '1 !important',
+    height: 'auto'
+});
+
+// Also check the component
+var registry = require.s.contexts._.defined['uiRegistry'];
+registry.get('checkout.steps.shipping-step.shippingAddress.before-shipping-method-form.shipping-method-cards', function(comp) {
+    console.log('Component:', comp);
+    comp.isVisible(true);
+    console.log('Methods:', comp.shippingMethods());
+});
+</code></pre>
+    </div>
+
+    <div class="test-section warning">
+        <h2>⚠️ If Rates Show method_code: null</h2>
+        <p>This indicates a backend issue. Check:</p>
+        <ol>
+            <li>Mageplaza TableRate module configuration</li>
+            <li>Method records in database table <code>mageplaza_tablerate_method</code></li>
+            <li>Rate records in <code>mageplaza_tablerate_rate</code></li>
+            <li>Module enabled in <code>Stores > Configuration > Sales > Shipping Methods</code></li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Backend API Test Results</h2>
+        <p>Direct API test for Biskra (region 865) returned <strong class="success">2 valid methods</strong>:</p>
+        <pre>{
+  "method_code": "24",
+  "method_title": "Retrait en agence",
+  "amount": 500,
+  "available": true
+},
+{
+  "method_code": "2",
+  "method_title": "Livraison à domicile",
+  "amount": 800,
+  "available": true
+}</pre>
+        <p><strong>This proves the backend API is working correctly.</strong></p>
+        <p>The issue is likely in how the frontend processes or receives the data.</p>
+    </div>
+
+</body>
+</html>

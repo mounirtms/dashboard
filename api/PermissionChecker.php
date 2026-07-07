@@ -1,0 +1,191 @@
+<?php
+/**
+ * PermissionChecker - Role-based permission system
+ * 
+ * Checks permissions against the role_permissions table.
+ * Caches results per-request for efficiency.
+ */
+
+class PermissionChecker {
+    private static $permissions = null;
+    private static $pdo = null;
+
+    /**
+     * Valid permission column names - whitelist for SQL injection prevention
+     */
+    private const VALID_PERMISSIONS = [
+        'can_access_users_page',
+        'can_access_settings_page',
+        'can_access_emergency_actions',
+        'can_access_cache_control',
+        'can_access_process_explorer',
+        'can_access_permissions_page',
+        'can_access_ssh_monitor',
+        'can_access_command_audit',
+        'can_access_cloudflare',
+        'can_access_user_activity',
+        'can_access_system_audit',
+        'can_access_plans',
+        'can_access_cicd',
+        'can_access_script_runner',
+        'can_create_tasks',
+        'can_update_own_tasks',
+        'can_update_any_task',
+        'can_delete_tasks',
+        'can_edit_own_notes',
+        'can_edit_any_note',
+        'can_delete_own_notes',
+        'can_delete_any_note',
+        'can_pin_notes',
+        'can_add_task_notes',
+        'can_manage_users',
+        // Push notification permissions
+        'can_access_push_notifications',
+        'can_send_notifications',
+        'can_view_subscribers',
+        'can_manage_segments',
+        // Magento / Commerce permissions
+        'can_access_magento_products',
+        'can_edit_products',
+        'can_bulk_products',
+        'can_access_magento_customers',
+        'can_edit_customers',
+        'can_access_magento_orders',
+        'can_manage_orders',
+        'can_access_magento_cms',
+        'can_edit_cms',
+        'can_access_magento_settings',
+    ];
+
+    /**
+     * Get database connection
+     */
+    private static function getDb() {
+        if (self::$pdo === null) {
+            require_once __DIR__ . '/config.php';
+            Config::load();
+            self::$pdo = Config::getPDO('dashboard_auth');
+        }
+        return self::$pdo;
+    }
+
+    /**
+     * Load all role permissions from DB into static cache
+     */
+    private static function loadPermissions() {
+        if (self::$permissions === null) {
+            $pdo = self::getDb();
+            self::ensureColumns($pdo);
+            $stmt = $pdo->query("SELECT * FROM role_permissions");
+            self::$permissions = [];
+            foreach ($stmt->fetchAll() as $row) {
+                self::$permissions[$row['role']] = $row;
+            }
+        }
+    }
+
+    private static function ensureColumns(PDO $pdo) {
+        $cacheFile = __DIR__ . '/logs/schema_check.cache';
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < 3600) {
+            return;
+        }
+
+        try {
+            $stmt = $pdo->query("SHOW COLUMNS FROM role_permissions");
+            $existing = array_column($stmt->fetchAll(), 'Field');
+            foreach (self::VALID_PERMISSIONS as $col) {
+                if (!in_array($col, $existing)) {
+                    $default = str_starts_with($col, 'can_access_magento_settings') ? 0 : 1;
+                    $pdo->exec("ALTER TABLE role_permissions ADD COLUMN `$col` TINYINT(1) NOT NULL DEFAULT $default");
+                }
+            }
+            if (!is_dir(dirname($cacheFile))) {
+                mkdir(dirname($cacheFile), 0755, true);
+            }
+            file_put_contents($cacheFile, date('Y-m-d H:i:s'));
+        } catch (Exception $e) {
+            error_log("[PermissionChecker] Column migration failed: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Check if current session user has a specific permission
+     */
+    public static function hasPermission($permission) {
+        if (empty($_SESSION['role'])) {
+            return false;
+        }
+        
+        // Admin always has all permissions
+        if (self::isAdmin()) {
+            return true;
+        }
+        
+        self::loadPermissions();
+        $role = $_SESSION['role'];
+        if (!isset(self::$permissions[$role])) {
+            return false;
+        }
+        return (bool)(self::$permissions[$role][$permission] ?? false);
+    }
+
+    /**
+     * Check if current user is admin
+     */
+    public static function isAdmin() {
+        return ($_SESSION['role'] ?? '') === 'admin';
+    }
+
+    /**
+     * Get current user's role
+     */
+    public static function getCurrentRole() {
+        return $_SESSION['role'] ?? '';
+    }
+
+    /**
+     * Get all permissions for a specific role
+     */
+    public static function getRolePermissions($role) {
+        self::loadPermissions();
+        return self::$permissions[$role] ?? null;
+    }
+
+    /**
+     * Get all role permissions (for matrix page API)
+     */
+    public static function getAllRolePermissions() {
+        self::loadPermissions();
+        return self::$permissions;
+    }
+
+    /**
+     * Update a permission for a role
+     */
+    public static function setRolePermission($role, $permission, $value) {
+        $validRoles = ['admin', 'editor', 'viewer', 'moderator', 'marketing'];
+        if (!in_array($role, $validRoles)) {
+            throw new Exception("Invalid role: $role");
+        }
+        
+        // Validate permission column against whitelist (prevents SQL injection)
+        if (!in_array($permission, self::VALID_PERMISSIONS, true)) {
+            throw new Exception("Invalid permission: $permission");
+        }
+        
+        $val = $value ? 1 : 0;
+        $pdo = self::getDb();
+        $stmt = $pdo->prepare("UPDATE role_permissions SET `$permission` = ? WHERE role = ?");
+        $stmt->execute([$val, $role]);
+        
+        // Clear cache so next request picks up changes
+        self::$permissions = null;
+    }
+
+    /**
+     * Get available roles
+     */
+    public static function getAvailableRoles() {
+        return ['admin', 'editor', 'moderator', 'viewer', 'marketing'];
+    }
+}

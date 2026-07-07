@@ -1,0 +1,8 @@
+Checking asset HTTP status codes
+/dist/main.min.js: 200
+/dist/vendor.min.js: 200
+/dist/react.min.js: 404
+/dist/react-dom.min.js: 404
+/dist/jquery.min.js: 404
+/js/require-config.js: 404
+/css/pim.css: 200
