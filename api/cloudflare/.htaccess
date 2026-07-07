@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteBase /api/cloudflare/
+
+# Handle CORS preflight requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ manager.php [L]
+
+# Route all requests to manager.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ manager.php [QSA,L]

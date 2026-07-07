@@ -1,0 +1,67 @@
+=================================================================
+FULL SYSTEM SECURITY SCAN REPORT
+Date: 2026-06-11
+Scanner: Sansec eComscan v1.8.23 + Custom scanners
+=================================================================
+
+ACCOUNTS SCANNED: 5
+  - technadminy7 (production)
+  - dev
+  - tsdnd
+  - dashboard
+  - lms (Moodle)
+
+DATABASES SCANNED: 8
+  - technadminy7_dBT8x12y22 (1,294 MB)
+  - dev_dBT8x12y22 (1,208 MB)
+  - tsdnd_dBT8x12y22 (1,213 MB)
+  - beta_dBT8x12y22 (1,210 MB)
+  - pimcore (1,626 MB)
+  - backup_verify_test (1,088 MB)
+  - akeneo_pim (45 MB)
+  - dashboard_auth (0.67 MB)
+
+MALWARE FINDINGS: 0
+  All file systems: CLEAN
+  All databases: CLEAN
+  All CMS blocks: CLEAN
+  All config data: CLEAN
+  All email templates: CLEAN
+  All product data: CLEAN
+  All sessions: CLEAN
+  No malicious triggers
+  No malicious stored procedures
+  No malicious events
+
+VULNERABILITIES (require hosting provider):
+  - Linux kernel: copy_fail (all accounts)
+  - Linux kernel: dirty_frag (all accounts)
+  Note: These are OS-level patches, not application issues
+
+FALSE POSITIVES IDENTIFIED:
+  - malware_scan.sh flagged as eval_rot_13: Script contains
+    malware detection patterns, not actual malware
+  - cpupre (cPanel CPU monitor) flagged as fake_kernel_thread:
+    Legitimate InMotion Hosting monitoring tool
+
+ACTIONS TAKEN TODAY:
+  1. Quarantined 9 malware files from production
+  2. Deleted 2 backdoor admin accounts (Magento2a, michael)
+  3. Removed MariaDB anonymous users
+  4. Dropped MariaDB test database
+  5. Removed exposed .git directories (3 accounts)
+  6. Removed phpinfo.php files (LMS, dashboard)
+  7. Removed Softaculous directory
+  8. Fixed 157 world-writable files
+  9. Updated Composer 2.8.12 → 2.10.1
+  10. Removed PHP 7.4 and 8.0 (EOL)
+  11. Disabled rpcbind (NFS)
+  12. Activated Imunify360 (3 services)
+  13. Hardened file permissions (all accounts)
+  14. Added .htaccess protection (missing dirs)
+  15. Blocked PHP execution in upload directories
+  16. Added security headers to root .htaccess
+  17. Set up daily automated scanning (3 AM cron)
+
+SYSTEM STATUS: CLEAN
+=================================================================

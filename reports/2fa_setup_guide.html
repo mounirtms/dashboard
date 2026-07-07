@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide d'activation 2FA - Google Authenticator | Techno Stationery</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        .container { max-width: 960px; margin: 0 auto; padding: 40px; }
+        .header { background: linear-gradient(135deg, #1a237e, #283593); color: white; padding: 48px 40px; border-radius: 16px; margin-bottom: 32px; }
+        .header h1 { font-size: 32px; margin-bottom: 10px; letter-spacing: -0.5px; }
+        .header .subtitle { opacity: 0.9; font-size: 17px; }
+        .badge { display: inline-block; background: #ff5722; color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-top: 12px; }
+        .alert-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 20px; border-radius: 8px; margin-bottom: 24px; }
+        .alert-box strong { color: #e65100; }
+        .alert-box.danger { background: #ffebee; border-left-color: #f44336; }
+        .alert-box.danger strong { color: #c62828; }
+        .alert-box.info { background: #e3f2fd; border-left-color: #2196f3; }
+        .alert-box.info strong { color: #1565c0; }
+        .step-card { background: white; border-radius: 16px; padding: 32px 36px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #1a237e; color: white; border-radius: 50%; font-weight: 700; font-size: 18px; margin-right: 14px; flex-shrink: 0; }
+        .step-title { display: flex; align-items: center; font-size: 20px; font-weight: 600; margin-bottom: 14px; color: #1a237e; }
+        .step-content { padding-left: 54px; }
+        .step-content p { margin-bottom: 14px; font-size: 15px; }
+        .step-content ul { margin: 10px 0 14px 24px; }
+        .step-content li { margin-bottom: 8px; font-size: 15px; }
+        .code-block { background: #263238; color: #e0e0e0; padding: 12px 16px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; margin: 8px 0; word-break: break-all; }
+        .img-placeholder { background: #f0f0f0; border: 2px dashed #ccc; border-radius: 8px; padding: 40px 20px; text-align: center; color: #888; margin: 12px 0; }
+        .app-list { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
+        .app-item { background: #f5f5f5; border-radius: 12px; padding: 16px 24px; text-align: center; min-width: 160px; }
+        .app-item .name { font-weight: 600; font-size: 15px; }
+        .app-item .platform { font-size: 13px; color: #666; }
+        .faq-item { background: white; border-radius: 12px; padding: 20px 28px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .faq-item .question { font-weight: 600; color: #1a237e; margin-bottom: 10px; font-size: 16px; }
+        .timeline { background: white; border-radius: 16px; padding: 32px 36px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .timeline h2 { color: #1a237e; margin-bottom: 20px; font-size: 22px; }
+        .timeline-item { display: flex; gap: 20px; padding: 16px 0; border-bottom: 1px solid #eee; font-size: 15px; }
+        .timeline-item:last-child { border-bottom: none; }
+        .timeline-date { font-weight: 700; color: #1a237e; min-width: 120px; }
+        .contact-box { background: #e8f5e9; border-radius: 16px; padding: 32px 36px; margin-top: 32px; }
+        .contact-box h3 { color: #2e7d32; margin-bottom: 10px; font-size: 20px; }
+        .footer { text-align: center; padding: 40px; color: #999; font-size: 13px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>Guide d'activation de l'authentification a deux facteurs (2FA)</h1>
+        <div class="subtitle">Protection de votre compte administrateur avec Google Authenticator</div>
+        <div class="badge">OBLIGATOIRE - Action requise</div>
+    </div>
+
+    <div class="alert-box danger">
+        <strong>Action requise avant le 1er Juillet 2026.</strong><br>
+        A partir de cette date, l'acces au panneau d'administration necessitera un code de verification Google Authenticator a chaque connexion. Sans configuration prealable, vous ne pourrez plus vous connecter.
+    </div>
+
+    <div class="alert-box info">
+        <strong>Pourquoi ?</strong><br>
+        Suite a l'audit de securite du 12 Juin 2026, nous renforçons la protection de tous les comptes administrateurs. La double authentification (2FA) empeche l'acces non autorise meme si votre mot de passe est compromis.
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step-card">
+        <div class="step-title">
+            <span class="step-number">1</span>
+            Installer Google Authenticator sur votre telephone
+        </div>
+        <div class="step-content">
+            <p>Telechargez l'application <strong>Google Authenticator</strong> depuis votre store :</p>
+            <div class="app-list">
+                <div class="app-item">
+                    <div class="name">Google Authenticator</div>
+                    <div class="platform">Android / iOS</div>
+                </div>
+                <div class="app-item">
+                    <div class="name">Microsoft Authenticator</div>
+                    <div class="platform">Android / iOS</div>
+                </div>
+                <div class="app-item">
+                    <div class="name">Authy</div>
+                    <div class="platform">Android / iOS</div>
+                </div>
+            </div>
+            <p>Toutes ces applications sont compatibles. Nous recommandons <strong>Google Authenticator</strong> pour sa simplicite.</p>
+        </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-card">
+        <div class="step-title">
+            <span class="step-number">2</span>
+            Acceder a votre profil administrateur
+        </div>
+        <div class="step-content">
+            <p>Connectez-vous au panneau d'administration :</p>
+            <div class="code-block">https://technostationery.com/sysadminy/</div>
+            <p>Une fois connecte :</p>
+            <ul>
+                <li>Cliquez sur votre <strong>nom d'utilisateur</strong> en haut a droite de l'ecran</li>
+                <li>Selectionnez <strong>"My Account"</strong> (Mon Compte)</li>
+                <li>Ou allez dans <strong>System > Permissions > All Users</strong> et cliquez sur votre nom</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-card">
+        <div class="step-title">
+            <span class="step-number">3</span>
+            Ouvrir l'onglet "Two-Factor Settings"
+        </div>
+        <div class="step-content">
+            <p>Sur la page de votre profil, vous verrez plusieurs onglets a gauche :</p>
+            <ul>
+                <li>Account Information</li>
+                <li>User Role</li>
+                <li><strong>Two-Factor Settings</strong> &larr; cliquez ici</li>
+            </ul>
+            <p>Dans l'onglet <strong>Two-Factor Settings</strong>, vous verrez :</p>
+            <ul>
+                <li><strong>Enable TFA</strong> : changez de "No" a <strong>"Yes"</strong></li>
+                <li><strong>Secret Key</strong> : votre cle secrete unique (ex: <code>ABC123DEF456GHIJ</code>)</li>
+                <li><strong>QR Code</strong> : un code QR a scanner avec votre telephone</li>
+                <li><strong>Security Code</strong> : champ pour verifier que tout fonctionne</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step-card">
+        <div class="step-title">
+            <span class="step-number">4</span>
+            Scanner le QR Code avec Google Authenticator
+        </div>
+        <div class="step-content">
+            <p>Sur votre telephone :</p>
+            <ul>
+                <li>Ouvrez <strong>Google Authenticator</strong></li>
+                <li>Appuyez sur le bouton <strong>"+"</strong> en bas a droite</li>
+                <li>Selectionnez <strong>"Scanner un QR code"</strong></li>
+                <li>Pointez la camera vers le <strong>QR Code</strong> affiche sur votre ecran d'ordinateur</li>
+                <li>Un nouveau compte apparait dans Google Authenticator avec votre nom d'utilisateur</li>
+                <li>Un code a <strong>6 chiffres</strong> s'affiche et change toutes les 30 secondes</li>
+            </ul>
+            <div class="alert-box" style="margin-top: 12px;">
+                <strong>Alternative :</strong> Si vous ne pouvez pas scanner le QR code, vous pouvez entrer la <strong>Secret Key</strong> manuellement dans Google Authenticator (bouton "+" > "Saisir une cle de configuration").
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step-card">
+        <div class="step-title">
+            <span class="step-number">5</span>
+            Verifier le code et sauvegarder
+        </div>
+        <div class="step-content">
+            <p>De retour sur votre ordinateur :</p>
+            <ul>
+                <li>Dans le champ <strong>"Security Code"</strong>, entrez le code a 6 chiffres affiche sur votre telephone</li>
+                <li>Cliquez sur <strong>"Check Code"</strong></li>
+                <li>Si le code est correct, un message de confirmation apparait</li>
+                <li>Cliquez sur <strong>"Save User"</strong> en haut de la page</li>
+            </ul>
+            <div class="alert-box danger" style="margin-top: 12px;">
+                <strong>Important :</strong> Cliquez bien sur "Save User" apres la verification. Sans sauvegarde, la 2FA ne sera pas activee.
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="step-card">
+        <div class="step-title">
+            <span class="step-number">6</span>
+            Tester la connexion avec 2FA
+        </div>
+        <div class="step-content">
+            <p>Apres avoir sauvegarde :</p>
+            <ul>
+                <li><strong>Deconnectez-vous</strong> du panneau d'administration</li>
+                <li>Sur la page de connexion, vous verrez maintenant un champ <strong>"Security Code"</strong> sous le mot de passe</li>
+                <li>Entrez votre <strong>nom d'utilisateur</strong> + <strong>mot de passe</strong> + <strong>code a 6 chiffres</strong> de Google Authenticator</li>
+                <li>Cliquez sur <strong>"Connexion"</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline">
+        <h2>Calendrier de deploiement</h2>
+        <div class="timeline-item">
+            <div class="timeline-date">12 Juin</div>
+            <div>Activation du module 2FA et generation des cles pour tous les comptes administrateurs.</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-date">13-30 Juin</div>
+            <div><strong>Periode de grace :</strong> Configurez votre 2FA en suivant ce guide. Vous pouvez encore vous connecter sans code 2FA pendant cette periode.</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-date">1er Juillet</div>
+            <div><strong>Activation obligatoire :</strong> La 2FA sera activee pour tous les comptes. Sans configuration, vous ne pourrez plus vous connecter.</div>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <h2 style="color: #1a237e; margin-bottom: 16px;">Questions frequentes</h2>
+
+    <div class="faq-item">
+        <div class="question">Je ne vois pas l'onglet "Two-Factor Settings" sur ma page de profil</div>
+        <p>L'onglet n'apparait que si vous modifiez un utilisateur existant. Allez dans <strong>System > Permissions > All Users</strong>, puis cliquez sur votre nom d'utilisateur pour acceder a la page d'edition.</p>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Le code de Google Authenticator ne fonctionne pas</div>
+        <p>Verifiez que l'heure de votre telephone est correcte. Sur Android : Google Authenticator > Parametres > Correction horaire pour les codes > Synchroniser. Sur iPhone : Reglages > General > Date et heure > Automatique.</p>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">J'ai change de telephone, comment recuperer mes codes ?</div>
+        <p>Contactez l'administrateur systeme (voir contacts ci-dessous). Il pourra reinitialiser votre 2FA et generer un nouveau QR code. Pensez a sauvegarder votre <strong>Secret Key</strong> dans un endroit sur lors de la configuration initiale.</p>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Je ne peux pas scanner le QR code (camera en panne)</div>
+        <p>Utilisez l'option "Saisir une cle de configuration" dans Google Authenticator et entrez manuellement la <strong>Secret Key</strong> affichee sur votre ecran.</p>
+    </div>
+
+    <div class="faq-item">
+        <div class="question">Le champ "Security Code" n'apparait pas sur la page de connexion</div>
+        <p>Videz le cache de votre navigateur et rechargez la page. Si le probleme persiste, contactez l'administrateur systeme.</p>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="contact-box">
+        <h3>Besoin d'aide ?</h3>
+        <p>Si vous rencontrez des difficultes pour configurer la 2FA, contactez :</p>
+        <ul style="margin: 8px 0 0 20px;">
+            <li><strong>Mounir Abderrahmani</strong> - Support technique &amp; administrateur systeme</li>
+            <li>Email : <a href="mailto:mounir.ab@techno-dz.com">mounir.ab@techno-dz.com</a></li>
+            <li>Tableau de bord : <a href="https://dashboard.technostationery.com">dashboard.technostationery.com</a></li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        Techno Stationery - Guide 2FA | Genere le 12 Juin 2026 | Confidentiel
+    </div>
+
+</div>
+</body>
+</html>

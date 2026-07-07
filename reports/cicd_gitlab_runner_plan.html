@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+h1 { color: #2980b9; border-bottom: 3px solid #2980b9; padding-bottom: 10px; }
+h2 { color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 30px; }
+h3 { color: #34495e; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0 20px 0; }
+th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; }
+td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+tr:nth-child(even) { background: #f8f9fa; }
+.pass { color: #27ae60; font-weight: bold; }
+.fail { color: #c0392b; font-weight: bold; }
+.warn { color: #f39c12; font-weight: bold; }
+.info { color: #2980b9; font-weight: bold; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; color: white; }
+.badge-clean { background: #27ae60; }
+.badge-fixed { background: #2980b9; }
+.badge-removed { background: #c0392b; }
+.badge-active { background: #8e44ad; }
+.badge-warn { background: #f39c12; }
+.badge-pending { background: #95a5a6; }
+.code { background: #f4f4f4; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 13px; overflow-x: auto; }
+.summary-box { background: #ecf0f1; border-left: 4px solid #2c3e50; padding: 15px 20px; margin: 20px 0; }
+.alert-box { background: #fdedec; border-left: 4px solid #c0392b; padding: 15px 20px; margin: 20px 0; }
+.success-box { background: #eafaf1; border-left: 4px solid #27ae60; padding: 15px 20px; margin: 20px 0; }
+.warn-box { background: #fef9e7; border-left: 4px solid #f39c12; padding: 15px 20px; margin: 20px 0; }
+.step { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 12px 18px; margin: 10px 0; border-radius: 0 5px 5px 0; }
+.step-number { display: inline-block; background: #2980b9; color: white; width: 28px; height: 28px; text-align: center; line-height: 28px; border-radius: 50%; font-weight: bold; margin-right: 10px; }
+ul { padding-left: 20px; }
+li { margin-bottom: 4px; }
+.footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>CI/CD Pipeline — GitLab Runner Configuration Plan</h1>
+<p><strong>Runner:</strong> techno-magento-prod-runner<br>
+<strong>Environment:</strong> Production — Magento CI/CD<br>
+<strong>Date:</strong> June 14, 2026<br>
+<strong>Prepared for:</strong> Server Support Team<br>
+<strong>Requested by:</strong> Mounir Abderrahmani (monir.ab@techon-dz.com)</p>
+
+<div class="summary-box">
+<strong>Objective:</strong> Deploy a dedicated GitLab Runner (<code>techno-magento-prod-runner</code>) on the production server to handle Magento CI/CD jobs via Docker executor. This document provides the full configuration specification, identified issues, recommended fixes, and step-by-step installation instructions.
+</div>
+
+<!-- ==================== RUNNER IDENTITY ==================== -->
+<h2>1. Runner Identity & Tags</h2>
+
+<table>
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Runner Name</td><td><code>techno-magento-prod-runner</code></td></tr>
+<tr><td>Tags</td><td><code>techno-magento-prod-runner</code></td></tr>
+<tr><td>Executor</td><td>Docker</td></tr>
+<tr><td>Target GitLab</td><td>https://gitlab.com/</td></tr>
+</table>
+
+<div class="warn-box">
+<strong>Note:</strong> Tags are assigned during runner registration via <code>--tag-list</code> or in the GitLab UI (<strong>Settings &gt; CI/CD &gt; Runners</strong>). They are <strong>not stored in config.toml</strong> — they are managed server-side by GitLab.
+</div>
+
+<!-- ==================== PROPOSED CONFIG ==================== -->
+<h2>2. Proposed config.toml (Original)</h2>
+
+<div class="code">
+<pre>concurrent = 1
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "techno-magento-prod-runner"
+  limit = 3
+  url = "https://gitlab.com/"
+  token = "XXXXXXXXXXXXXXXXXXXXXXX"
+  executor = "docker"
+
+  [runners.custom_build_dir]
+
+  [runners.cache]
+    MaxUploadedArchiveSize = 0
+    [runners.cache.s3]
+    [runners.cache.gcs]
+    [runners.cache.azure]
+
+  [runners.docker]
+    network_mode = "host"
+    tls_verify = false
+    image = "ruby:2.7"
+    privileged = false
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]</pre>
+</div>
+
+<!-- ==================== ANALYSIS ==================== -->
+<h2>3. Configuration Analysis</h2>
+
+<h3>3.1 Global Settings</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Description</th><th>Status</th></tr>
+<tr><td><code>concurrent</code></td><td>1</td><td>Max jobs running simultaneously (global)</td><td><span class="warn">REVIEW</span></td></tr>
+<tr><td><code>check_interval</code></td><td>0</td><td>Polling interval for new jobs (seconds)</td><td><span class="pass">OK</span></td></tr>
+<tr><td><code>shutdown_timeout</code></td><td>0</td><td>Wait time before forced stop (0 = infinite)</td><td><span class="pass">OK</span></td></tr>
+<tr><td><code>session_timeout</code></td><td>1800</td><td>Interactive session timeout (30 min)</td><td><span class="pass">OK</span></td></tr>
+</table>
+
+<h3>3.2 Runner Settings</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Description</th><th>Status</th></tr>
+<tr><td><code>name</code></td><td>techno-magento-prod-runner</td><td>Runner display name</td><td><span class="pass">OK</span></td></tr>
+<tr><td><code>limit</code></td><td>3</td><td>Max jobs this runner can accept</td><td><span class="fail">CONFLICT</span></td></tr>
+<tr><td><code>url</code></td><td>https://gitlab.com/</td><td>GitLab instance URL</td><td><span class="pass">OK</span></td></tr>
+<tr><td><code>executor</code></td><td>docker</td><td>Runs jobs in Docker containers</td><td><span class="pass">OK</span></td></tr>
+</table>
+
+<h3>3.3 Docker Executor Settings</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Description</th><th>Status</th></tr>
+<tr><td><code>network_mode</code></td><td>host</td><td>Container uses host network directly</td><td><span class="warn">SECURITY RISK</span></td></tr>
+<tr><td><code>tls_verify</code></td><td>false</td><td>Skip TLS certificate verification</td><td><span class="pass">OK</span></td></tr>
+<tr><td><code>image</code></td><td>ruby:2.7</td><td>Default Docker image</td><td><span class="warn">EOL</span></td></tr>
+<tr><td><code>privileged</code></td><td>false</td><td>No privileged mode</td><td><span class="pass">GOOD</span></td></tr>
+<tr><td><code>disable_entrypoint_overwrite</code></td><td>false</td><td>Allow entrypoint override</td><td><span class="pass">OK</span></td></tr>
+<tr><td><code>oom_kill_disable</code></td><td>false</td><td>Allow OOM kill</td><td><span class="pass">OK</span></td></tr>
+<tr><td><code>disable_cache</code></td><td>false</td><td>Cache enabled</td><td><span class="pass">OK</span></td></tr>
+<tr><td><code>volumes</code></td><td>["/cache"]</td><td>Cache volume mount</td><td><span class="pass">OK</span></td></tr>
+</table>
+
+<!-- ==================== ISSUES ==================== -->
+<h2>4. Issues Identified & Recommended Fixes</h2>
+
+<div class="alert-box">
+<strong>3 issues found</strong> — 1 configuration conflict, 1 security concern, 1 end-of-life dependency.
+</div>
+
+<h3>Issue 1: <span class="fail">CONFLICT</span> — <code>concurrent</code> vs <code>limit</code></h3>
+
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Severity</td><td><span class="fail">High</span></td></tr>
+<tr><td>Problem</td><td><code>concurrent = 1</code> caps all jobs globally at 1, but <code>limit = 3</code> allows this runner to accept 3 jobs. The 2 extra accepted jobs will be stuck waiting.</td></tr>
+<tr><td>Impact</td><td>Jobs queue up unnecessarily; misleading configuration</td></tr>
+<tr><td>Fix Option A</td><td>If 1 job at a time is intended: set <code>limit = 1</code></td></tr>
+<tr><td>Fix Option B</td><td>If 3 parallel jobs are needed: set <code>concurrent = 3</code></td></tr>
+</table>
+
+<h3>Issue 2: <span class="warn">SECURITY</span> — <code>network_mode = "host"</code></h3>
+
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Severity</td><td><span class="warn">Medium</span></td></tr>
+<tr><td>Problem</td><td>Host network mode removes all network isolation between the CI container and the server. The container can access any service on the host.</td></tr>
+<tr><td>Impact</td><td>If CI jobs are compromised, attacker has full network access to the host</td></tr>
+<tr><td>Recommendation</td><td>Use <code>network_mode = "bridge"</code> (Docker default) unless host networking is specifically required by Magento build steps</td></tr>
+<tr><td>Exception</td><td>Keep <code>host</code> only if jobs need to reach services bound to localhost on the server. Document the reason.</td></tr>
+</table>
+
+<h3>Issue 3: <span class="warn">EOL</span> — <code>image = "ruby:2.7"</code></h3>
+
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Severity</td><td><span class="warn">Medium</span></td></tr>
+<tr><td>Problem</td><td>Ruby 2.7 reached End-of-Life in March 2023. No more security patches or bug fixes.</td></tr>
+<tr><td>Impact</td><td>Known vulnerabilities will remain unpatched; compliance risk</td></tr>
+<tr><td>Recommendation</td><td>Upgrade to <code>ruby:3.2</code> or <code>ruby:3.3</code> if Magento build supports it</td></tr>
+<tr><td>Verification</td><td>Test the CI pipeline with the new image before switching in production</td></tr>
+</table>
+
+<!-- ==================== RECOMMENDED CONFIG ==================== -->
+<h2>5. Recommended config.toml (Corrected)</h2>
+
+<div class="success-box">
+<strong>Recommended configuration</strong> with all issues resolved. Assumes 1 concurrent job is intended and bridge networking is acceptable.
+</div>
+
+<div class="code">
+<pre>concurrent = 1
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "techno-magento-prod-runner"
+  limit = 1
+  url = "https://gitlab.com/"
+  token = "XXXXXXXXXXXXXXXXXXXXXXX"
+  executor = "docker"
+
+  [runners.custom_build_dir]
+
+  [runners.cache]
+    MaxUploadedArchiveSize = 0
+    [runners.cache.s3]
+    [runners.cache.gcs]
+    [runners.cache.azure]
+
+  [runners.docker]
+    network_mode = "bridge"
+    tls_verify = false
+    image = "ruby:3.2"
+    privileged = false
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]</pre>
+</div>
+
+<div class="warn-box">
+<strong>If <code>network_mode = "host"</code> and <code>ruby:2.7</code> are required by Magento build constraints</strong>, keep the original values but document the technical justification.
+</div>
+
+<!-- ==================== SERVER AUDIT ==================== -->
+<h2>6. Server Audit — Current State</h2>
+
+<div class="alert-box">
+<strong>Prerequisites missing:</strong> Neither Docker nor GitLab Runner are installed. No Docker or GitLab repositories are configured. Both must be installed from scratch before proceeding.
+</div>
+
+<h3>6.1 Server Specifications</h3>
+<table>
+<tr><th>Property</th><th>Value</th><th>Assessment</th></tr>
+<tr><td>Operating System</td><td>AlmaLinux 8.10 (Cerulean Leopard)</td><td><span class="pass">OK</span></td></tr>
+<tr><td>Package Manager</td><td>yum / dnf</td><td><span class="pass">OK</span></td></tr>
+<tr><td>CPU</td><td>8 cores</td><td><span class="pass">Sufficient</span></td></tr>
+<tr><td>RAM</td><td>31 GB total (~10 GB available)</td><td><span class="pass">Sufficient</span></td></tr>
+<tr><td>Disk</td><td>1.8 TB total (1.4 TB free)</td><td><span class="pass">Sufficient</span></td></tr>
+<tr><td>systemctl</td><td>/usr/bin/systemctl</td><td><span class="pass">Available</span></td></tr>
+<tr><td>curl</td><td>curl 7.61.1</td><td><span class="pass">Available</span></td></tr>
+<tr><td>sudo</td><td>Available (requires password)</td><td><span class="warn">Needs root credentials</span></td></tr>
+</table>
+
+<h3>6.2 Missing Components</h3>
+<table>
+<tr><th>Component</th><th>Status</th><th>Action Required</th></tr>
+<tr><td>Docker CE</td><td><span class="fail">NOT INSTALLED</span></td><td>Install Docker CE from official repo</td></tr>
+<tr><td>containerd.io</td><td><span class="fail">NOT INSTALLED</span></td><td>Installed as Docker dependency</td></tr>
+<tr><td>GitLab Runner</td><td><span class="fail">NOT INSTALLED</span></td><td>Install from GitLab official repo</td></tr>
+<tr><td>Docker repo</td><td><span class="fail">NOT CONFIGURED</span></td><td>Add docker-ce.repo</td></tr>
+<tr><td>GitLab Runner repo</td><td><span class="fail">NOT CONFIGURED</span></td><td>Add via GitLab install script</td></tr>
+</table>
+
+<div class="success-box">
+<strong>Server capacity is adequate:</strong> 8 cores, 31 GB RAM, and 1.4 TB free disk are more than enough for a single Docker-based GitLab Runner with <code>concurrent = 1</code>.
+</div>
+
+<!-- ==================== INSTALLATION STEPS ==================== -->
+<h2>7. Step-by-Step Installation Guide</h2>
+
+<div class="warn-box">
+<strong>All commands below require root/sudo access.</strong> The server support team must execute these as root or with <code>sudo</code>. Estimated total time: 15–20 minutes.
+</div>
+
+<!-- STEP 1 -->
+<h3>Step 1: Install Docker CE</h3>
+<div class="step">
+<span class="step-number">1</span> Add the Docker CE repository and install Docker Engine on AlmaLinux 8.10.
+</div>
+<div class="code">
+<pre># Remove any old/conflicting Docker packages
+sudo yum remove -y docker docker-client docker-client-latest \
+  docker-common docker-latest docker-latest-logrotate \
+  docker-logrotate docker-engine podman runc 2>/dev/null
+
+# Install required utilities
+sudo yum install -y yum-utils
+
+# Add the official Docker CE repository (works on AlmaLinux/RHEL 8)
+sudo yum-config-manager --add-repo \
+  https://download.docker.com/linux/centos/docker-ce.repo
+
+# Install Docker CE, CLI, and containerd
+sudo yum install -y docker-ce docker-ce-cli containerd.io \
+  docker-buildx-plugin docker-compose-plugin
+
+# Start Docker and enable it to start on boot
+sudo systemctl start docker
+sudo systemctl enable docker</pre>
+</div>
+
+<div class="step">
+<span class="step-number">1b</span> Verify Docker is running correctly.
+</div>
+<div class="code">
+<pre># Check Docker version
+docker --version
+
+# Check Docker service status
+sudo systemctl status docker
+
+# Run the hello-world test container
+sudo docker run hello-world</pre>
+</div>
+
+<div class="success-box">
+<strong>Expected output:</strong> <code>docker --version</code> should show Docker 27.x or later. <code>systemctl status docker</code> should show <code>active (running)</code>. The <code>hello-world</code> container should print "Hello from Docker!"
+</div>
+
+<!-- STEP 2 -->
+<h3>Step 2: Install GitLab Runner</h3>
+<div class="step">
+<span class="step-number">2</span> Add the GitLab Runner repository and install the package.
+</div>
+<div class="code">
+<pre># Add the official GitLab Runner repository
+curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh" | sudo bash
+
+# Install GitLab Runner
+sudo yum install -y gitlab-runner
+
+# Verify installation
+gitlab-runner --version</pre>
+</div>
+
+<div class="success-box">
+<strong>Expected output:</strong> <code>gitlab-runner --version</code> should show <code>Version: 17.x.x</code> or later with a git revision hash.
+</div>
+
+<!-- STEP 3 -->
+<h3>Step 3: Obtain the Registration Token from GitLab</h3>
+<div class="step">
+<span class="step-number">3</span> Before registering, get the runner token from the GitLab web interface.
+</div>
+<ul>
+<li>Log in to <strong>https://gitlab.com</strong></li>
+<li>Navigate to the target <strong>Project</strong> or <strong>Group</strong></li>
+<li>Go to <strong>Settings &gt; CI/CD</strong></li>
+<li>Expand the <strong>Runners</strong> section</li>
+<li>Click <strong>"New project runner"</strong> (or "New group runner")</li>
+<li>Configure:
+  <ul>
+    <li>Check <strong>"Run untagged jobs"</strong> = OFF (we want tagged only)</li>
+    <li>Check <strong>"Lock to current project"</strong> = ON (recommended for prod)</li>
+    <li>Check <strong>"Maximum job timeout"</strong> = leave default or set 3600 (1 hour)</li>
+  </ul>
+</li>
+<li>Click <strong>"Create runner"</strong></li>
+<li><strong>Copy the registration token</strong> — you'll need it for the next step</li>
+</ul>
+
+<div class="warn-box">
+<strong>Important:</strong> The token shown in GitLab is a one-time use token. Copy it before closing the page. The <code>XXXXXXXXXXXXXXXXXXXXXXX</code> in the commands below must be replaced with this actual token.
+</div>
+
+<!-- STEP 4 -->
+<h3>Step 4: Register the Runner</h3>
+<div class="step">
+<span class="step-number">4</span> Register the runner with GitLab using the token obtained in Step 3.
+</div>
+<div class="code">
+<pre># Register the runner (non-interactive mode)
+sudo gitlab-runner register \
+  --non-interactive \
+  --url "https://gitlab.com/" \
+  --registration-token "REPLACE_WITH_ACTUAL_TOKEN" \
+  --description "techno-magento-prod-runner" \
+  --tag-list "techno-magento-prod-runner" \
+  --executor "docker" \
+  --docker-image "ruby:3.2" \
+  --docker-privileged=false \
+  --docker-network-mode="bridge" \
+  --docker-volumes "/cache" \
+  --limit 1 \
+  --locked</pre>
+</div>
+
+<div class="success-box">
+<strong>Expected output:</strong> <code>Runner registered successfully. Feel free to start it, but if it's already running simply restart it.</code> The config file is created at <code>/etc/gitlab-runner/config.toml</code>.
+</div>
+
+<!-- STEP 5 -->
+<h3>Step 5: Verify & Fine-Tune config.toml</h3>
+<div class="step">
+<span class="step-number">5</span> Review and adjust the generated configuration file.
+</div>
+<div class="code">
+<pre># View the generated configuration
+sudo cat /etc/gitlab-runner/config.toml
+
+# Edit if needed (e.g., to adjust network_mode or image)
+sudo nano /etc/gitlab-runner/config.toml</pre>
+</div>
+
+<div class="step">
+<span class="step-number">5b</span> The final <code>/etc/gitlab-runner/config.toml</code> should look like this:
+</div>
+<div class="code">
+<pre>concurrent = 1
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "techno-magento-prod-runner"
+  limit = 1
+  url = "https://gitlab.com/"
+  token = "XXXXXXXXXXXXXXXXXXXXXXX"
+  executor = "docker"
+
+  [runners.custom_build_dir]
+
+  [runners.cache]
+    MaxUploadedArchiveSize = 0
+    [runners.cache.s3]
+    [runners.cache.gcs]
+    [runners.cache.azure]
+
+  [runners.docker]
+    network_mode = "bridge"
+    tls_verify = false
+    image = "ruby:3.2"
+    privileged = false
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]</pre>
+</div>
+
+<div class="code">
+<pre># Verify the configuration syntax is valid
+sudo gitlab-runner verify</pre>
+</div>
+
+<div class="success-box">
+<strong>Expected output:</strong> <code>Verifying runner... is alive</code> followed by <code>Verifying runner... is valid</code> for each registered runner.
+</div>
+
+<!-- STEP 6 -->
+<h3>Step 6: Start & Enable the Runner Service</h3>
+<div class="step">
+<span class="step-number">6</span> Start the runner as a system service and configure it to start on boot.
+</div>
+<div class="code">
+<pre># Install the runner as a systemd service
+sudo gitlab-runner install --user gitlab-runner --working-directory /home/gitlab-runner
+
+# If the gitlab-runner user doesn't exist yet, create it:
+sudo useradd -m -s /bin/bash gitlab-runner 2>/dev/null
+
+# Install the service with the correct user
+sudo gitlab-runner install --user gitlab-runner --working-directory /home/gitlab-runner
+
+# Start the runner
+sudo gitlab-runner start
+
+# Verify it's running
+sudo gitlab-runner status
+
+# Enable auto-start on server boot
+sudo systemctl enable gitlab-runner</pre>
+</div>
+
+<div class="success-box">
+<strong>Expected output:</strong> <code>gitlab-runner status</code> should show <code>Runtime platform ... pid=XXXX running=true</code>. The runner is now polling GitLab for jobs.
+</div>
+
+<!-- STEP 7 -->
+<h3>Step 7: Verify Runner in GitLab UI</h3>
+<div class="step">
+<span class="step-number">7</span> Confirm the runner appears online in the GitLab dashboard.
+</div>
+<ul>
+<li>Go to the GitLab project/group</li>
+<li>Navigate to <strong>Settings &gt; CI/CD &gt; Runners</strong></li>
+<li>Confirm <code>techno-magento-prod-runner</code> appears with:
+  <ul>
+    <li>Status: <span class="badge badge-clean">ONLINE</span></li>
+    <li>Tag: <code>techno-magento-prod-runner</code></li>
+    <li>IP Address: matches the server IP</li>
+    <li>Version: matches the installed GitLab Runner version</li>
+  </ul>
+</li>
+</ul>
+
+<!-- ==================== TESTING ==================== -->
+<h2>8. Testing & Validation</h2>
+
+<h3>Test 1: Docker Health Check</h3>
+<div class="step">
+Confirm Docker can pull images and run containers on this server.
+</div>
+<div class="code">
+<pre># Pull the Ruby 3.2 image (the default CI image)
+sudo docker pull ruby:3.2
+
+# Run a quick test
+sudo docker run --rm ruby:3.2 ruby -e "puts 'Ruby ' + RUBY_VERSION + ' is working'"</pre>
+</div>
+<div class="success-box">
+<strong>Expected:</strong> <code>Ruby 3.2.x is working</code> — confirms Docker can pull images from Docker Hub and execute containers.
+</div>
+
+<h3>Test 2: Runner Configuration Validation</h3>
+<div class="step">
+Verify the runner config is syntactically correct and the runner can reach GitLab.
+</div>
+<div class="code">
+<pre># Verify configuration
+sudo gitlab-runner verify
+
+# List registered runners
+sudo gitlab-runner list</pre>
+</div>
+<div class="success-box">
+<strong>Expected:</strong> Both commands complete without errors. <code>list</code> shows <code>techno-magento-prod-runner</code> with the correct URL and token.
+</div>
+
+<h3>Test 3: Debug Mode (Live Job Polling)</h3>
+<div class="step">
+Run the runner in debug mode to see real-time job polling logs. Useful for troubleshooting.
+</div>
+<div class="code">
+<pre># Stop the service first (debug mode runs in foreground)
+sudo gitlab-runner stop
+
+# Run in debug mode (Ctrl+C to stop)
+sudo gitlab-runner --debug run
+
+# Watch for: "Checking for jobs..." and "Feeding runner..." messages
+# After confirming it works, stop with Ctrl+C and restart the service:
+sudo gitlab-runner start</pre>
+</div>
+<div class="success-box">
+<strong>Expected:</strong> Logs show <code>Checking for jobs...</code> every few seconds. When a job is picked up, you'll see <code>Feeding to runner...</code> followed by Docker image pull and job execution logs.
+</div>
+
+<h3>Test 4: End-to-End CI/CD Job Test</h3>
+<div class="step">
+Create a test pipeline in a GitLab project to confirm the runner picks up and executes jobs correctly.
+</div>
+<div class="code">
+<pre># Add this .gitlab-ci.yml to any project that has access to this runner:
+
+test_runner:
+  tags:
+    - techno-magento-prod-runner
+  script:
+    - echo "Runner is working!"
+    - ruby --version
+    - uname -a
+    - echo "Test completed at $(date)"</pre>
+</div>
+<div class="success-box">
+<strong>Expected:</strong> The job appears in <strong>CI/CD &gt; Pipelines</strong>, is picked up by <code>techno-magento-prod-runner</code>, and passes with output showing the Ruby version and system info.
+</div>
+
+<h3>Test 5: Docker Network Mode Validation</h3>
+<div class="step">
+Verify that the Docker network mode (bridge) works correctly for CI jobs.
+</div>
+<div class="code">
+<pre># Add this to .gitlab-ci.yml to test network connectivity:
+
+test_network:
+  tags:
+    - techno-magento-prod-runner
+  script:
+    - echo "Testing network connectivity..."
+    - curl -s --max-time 5 https://gitlab.com -o /dev/null && echo "GitLab reachable" || echo "GitLab unreachable"
+    - curl -s --max-time 5 https://rubygems.org -o /dev/null && echo "RubyGems reachable" || echo "RubyGems unreachable"
+    - hostname
+    - ip addr show</pre>
+</div>
+<div class="success-box">
+<strong>Expected:</strong> Both <code>GitLab reachable</code> and <code>RubyGems reachable</code> confirm the container has outbound internet access in bridge mode. If either fails, switch to <code>network_mode = "host"</code> in config.toml.
+</div>
+
+<h3>Test 6: Cache Volume Validation</h3>
+<div class="step">
+Confirm the <code>/cache</code> volume persists data between CI jobs.
+</div>
+<div class="code">
+<pre># Add this to .gitlab-ci.yml:
+
+test_cache:
+  tags:
+    - techno-magento-prod-runner
+  script:
+    - mkdir -p /cache/test
+    - echo "cache-$(date +%s)" > /cache/test/timestamp.txt
+    - cat /cache/test/timestamp.txt
+    - echo "Cache volume is mounted and writable"</pre>
+</div>
+<div class="success-box">
+<strong>Expected:</strong> The job writes a timestamp to <code>/cache/test/timestamp.txt</code> and reads it back successfully. On a subsequent run, the previous timestamp should still be present (cache persistence).
+</div>
+
+<!-- ==================== TROUBLESHOOTING ==================== -->
+<h2>9. Troubleshooting Common Issues</h2>
+
+<table>
+<tr><th>Problem</th><th>Diagnosis</th><th>Fix</th></tr>
+<tr>
+<td>Runner shows <strong>offline</strong> in GitLab</td>
+<td><code>sudo gitlab-runner status</code> — check if service is running</td>
+<td><code>sudo gitlab-runner restart</code> — or check <code>/var/log/syslog</code> for errors</td>
+</tr>
+<tr>
+<td><strong>Permission denied</strong> on Docker socket</td>
+<td><code>ls -la /var/run/docker.sock</code></td>
+<td>Add gitlab-runner user to docker group: <code>sudo usermod -aG docker gitlab-runner</code> then restart the service</td>
+</tr>
+<tr>
+<td>Jobs stuck in <strong>pending</strong></td>
+<td>Check runner tags match the job tags in <code>.gitlab-ci.yml</code></td>
+<td>Ensure job uses <code>tags: [techno-magento-prod-runner]</code>; verify runner is not locked to a different project</td>
+</tr>
+<tr>
+<td><strong>Docker pull</strong> timeout/failure</td>
+<td><code>sudo docker pull ruby:3.2</code> — test manually</td>
+<td>Check server internet connectivity; configure Docker proxy if behind firewall; try <code>network_mode = "host"</code></td>
+</tr>
+<tr>
+<td><strong>Registration token</strong> rejected</td>
+<td>Token may be expired or already used</td>
+<td>Generate a new token from GitLab <strong>Settings &gt; CI/CD &gt; Runners &gt; New runner</strong></td>
+</tr>
+<tr>
+<td>Runner picks up job but <strong>fails immediately</strong></td>
+<td>Check debug logs: <code>sudo gitlab-runner --debug run</code></td>
+<td>Usually a Docker image issue — verify the image exists and can be pulled; check disk space</td>
+</tr>
+</table>
+
+<!-- ==================== CHECKLIST ==================== -->
+<h2>10. Pre-Production Checklist</h2>
+
+<table>
+<tr><th>#</th><th>Task</th><th>Command to Verify</th><th>Status</th></tr>
+<tr><td>1</td><td>Docker CE repo added</td><td><code>yum repolist | grep docker</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>2</td><td>Docker CE installed and running</td><td><code>docker --version && systemctl status docker</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>3</td><td>Docker hello-world test passes</td><td><code>docker run hello-world</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>4</td><td>GitLab Runner repo added</td><td><code>yum repolist | grep gitlab</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>5</td><td>GitLab Runner installed</td><td><code>gitlab-runner --version</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>6</td><td>Registration token obtained from GitLab</td><td>GitLab UI: Settings &gt; CI/CD &gt; Runners</td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>7</td><td>Runner registered successfully</td><td><code>sudo gitlab-runner list</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>8</td><td>config.toml verified and corrected</td><td><code>sudo gitlab-runner verify</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>9</td><td>gitlab-runner user created</td><td><code>id gitlab-runner</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>10</td><td>gitlab-runner user in docker group</td><td><code>groups gitlab-runner | grep docker</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>11</td><td>Runner service started and enabled</td><td><code>systemctl status gitlab-runner</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>12</td><td>Runner visible and <strong>online</strong> in GitLab UI</td><td>GitLab UI: Settings &gt; CI/CD &gt; Runners</td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>13</td><td>Ruby 3.2 Docker image pulled successfully</td><td><code>docker pull ruby:3.2</code></td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>14</td><td>Test CI job executed successfully</td><td>GitLab UI: CI/CD &gt; Pipelines</td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>15</td><td>Network connectivity validated from container</td><td>Test 5 in section 8</td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>16</td><td>Cache volume read/write verified</td><td>Test 6 in section 8</td><td><span class="badge badge-pending">PENDING</span></td></tr>
+<tr><td>17</td><td>Decision documented on network_mode and Ruby version</td><td>This report, section 4</td><td><span class="badge badge-pending">PENDING</span></td></tr>
+</table>
+
+<!-- ==================== COMMAND REFERENCE ==================== -->
+<h2>11. Quick Command Reference</h2>
+
+<h3>Docker</h3>
+<table>
+<tr><th>Action</th><th>Command</th></tr>
+<tr><td>Start Docker</td><td><code>sudo systemctl start docker</code></td></tr>
+<tr><td>Stop Docker</td><td><code>sudo systemctl stop docker</code></td></tr>
+<tr><td>Restart Docker</td><td><code>sudo systemctl restart docker</code></td></tr>
+<tr><td>Docker status</td><td><code>sudo systemctl status docker</code></td></tr>
+<tr><td>List images</td><td><code>sudo docker images</code></td></tr>
+<tr><td>List containers</td><td><code>sudo docker ps -a</code></td></tr>
+<tr><td>Clean unused images</td><td><code>sudo docker image prune -a</code></td></tr>
+<tr><td>Clean unused volumes</td><td><code>sudo docker volume prune</code></td></tr>
+</table>
+
+<h3>GitLab Runner</h3>
+<table>
+<tr><th>Action</th><th>Command</th></tr>
+<tr><td>Start runner</td><td><code>sudo gitlab-runner start</code></td></tr>
+<tr><td>Stop runner</td><td><code>sudo gitlab-runner stop</code></td></tr>
+<tr><td>Restart runner</td><td><code>sudo gitlab-runner restart</code></td></tr>
+<tr><td>Check status</td><td><code>sudo gitlab-runner status</code></td></tr>
+<tr><td>Verify config</td><td><code>sudo gitlab-runner verify</code></td></tr>
+<tr><td>Debug mode</td><td><code>sudo gitlab-runner --debug run</code></td></tr>
+<tr><td>List runners</td><td><code>sudo gitlab-runner list</code></td></tr>
+<tr><td>Unregister runner</td><td><code>sudo gitlab-runner unregister --name techno-magento-prod-runner</code></td></tr>
+<tr><td>Update runner</td><td><code>sudo yum update gitlab-runner -y</code></td></tr>
+<tr><td>View logs</td><td><code>sudo journalctl -u gitlab-runner -f</code></td></tr>
+<tr><td>View config</td><td><code>sudo cat /etc/gitlab-runner/config.toml</code></td></tr>
+</table>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="footer">
+<p><strong>CI/CD GitLab Runner Configuration Plan</strong> — techno-magento-prod-runner<br>
+Server: AlmaLinux 8.10 | Generated: June 14, 2026 | Prepared for Server Support Team<br>
+Contact: monir.ab@techon-dz.com</p>
+</div>
+
+</body>
+</html>

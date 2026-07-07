@@ -1,73 +1,47 @@
-# Magento 2 specific files and directories to ignore
-
-# Magento generated files
- 
-/var/
-/pub/static/
-/generated/
-/pub/pma/
-/pub/media/amasty/
-/pub/media/sm/
-/webapp
-# Composer dependencies
-/vendor/
-/app/etc/env.php
-/app/etc/config.php
-# Node modules
-/node_modules/
-
-# IDE files
-/.idea/
-/.vscode/
-/nbproject/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Log files
+vendor/
+node_modules/
+opencode.json
+.opencode.json
+.env
 *.log
-
-# Backup files
-*.bak
-*.swp
+.qoder/
+.vscode/
+backups/
+test-results/
+logs/
+api/logs/
+api/telegram/data/
+api/telegram/logs/
+api/openclaw/
+api/.htaccess.bak
+api/*.backup
+api/*.old
 *.backup
-*.old
-
-# Large files that shouldn't be tracked
-rsync_log.txt
-*.har
-composer.lock
-
-# Session files
-pub/media/customer_address/*/*/sess_*
-pub/media/customer/*/*/sess_*
-
-# Media files (except .htaccess)
-/pub/media/*
-!/pub/media/.htaccess
-
-# Static files
-/pub/static/*
-!/pub/static/.htaccess
-
-# Var directory
-/var/*
-!/var/.htaccess
-
-# Vendor directory
-/vendor/*
-!/vendor/.htaccess
-
-# Generated directory
-/generated/*
-!/generated/.htaccess
-
-# Other common files to ignore
+*.bak
 error_log
-*.tmp
-*.temp
-*.cache
-.svn
-.git
-.aider*
+disable-proxy.log
+fix-*.log
+verify-*.log
+package-lock.json
+dashboard/package-lock.json
+assets_legacy/
+config/webpushr.keys
+api/Logger.php
+
+# Build outputs
+dashboard/build/
+dashboard/dist/
+assets/index-*.js
+assets/index-*.css
+
+# User data
+uploads/
+
+# Root-level docs (keep only README)
+*.md
+!README.md
+
+# Operational scripts
+fix-*.sh
+verify-*.sh
+scripts/

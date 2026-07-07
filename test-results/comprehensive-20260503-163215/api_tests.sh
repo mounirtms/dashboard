@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "=== API ENDPOINT TESTS ==="
+echo ""
+echo "--- Public Endpoints ---"
+echo "Root: $(curl -s -o /dev/null -w '%{http_code}' https://pim.technostationery.com/)"
+echo "Login: $(curl -s -o /dev/null -w '%{http_code}' https://pim.technostationery.com/user/login)"
+echo "CSS: $(curl -s -o /dev/null -w '%{http_code}' https://pim.technostationery.com/css/pim.css)"
+echo ""
+echo "--- API Endpoints (expected 401) ---"
+echo "Products API: $(curl -s -o /dev/null -w '%{http_code}' https://pim.technostationery.com/api/rest/v1/products?limit=1)"
+echo ""
+echo "--- Dashboard ---"
+echo "Dashboard root: $(curl -s -o /dev/null -w '%{http_code}' https://dashboard.technostationery.com/)"

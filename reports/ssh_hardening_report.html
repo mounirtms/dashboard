@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; }
+h1 { color: #2c3e50; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+h2 { color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 30px; }
+h3 { color: #34495e; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0 20px 0; }
+th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; }
+td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+tr:nth-child(even) { background: #f8f9fa; }
+.pass { color: #27ae60; font-weight: bold; }
+.fail { color: #c0392b; font-weight: bold; }
+.warn { color: #f39c12; font-weight: bold; }
+.info { color: #2980b9; font-weight: bold; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; color: white; }
+.badge-clean { background: #27ae60; }
+.badge-fixed { background: #2980b9; }
+.badge-critical { background: #c0392b; }
+.badge-warn { background: #f39c12; }
+.badge-active { background: #8e44ad; }
+.badge-removed { background: #e74c3c; }
+.code { background: #f4f4f4; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 13px; overflow-x: auto; }
+.summary-box { background: #ecf0f1; border-left: 4px solid #2c3e50; padding: 15px 20px; margin: 20px 0; }
+.alert-box { background: #fdedec; border-left: 4px solid #c0392b; padding: 15px 20px; margin: 20px 0; }
+.success-box { background: #eafaf1; border-left: 4px solid #27ae60; padding: 15px 20px; margin: 20px 0; }
+.chart-bar { background: #3498db; height: 20px; border-radius: 3px; display: inline-block; min-width: 2px; vertical-align: middle; }
+ul { padding-left: 20px; }
+li { margin-bottom: 4px; }
+.footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>SSH Security Hardening Report</h1>
+<p><strong>Server:</strong> ded701.inmotionhosting.com (205.134.249.177)<br>
+<strong>Date:</strong> June 14, 2026<br>
+<strong>Performed by:</strong> Qoder Automated Security Team<br>
+<strong>Reviewed by:</strong> Mounir Abderrahmani<br>
+<strong>OS:</strong> AlmaLinux 8.10 (Cerulean Leopard) &mdash; OpenSSH</p>
+
+<div class="summary-box">
+<strong>Executive Summary:</strong> A comprehensive SSH security audit revealed <strong>2,043 brute-force login attempts in a single day</strong> from 42 unique IP addresses, with <strong>53,269 total failed attempts</strong> recorded in server history. The SSH configuration had multiple critical weaknesses: root password login was permitted, MaxAuthTries was set to 10 (allowing extensive guessing), no fail2ban was installed to auto-ban attackers, and the <code>/var/log/btmp</code> file had world-writable permissions (777). All issues have been remediated: root password login disabled, fail2ban deployed (already banning attackers), auth limits tightened, and the <code>lms</code> user removed from the allowed SSH users list. The server is now protected against automated brute-force attacks.
+</div>
+
+<!-- ==================== THREAT LANDSCAPE ==================== -->
+<h2>1. Threat Landscape</h2>
+
+<div class="alert-box">
+<strong>Critical:</strong> The server was under active brute-force attack at the time of audit. Immediate action was required.
+</div>
+
+<h3>1.1 Attack Volume &mdash; Last 7 Days</h3>
+<table>
+<tr><th>Date</th><th>Failed Attempts</th><th>Visual</th></tr>
+<tr><td>June 8, 2026</td><td>2,192</td><td><span class="chart-bar" style="width: 37px;"></span></td></tr>
+<tr><td>June 9, 2026</td><td>3,076</td><td><span class="chart-bar" style="width: 52px;"></span></td></tr>
+<tr><td>June 10, 2026</td><td>1,785</td><td><span class="chart-bar" style="width: 30px;"></span></td></tr>
+<tr><td>June 11, 2026</td><td>3,118</td><td><span class="chart-bar" style="width: 53px;"></span></td></tr>
+<tr><td>June 12, 2026</td><td><span class="fail">5,995</span></td><td><span class="chart-bar" style="width: 100px; background: #c0392b;"></span></td></tr>
+<tr><td>June 13, 2026</td><td>2,243</td><td><span class="chart-bar" style="width: 38px;"></span></td></tr>
+<tr><td>June 14, 2026 (audit day)</td><td>2,043</td><td><span class="chart-bar" style="width: 35px;"></span></td></tr>
+<tr style="font-weight: bold; background: #fdedec;"><td><strong>7-Day Total</strong></td><td><strong>20,452</strong></td><td></td></tr>
+</table>
+<p><strong>Historical total (btmp):</strong> 53,269 failed login attempts recorded</p>
+
+<h3>1.2 Top Attacking IPs (June 14)</h3>
+<table>
+<tr><th>IP Address</th><th>Failed Attempts</th><th>Status</th></tr>
+<tr><td>176.65.132.149</td><td><span class="fail">760</span></td><td><span class="badge badge-critical">HEAVIEST ATTACKER</span></td></tr>
+<tr><td>193.233.127.72</td><td><span class="fail">427</span></td><td><span class="badge badge-critical">ACTIVE</span></td></tr>
+<tr><td>65.49.139.223</td><td>147</td><td><span class="badge badge-warn">ACTIVE</span></td></tr>
+<tr><td>64.226.126.224</td><td>147</td><td><span class="badge badge-warn">ACTIVE</span></td></tr>
+<tr><td>178.20.210.208</td><td>42</td><td><span class="badge badge-warn">ACTIVE</span></td></tr>
+<tr><td>65.109.216.41</td><td>30</td><td><span class="badge badge-warn">ACTIVE</span></td></tr>
+<tr><td>50.187.96.101</td><td>30</td><td><span class="badge badge-warn">ACTIVE</span></td></tr>
+<tr><td>24.30.46.249</td><td>30</td><td><span class="badge badge-warn">ACTIVE</span></td></tr>
+<tr><td>207.180.223.98</td><td>30</td><td><span class="badge badge-warn">ACTIVE</span></td></tr>
+<tr><td>158.174.211.17</td><td>30</td><td><span class="badge badge-warn">ACTIVE</span></td></tr>
+<tr><td>38.253.239.21</td><td>15</td><td><span class="badge badge-fixed">BANNED by fail2ban</span></td></tr>
+<tr><td>166.1.60.230</td><td>~10</td><td><span class="badge badge-fixed">BANNED by fail2ban</span></td></tr>
+</table>
+<p><strong>Total unique attacking IPs (June 14):</strong> 42</p>
+
+<h3>1.3 Most Targeted Usernames</h3>
+<p>Attackers were probing common default/service usernames &mdash; none of these users exist on the server:</p>
+<table>
+<tr><th>Username</th><th>Attempts</th><th>Category</th></tr>
+<tr><td>admin</td><td>134</td><td>Generic admin</td></tr>
+<tr><td>ubuntu</td><td>117</td><td>Cloud provider default</td></tr>
+<tr><td>user</td><td>114</td><td>Generic</td></tr>
+<tr><td>debian</td><td>93</td><td>Linux distro default</td></tr>
+<tr><td>deploy</td><td>21</td><td>CI/CD service</td></tr>
+<tr><td>test</td><td>19</td><td>Generic</td></tr>
+<tr><td>ftpuser</td><td>15</td><td>FTP service</td></tr>
+<tr><td>scops</td><td>14</td><td>Application service</td></tr>
+<tr><td>pi</td><td>12</td><td>Raspberry Pi default</td></tr>
+<tr><td>minecraft</td><td>12</td><td>Game server</td></tr>
+<tr><td>claude</td><td>11</td><td>AI service</td></tr>
+<tr><td>postgres</td><td>7</td><td>Database service</td></tr>
+<tr><td>root (direct)</td><td><span class="fail">448</span></td><td><span class="badge badge-critical">SUPERUSER</span></td></tr>
+</table>
+
+<!-- ==================== VULNERABILITIES FOUND ==================== -->
+<h2>2. Vulnerabilities Found</h2>
+
+<table>
+<tr><th>#</th><th>Vulnerability</th><th>Severity</th><th>Previous Value</th><th>Risk</th></tr>
+<tr>
+  <td>1</td>
+  <td>Root password login enabled</td>
+  <td><span class="fail">CRITICAL</span></td>
+  <td><code>PermitRootLogin yes</code></td>
+  <td>Attackers could brute-force root password directly. 448 root login attempts observed in one day.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Excessive MaxAuthTries</td>
+  <td><span class="fail">HIGH</span></td>
+  <td><code>MaxAuthTries 10</code></td>
+  <td>Each connection allowed 10 password guesses before disconnection, amplifying brute-force efficiency.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>No fail2ban / auto-ban mechanism</td>
+  <td><span class="fail">HIGH</span></td>
+  <td>Not installed</td>
+  <td>Attackers could retry indefinitely without being blocked. Top IP made 760 attempts without consequence.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>Excessive MaxSessions</td>
+  <td><span class="warn">MEDIUM</span></td>
+  <td><code>MaxSessions 100</code></td>
+  <td>Allowed 100 concurrent sessions per connection, enabling resource exhaustion attacks.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>No login grace time limit</td>
+  <td><span class="warn">MEDIUM</span></td>
+  <td>Default (120s)</td>
+  <td>Unauthenticated connections held open for 2 minutes, wasting server resources.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td>SSH agent forwarding enabled</td>
+  <td><span class="warn">MEDIUM</span></td>
+  <td><code>AllowAgentForwarding yes</code></td>
+  <td>Could allow SSH agent hijacking if a user session is compromised.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>/var/log/btmp</code> world-writable (777)</td>
+  <td><span class="warn">MEDIUM</span></td>
+  <td><code>rwxrwxrwx</code></td>
+  <td>Failed login log could be tampered with by any user. SSH was warning on every connection.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td>Inactive user <code>lms</code> in AllowUsers</td>
+  <td><span class="info">LOW</span></td>
+  <td><code>AllowUsers ... lms ...</code></td>
+  <td>Unnecessary user in the SSH allow list expands the attack surface. No SSH keys configured.</td>
+</tr>
+</table>
+
+<!-- ==================== REMEDIATION APPLIED ==================== -->
+<h2>3. Remediation Applied</h2>
+
+<div class="success-box">
+<strong>All 8 vulnerabilities have been fixed.</strong> Changes took effect on June 14, 2026 at 14:10 CET.
+</div>
+
+<h3>3.1 SSH Configuration Changes</h3>
+<table>
+<tr><th>Setting</th><th>Before</th><th>After</th><th>Impact</th></tr>
+<tr>
+  <td><code>PermitRootLogin</code></td>
+  <td><span class="fail">yes</span></td>
+  <td><span class="pass">prohibit-password</span></td>
+  <td>Root can only log in via SSH key. Password brute-force against root is now impossible.</td>
+</tr>
+<tr>
+  <td><code>MaxAuthTries</code></td>
+  <td><span class="fail">10</span></td>
+  <td><span class="pass">3</span></td>
+  <td>Each connection now allows only 3 attempts before disconnection, reducing brute-force efficiency by 70%.</td>
+</tr>
+<tr>
+  <td><code>MaxSessions</code></td>
+  <td><span class="fail">100</span></td>
+  <td><span class="pass">5</span></td>
+  <td>Prevents session multiplexing abuse. 5 is sufficient for legitimate admin work.</td>
+</tr>
+<tr>
+  <td><code>LoginGraceTime</code></td>
+  <td><span class="warn">120s (default)</span></td>
+  <td><span class="pass">30s</span></td>
+  <td>Unauthenticated connections dropped after 30 seconds, freeing server resources faster.</td>
+</tr>
+<tr>
+  <td><code>AllowAgentForwarding</code></td>
+  <td><span class="warn">yes</span></td>
+  <td><span class="pass">no</span></td>
+  <td>Prevents SSH agent hijacking attacks through compromised sessions.</td>
+</tr>
+<tr>
+  <td><code>AllowUsers</code></td>
+  <td>technadminy7 lms dnd root salah tsdnd</td>
+  <td><span class="pass">technadminy7 dnd root salah tsdnd</span></td>
+  <td>Removed inactive <code>lms</code> user (no SSH keys configured), reducing attack surface.</td>
+</tr>
+</table>
+
+<h3>3.2 fail2ban Deployment</h3>
+<div class="code">
+# /etc/fail2ban/jail.local
+[sshd]
+enabled  = true
+port     = ssh
+filter   = sshd
+logpath  = /var/log/secure
+backend  = systemd
+maxretry = 3          # Ban after 3 failed attempts
+findtime = 600        # Within 10 minutes
+bantime  = 3600       # Ban duration: 1 hour
+</div>
+
+<table>
+<tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Service status</td><td><span class="pass">Active &amp; running</span></td></tr>
+<tr><td>Auto-start on boot</td><td><span class="pass">Enabled</span></td></tr>
+<tr><td>IPs banned immediately</td><td><span class="pass">2</span> (38.253.239.21, 166.1.60.230)</td></tr>
+<tr><td>Time to first ban</td><td>&lt; 1 minute after activation</td></tr>
+</table>
+
+<h3>3.3 File Permission Fix</h3>
+<table>
+<tr><th>File</th><th>Before</th><th>After</th></tr>
+<tr>
+  <td><code>/var/log/btmp</code></td>
+  <td><span class="fail">rwxrwxrwx (777) root:utmp</span></td>
+  <td><span class="pass">rw-rw---- (660) root:utmp</span></td>
+</tr>
+</table>
+
+<h3>3.4 Backup</h3>
+<p>Original SSH configuration backed up to <code>/etc/ssh/sshd_config.bak.20260614*</code> before modifications.</p>
+
+<!-- ==================== USER ACCESS AUDIT ==================== -->
+<h2>4. SSH User Access Audit</h2>
+
+<table>
+<tr><th>User</th><th>SSH Keys</th><th>Access Status</th><th>Notes</th></tr>
+<tr>
+  <td><code>root</code></td>
+  <td><span class="pass">3 keys</span></td>
+  <td><span class="pass">Key-only</span></td>
+  <td>Password login disabled via <code>PermitRootLogin prohibit-password</code></td>
+</tr>
+<tr>
+  <td><code>technadminy7</code></td>
+  <td><span class="pass">1 key</span></td>
+  <td><span class="pass">Active</span></td>
+  <td>Primary admin account</td>
+</tr>
+<tr>
+  <td><code>dnd</code></td>
+  <td><span class="pass">3 keys</span></td>
+  <td><span class="pass">Active</span></td>
+  <td>Development/admin account</td>
+</tr>
+<tr>
+  <td><code>tsdnd</code></td>
+  <td><span class="pass">2 keys</span></td>
+  <td><span class="pass">Active</span></td>
+  <td>Second store admin</td>
+</tr>
+<tr>
+  <td><code>salah</code></td>
+  <td><span class="fail">0 keys</span></td>
+  <td><span class="warn">Password only</span></td>
+  <td>SSH key should be added; password auth kept temporarily</td>
+</tr>
+<tr>
+  <td><code>lms</code></td>
+  <td>N/A</td>
+  <td><span class="badge badge-removed">REMOVED</span></td>
+  <td>Removed from AllowUsers &mdash; no SSH keys configured, no active use</td>
+</tr>
+</table>
+
+<!-- ==================== CURRENT CONFIG ==================== -->
+<h2>5. Final SSH Configuration</h2>
+
+<div class="code">
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+AllowUsers technadminy7 dnd root salah tsdnd
+SyslogFacility AUTHPRIV
+LogLevel VERBOSE
+LoginGraceTime 30
+PermitRootLogin prohibit-password
+StrictModes yes
+MaxAuthTries 3
+MaxSessions 5
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+IgnoreRhosts yes
+PermitEmptyPasswords no
+PasswordAuthentication yes
+ChallengeResponseAuthentication no
+KbdInteractiveAuthentication no
+GSSAPIAuthentication no
+UsePAM yes
+AllowAgentForwarding no
+AllowTcpForwarding yes
+GatewayPorts no
+X11Forwarding no
+PermitUserEnvironment no
+ClientAliveInterval 30
+ClientAliveCountMax 20
+PermitTunnel no
+DenyGroups cpaneldemo cpanelsuspended
+</div>
+
+<!-- ==================== RECOMMENDATIONS ==================== -->
+<h2>6. Remaining Recommendations</h2>
+
+<table>
+<tr><th>#</th><th>Recommendation</th><th>Priority</th><th>Details</th></tr>
+<tr>
+  <td>1</td>
+  <td>Add SSH key for <code>salah</code> user, then disable password auth globally</td>
+  <td><span class="fail">HIGH</span></td>
+  <td>Once all users have keys, set <code>PasswordAuthentication no</code> to eliminate brute-force entirely.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Increase fail2ban <code>bantime</code> for repeat offenders</td>
+  <td><span class="warn">MEDIUM</span></td>
+  <td>Consider <code>bantime = 86400</code> (24h) or use <code>fail2ban-recidive</code> jail for persistent attackers.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>Change SSH port from 22 to non-standard</td>
+  <td><span class="info">LOW</span></td>
+  <td>Reduces noise from automated scanners. Does not improve security against targeted attacks.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>Set up SSH key rotation policy</td>
+  <td><span class="info">LOW</span></td>
+  <td>Rotate SSH keys every 90 days. Remove keys for departed users immediately.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>Configure firewall rules for SSH</td>
+  <td><span class="warn">MEDIUM</span></td>
+  <td>Consider restricting SSH access to specific IP ranges via iptables/nftables or Cloudflare Tunnel.</td>
+</tr>
+</table>
+
+<!-- ==================== USEFUL COMMANDS ==================== -->
+<h2>7. Operational Commands</h2>
+
+<div class="code">
+# Check fail2ban status and banned IPs
+fail2ban-client status sshd
+
+# Manually unban an IP
+fail2ban-client set sshd unbanip X.X.X.X
+
+# View today's failed SSH attempts
+journalctl -u sshd --since today | grep "Failed password"
+
+# View currently logged-in SSH users
+who
+
+# View SSH login history
+last | head -20
+
+# Restart SSH after config changes
+systemctl restart sshd
+
+# Validate SSH config before restarting
+sshd -t
+
+# View fail2ban logs
+journalctl -u fail2ban --since today
+</div>
+
+<div class="footer">
+<p>SSH Security Hardening Report &mdash; Generated June 14, 2026 by Qoder Automated Security Team<br>
+Server: ded701.inmotionhosting.com &bull; AlmaLinux 8.10 &bull; OpenSSH<br>
+Next review recommended: July 14, 2026</p>
+</div>
+
+</body>
+</html>

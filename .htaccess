@@ -1,202 +1,85 @@
-RewriteEngine on
-RewriteCond %{REQUEST_URI} !^/pub/
-RewriteCond %{REQUEST_URI} !^/setup/
-RewriteCond %{REQUEST_URI} !^/update/
-RewriteCond %{REQUEST_URI} !^/dev/
-RewriteCond %{REQUEST_URI} !^/robots.txt
-RewriteRule .* /pub/$0 [L]
-DirectoryIndex index.php
+# Parse .html files as PHP
+AddHandler application/x-httpd-php .html
 
-# php -- BEGIN cPanel-generated handler, do not edit
-# Set the “ea-php82” package as the default “PHP” programming language.
-<IfModule mime_module>
-  AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
-</IfModule>
-# php -- END cPanel-generated handler, do not edit
+# ============================================
+# CLOUDFLARE CACHE BYPASS - All dashboard content
+# ============================================
+# These headers tell Cloudflare to NEVER cache anything from this domain
+Header set CF-Cache-Status "DYNAMIC"
+Header set CDN-Cache-Control "no-cache, no-store, must-revalidate, private, max-age=0"
+Header set Cloudflare-CDN-Cache-Control "no-cache, no-store, must-revalidate, private, max-age=0"
+Header set Surrogate-Control "no-store"
 
-# Bot & Scanner Protection - Consolidated 2026-04-27
-SetEnvIfNoCase User-Agent "SemrushBot" bad_bot
-SetEnvIfNoCase User-Agent "AhrefsBot" bad_bot
-SetEnvIfNoCase User-Agent "MJ12bot" bad_bot
-SetEnvIfNoCase User-Agent "DotBot" bad_bot
-SetEnvIfNoCase User-Agent "PetalBot" bad_bot
-SetEnvIfNoCase User-Agent "DataForSeoBot" bad_bot
-SetEnvIfNoCase User-Agent "serpstatbot" bad_bot
-SetEnvIfNoCase User-Agent "GPTBot" bad_bot
-SetEnvIfNoCase User-Agent "Bytespider" bad_bot
-SetEnvIfNoCase User-Agent "CCBot" bad_bot
-<IfModule mod_authz_core.c>
-    <RequireAll>
-        Require all granted
-        Require not env bad_bot
-        Require not ip 4.232.90.232
-        Require not ip 34.150.216.55
-        Require not ip 96.126.130.244
-    </RequireAll>
-</IfModule>
-
-############################################
-# PERFORMANCE OPTIMIZATION - Browser Caching
-# Added: April 26, 2026
-############################################
-<IfModule mod_expires.c>
-    ExpiresActive On
-    
-    # Images
-    ExpiresByType image/jpeg "access plus 1 year"
-    ExpiresByType image/gif "access plus 1 year"
-    ExpiresByType image/png "access plus 1 year"
-    ExpiresByType image/webp "access plus 1 year"
-    ExpiresByType image/svg+xml "access plus 1 year"
-    ExpiresByType image/x-icon "access plus 1 year"
-    
-    # Fonts
-    ExpiresByType font/woff2 "access plus 1 year"
-    ExpiresByType font/woff "access plus 1 year"
-    ExpiresByType font/ttf "access plus 1 year"
-    ExpiresByType application/font-woff "access plus 1 year"
-    ExpiresByType application/font-woff2 "access plus 1 year"
-    
-    # CSS and JavaScript
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType text/javascript "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-    ExpiresByType application/x-javascript "access plus 1 month"
-    
-    # Others
-    ExpiresByType application/pdf "access plus 1 month"
-    ExpiresByType text/x-cross-domain-policy "access plus 1 week"
-</IfModule>
-
-<IfModule mod_headers.c>
-    # Cache-Control headers for static assets
-    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|woff2|woff|ttf|eot)$">
-        Header set Cache-Control "max-age=31536000, public, immutable"
-    </FilesMatch>
-    
-    <FilesMatch "\.(css|js)$">
-        Header set Cache-Control "max-age=2592000, public"
-    </FilesMatch>
-</IfModule>
-
-############################################
-# PERFORMANCE OPTIMIZATION - Compression
-# Added: April 26, 2026
-############################################
-<IfModule mod_deflate.c>
-    # Compress HTML, CSS, JavaScript, Text, XML and fonts
-    AddOutputFilterByType DEFLATE application/javascript
-    AddOutputFilterByType DEFLATE application/rss+xml
-    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
-    AddOutputFilterByType DEFLATE application/x-font
-    AddOutputFilterByType DEFLATE application/x-font-opentype
-    AddOutputFilterByType DEFLATE application/x-font-otf
-    AddOutputFilterByType DEFLATE application/x-font-truetype
-    AddOutputFilterByType DEFLATE application/x-font-ttf
-    AddOutputFilterByType DEFLATE application/x-javascript
-    AddOutputFilterByType DEFLATE application/xhtml+xml
-    AddOutputFilterByType DEFLATE application/xml
-    AddOutputFilterByType DEFLATE font/opentype
-    AddOutputFilterByType DEFLATE font/otf
-    AddOutputFilterByType DEFLATE font/ttf
-    AddOutputFilterByType DEFLATE image/svg+xml
-    AddOutputFilterByType DEFLATE image/x-icon
-    AddOutputFilterByType DEFLATE text/css
-    AddOutputFilterByType DEFLATE text/html
-    AddOutputFilterByType DEFLATE text/javascript
-    AddOutputFilterByType DEFLATE text/plain
-    AddOutputFilterByType DEFLATE text/xml
-    
-    # Remove browser bugs (only needed for really old browsers)
-    BrowserMatch ^Mozilla/4 gzip-only-text/html
-    BrowserMatch ^Mozilla/4\.0[678] no-gzip
-    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
-    Header append Vary User-Agent
-</IfModule>
-
-
-############################################
-# AGGRESSIVE PERFORMANCE OPTIMIZATIONS
-# Added: April 26, 2026
-############################################
-
-<IfModule mod_headers.c>
-    # Preload critical resources
-    <FilesMatch "\.(html|php)$">
-        # Preconnect to external domains
-        Header add Link "<https://fonts.googleapis.com>; rel=preconnect; crossorigin" "expr=%{CONTENT_TYPE} == 'text/html'"
-        Header add Link "<https://fonts.gstatic.com>; rel=preconnect; crossorigin" "expr=%{CONTENT_TYPE} == 'text/html'"
-        
-        # DNS Prefetch
-        Header add Link "<https://www.google-analytics.com>; rel=dns-prefetch" "expr=%{CONTENT_TYPE} == 'text/html'"
-        Header add Link "<https://www.googletagmanager.com>; rel=dns-prefetch" "expr=%{CONTENT_TYPE} == 'text/html'"
-    </FilesMatch>
-    
-    # Add performance hints
-    Header set X-UA-Compatible "IE=edge"
-    Header set X-Content-Type-Options "nosniff"
-    
-    # Enable Keep-Alive
-    Header set Connection keep-alive
-</IfModule>
-
-# Enable HTTP/2 Server Push (if supported)
-<IfModule mod_http2.c>
-    H2Push on
-    H2PushPriority *                       after
-    H2PushPriority text/css                before
-    H2PushPriority image/jpeg              after   32
-    H2PushPriority image/png               after   32
-    H2PushPriority application/javascript  interleaved
-</IfModule>
-
-# Optimize ETags
-<IfModule mod_headers.c>
-    Header unset ETag
-</IfModule>
-FileETag None
-
-# Far-future expires for versioned assets
-<IfModule mod_expires.c>
-    <FilesMatch "\.(jpg|jpeg|gif|png|webp|svg|woff2|woff|ttf|eot|js|css)$">
-        ExpiresActive On
-        ExpiresDefault "access plus 1 year"
-        Header append Cache-Control "public, immutable"
-    </FilesMatch>
-</IfModule>
-
-# Compress everything compressible
-<IfModule mod_deflate.c>
-    SetOutputFilter DEFLATE
-    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp)$ no-gzip
-    
-    # Force compression for mangled headers
-    <IfModule mod_setenvif.c>
-        <IfModule mod_headers.c>
-            SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
-            RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
-        </IfModule>
-    </IfModule>
-</IfModule>
-
-# Prevent access to hidden files
-<FilesMatch "^\.">
-    Order allow,deny
-    Deny from all
+# Prevent caching of HTML pages
+<FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
 </FilesMatch>
 
-# Optimize mod_rewrite
+# Prevent caching of API responses
+<FilesMatch "\.php$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>
+
+# Prevent caching of CSS and JS (dashboard assets)
+<FilesMatch "\.(css|js)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>
+
+# Security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
+Header set Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://www.clarity.ms https://scripts.clarity.ms https://connect.facebook.net https://www.googletagmanager.com https://gc.kes.v2.scr.kaspersky-labs.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://cdn.webpushr.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com https://*.clarity.ms https://www.clarity.ms https://www.google-analytics.com https://analytics.google.com https://*.google.com https://stats.g.doubleclick.net https://*.facebook.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://*.webpushr.com;"
+
+# Flight v2 API routing
 <IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /
-    
-    # Force HTTPS (if needed)
-    # RewriteCond %{HTTPS} off
-    # RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
-    
-    # Remove trailing slash (for performance)
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [R=301,L]
+  RewriteCond %{REQUEST_URI} ^/api/v2/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^api/v2/(.*)$ api/v2/index.php [L,QSA]
 </IfModule>
 
+# ============================================
+# Skip phpMyAdmin - must come BEFORE SPA routing
+# ============================================
+<IfModule mod_rewrite.c>
+  RewriteRule ^phpmyadmin(/.*)?$ - [L]
+</IfModule>
+
+# SPA Routing for React
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Skip phpMyAdmin and other system directories
+  RewriteCond %{REQUEST_URI} !^/phpmyadmin
+  
+  # Skip build assets (JS/CSS bundles)
+  RewriteCond %{REQUEST_URI} !^/build/
+  
+  # Serve webpushr service worker as real file
+  RewriteCond %{REQUEST_URI} !^/webpushr-sw\.js$
+  
+  # Forward Node.js backend requests to proxy
+  RewriteRule ^api/(mdm|cegid|techno|magento-node)/(.*)$ api/node-proxy.php [L,QSA]
+  
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-l
+  RewriteRule . /index.html [L]
+</IfModule>
+# Block .git access
+RewriteRule "\.git" - [F,L]
+RewriteRule ^\.git - [F,L]
+
+# Block direct access to non-API PHP files (security)
+<FilesMatch "\.(phtml|inc)$">
+    Require all denied
+</FilesMatch>

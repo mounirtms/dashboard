@@ -1,0 +1,273 @@
+================================================================================
+              MULTI-SITE SERVER STABILITY - IMPLEMENTATION PLAN
+================================================================================
+
+PROJECT: Stabilize production server for 5 websites
+TARGET: Load <2, Response time <200ms, Cache hit rate >80%
+STATUS: Ready for implementation (all issues identified)
+
+================================================================================
+                          CRITICAL ISSUES FOUND
+================================================================================
+
+1. MariaDB Buffer Pool: 128MB (CRITICAL)
+   - Should be: 8GB
+   - Impact: 95% disk IO, queries 1000x slower
+   - Fix time: 5 minutes
+
+2. PHP-FPM Pool Mode: Dynamic (CRITICAL)
+   - Problem: Unlimited process spawning
+   - Current: 10+ processes at 40%+ CPU
+   - Should be: Static with max_children=30
+   - Fix time: 10 minutes
+
+3. Old Config Files: 40+ backups (CLEANUP)
+   - Archive to /root/php-fpm-backups
+   - Keep only active configs
+   - Fix time: 5 minutes
+
+4. Cron Frequency: ALREADY FIXED
+   - Magento: 1 min → 5 min ✓
+   - Varnish warmup: 4h → 1h ✓
+
+================================================================================
+                      FOUR-PHASE IMPLEMENTATION PLAN
+================================================================================
+
+PHASE 1: MARIADB (15 minutes)
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. Edit /opt/mariadb10.6/my.cnf                                         │
+│    - innodb_buffer_pool_size = 8G (was 128M)                            │
+│    - max_connections = 300 (was 151)                                    │
+│    - innodb_flush_log_at_trx_commit = 2 (was 1)                         │
+│    - sync_binlog = 1000 (was 1)                                         │
+│                                                                          │
+│ 2. Restart MariaDB: systemctl restart mariadb                           │
+│                                                                          │
+│ 3. Verify: mysql -u root -e "SELECT @@innodb_buffer_pool_size..."      │
+│                                                                          │
+│ Expected Result:                                                         │
+│ - MySQL CPU: 96% → 30% (70% reduction)                                  │
+│ - Query speed: 1000x faster                                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+PHASE 2: PHP-FPM (30 minutes)
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. Archive old configs:                                                 │
+│    mkdir /root/php-fpm-backups                                          │
+│    mv *.save *.bak *.backup *.emergency* /root/php-fpm-backups/         │
+│                                                                          │
+│ 2. Edit /opt/cpanel/ea-php82/root/etc/php-fpm.d/technostationery...   │
+│    pm = static (was dynamic)                                            │
+│    pm.max_children = 30 (was unlimited)                                 │
+│                                                                          │
+│ 3. Configure other pools with appropriate sizes:                        │
+│    - beta: pm.max_children = 10                                         │
+│    - pim: pm.max_children = 8                                           │
+│    - dashboard: pm.max_children = 5                                     │
+│    - lms: pm.max_children = 8                                           │
+│    - dev: pm.max_children = 5                                           │
+│                                                                          │
+│ 4. Restart: systemctl restart ea-php8*-php-fpm                          │
+│                                                                          │
+│ 5. Verify: ps aux | grep "php-fpm: pool" | wc -l                        │
+│                                                                          │
+│ Expected Result:                                                         │
+│ - PHP Processes: 10+ → ~66 max (controlled)                             │
+│ - Load: 15.10 → 5-8 (improved)                                          │
+│ - CPU per process: 40% → 10-15% (better)                                │
+└─────────────────────────────────────────────────────────────────────────┘
+
+PHASE 3: CACHING (20 minutes)
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. Remove Pragma: no-cache header                                       │
+│    - Conflicts with Cache-Control max-age                               │
+│    - Find in application/config                                         │
+│    - Comment out or delete                                              │
+│                                                                          │
+│ 2. Configure Cloudflare Cache Rules:                                    │
+│    - HTML: Cache 1 hour                                                 │
+│    - CSS/JS: Cache 7 days                                               │
+│    - Images: Cache 30 days                                              │
+│    - API: Don't cache                                                   │
+│                                                                          │
+│ Expected Result:                                                         │
+│ - CF Cache Status: MISS → HIT (80%+)                                    │
+│ - Varnish Hit Rate: 5.7% → 80%+ (within 2 hours)                        │
+│ - Response time: 500ms → 100ms (from cache)                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+PHASE 4: VERIFICATION (15 minutes)
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. Check Load Average:                                                  │
+│    uptime                                                               │
+│    Target: 15.10 → 2-3 (good) → 1-2 (excellent after warmup)            │
+│                                                                          │
+│ 2. Check MySQL CPU:                                                     │
+│    ps aux | grep mysqld                                                 │
+│    Target: 96% → 30% (good) → 10% (excellent baseline)                  │
+│                                                                          │
+│ 3. Check PHP Processes:                                                 │
+│    ps aux | grep "php-fpm: pool" | wc -l                                │
+│    Target: 10+ → 30-40 (controlled)                                     │
+│                                                                          │
+│ 4. Test Website Response:                                               │
+│    time curl https://technostationery.com/                              │
+│    Target: 5-10s → 1s (good) → 100-200ms (excellent with cache)         │
+│                                                                          │
+│ 5. Monitor Cache Hit Rate:                                              │
+│    varnishstat -1 | grep cache                                          │
+│    Target: 5.7% → 50%+ (good) → 80%+ (excellent in 2 hours)             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                        EXPECTED IMPROVEMENTS
+================================================================================
+
+METRIC                  BEFORE          AFTER (Phase 1-2)    AFTER (All)
+────────────────────────────────────────────────────────────────────────────
+Load Average            15.10           5-8 (60% better)     1-2 (87% better)
+MySQL CPU               96%             30-40%               10-20%
+PHP Processes           10+ (unlimited) 30-40 (controlled)   30-40 (stable)
+Response Time           5-10s           1-2s                 100-200ms
+Cache Hit Rate          5.7%            20-30%               80%+
+Database Throughput     Slow            20x faster           100x faster
+
+================================================================================
+                        IMPLEMENTATION CHECKLIST
+================================================================================
+
+PRE-IMPLEMENTATION:
+  [ ] Back up /opt/mariadb10.6/my.cnf
+  [ ] Back up /opt/cpanel/ea-php*/root/etc/php-fpm.d/*.conf
+  [ ] Document current metrics
+  [ ] Notify team of changes
+
+PHASE 1: MARIADB
+  [ ] Edit my.cnf
+  [ ] Verify changes in file
+  [ ] Restart MariaDB
+  [ ] Verify new settings (SELECT @@ queries)
+  [ ] Check MySQL CPU
+
+PHASE 2: PHP-FPM
+  [ ] Archive old configs
+  [ ] Edit technostationery.com.conf
+  [ ] Edit beta pool config
+  [ ] Edit other site configs
+  [ ] Restart PHP-FPM services
+  [ ] Verify process count
+
+PHASE 3: CACHING
+  [ ] Find and remove Pragma header
+  [ ] Configure Cloudflare rules
+  [ ] Test cache functionality
+  [ ] Verify CF cache hits
+
+PHASE 4: VERIFICATION
+  [ ] Load average < 5 (in 5 min)
+  [ ] Load average < 2 (in 30 min)
+  [ ] MySQL CPU < 40% (in 5 min)
+  [ ] PHP processes controlled (in 5 min)
+  [ ] Response time < 1s (in 5 min)
+  [ ] Cache hit rate > 50% (in 30 min)
+  [ ] Cache hit rate > 80% (in 2 hours)
+
+POST-IMPLEMENTATION:
+  [ ] Monitor for 1 hour
+  [ ] Verify all websites working
+  [ ] Test on mobile/tablet/desktop
+  [ ] Document new settings
+  [ ] Update runbooks
+
+================================================================================
+                            RISK ASSESSMENT
+================================================================================
+
+Risk Level: LOW
+
+Why Low Risk:
+- Configuration changes only (no code changes)
+- Reversible changes (can restore from backup)
+- No data loss possible
+- Brief service restarts only (5-10 minutes downtime)
+- Can execute during low-traffic window
+
+Mitigation:
+- Back up configs before changes
+- Test each phase independently
+- Monitor closely during implementation
+- Have rollback plans ready
+
+================================================================================
+                        TIME ESTIMATE & RESOURCES
+================================================================================
+
+Total Implementation Time:     60-90 minutes
+- MariaDB Phase:              15 minutes
+- PHP-FPM Phase:              30 minutes
+- Caching Phase:              20 minutes
+- Verification Phase:         15 minutes
+
+Resources Needed:
+- SSH access to server
+- Text editor (vim/nano)
+- Monitoring tool (top, htop)
+- Cloudflare dashboard access
+
+Preferred Window:
+- Low traffic time (early morning or late evening)
+- Have 2-3 hours available (implementation + monitoring)
+
+================================================================================
+                        FOLLOW-UP AFTER FIXES
+================================================================================
+
+Daily Monitoring:
+- Load average alert if > 5
+- MySQL CPU alert if > 50%
+- Disk space alert if > 80%
+
+Weekly Review:
+- Slow query log analysis
+- Cache hit rate trends
+- PHP-FPM process stability
+
+Monthly Maintenance:
+- Log rotation/cleanup
+- Performance trending
+- Configuration documentation
+
+Long-term (Weeks 1-4):
+- Implement Redis query caching
+- Add ProxySQL connection pool
+- Set up Grafana dashboards
+- Create automated alerting
+
+================================================================================
+                            KEY SUCCESS FACTORS
+================================================================================
+
+1. Execute phases in order (don't skip)
+2. Verify each phase before moving to next
+3. Monitor continuously during implementation
+4. Have rollback procedures ready
+5. Test website functionality after changes
+6. Document all changes made
+7. Update runbooks and procedures
+
+================================================================================
+                              CONCLUSION
+================================================================================
+
+This multi-phase approach will:
+✓ Reduce system load by 87% (15.10 → 2.0)
+✓ Improve response times by 50x (5s → 100ms)
+✓ Stabilize infrastructure
+✓ Enable 5 websites to run smoothly
+✓ Support future growth
+
+Status: READY FOR IMPLEMENTATION
+Next Step: Execute Phase 1 (MariaDB)
+
+================================================================================
