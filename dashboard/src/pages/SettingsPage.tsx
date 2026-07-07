@@ -722,21 +722,53 @@ export default function SettingsPage() {
           </TabPanel>
 
           <TabPanel value={tab} index={5}>
-            <Alert severity="info" sx={{ mb: 3 }}>Session security and IP filtering settings.</Alert>
-            <List sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-              <ListItem divider>
-                <ListItemText primary="Current IP Address" secondary="102.156.42.89 (Algeria)" />
-                <Chip label="WHITELISTED" size="small" color="success" />
-              </ListItem>
-              <ListItem divider>
-                <ListItemText primary="Session Timeout" secondary="Sessions expire after 24 hours of inactivity" />
-                <Button size="small">Edit</Button>
-              </ListItem>
-              <ListItem>
-                <ListItemText primary="Two-Factor Authentication" secondary="Required for Admin role" />
-                <Chip label="ENABLED" size="small" color="primary" />
-              </ListItem>
-            </List>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Session &amp; Access</Typography>
+                <List sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                  <ListItem divider>
+                    <ListItemText
+                      primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Session Timeout</Typography>}
+                      secondary="Sessions expire after 24 hours of inactivity"
+                    />
+                    <Chip label="24h" size="small" color="info" variant="outlined" />
+                  </ListItem>
+                  <ListItem divider>
+                    <ListItemText
+                      primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Two-Factor Authentication</Typography>}
+                      secondary="Required for Admin role on every login"
+                    />
+                    <Chip icon={<AdminPanelSettings sx={{ fontSize: 14 }} />} label="ENABLED" size="small" color="success" />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Cookie Security</Typography>}
+                      secondary="HttpOnly + SameSite=Strict + Secure"
+                    />
+                    <Chip icon={<Lock sx={{ fontSize: 14 }} />} label="HARDENED" size="small" color="primary" />
+                  </ListItem>
+                </List>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Role Summary</Typography>
+                <Box sx={{ display: 'grid', gap: 1 }}>
+                  {[
+                    { role: 'admin',    label: 'Administrator', color: '#ef4444', note: 'Full access — all pages + destructive ops' },
+                    { role: 'manager', label: 'Manager',        color: '#f59e0b', note: 'Commerce, logs, push notifications' },
+                    { role: 'viewer',  label: 'Viewer',         color: '#3b82f6', note: 'Read-only — monitoring + cloudflare' },
+                  ].map(({ role, label, color, note }) => (
+                    <Box key={role} sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', background: 'rgba(255,255,255,0.02)' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: color }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{label}</Typography>
+                        <Chip label={role} size="small" variant="outlined" sx={{ fontSize: '0.6rem', height: 18, ml: 'auto' }} />
+                      </Box>
+                      <Typography variant="caption" color="text.disabled">{note}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Grid>
+            </Grid>
           </TabPanel>
 
           <TabPanel value={tab} index={6}>
@@ -746,16 +778,16 @@ export default function SettingsPage() {
                   <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>Techno Monitor</Typography>
                   <Typography variant="body2" sx={{ mb: 2 }}>The comprehensive infrastructure management platform for TechnoStationery e-commerce systems.</Typography>
                   <Box sx={{ display: 'grid', gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v3.1.5-TSM</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>rX82jL299a</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>May 6, 2026</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v4.2.0-TSM</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>6c45aeaf</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>July 7, 2026</strong></Typography>
                   </Box>
                 </Box>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>System Dependencies</Typography>
                 <List disablePadding>
-                  {['PHP 8.2.30', 'MariaDB 10.6', 'Redis 7.0', 'Varnish 6.0', 'Node.js 20.x'].map(dep => (
+                  {['PHP 8.2.30', 'MariaDB 10.6', 'Redis 7.0', 'Varnish 6.0', 'Node.js 20.x', 'Magento 2.4.7', 'React 18.3', 'Vite 8.0'].map(dep => (
                     <ListItem key={dep} sx={{ py: 0.5, px: 0 }}>
                       <ListItemText 
                         primary={<Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>{dep}</Typography>} 

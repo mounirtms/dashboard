@@ -1,6 +1,6 @@
 import { Box, Typography, Card, CardContent, Button, Chip, TextField, IconButton, Tooltip, Divider, Avatar, CircularProgress, FormControl, InputLabel, Select, MenuItem, Paper, Menu, MenuItem as MuiMenuItem, Popper, ClickAwayListener, List, ListItem, ListItemButton, ListItemAvatar, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, Link } from '@mui/material';
 import { ArrowBack, Delete, Send, CheckCircle, Edit, PushPin, Reply, Code, FormatQuote, MoreVert, Save, Close, AddPhotoAlternate, OpenInNew, KeyboardArrowRight, Link as LinkIcon, UnfoldMore, LinkOff } from '@mui/icons-material';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchTasks, fetchTask, updateTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, fetchScreenshots, deleteScreenshot, forwardNote, setNoteStatus, uploadScreenshot, getTaskLinks, linkTask, unlinkTask, type Task, type TaskNote, type TaskActivity, type TaskScreenshot, type TaskLink, type Task as TaskType, getTaskStatusColor, NOTE_CATEGORIES, TASK_CATEGORIES } from '../api/tasks';
 import { fetchUsers, type User } from '../api/users';
@@ -99,7 +99,7 @@ export default function TaskDetailPage() {
 
   const renderContent = (content: string) => {
     const lines = content.split('\n');
-    const elements: JSX.Element[] = [];
+    const elements: React.ReactElement[] = [];
     let inCodeBlock = false;
     let codeLines: string[] = [];
     let codeKey = 0;

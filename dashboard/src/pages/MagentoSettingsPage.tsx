@@ -129,6 +129,28 @@ export default function MagentoSettingsPage() {
 
       {toast && <Alert severity={toast.severity} onClose={() => setToast(null)} sx={{ mb: 2 }}>{toast.message}</Alert>}
 
+      {/* ── Environment health summary ── */}
+      <Box sx={{ mb: 3, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+        {Object.entries(envs).map(([env, state]) => (
+          <Chip
+            key={env}
+            icon={state.has_token ? <Wifi sx={{ fontSize: 14 }} /> : <WifiOff sx={{ fontSize: 14 }} />}
+            label={`${ENV_LABELS[env] || env}: ${state.has_token ? 'Connected' : 'No Token'}`}
+            size="small"
+            color={state.has_token ? 'success' : 'default'}
+            variant={state.has_token ? 'filled' : 'outlined'}
+            sx={{ fontWeight: 700, fontSize: '0.72rem' }}
+          />
+        ))}
+        <Chip
+          label={`${Object.values(envs).filter(s => s.has_token).length} / ${Object.keys(envs).length} envs active`}
+          size="small"
+          color={Object.values(envs).every(s => s.has_token) ? 'success' : 'warning'}
+          variant="outlined"
+          sx={{ ml: 'auto', fontWeight: 700 }}
+        />
+      </Box>
+
       <Grid container spacing={2}>
         {Object.entries(envs).map(([env, state]) => (
           <Grid size={{ xs: 12, md: 6 }} key={env}>
