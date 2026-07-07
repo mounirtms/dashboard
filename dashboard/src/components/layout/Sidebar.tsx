@@ -57,6 +57,7 @@ import {
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { ADMIN_PATHS } from '../../config/routes';
+import logoTechno from '../../assets/logo_techno.png';
 
 interface NavItem {
   label: string;
