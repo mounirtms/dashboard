@@ -42,8 +42,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);overflow:hid
 #nav button{background:#1e2d45;border:1px solid var(--border);color:var(--text);padding:6px 18px;border-radius:6px;cursor:pointer;font-size:13px;transition:all .2s}
 #nav button:hover{background:var(--accent);border-color:var(--accent)}
 #progress-bar{position:absolute;bottom:44px;left:0;height:2px;background:var(--accent);transition:width .3s;z-index:10}
-#toc-btn,#notes-btn{background:none!important;border:none!important;font-size:11px;color:var(--dim);cursor:pointer;padding:4px 8px}
-#toc-btn:hover,#notes-btn:hover{color:var(--accent)!important}
+#toc-btn,#notes-btn,#fs-btn,#home-btn{background:none!important;border:none!important;font-size:11px;color:var(--dim);cursor:pointer;padding:4px 8px}
+#toc-btn:hover,#notes-btn:hover,#fs-btn:hover,#home-btn:hover{color:var(--accent)!important}
 
 /* ── NOTES PANEL ── */
 #notes-panel{position:fixed;bottom:44px;right:0;width:320px;background:#0d1625;border:1px solid var(--border);border-radius:8px 0 0 0;padding:12px 16px;font-size:12px;color:var(--muted);max-height:200px;overflow-y:auto;z-index:50}
@@ -1804,10 +1804,12 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 <div id="progress-bar"></div>
 <div id="nav">
   <button id="nav-prev" onclick="goPrev()">← Prev</button>
-  <div style="display:flex;align-items:center;gap:12px">
+  <div style="display:flex;align-items:center;gap:8px">
     <button id="toc-btn" onclick="showSlide(2)">☰ TOC</button>
     <span id="nav-counter">1 / 35</span>
     <button id="notes-btn" onclick="document.getElementById('notes-panel').classList.toggle('hidden')">📝 Notes</button>
+    <button id="fs-btn" onclick="toggleFullscreen()" title="Fullscreen (F / ⛶)">⛶ Full</button>
+    <button id="home-btn" onclick="showSlide(0)" title="Back to cover slide (Esc)">⌂ Cover</button>
   </div>
   <button id="nav-next" onclick="goNext()">Next →</button>
 </div>
@@ -1882,10 +1884,37 @@ function showSlide(n) {
 
 // ── KEYBOARD NAVIGATION ──
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goNext();
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goPrev();
-  if (e.key === 'Escape') showSlide(0);
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); goNext(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); goPrev(); }
+  if (e.key === 'Home') showSlide(0);
+  if (e.key === 'End')  showSlide(TOTAL - 1);
+  if (e.key === 'Escape') { if (document.fullscreenElement) document.exitFullscreen(); else showSlide(0); }
+  if (e.key === 'f' || e.key === 'F') toggleFullscreen();
 });
+
+// ── FULLSCREEN TOGGLE ──
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => console.warn('[TSM] Fullscreen:', err));
+  } else {
+    document.exitFullscreen();
+  }
+}
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.getElementById('fs-btn');
+  if (btn) btn.textContent = document.fullscreenElement ? '✕ Exit' : '⛶ Full';
+});
+
+// ── SWIPE / TOUCH NAVIGATION ──
+(function() {
+  let tx = 0, ty = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) { if (dx < 0) goNext(); else goPrev(); }
+  }, { passive: true });
+})();
 
 // ── LAZY CHART INITIALIZATION ──
 const initialized = {};

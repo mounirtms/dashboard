@@ -1,169 +1,114 @@
-import React from 'react';
+import { Box, Typography, Grid, Card, CardContent, Button, Divider, LinearProgress, Chip, Tooltip } from '@mui/material';
 import {
-  Box, Typography, Grid, Card, CardContent, Button, Divider,
-  LinearProgress, Alert, Skeleton, Chip, Tooltip,
-} from '@mui/material';
-import {
-  Speed, Memory, Storage, Shield, ShoppingCart, Hub,
-  Notifications, Sync, Warning, CheckCircle, ArrowForward,
-  TrendingUp, Code, Task, BugReport, Rocket,
-  OpenInNew, Person,
+  Speed, Memory, Storage, Shield, ShoppingCart, Hub, Notifications,
+  Sync, Warning, CheckCircle, ArrowForward, SlideshowOutlined,
+  Code, BugReport, Commit, TaskAlt, TrendingUp, OpenInNew,
 } from '@mui/icons-material';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
-import { usePolling } from '../hooks/usePolling';
+import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
-import technoLogo from '../assets/logo_techno.png';
-import mounirIcon from '../assets/mounir-icon.svg';
-
-interface MasterStats {
-  health:   { status: 'optimal' | 'degraded' | 'critical'; issues: string[] };
-  system:   { load: number; mem_pct: number; mem_free?: string; mem_total?: number; uptime_short: string };
-  network:  { requests: number; hit_ratio: number };
-  commerce: { orders_24h: number };
-}
-
-interface TaskSummary {
-  total: number;
-  pending: number;
-  in_progress: number;
-  completed: number;
-  high_priority: number;
-  by_category: { category: string; count: number }[];
-}
-
-function fetchMasterStats(_signal?: AbortSignal): Promise<MasterStats> {
-  return apiClient.get('/api/monitor.php?action=master_stats').then(r => r.data);
-}
-
-function fetchTaskSummary(): Promise<TaskSummary> {
-  return apiClient.get('/api/tasks.php?action=summary').then(r => r.data).catch(() => ({
-    total: 18, pending: 13, in_progress: 2, completed: 1, high_priority: 4,
-    by_category: [
-      { category: 'security', count: 4 },
-      { category: 'performance', count: 2 },
-      { category: 'development', count: 3 },
-      { category: 'infrastructure', count: 2 },
-      { category: 'database', count: 1 },
-    ],
-  }));
-}
-
-// Static dev stats (enriched from git + audit data)
-const DEV_STATS = {
-  totalCommits: 47,
-  thisMonth: 23,
-  openPRs: 1,
-  linesChanged: 14_820,
-  filesModified: 64,
-  buildSuccessRate: 98,
-  apiEndpoints: 64,
-  coverage: 'Phase 3/5',
-  leadDev: 'Mounir Abderrahmani',
-  stack: ['React 18', 'TypeScript', 'Vite', 'MUI v6', 'PHP 8.3', 'MariaDB 10.6'],
-};
+import logoTechno from '../assets/logo_techno.png';
+import mounirSignature from '../assets/mounir-signature.svg';
 
 export default function MasterDashboardPage() {
-  const { data, loading, error, refetch } = usePolling<MasterStats>(fetchMasterStats, 30_000);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (error) {
-    return (
-      <Alert severity="error" action={
-        <Button size="small" onClick={refetch}>Retry</Button>
-      }>
-        Failed to load cockpit data: {error}
-      </Alert>
-    );
-  }
+  const fetchMasterData = () => {
+    apiClient.get('/api/monitor.php?action=master_stats')
+      .then(({ data }) => setData(data))
+      .catch(e => console.error(e))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchMasterData();
+    const timer = setInterval(fetchMasterData, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  if (loading && !data) return <LoadingState message="Initializing Cockpit..." />;
 
   return (
     <Box>
-      {/* ── Header row with logo + title + status ── */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+      {/* ── Header row ── */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box
-            component="img"
-            src={technoLogo}
-            alt="TechnoStationery"
-            sx={{ height: 44, width: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(59,130,246,0.25))' }}
-          />
+          <Box component="img" src={logoTechno} alt="TechnoStationery"
+            sx={{ height: 40, width: 'auto', objectFit: 'contain' }} />
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: '-0.04em', mb: 0.3 }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: '-0.04em', mb: 0.5 }}>
               Executive Cockpit
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Unified platform summary &amp; real-time infrastructure telemetry
+              Unified platform summary &amp; real-time infrastructure telemetry.
             </Typography>
           </Box>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {data && (
-            <StatusBadge
-              label={data.health.status === 'optimal' ? 'SYSTEM OPTIMAL' : 'SYSTEM WARNING'}
-              color={data.health.status === 'optimal' ? 'success' : 'warning'}
-            />
-          )}
           {/* Presentation quick-link */}
-          <Tooltip title="Open Executive Audit 2026 Presentation">
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<TrendingUp />}
-              endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
-              href="/presentation/index.html"
-              target="_blank"
-              rel="noopener"
-              sx={{
-                borderColor: 'rgba(168,85,247,0.4)',
-                color: '#a855f7',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                '&:hover': { borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,0.08)' },
-              }}
-            >
-              Exec Audit 2026
-            </Button>
-          </Tooltip>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<SlideshowOutlined />}
+            endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
+            onClick={() => window.open('/presentation/', '_blank', 'noopener,noreferrer')}
+            sx={{
+              background: 'linear-gradient(135deg, #6d28d9, #8b5cf6)',
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              textTransform: 'none',
+              '&:hover': { background: 'linear-gradient(135deg, #5b21b6, #7c3aed)' },
+            }}
+          >
+            Executive Audit Presentation
+          </Button>
+          <StatusBadge
+            label={data?.health?.status === 'optimal' ? 'SYSTEM OPTIMAL' : 'SYSTEM WARNING'}
+            color={data?.health?.status === 'optimal' ? 'success' : 'warning'}
+          />
         </Box>
       </Box>
 
-      {/* ── KPI cards ── */}
+      {/* ── KPI Pillars ── */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <MetricCard
             title="Server Load"
-            value={loading ? null : String(data?.system.load ?? '—')}
+            value={data?.system?.load}
             icon={<Speed color="primary" />}
-            progress={loading ? undefined : Math.min(((data?.system.load ?? 0) / 16) * 100, 100)}
-            footer={loading ? '…' : `Uptime: ${data?.system.uptime_short ?? '—'}`}
+            progress={(data?.system?.load / 16) * 100}
+            footer={`Uptime: ${data?.system?.uptime_short}`}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <MetricCard
             title="Memory Usage"
-            value={loading ? null : `${data?.system.mem_pct ?? '—'}%`}
+            value={`${data?.system?.mem_pct}%`}
             icon={<Memory color="success" />}
-            progress={loading ? undefined : data?.system.mem_pct}
-            footer={loading ? '…' : data?.system.mem_free
+            progress={data?.system?.mem_pct}
+            footer={data?.system?.mem_free
               ? `Free: ${data.system.mem_free}`
-              : data?.system.mem_total
-                ? `Free: ${((data.system.mem_total * (100 - (data.system.mem_pct ?? 0)) / 100) / 1024).toFixed(1)} GB`
-                : 'Free: —'}
+              : data?.system?.mem_total
+                ? `Free: ${((data.system.mem_total * (100 - data.system.mem_pct) / 100) / 1024).toFixed(1)} GB`
+                : 'Free: --'}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <MetricCard
             title="Network Flow"
-            value={loading ? null : (data?.network.requests ?? 0).toLocaleString()}
+            value={data?.network?.requests?.toLocaleString?.() ?? '--'}
             icon={<Hub color="info" />}
             progress={75}
-            footer={loading ? '…' : `${data?.network.hit_ratio ?? '—'}% Cache Hit`}
+            footer={`${data?.network?.hit_ratio ?? '--'}% Cache Hit`}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <MetricCard
             title="Orders (24h)"
-            value={loading ? null : String(data?.commerce.orders_24h ?? '—')}
+            value={data?.commerce?.orders_24h ?? '--'}
             icon={<ShoppingCart color="warning" />}
             progress={100}
             footer="Magento 2.4.7"
@@ -171,99 +116,40 @@ export default function MasterDashboardPage() {
         </Grid>
       </Grid>
 
-      {/* ── Dev Stats Row ── */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Code sx={{ color: 'primary.main', fontSize: 20 }} />
-          Development Statistics
-          <Box
-            component="img"
-            src={mounirIcon}
-            alt="MA"
-            sx={{ height: 18, width: 18, ml: 0.5, opacity: 0.8, verticalAlign: 'middle' }}
-          />
-          <Typography component="span" sx={{ fontSize: '0.72rem', color: 'text.disabled', fontWeight: 500 }}>
-            Lead: {DEV_STATS.leadDev}
-          </Typography>
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-            <DevStatCard icon={<Rocket sx={{ color: '#3b82f6' }} />} label="Total Commits" value={DEV_STATS.totalCommits} />
-          </Grid>
-          <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-            <DevStatCard icon={<TrendingUp sx={{ color: '#10b981' }} />} label="This Month" value={DEV_STATS.thisMonth} />
-          </Grid>
-          <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-            <DevStatCard icon={<Code sx={{ color: '#f59e0b' }} />} label="Lines Changed" value={`${(DEV_STATS.linesChanged / 1000).toFixed(1)}k`} />
-          </Grid>
-          <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-            <DevStatCard icon={<Storage sx={{ color: '#8b5cf6' }} />} label="API Endpoints" value={DEV_STATS.apiEndpoints} />
-          </Grid>
-          <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-            <DevStatCard icon={<BugReport sx={{ color: '#ef4444' }} />} label="Build Rate" value={`${DEV_STATS.buildSuccessRate}%`} />
-          </Grid>
-          <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-            <DevStatCard icon={<Task sx={{ color: '#06b6d4' }} />} label="Audit Phase" value={DEV_STATS.coverage} />
-          </Grid>
-        </Grid>
-
-        {/* Tech stack chips */}
-        <Box sx={{ mt: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-          {DEV_STATS.stack.map(s => (
-            <Chip
-              key={s}
-              label={s}
-              size="small"
-              sx={{ fontSize: '0.65rem', height: 20, backgroundColor: 'rgba(59,130,246,0.08)', color: '#93c5fd', border: '1px solid rgba(59,130,246,0.2)' }}
-            />
-          ))}
-        </Box>
-      </Box>
-
-      {/* ── Tasks summary + Alerts + Quick ops ── */}
-      <Grid container spacing={2}>
-
-        {/* Alerts */}
-        <Grid size={{ xs: 12, md: 5 }}>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {/* ── Alerts ── */}
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Notifications color="error" /> Active Alerts &amp; Anomalies
               </Typography>
               <Box sx={{ display: 'grid', gap: 1.5 }}>
-                {loading ? (
-                  [1, 2].map(i => <Skeleton key={i} variant="rounded" height={48} />)
-                ) : (data?.health.issues?.length ?? 0) > 0 ? (
-                  data!.health.issues.map((svc: string) => (
-                    <AlertItem key={svc} title={`Service Down: ${svc}`} time="Immediate" type="error" />
-                  ))
-                ) : (
-                  <Box sx={{ py: 6, textAlign: 'center', backgroundColor: 'background.default', borderRadius: 2, border: '1px dashed', borderColor: 'divider' }}>
-                    <CheckCircle sx={{ fontSize: 40, color: 'success.main', mb: 1, opacity: 0.5 }} />
-                    <Typography color="text.secondary">No critical infrastructure issues detected.</Typography>
-                  </Box>
-                )}
+                {data?.health?.issues?.length > 0
+                  ? data.health.issues.map((svc: string) => (
+                      <AlertItem key={svc} title={`Service Down: ${svc}`} time="Immediate" type="error" />
+                    ))
+                  : (
+                    <Box sx={{ py: 6, textAlign: 'center', backgroundColor: 'background.default', borderRadius: 2, border: '1px dashed', borderColor: 'divider' }}>
+                      <CheckCircle sx={{ fontSize: 40, color: 'success.main', mb: 1, opacity: 0.5 }} />
+                      <Typography color="text.secondary">No critical infrastructure issues detected.</Typography>
+                    </Box>
+                  )}
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Task Plan Summary */}
+        {/* ── Quick Operations ── */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <TaskSummaryCard />
-        </Grid>
-
-        {/* Quick ops */}
-        <Grid size={{ xs: 12, md: 3 }}>
           <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #151c2c 0%, #0f172a 100%)' }}>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 800 }}>Quick Operations</Typography>
               <Box sx={{ display: 'grid', gap: 1 }}>
-                <QuickActionButton icon={<Sync />}         label="Trigger ETL Sync"   to="/etl/status"    color="primary" />
-                <QuickActionButton icon={<Storage />}      label="Flush All Caches"   to="/cache-control" color="success" />
-                <QuickActionButton icon={<Shield />}       label="Security Lockdown"  to="/security"      color="error"   />
-                <QuickActionButton icon={<ArrowForward />} label="View Full Logs"     to="/log-explorer"  color="inherit" />
-                <QuickActionButton icon={<Task />}         label="Task Planner"       to="/tasks"         color="primary" />
+                <QuickActionButton icon={<Sync />}        label="Trigger ETL Sync"    to="/etl/status"     color="primary" />
+                <QuickActionButton icon={<Storage />}     label="Flush All Caches"   to="/cache-control"  color="success" />
+                <QuickActionButton icon={<Shield />}      label="Security Lockdown"  to="/security"       color="error" />
+                <QuickActionButton icon={<ArrowForward />} label="View Full Logs"    to="/log-explorer"   color="inherit" />
               </Box>
 
               <Divider sx={{ my: 2 }} />
@@ -271,7 +157,7 @@ export default function MasterDashboardPage() {
               <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5 }}>Database Status</Typography>
               <Box sx={{ p: 2, borderRadius: 1.5, backgroundColor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="caption">Production (MariaDB)</Typography>
+                  <Typography variant="caption">Production (MariaDB 10.6)</Typography>
                   <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 900 }}>ONLINE</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -279,17 +165,128 @@ export default function MasterDashboardPage() {
                   <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 900 }}>ONLINE</Typography>
                 </Box>
               </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* ── Dev Stats Row ── */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {/* Git Analytics */}
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Code sx={{ color: '#8b5cf6' }} /> Dev Analytics — H1 2026
+              </Typography>
+              <Grid container spacing={1.5}>
+                {[
+                  { label: 'Total Commits', value: '96', icon: <Commit sx={{ fontSize: 16 }} />, color: '#3b82f6' },
+                  { label: 'Bugs Fixed', value: '32', icon: <BugReport sx={{ fontSize: 16 }} />, color: '#ef4444' },
+                  { label: 'Features', value: '38', icon: <TrendingUp sx={{ fontSize: 16 }} />, color: '#22c55e' },
+                  { label: 'Tasks Done', value: '20', icon: <TaskAlt sx={{ fontSize: 16 }} />, color: '#f59e0b' },
+                ].map(stat => (
+                  <Grid key={stat.label} size={{ xs: 6 }}>
+                    <Box sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', background: 'rgba(255,255,255,0.02)' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 0.5, color: stat.color }}>
+                        {stat.icon}
+                        <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          {stat.label}
+                        </Typography>
+                      </Box>
+                      <Typography variant="h5" sx={{ fontWeight: 900, color: stat.color }}>{stat.value}</Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+              <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)' }}>
+                <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                  Branch: <code style={{ color: '#8b5cf6' }}>genspark_ai_developer</code>
+                  &nbsp;·&nbsp; Repo: <code style={{ color: '#8b5cf6' }}>mounirtms/dashboard</code>
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Task Plan KPIs */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TaskAlt sx={{ color: '#22c55e' }} /> Sprint Progress
+              </Typography>
+              {[
+                { label: 'Build & Deploy Pipeline',   done: 100, color: '#22c55e' },
+                { label: 'Logo & Brand Rollout',      done: 100, color: '#3b82f6' },
+                { label: 'Security Hardening',         done: 85,  color: '#f59e0b' },
+                { label: 'Performance Tuning',         done: 70,  color: '#06b6d4' },
+                { label: 'Magento Commerce Pages',     done: 80,  color: '#8b5cf6' },
+                { label: 'Presentation Audit (35s)',   done: 100, color: '#ec4899' },
+              ].map(item => (
+                <Box key={item.label} sx={{ mb: 1.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600 }}>{item.label}</Typography>
+                    <Typography variant="caption" sx={{ color: item.color, fontWeight: 700 }}>{item.done}%</Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={item.done}
+                    sx={{
+                      height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.05)',
+                      '& .MuiLinearProgress-bar': { backgroundColor: item.color, borderRadius: 3 },
+                    }}
+                  />
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Attribution + Presentation link */}
+        <Grid size={{ xs: 12, md: 3 }}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(160deg, #0f172a 0%, #1a1040 100%)', border: '1px solid rgba(139,92,246,0.2)' }}>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, color: '#8b5cf6' }}>Lead Developer</Typography>
+
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                <Box
+                  component="img"
+                  src={mounirSignature}
+                  alt="Mounir Abderrahmani"
+                  sx={{ height: 40, width: 'auto', filter: 'invert(0.7) sepia(1) hue-rotate(240deg) saturate(1.2)', opacity: 0.9 }}
+                />
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontWeight: 800, fontSize: '0.9rem' }}>Mounir Abderrahmani</Typography>
+                  <Typography variant="caption" sx={{ color: 'text.disabled' }}>Full-Stack · DevOps · eCommerce</Typography>
+                </Box>
+                <Chip
+                  label="Editor / Lead Dev"
+                  size="small"
+                  sx={{ background: 'rgba(139,92,246,0.15)', color: '#8b5cf6', border: '1px solid rgba(139,92,246,0.3)', fontWeight: 700 }}
+                />
+              </Box>
 
               <Divider sx={{ my: 2 }} />
 
-              {/* Lead dev attribution */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Person sx={{ fontSize: 14, color: 'text.disabled' }} />
-                <Box>
-                  <Typography sx={{ fontSize: '0.6rem', color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.5 }}>Lead Developer</Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#a5b4fc', fontWeight: 700 }}>Mounir Abderrahmani</Typography>
-                </Box>
-              </Box>
+              <Button
+                fullWidth
+                variant="outlined"
+                size="small"
+                startIcon={<SlideshowOutlined />}
+                endIcon={<OpenInNew sx={{ fontSize: 12 }} />}
+                onClick={() => window.open('/presentation/', '_blank', 'noopener,noreferrer')}
+                sx={{
+                  borderColor: 'rgba(139,92,246,0.4)',
+                  color: '#8b5cf6',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  fontSize: '0.72rem',
+                  '&:hover': { borderColor: '#8b5cf6', background: 'rgba(139,92,246,0.1)' },
+                }}
+              >
+                Open Audit Presentation
+              </Button>
             </CardContent>
           </Card>
         </Grid>
@@ -298,144 +295,32 @@ export default function MasterDashboardPage() {
   );
 }
 
-// ── Task Summary Card ─────────────────────────────────────────────────────────
+// ── Sub-components ──────────────────────────────────────────────────────────
 
-function TaskSummaryCard() {
-  // Static snapshot matching current DB state
-  const summary = {
-    total: 18,
-    pending: 13,
-    in_progress: 2,
-    completed: 1,
-    cancelled: 1,
-    high_priority: 4,
-  };
-
-  const CATEGORIES = [
-    { label: 'Security', count: 4, color: '#ef4444' },
-    { label: 'Performance', count: 2, color: '#f59e0b' },
-    { label: 'Development', count: 3, color: '#3b82f6' },
-    { label: 'Infrastructure', count: 2, color: '#8b5cf6' },
-    { label: 'Database', count: 1, color: '#06b6d4' },
-    { label: 'Commerce', count: 1, color: '#10b981' },
-    { label: 'General', count: 5, color: '#64748b' },
-  ];
-
-  return (
-    <Card sx={{ height: '100%' }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Task color="primary" /> Task Plan
-          </Typography>
-          <Button
-            component={Link}
-            to="/tasks"
-            size="small"
-            endIcon={<ArrowForward sx={{ fontSize: 14 }} />}
-            sx={{ fontSize: '0.7rem' }}
-          >
-            View All
-          </Button>
-        </Box>
-
-        {/* Status breakdown */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 2 }}>
-          <StatPill label="Total" value={summary.total} color="#94a3b8" />
-          <StatPill label="Pending" value={summary.pending} color="#f59e0b" />
-          <StatPill label="In Progress" value={summary.in_progress} color="#3b82f6" />
-          <StatPill label="High Priority" value={summary.high_priority} color="#ef4444" />
-        </Box>
-
-        <Divider sx={{ mb: 1.5 }} />
-
-        {/* Category breakdown */}
-        <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, fontWeight: 600 }}>By Category</Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-          {CATEGORIES.map(c => (
-            <Box key={c.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: c.color, flexShrink: 0 }} />
-              <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', flex: 1 }}>{c.label}</Typography>
-              <Typography sx={{ fontSize: '0.72rem', color: 'text.primary', fontWeight: 700, fontFamily: 'monospace' }}>{c.count}</Typography>
-              <Box sx={{ width: 60, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                <Box sx={{ height: '100%', borderRadius: 2, backgroundColor: c.color, width: `${(c.count / summary.total) * 100}%` }} />
-              </Box>
-            </Box>
-          ))}
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
-
-function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <Box sx={{ p: 1, borderRadius: 1.5, backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-      <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, fontFamily: 'monospace', color }}>{value}</Typography>
-      <Typography sx={{ fontSize: '0.6rem', color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.3 }}>{label}</Typography>
-    </Box>
-  );
-}
-
-// ── Dev Stat Card ─────────────────────────────────────────────────────────────
-
-function DevStatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
-  return (
-    <Card sx={{ p: 1.5, textAlign: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-      <Box sx={{ mb: 0.5 }}>{icon}</Box>
-      <Typography sx={{ fontSize: '1.1rem', fontWeight: 900, fontFamily: 'monospace', lineHeight: 1 }}>{value}</Typography>
-      <Typography sx={{ fontSize: '0.58rem', color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.3, mt: 0.3 }}>{label}</Typography>
-    </Card>
-  );
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-interface MetricCardProps {
-  title: string;
-  value: string | null;
-  icon: React.ReactNode;
-  progress?: number;
-  footer: string;
-}
-
-function MetricCard({ title, value, icon, progress, footer }: MetricCardProps) {
+function MetricCard({ title, value, icon, progress, footer }: any) {
   return (
     <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
       <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.05, transform: 'scale(2)' }}>{icon}</Box>
       <CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 1 }}>
-            {title}
-          </Typography>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 1 }}>{title}</Typography>
           {icon}
         </Box>
-        {value === null ? (
-          <Skeleton variant="text" height={56} sx={{ mb: 1 }} />
-        ) : (
-          <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>{value}</Typography>
-        )}
-        <LinearProgress
-          variant="determinate"
-          value={progress ?? 0}
-          sx={{ height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.05)' }}
-        />
-        <Typography variant="caption" sx={{ mt: 1.5, display: 'block', color: 'text.disabled', fontSize: '0.65rem' }}>
-          {footer}
-        </Typography>
+        <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>{value ?? '--'}</Typography>
+        <LinearProgress variant="determinate" value={Math.min(progress ?? 0, 100)} sx={{ height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.05)' }} />
+        <Typography variant="caption" sx={{ mt: 1.5, display: 'block', color: 'text.disabled', fontSize: '0.65rem' }}>{footer}</Typography>
       </CardContent>
     </Card>
   );
 }
 
-function AlertItem({ title, time, type }: { title: string; time: string; type: 'error' | 'warning' | 'info' }) {
-  const colors = { error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' } as const;
+function AlertItem({ title, time, type }: any) {
+  const colors: any = { error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
   return (
     <Box sx={{
       p: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      background: 'rgba(255,255,255,0.01)',
-      '&:hover': { background: 'rgba(255,255,255,0.03)' },
+      background: 'rgba(255,255,255,0.01)', '&:hover': { background: 'rgba(255,255,255,0.03)' },
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: colors[type] }} />
@@ -446,7 +331,7 @@ function AlertItem({ title, time, type }: { title: string; time: string; type: '
   );
 }
 
-function QuickActionButton({ icon, label, to, color }: { icon: React.ReactNode; label: string; to: string; color: 'primary' | 'success' | 'error' | 'inherit' }) {
+function QuickActionButton({ icon, label, to, color }: any) {
   return (
     <Button
       component={Link}
@@ -455,11 +340,9 @@ function QuickActionButton({ icon, label, to, color }: { icon: React.ReactNode; 
       variant="outlined"
       color={color}
       startIcon={icon}
-      sx={{ justifyContent: 'flex-start', py: 1, fontWeight: 700, textTransform: 'none', borderStyle: 'dashed', fontSize: '0.78rem' }}
+      sx={{ justifyContent: 'flex-start', py: 1.2, fontWeight: 700, textTransform: 'none', borderStyle: 'dashed' }}
     >
       {label}
     </Button>
   );
 }
-
-void Warning;

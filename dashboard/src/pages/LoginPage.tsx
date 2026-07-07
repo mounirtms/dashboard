@@ -1,8 +1,8 @@
-import { getErrMsg } from '../utils/formatters';
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Checkbox, FormControlLabel, Card, CardContent, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Link } from '@mui/material';
 import { Person, Lock, CheckCircle, Warning } from '@mui/icons-material';
-import technoLogo from '../assets/logo_techno.png';
+import logoTechno from '../assets/logo_techno.png';
+import mounirSignature from '../assets/mounir-signature.svg';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client.ts';
@@ -131,11 +131,10 @@ export default function LoginPage() {
       localStorage.removeItem('dashboard_username');
 
       navigate('/');
-    } catch (err: unknown) {
+    } catch (err: any) {
       // On 403 (CSRF mismatch), fetch new token and retry once
-      const axiosErr = err as { response?: { status?: number; data?: { error?: string; reason?: string } } };
-      if (axiosErr.response?.status === 403 && !retried) {
-        const errorData = axiosErr.response?.data;
+      if (err.response?.status === 403 && !retried) {
+        const errorData = err.response?.data;
         const isCsrfError = errorData?.error?.includes('CSRF') || errorData?.reason;
         
         // Only retry for CSRF errors, not Turnstile errors
@@ -157,7 +156,7 @@ export default function LoginPage() {
               navigate('/');
               return;
             }
-          } catch (retryErr: unknown) {
+          } catch (retryErr: any) {
             setError('Session expired. Please try logging in again.');
             fetchCsrf();
             setLoading(false);
@@ -165,14 +164,14 @@ export default function LoginPage() {
           }
         } else {
           // Turnstile or other error - show the actual error
-          setError(errorData?.error || getErrMsg(err) || 'Login failed.');
+          setError(errorData?.error || err.message || 'Login failed. Please check your credentials.');
           fetchCsrf();
           setLoading(false);
           return;
         }
       }
       
-      setError(getErrMsg(err) || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Login failed. Please check your credentials.');
       fetchCsrf(); // Refresh token on failure
     } finally {
       if (!retried) {
@@ -187,8 +186,8 @@ export default function LoginPage() {
     try {
       await forgotPassword(forgotIdentifier);
       setForgotSent(true);
-    } catch (err: unknown) {
-      setError(getErrMsg(err) || 'Failed to send reset email');
+    } catch (err: any) {
+      setError(err.message || 'Failed to process request');
     } finally {
       setForgotLoading(false);
     }
@@ -242,20 +241,13 @@ export default function LoginPage() {
         }}>
           <CardContent sx={{ p: '44px 36px' }}>
             <Box sx={{ textAlign: 'center', mb: 4 }}>
-              {/* Logo */}
-              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                <Box
-                  component="img"
-                  src={technoLogo}
-                  alt="TechnoStationery"
-                  sx={{
-                    height: 56,
-                    width: 'auto',
-                    objectFit: 'contain',
-                    filter: 'brightness(1.1) drop-shadow(0 4px 12px rgba(59,130,246,0.3))',
-                  }}
-                />
-              </Box>
+              {/* Techno logo */}
+              <Box
+                component="img"
+                src={logoTechno}
+                alt="TechnoStationery"
+                sx={{ height: 48, width: 'auto', objectFit: 'contain', mb: 2, display: 'block', mx: 'auto' }}
+              />
               <Typography variant="h5" sx={{ 
                 fontWeight: 900, 
                 letterSpacing: '-0.05em',
@@ -383,9 +375,20 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
-        <Typography sx={{ textAlign: 'center', mt: 3, color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>
-          v3.3.0 &nbsp;·&nbsp; {new Date().toLocaleTimeString()} &nbsp;·&nbsp; Lead Dev: Mounir Abderrahmani
-        </Typography>
+        <Box sx={{ textAlign: 'center', mt: 3 }}>
+          <Typography sx={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500, mb: 1 }}>
+            v3.1.0 &nbsp;·&nbsp; {new Date().toLocaleTimeString()}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, opacity: 0.5 }}>
+            <Typography sx={{ color: '#64748b', fontSize: '0.65rem' }}>Lead Developer</Typography>
+            <Box
+              component="img"
+              src={mounirSignature}
+              alt="Mounir Abderrahmani"
+              sx={{ height: 20, width: 'auto', objectFit: 'contain', filter: 'invert(0.5) sepia(1) saturate(0.3)' }}
+            />
+          </Box>
+        </Box>
       </Box>
 
       {/* Forgot Password Dialog */}

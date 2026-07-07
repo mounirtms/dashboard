@@ -1,12 +1,25 @@
-import {
-  List, ListItemButton, ListItemIcon, ListItemText,
-  Typography, Box, Collapse, TextField, InputAdornment,
-  IconButton, Badge, Tooltip,
+import { 
+  List, 
+  ListItem, 
+  ListItemButton, 
+  ListItemIcon, 
+  ListItemText, 
+  Divider, 
+  Toolbar, 
+  Typography, 
+  Box, 
+  useTheme,
+  Collapse,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Badge
 } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Dashboard as DashboardIcon,
-  Refresh, Cached,
+  Dashboard as OverviewIcon,
+  Refresh,
+  Cached,
   Dns as SystemIcon,
   Language as SitesIcon,
   Schedule as CronsIcon,
@@ -18,7 +31,8 @@ import {
   Shield as SecurityIcon,
   Settings as SettingsIcon,
   Person,
-  ExpandLess, ExpandMore,
+  ExpandLess,
+  ExpandMore,
   ShoppingCart as CommerceIcon,
   Inventory,
   Terminal as ScriptsIcon,
@@ -33,171 +47,177 @@ import {
   Terminal,
   History as HistoryIcon,
   AutoAwesome,
-  Search, Close,
-  Task, Lan, TrendingUp, CloudDownload,
-  SpeedOutlined as OverviewIcon,
+  Search,
+  Close,
+  Task,
+  Lan,
+  TrendingUp,
+  CloudDownload,
 } from '@mui/icons-material';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { ADMIN_PATHS } from '../../config/routes';
-import technoLogo from '../../assets/logo_techno.png';
-
-// ── Nav tree ────────────────────────────────────────────────────────────────
 
 interface NavItem {
   label: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   path?: string;
   badge?: number;
-  external?: boolean;
   children?: NavItem[];
 }
 
 const navItems: NavItem[] = [
-  { path: '/',           label: 'Cockpit',       icon: <OverviewIcon /> },
-  { path: '/terminal-ai', label: 'Terminal AI',  icon: <AutoAwesome /> },
+  { path: '/terminal-ai', label: 'Terminal AI', icon: <AutoAwesome /> },
   {
-    label: 'Monitoring', icon: <DashboardIcon />,
+    label: 'Monitoring',
+    icon: <OverviewIcon />,
     children: [
-      { path: '/system-overview',   label: 'System Overview',   icon: <SystemIcon /> },
-      { path: '/sites',             label: 'Managed Sites',     icon: <SitesIcon /> },
-      { path: '/infrastructure',    label: 'Infrastructure',    icon: <InfrastructureIcon /> },
-      { path: '/cache-control',     label: 'Cache Control',     icon: <Cached /> },
-      { path: '/process-explorer',  label: 'Process Explorer',  icon: <Terminal /> },
-      { path: '/log-explorer',      label: 'Log Explorer',      icon: <DocsIcon /> },
-      { path: '/monitoring/ssh',    label: 'SSH Sessions',      icon: <SecurityIcon /> },
+      { path: '/system-overview', label: 'System Overview', icon: <SystemIcon /> },
+      { path: '/sites', label: 'Managed Sites', icon: <SitesIcon /> },
+      { path: '/infrastructure', label: 'Infrastructure', icon: <InfrastructureIcon /> },
+      { path: '/cache-control', label: 'Cache Control', icon: <Cached /> },
+      { path: '/process-explorer', label: 'Process Explorer', icon: <Terminal /> },
+      { path: '/log-explorer', label: 'Log Explorer', icon: <DocsIcon /> },
+      { path: '/monitoring/ssh', label: 'SSH Sessions', icon: <SecurityIcon /> },
       { path: '/monitoring/commands', label: 'Command History', icon: <HistoryIcon /> },
-      { path: '/monitoring/users',  label: 'User Activity',     icon: <Person /> },
-      { path: '/system-health',     label: 'System Health',     icon: <Lan /> },
-    ],
+      { path: '/monitoring/users', label: 'User Activity', icon: <Person /> },
+      { path: '/system-health', label: 'System Health', icon: <Lan /> },
+    ]
   },
   {
-    label: 'Commerce', icon: <CommerceIcon />,
+    label: 'Commerce',
+    icon: <CommerceIcon />,
     children: [
-      { path: '/commerce/sales',     label: 'Sales Overview',   icon: <CommerceIcon /> },
-      { path: '/commerce/products',  label: 'Products',         icon: <Inventory /> },
-      { path: '/commerce/customers', label: 'Customers',        icon: <Person /> },
-      { path: '/commerce/orders',    label: 'Orders',           icon: <CommerceIcon /> },
-      { path: '/commerce/inventory', label: 'Inventory',        icon: <Inventory /> },
-      { path: '/commerce/cms',       label: 'CMS & Content',    icon: <DocsIcon /> },
-      { path: '/commerce/indexers',  label: 'Indexers',         icon: <Refresh /> },
-      { path: '/commerce/settings',  label: 'Magento Settings', icon: <SettingsIcon /> },
-    ],
+      { path: '/commerce/sales', label: 'Sales Overview', icon: <CommerceIcon /> },
+      { path: '/commerce/products', label: 'Products', icon: <Inventory /> },
+      { path: '/commerce/customers', label: 'Customers', icon: <Person /> },
+      { path: '/commerce/orders', label: 'Orders', icon: <CommerceIcon /> },
+      { path: '/commerce/inventory', label: 'Inventory', icon: <Inventory /> },
+      { path: '/commerce/cms', label: 'CMS & Content', icon: <DocsIcon /> },
+      { path: '/commerce/indexers', label: 'Indexers', icon: <Refresh /> },
+      { path: '/commerce/settings', label: 'Magento Settings', icon: <SettingsIcon /> },
+    ]
   },
   {
-    label: 'Dev & CI/CD', icon: <CicdIcon />,
+    label: 'Dev & CI/CD',
+    icon: <CicdIcon />,
     children: [
-      { path: '/cicd',    label: 'Pipeline',      icon: <CicdIcon /> },
+      { path: '/cicd', label: 'Pipeline', icon: <CicdIcon /> },
       { path: '/scripts', label: 'Script Runner', icon: <ScriptsIcon /> },
-    ],
+    ]
   },
   {
-    label: 'Automation', icon: <QueuesIcon />,
+    label: 'Automation',
+    icon: <QueuesIcon />,
     children: [
-      { path: '/crons',  label: 'Cron Jobs',       icon: <CronsIcon /> },
-      { path: '/queues', label: 'Message Queues',  icon: <QueuesIcon /> },
-    ],
+      { path: '/crons', label: 'Cron Jobs', icon: <CronsIcon /> },
+      { path: '/queues', label: 'Message Queues', icon: <QueuesIcon /> },
+    ]
   },
   {
-    label: 'Notifications', icon: <AlertsIcon />,
+    label: 'Notifications',
+    icon: <AlertsIcon />,
     children: [
-      { path: '/notifications/telegram', label: 'Telegram Bot',    icon: <AlertsIcon /> },
-      { path: '/notifications/push',     label: 'Push (Webpushr)', icon: <ActionsIcon /> },
-    ],
+      { path: '/notifications/telegram', label: 'Telegram Bot', icon: <AlertsIcon /> },
+      { path: '/notifications/push', label: 'Push (Webpushr)', icon: <ActionsIcon /> },
+    ]
   },
   {
-    label: 'Project Management', icon: <TrendingUp />,
+    label: 'Project Management',
+    icon: <TrendingUp />,
     children: [
-      { path: '/plans',      label: 'Plans & Roadmap', icon: <TrendingUp /> },
-      { path: '/tasks',      label: 'Tasks',           icon: <Task /> },
-      { path: '/tools/audit', label: 'Audit Trail',   icon: <HistoryIcon /> },
-    ],
+      { path: '/plans', label: 'Plans & Roadmap', icon: <TrendingUp /> },
+      { path: '/tasks', label: 'Tasks', icon: <Task /> },
+      { path: '/tools/audit', label: 'Audit Trail', icon: <HistoryIcon /> },
+    ]
   },
   {
-    label: 'Cloudflare', icon: <CloudIcon />,
+    label: 'Cloudflare',
+    icon: <CloudIcon />,
     children: [
-      { path: '/cloudflare',  label: 'Overview',    icon: <OverviewIcon /> },
-      { path: '/traffic',     label: 'Traffic',     icon: <TrafficIcon /> },
+      { path: '/cloudflare', label: 'Overview', icon: <OverviewIcon /> },
+      { path: '/traffic', label: 'Traffic', icon: <TrafficIcon /> },
       { path: '/performance', label: 'Performance', icon: <PerformanceIcon /> },
-      { path: '/geography',   label: 'Geography',   icon: <GeographyIcon /> },
-      { path: '/security',    label: 'Security',    icon: <SecurityIcon /> },
-    ],
+      { path: '/geography', label: 'Geography', icon: <GeographyIcon /> },
+      { path: '/security', label: 'Security', icon: <SecurityIcon /> },
+    ]
   },
   {
-    label: 'Tools', icon: <ActionsIcon />,
+    label: 'Tools',
+    icon: <ActionsIcon />,
     children: [
-      { path: '/tools/backups',      label: 'Server Backups',    icon: <CloudDownload /> },
-      { path: '/tools/db-health',    label: 'DB Health',         icon: <DbIcon /> },
-      { path: '/tools/users',        label: 'User Management',   icon: <Person /> },
-      { path: '/tools/system-audit', label: 'System Audit',      icon: <SecurityIcon /> },
-      { path: '/tools/actions',      label: 'Emergency Actions', icon: <ActionsIcon /> },
-      { path: '/settings',           label: 'Dashboard Settings', icon: <SettingsIcon /> },
-    ],
+      { path: '/tools/backups', label: 'Server Backups', icon: <CloudDownload /> },
+      { path: '/tools/db-health', label: 'DB Health', icon: <DbIcon /> },
+      { path: '/tools/users', label: 'User Management', icon: <Person /> },
+      { path: '/tools/system-audit', label: 'System Audit', icon: <SecurityIcon /> },
+      { path: '/tools/actions', label: 'Emergency Actions', icon: <ActionsIcon /> },
+      { path: '/settings', label: 'Dashboard Settings', icon: <SettingsIcon /> },
+    ]
   },
   {
-    label: 'ETL Platform', icon: <EtlIcon />,
+    label: 'ETL Platform',
+    icon: <EtlIcon />,
     children: [
-      { path: '/etl/status', label: 'Sync Status',     icon: <EtlIcon /> },
-      { path: '/etl/logs',   label: 'Execution Logs',  icon: <ScriptsIcon /> },
-    ],
+      { path: '/etl/status', label: 'Sync Status', icon: <EtlIcon /> },
+      { path: '/etl/logs', label: 'Execution Logs', icon: <ScriptsIcon /> },
+    ]
   },
   {
-    label: 'RESOURCES', icon: <DocsIcon />,
+    label: 'RESOURCES',
+    icon: <DocsIcon />,
     children: [
-      { path: '/presentation/index.html',                              label: 'Exec Audit 2026',      icon: <TrendingUp />,   external: true },
-      { path: '/docs/index.html',                                      label: 'System Docs',          icon: <DocsIcon />,    external: true },
-      { path: '/docs/ARCHITECTURE.md',                                 label: 'Architecture',         icon: <DocsIcon />,    external: true },
-      { path: '/reports/view.php?file=security_audit_report.html',     label: 'Security Audit',       icon: <SecurityIcon />, external: true },
-      { path: '/reports/view.php?file=ssh_hardening_report.html',      label: 'SSH Hardening',        icon: <SecurityIcon />, external: true },
-      { path: '/reports/view.php?file=2fa_setup_guide.html',           label: '2FA Setup Guide',      icon: <SecurityIcon />, external: true },
-      { path: '/api/info.php',                                         label: 'API Explorer',         icon: <ApiIcon />,     external: true },
-    ],
-  },
+      { path: '/docs/index.html', label: 'System Docs', icon: <DocsIcon /> },
+      { path: '/docs/ARCHITECTURE.md', label: 'Architecture', icon: <DocsIcon /> },
+      { path: '/reports/view.php?file=security_audit_report.html', label: 'Security Audit Report', icon: <SecurityIcon /> },
+      { path: '/reports/view.php?file=ssh_hardening_report.html', label: 'SSH Hardening Report', icon: <SecurityIcon /> },
+      { path: '/reports/view.php?file=2fa_setup_guide.html', label: '2FA Setup Guide', icon: <SecurityIcon /> },
+      { path: '/api/info.php', label: 'API Explorer', icon: <ApiIcon /> },
+    ]
+  }
 ];
-
-// ── Props ────────────────────────────────────────────────────────────────────
 
 interface SidebarProps { onClose?: () => void }
 
-// ── Component ────────────────────────────────────────────────────────────────
-
 export default function Sidebar({ onClose }: SidebarProps) {
   const location = useLocation();
+  const theme = useTheme();
   const { isAdmin } = usePermissions();
-
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
-    Monitoring: true,
-    Cloudflare: false,
+    'Monitoring': true,
+    'Cloudflare': false
   });
-  const [searchQuery, setSearchQuery]   = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
   const [forcedExpand, setForcedExpand] = useState<Record<string, boolean>>({});
   const [taskBadgeCount, setTaskBadgeCount] = useState(0);
 
-  // Fetch pending task badge count (every 2 min)
+  // Fetch pending task count for badge
   useEffect(() => {
-    const load = async () => {
+    const fetchTaskCount = async () => {
       try {
-        const r = await fetch('/api/tasks.php?action=stats');
-        if (r.ok) {
-          const s = await r.json();
-          setTaskBadgeCount(s.pending ?? 0);
+        const response = await fetch('/api/tasks.php?action=stats');
+        if (response.ok) {
+          const stats = await response.json();
+          setTaskBadgeCount(stats.pending || 0);
         }
-      } catch { /* silent */ }
+      } catch (e) {
+        // Silently ignore badge fetch errors
+      }
     };
-    load();
-    const iv = setInterval(load, 2 * 60_000);
-    return () => clearInterval(iv);
+    fetchTaskCount();
+    // Refresh every 2 minutes
+    const interval = setInterval(fetchTaskCount, 2 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Debounce search
+  // Debounce search input
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(searchQuery), 150);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 150);
+    return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Ctrl+K → focus search
+  // Ctrl+K keyboard shortcut
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -209,108 +229,132 @@ export default function Sidebar({ onClose }: SidebarProps) {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const toggleMenu = (label: string) =>
+  const toggleMenu = (label: string) => {
     setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
-  const matchesSearch = useCallback((text: string, q: string) => {
-    if (!q) return true;
-    try { return new RegExp(q, 'i').test(text); }
-    catch { return text.toLowerCase().includes(q.toLowerCase()); }
+  const matchesSearch = useCallback((text: string, query: string) => {
+    if (!query) return true;
+    try { return new RegExp(query, 'i').test(text); }
+    catch { return text.toLowerCase().includes(query.toLowerCase()); }
   }, []);
 
+  // Check if a nav item should be visible based on permissions
   const isNavItemVisible = useCallback((item: NavItem): boolean => {
-    if (item.path && ADMIN_PATHS.has(item.path) && !isAdmin) return false;
-    if (item.children) return item.children.some(c => isNavItemVisible(c));
+    if (item.path && ADMIN_PATHS.has(item.path) && !isAdmin) {
+      return false;
+    }
+    if (item.children) {
+      return item.children.some(child => isNavItemVisible(child));
+    }
     return true;
   }, [isAdmin]);
 
-  const deepFilterItems = useCallback((items: NavItem[]): NavItem[] =>
-    items.reduce<NavItem[]>((acc, item) => {
+  // Deep filter nav items by both search and permissions
+  const deepFilterItems = useCallback((items: NavItem[]): NavItem[] => {
+    return items.reduce<NavItem[]>((acc, item) => {
       if (!isNavItemVisible(item)) return acc;
-      const patched = { ...item };
-      if (patched.path === '/tasks') patched.badge = taskBadgeCount;
+      
+      const itemWithBadge = { ...item };
+      if (itemWithBadge.path === '/tasks') {
+        itemWithBadge.badge = taskBadgeCount;
+      }
 
-      if (patched.children) {
-        const visible   = deepFilterItems(patched.children);
-        if (!visible.length) return acc;
-        const searched  = debouncedQuery
-          ? visible.filter(c => matchesSearch(c.label, debouncedQuery))
-          : visible;
-        if (!searched.length) return acc;
-        acc.push({ ...patched, children: searched });
+      if (itemWithBadge.children) {
+        const visibleChildren = deepFilterItems(itemWithBadge.children);
+        if (visibleChildren.length === 0) return acc;
+        // Also apply search filtering to children
+        const searchedChildren = debouncedQuery
+          ? visibleChildren.filter(child => matchesSearch(child.label, debouncedQuery))
+          : visibleChildren;
+        if (searchedChildren.length === 0) return acc;
+        acc.push({ ...itemWithBadge, children: searchedChildren });
       } else {
-        if (debouncedQuery && !matchesSearch(patched.label, debouncedQuery)) return acc;
-        acc.push(patched);
+        if (debouncedQuery && !matchesSearch(itemWithBadge.label, debouncedQuery)) return acc;
+        acc.push(itemWithBadge);
       }
       return acc;
-    }, []),
-  [isNavItemVisible, matchesSearch, debouncedQuery, taskBadgeCount]);
+    }, []);
+  }, [isNavItemVisible, matchesSearch, debouncedQuery, taskBadgeCount]);
 
-  // Auto-expand when searching
+  const displayItems = deepFilterItems(navItems);
+
+  // Auto-expand sections when search query is active
   useEffect(() => {
-    if (!debouncedQuery) { setForcedExpand({}); return; }
+    if (!debouncedQuery) {
+      setForcedExpand({});
+      return;
+    }
     const expanded: Record<string, boolean> = {};
     navItems.forEach(item => {
       if (item.children) {
-        if (item.children.some(c => matchesSearch(c.label, debouncedQuery) && isNavItemVisible(c)))
-          expanded[item.label] = true;
+        const hasMatch = item.children.some(child => matchesSearch(child.label, debouncedQuery) && isNavItemVisible(child));
+        if (hasMatch) expanded[item.label] = true;
       }
     });
     setForcedExpand(expanded);
   }, [debouncedQuery, matchesSearch, isNavItemVisible]);
 
-  const displayItems = deepFilterItems(navItems);
+  // Count total matching child items
+  const countMatchingItems = useCallback((items: NavItem[]): number => {
+    return items.reduce((count, item) => {
+      if (item.children) return count + countMatchingItems(item.children);
+      return count + 1;
+    }, 0);
+  }, []);
 
-  const countLeafItems = useCallback((items: NavItem[]): number =>
-    items.reduce((n, i) => n + (i.children ? countLeafItems(i.children) : 1), 0),
-  []);
-
-  const isActive   = (path?: string) => {
+  const isActive = (path?: string) => {
     if (!path) return false;
     if (path === '/') return location.pathname === '/' || location.pathname === '';
     return location.pathname === path;
   };
-  const isChildActive = (children?: NavItem[]) =>
-    children ? children.some(c => isActive(c.path)) : false;
+  
+  const isChildActive = (children?: NavItem[]) => 
+    children ? children.some(child => isActive(child.path)) : false;
 
+  // Merge forced expand with user open state
   const isOpen = (label: string) => forcedExpand[label] ?? openMenus[label];
-  const clearSearch = () => { setSearchQuery(''); setForcedExpand({}); searchRef.current?.focus(); };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setForcedExpand({});
+    searchRef.current?.focus();
+  };
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: 1 }}>
-      {/* Brand */}
       <Box sx={{ px: 2.5, py: 1.5, mb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
           <Box
             component="img"
-            src={technoLogo}
+            src={logoTechno}
             alt="TechnoStationery"
-            sx={{ height: 28, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+            sx={{ height: 28, width: 'auto', objectFit: 'contain' }}
           />
-          <Typography variant="h6" sx={{
-            color: 'primary.main', fontWeight: 900, letterSpacing: '-0.05em',
-            fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 0.5,
+          <Typography variant="h6" sx={{ 
+            color: 'primary.main', 
+            fontWeight: 900, 
+            letterSpacing: '-0.05em',
+            fontSize: '1rem',
+            lineHeight: 1,
           }}>
             TECHNO <Box component="span" sx={{ color: 'text.primary', fontWeight: 400 }}>MONITOR</Box>
           </Typography>
         </Box>
-        <Typography variant="caption" sx={{
-          color: 'text.disabled', fontWeight: 600, letterSpacing: '0.04em',
-          textTransform: 'uppercase', fontSize: '0.6rem',
-        }}>
+        <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: '0.6rem' }}>
           Infrastructure Platform
         </Typography>
       </Box>
 
-      {/* Search */}
+      {/* Search Field */}
       <Box sx={{ px: 1.5, mb: 1 }}>
         <TextField
           inputRef={searchRef}
           size="small"
           fullWidth
-          placeholder="Search pages… (Ctrl+K)"
+          placeholder="Search pages... (Ctrl+K)"
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           slotProps={{
             input: {
               startAdornment: (
@@ -330,8 +374,8 @@ export default function Sidebar({ onClose }: SidebarProps) {
                 backgroundColor: 'rgba(255,255,255,0.03)',
                 '& fieldset': { borderColor: 'rgba(255,255,255,0.06)' },
                 '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.12)' },
-              },
-            },
+              }
+            }
           }}
           sx={{
             '& .MuiOutlinedInput-root': { fontSize: '0.75rem', height: 34 },
@@ -341,100 +385,96 @@ export default function Sidebar({ onClose }: SidebarProps) {
         />
         {debouncedQuery && (
           <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6rem', mt: 0.5, ml: 1, display: 'block' }}>
-            {countLeafItems(displayItems)} page{countLeafItems(displayItems) !== 1 ? 's' : ''} found
+            {countMatchingItems(displayItems)} page{countMatchingItems(displayItems) !== 1 ? 's' : ''} found
           </Typography>
         )}
       </Box>
 
-      {/* Nav list */}
-      <List sx={{
-        px: 1, pb: 4, flex: 1, overflowY: 'auto',
-        '&::-webkit-scrollbar': { width: 4 },
-        '&::-webkit-scrollbar-thumb': { background: 'rgba(255,255,255,0.05)', borderRadius: 2 },
-      }}>
-        {displayItems.length === 0 && debouncedQuery && (
+      <List sx={{ px: 1, pb: 4, flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(255,255,255,0.05)', borderRadius: 2 } }}>
+        {displayItems.length === 0 && debouncedQuery ? (
           <Box sx={{ px: 2, py: 3, textAlign: 'center' }}>
             <Search sx={{ fontSize: 24, color: 'text.disabled', mb: 1 }} />
             <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>
               No pages found
             </Typography>
           </Box>
-        )}
-
-        {displayItems.map(item => (
-          <Box key={item.label || item.path} sx={{ mb: 0.25 }}>
+        ) : null}
+        {displayItems.map((item) => (
+          <Box key={item.label} sx={{ mb: 0.25 }}>
             {item.children ? (
               <>
-                <ListItemButton
+                <ListItemButton 
                   onClick={() => toggleMenu(item.label)}
-                  sx={{
-                    borderRadius: 1.5, py: 0.5, px: 1.5,
-                    backgroundColor: isChildActive(item.children)
-                      ? 'rgba(59,130,246,0.06)' : 'transparent',
-                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.03)' },
+                  sx={{ 
+                    borderRadius: 1.5,
+                    py: 0.5,
+                    px: 1.5,
+                    backgroundColor: isChildActive(item.children) ? 'rgba(59, 130, 246, 0.06)' : 'transparent',
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.03)' }
                   }}
                 >
-                  <ListItemIcon sx={{
-                    color: isChildActive(item.children) ? 'primary.main' : 'text.secondary',
-                    minWidth: 28,
-                  }}>
-                    <IconClone icon={item.icon} size={18} />
+                  <ListItemIcon sx={{ color: isChildActive(item.children) ? 'primary.main' : 'text.secondary', minWidth: 28 }}>
+                    {React.cloneElement(item.icon as React.ReactElement, { sx: { fontSize: 18 } } as any)}
                   </ListItemIcon>
-                  <ListItemText primary={
-                    <Typography sx={{
-                      fontSize: '0.78rem',
-                      fontWeight: isChildActive(item.children) ? 700 : 500,
-                      color: isChildActive(item.children) ? 'text.primary' : 'text.secondary',
-                    }}>
-                      {item.label}
-                    </Typography>
-                  } />
-                  {isOpen(item.label)
-                    ? <ExpandLess sx={{ fontSize: 16, color: 'text.disabled' }} />
-                    : <ExpandMore sx={{ fontSize: 16, color: 'text.disabled' }} />}
+                  <ListItemText 
+                    primary={
+                      <Typography sx={{ 
+                        fontSize: '0.78rem', 
+                        fontWeight: isChildActive(item.children) ? 700 : 500,
+                        color: isChildActive(item.children) ? 'text.primary' : 'text.secondary'
+                      }}>
+                        {item.label}
+                      </Typography>
+                    } 
+                  />
+                  {isOpen(item.label) ? <ExpandLess sx={{ fontSize: 16, color: 'text.disabled' }} /> : <ExpandMore sx={{ fontSize: 16, color: 'text.disabled' }} />}
                 </ListItemButton>
-
                 <Collapse in={isOpen(item.label)} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding sx={{ pl: 1.5 }}>
-                    {item.children.map(child => (
+                    {item.children.map((child) => (
                       <ListItemButton
                         key={child.path}
-                        {...(child.external
-                          ? { component: 'a', href: child.path, target: '_blank', rel: 'noopener noreferrer' }
+                        {...(child.path?.startsWith('/docs') || child.path?.startsWith('/api') || child.path?.startsWith('/reports') 
+                          ? { component: 'a', href: child.path } 
                           : { component: Link, to: child.path! }
                         )}
                         onClick={onClose}
                         selected={isActive(child.path)}
                         sx={{
-                          borderRadius: 1, py: 0.4, my: 0.1,
+                          borderRadius: 1,
+                          py: 0.4,
+                          my: 0.1,
                           '&.Mui-selected': {
-                            backgroundColor: 'rgba(59,130,246,0.12)',
-                            '&:hover': { backgroundColor: 'rgba(59,130,246,0.18)' },
+                            backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                            '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.18)' },
                           },
                         }}
                       >
-                        <ListItemIcon sx={{
-                          minWidth: 24,
-                          color: isActive(child.path) ? 'primary.light' : 'text.disabled',
-                        }}>
-                          <IconClone icon={child.icon} size={14} />
+                        <ListItemIcon sx={{ minWidth: 24, color: isActive(child.path) ? 'primary.light' : 'text.disabled' }}>
+                          {React.cloneElement(child.icon as React.ReactElement, { sx: { fontSize: 14 } } as any)}
                         </ListItemIcon>
-                        <ListItemText primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography sx={{
-                              fontSize: '0.75rem',
-                              fontWeight: isActive(child.path) ? 700 : 400,
-                              color: isActive(child.path) ? 'primary.light' : 'text.secondary',
-                            }}>
-                              {child.label}
-                            </Typography>
-                            {(child.badge ?? 0) > 0 && (
-                              <Badge badgeContent={child.badge} color="error" sx={{ ml: 1 }}>
-                                <Box />
-                              </Badge>
-                            )}
-                          </Box>
-                        } />
+                        <ListItemText 
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Typography sx={{ 
+                                fontSize: '0.75rem', 
+                                fontWeight: isActive(child.path) ? 700 : 400,
+                                color: isActive(child.path) ? 'primary.light' : 'text.secondary'
+                              }}>
+                                {child.label}
+                              </Typography>
+                              {(child as any).badge > 0 && (
+                                <Badge
+                                  badgeContent={(child as any).badge}
+                                  color="error"
+                                  sx={{ ml: 1 }}
+                                >
+                                  <Box />
+                                </Badge>
+                              )}
+                            </Box>
+                          } 
+                        />
                       </ListItemButton>
                     ))}
                   </List>
@@ -447,41 +487,42 @@ export default function Sidebar({ onClose }: SidebarProps) {
                 onClick={onClose}
                 selected={isActive(item.path)}
                 sx={{
-                  borderRadius: 1.5, py: 0.5, px: 1.5,
-                  '&.Mui-selected': { backgroundColor: 'rgba(59,130,246,0.12)' },
+                  borderRadius: 1.5,
+                  py: 0.5,
+                  px: 1.5,
+                  '&.Mui-selected': {
+                    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                  },
                 }}
               >
-                <ListItemIcon sx={{
-                  color: isActive(item.path) ? 'primary.main' : 'text.secondary',
-                  minWidth: 28,
-                }}>
-                  <IconClone icon={item.icon} size={18} />
+                <ListItemIcon sx={{ color: isActive(item.path) ? 'primary.main' : 'text.secondary', minWidth: 28 }}>
+                  {React.cloneElement(item.icon as React.ReactElement, { sx: { fontSize: 18 } } as any)}
                 </ListItemIcon>
-                <ListItemText primary={
-                  <Typography sx={{ fontSize: '0.78rem', fontWeight: isActive(item.path) ? 700 : 500 }}>
-                    {item.label}
-                  </Typography>
-                } />
+                <ListItemText 
+                  primary={
+                    <Typography sx={{ fontSize: '0.78rem', fontWeight: isActive(item.path) ? 700 : 500 }}>
+                      {item.label}
+                    </Typography>
+                  } 
+                />
               </ListItemButton>
             )}
           </Box>
         ))}
       </List>
 
-      {/* Footer */}
       <Box sx={{ mt: 'auto', p: 2, borderTop: '1px solid', borderColor: 'divider', background: 'rgba(0,0,0,0.2)' }}>
-        <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
-        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v3.3.0</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+          <Box
+            component="img"
+            src={logoTechno}
+            alt="TechnoStationery"
+            sx={{ height: 16, width: 'auto', objectFit: 'contain', opacity: 0.6 }}
+          />
+          <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
+        </Box>
+        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v3.1.5 · by Mounir Abderrahmani</Typography>
       </Box>
     </Box>
   );
 }
-
-/** Clones an icon JSX element with a fixed fontSize — avoids React.cloneElement with sx prop type issues */
-function IconClone({ icon, size }: { icon: JSX.Element; size: number }) {
-  // MUI SvgIcon accepts `sx` and `fontSize` props directly
-  return <icon.type {...icon.props} sx={{ fontSize: size }} />;
-}
-
-// Suppress unused import warnings for icons that are part of the navItems data
-void Refresh; void Tooltip;
