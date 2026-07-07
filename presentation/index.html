@@ -34,8 +34,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);overflow:hid
 
 /* ── DECK ── */
 #deck{flex:1;position:relative;overflow:hidden}
-.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:28px 36px 16px;overflow:hidden}
-.slide.active{display:flex}
+/* ── SLIDE BASE ── */
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  padding:28px 36px 16px;overflow:hidden;
+  opacity:0;pointer-events:none;
+  transform:translateY(6px);
+  transition:opacity .28s cubic-bezier(.4,0,.2,1),
+             transform .28s cubic-bezier(.4,0,.2,1);
+  will-change:opacity,transform;
+}
+.slide.active{
+  opacity:1;pointer-events:auto;
+  transform:translateY(0);
+}
+.slide.exit{
+  opacity:0;transform:translateY(-6px);
+}
 
 /* ── NAV BAR ── */
 #nav{
@@ -50,10 +66,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);overflow:hid
 }
 #progress-bar{
   position:absolute;top:0;left:0;height:3px;
-  background:linear-gradient(90deg,var(--accent2) 0%,var(--accent) 60%,#8b5cf6 100%);
-  transition:width .35s cubic-bezier(.4,0,.2,1);
-  z-index:30;border-radius:0 3px 3px 0;
-  box-shadow:0 0 10px rgba(59,130,246,.7);
+  background:linear-gradient(90deg,var(--accent2) 0%,var(--accent) 55%,#8b5cf6 100%);
+  transition:width .38s cubic-bezier(.4,0,.2,1);
+  z-index:30;border-radius:0 2px 2px 0;
+  box-shadow:0 0 12px rgba(59,130,246,.8),0 0 4px rgba(6,182,212,.5);
+  pointer-events:none;
 }
 #nav-brand{
   display:flex;align-items:center;gap:8px;
@@ -114,6 +131,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);overflow:hid
 /* Legacy compat — keep old IDs working */
 #toc-btn,#notes-btn,#fs-btn,#home-btn{font-family:inherit}
 
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  #nav{padding:0 8px;gap:6px}
+  #nav-brand{display:none}
+  .nav-btn-primary{padding:6px 12px;font-size:11px}
+  #nav-center{gap:3px}
+  .nav-btn-ghost{padding:4px 6px;font-size:10px}
+  .nav-btn-dl{padding:5px 8px;font-size:10px}
+  #nav-counter{min-width:52px;font-size:11px}
+}
+@media(max-width:640px){
+  #nav-center .nav-btn-ghost:nth-child(n+4){display:none}
+  .nav-btn-dl span{display:none}
+  .nav-btn-primary{padding:6px 10px}
+}
+
 /* ── NOTES PANEL ── */
 #notes-panel{
   position:fixed;bottom:54px;right:0;width:340px;
@@ -140,19 +173,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);overflow:hid
 #notes-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
 /* ── TYPOGRAPHY ── */
-.slide-title{font-size:23px;font-weight:800;color:#fff;margin-bottom:5px;letter-spacing:-.4px;line-height:1.2}
+.slide-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.5px;line-height:1.15}
 .slide-subtitle{font-size:12.5px;color:var(--muted);margin-bottom:16px;line-height:1.45}
 .section-label{
-  font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;
+  font-size:9px;letter-spacing:3px;text-transform:uppercase;
   color:var(--accent2);margin-bottom:8px;
-  display:inline-flex;align-items:center;gap:6px;
+  display:inline-flex;align-items:center;gap:7px;font-weight:700;
 }
 .section-label::before{
-  content:'';display:inline-block;width:20px;height:2px;
-  background:linear-gradient(90deg,var(--accent2),transparent);
-  border-radius:1px;
+  content:'';flex-shrink:0;display:inline-block;width:18px;height:2px;
+  background:linear-gradient(90deg,var(--accent2),rgba(6,182,212,.2));
+  border-radius:2px;
 }
-h3{font-size:14px;font-weight:600;color:var(--accent2);margin-bottom:8px}
+h3{font-size:13.5px;font-weight:700;color:var(--accent2);margin-bottom:8px;letter-spacing:-.01em}
 h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
 
 /* ── GRID HELPERS ── */
@@ -165,10 +198,12 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 
 /* ── PANELS ── */
 .panel{
-  background:linear-gradient(135deg,var(--panel) 0%,rgba(17,24,39,.8) 100%);
+  background:linear-gradient(135deg,var(--panel) 0%,rgba(17,24,39,.85) 100%);
   border:1px solid var(--border);border-radius:10px;padding:14px 16px;
-  box-shadow:0 1px 4px rgba(0,0,0,.2);
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  transition:border-color .2s;
 }
+.panel:hover{border-color:rgba(59,130,246,.2)}
 .panel-dark{
   background:linear-gradient(135deg,var(--panel2) 0%,rgba(26,34,52,.8) 100%);
   border:1px solid var(--border);border-radius:10px;padding:14px 16px;
@@ -197,8 +232,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   background:radial-gradient(circle at top right,rgba(var(--kpi-r,59),var(--kpi-g,130),var(--kpi-b,246),.06),transparent 70%);
   pointer-events:none;
 }
-.kpi-card .kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
-.kpi-card .kpi-val{font-size:26px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px}
+.kpi-card .kpi-label{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
+.kpi-card .kpi-val{font-size:28px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px;letter-spacing:-.02em}
 .kpi-card .kpi-sub{font-size:11px;color:var(--muted)}
 .kpi-card .kpi-delta{font-size:11px;font-weight:600;margin-top:4px}
 .kpi-card.blue{--kpi-color:var(--accent)}
@@ -209,7 +244,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 .kpi-card.red{--kpi-color:var(--danger)}
 
 /* ── BADGES ── */
-.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:filter .2s}.badge:hover{filter:brightness(1.15)}
 .badge-red{background:#3a0a0a;color:#f87171;border:1px solid #7f1d1d}
 .badge-orange{background:#3a1a0a;color:#fb923c;border:1px solid #7c2d12}
 .badge-yellow{background:#3a2a0a;color:#fbbf24;border:1px solid #78350f}
@@ -228,7 +263,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 /* ── TIMELINE ── */
 .timeline{display:flex;flex-direction:column;gap:0}
 .tl-item{display:grid;grid-template-columns:110px 20px 1fr;gap:8px;align-items:start;position:relative}
-.tl-item:not(:last-child)::after{content:'';position:absolute;left:118px;top:20px;bottom:-8px;width:1px;background:var(--border)}
+.tl-item:not(:last-child)::after{content:'';position:absolute;left:118px;top:20px;bottom:-8px;width:1px;background:linear-gradient(180deg,var(--border),transparent)}
 .tl-time{font-size:11px;color:var(--accent2);text-align:right;padding-top:3px;font-weight:600}
 .tl-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;border:2px solid}
 .tl-dot.red{background:#3a0a0a;border-color:var(--red)}
@@ -244,10 +279,19 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 .tl-src{font-size:9px;color:var(--dim);margin-top:3px;font-style:italic}
 
 /* ── TABLE ── */
-.data-table{width:100%;border-collapse:collapse;font-size:12px}
-.data-table th{background:#0d1625;color:var(--muted);padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border)}
-.data-table td{padding:7px 10px;border-bottom:1px solid #111827;color:var(--text);vertical-align:middle}
-.data-table tr:hover td{background:#0f1625}
+.data-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.data-table th{
+  background:linear-gradient(180deg,#0d1625,#0a1220);
+  color:var(--muted);padding:7px 11px;text-align:left;
+  font-size:9.5px;letter-spacing:.7px;text-transform:uppercase;
+  border-bottom:1px solid var(--border);font-weight:700;
+}
+.data-table td{
+  padding:6px 11px;border-bottom:1px solid rgba(30,45,69,.6);
+  color:var(--text);vertical-align:middle;line-height:1.4;
+}
+.data-table tr:hover td{background:rgba(59,130,246,.04)}
+.data-table tr:last-child td{border-bottom:none}
 .data-table .num{text-align:right;font-variant-numeric:tabular-nums}
 
 /* ── BEFORE/AFTER ── */
@@ -270,17 +314,19 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 }
 .section-divider::before{
   content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at center,rgba(59,130,246,.1) 0%,transparent 65%);
+  background:
+    radial-gradient(ellipse at 50% 40%,rgba(59,130,246,.14) 0%,transparent 60%),
+    radial-gradient(ellipse at 20% 80%,rgba(6,182,212,.06) 0%,transparent 50%);
 }
 .section-divider::after{
   content:'';position:absolute;
   bottom:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(59,130,246,.3),transparent);
 }
-.div-phase{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--accent2);opacity:.8}
-.div-number{font-size:72px;font-weight:900;color:rgba(255,255,255,.04);position:absolute;line-height:1}
-.div-title{font-size:36px;font-weight:800;color:#fff;text-align:center;letter-spacing:-.5px}
-.div-subtitle{font-size:14px;color:var(--muted);text-align:center;max-width:500px}
+.div-phase{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:var(--accent2);opacity:.9;font-weight:600}
+.div-number{font-size:180px;font-weight:900;color:rgba(255,255,255,.025);position:absolute;line-height:1;letter-spacing:-.05em;user-select:none}
+.div-title{font-size:40px;font-weight:900;color:#fff;text-align:center;letter-spacing:-.6px;text-shadow:0 0 40px rgba(59,130,246,.15)}
+.div-subtitle{font-size:13.5px;color:var(--muted);text-align:center;max-width:560px;line-height:1.55}
 .div-tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 
 /* ── PROGRESS BAR ── */
@@ -288,8 +334,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 .pbar-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
 .pbar-label span:first-child{color:var(--muted)}
 .pbar-label span:last-child{color:#fff;font-weight:700}
-.pbar-track{height:6px;background:#0d1625;border-radius:3px;overflow:hidden}
-.pbar-fill{height:100%;border-radius:3px;transition:width .5s}
+.pbar-track{height:6px;background:rgba(13,22,37,.8);border-radius:3px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+.pbar-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 6px currentColor}
 
 /* ── RISK MATRIX ── */
 .risk-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #0d1220;font-size:12px}
@@ -300,7 +346,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 .risk-status{min-width:70px;text-align:center}
 
 /* ── ANOMALY BOX ── */
-.anomaly-box{background:#1a0808;border:1px solid #5a1a1a;border-radius:8px;padding:10px 14px;font-size:11px}
+.anomaly-box{background:linear-gradient(135deg,#1a0808,#140606);border:1px solid #6a1f1f;border-radius:8px;padding:10px 14px;font-size:11px;box-shadow:0 0 12px rgba(239,68,68,.06)}
 .anomaly-box .anomaly-title{color:var(--danger);font-weight:700;font-size:12px;margin-bottom:4px}
 
 /* ── COVER CALLOUTS ── */
@@ -324,6 +370,27 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 /* ── CHART CONTAINERS ── */
 .chart-wrap{position:relative;flex:1;min-height:0}
 
+/* ── ENTRANCE ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes fadeIn{
+  from{opacity:0}to{opacity:1}
+}
+@keyframes scaleIn{
+  from{opacity:0;transform:scale(.95)}
+  to{opacity:1;transform:scale(1)}
+}
+.slide.active .section-label{animation:fadeUp .3s ease .05s both}
+.slide.active .slide-title{animation:fadeUp .3s ease .1s both}
+.slide.active .slide-subtitle{animation:fadeUp .3s ease .15s both}
+.slide.active .kpi-grid{animation:fadeUp .35s ease .18s both}
+.section-divider.active .div-phase{animation:fadeUp .4s ease .1s both}
+.section-divider.active .div-title{animation:fadeUp .4s ease .2s both}
+.section-divider.active .div-subtitle{animation:fadeUp .35s ease .3s both}
+.section-divider.active .div-tags{animation:fadeUp .35s ease .38s both}
+
 /* ── SCROLLABLE ── */
 .scroll{overflow-y:auto;flex:1;min-height:0}
 .scroll::-webkit-scrollbar{width:4px}
@@ -331,14 +398,18 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 .scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
 /* ── COVER ── */
-#s1{background:linear-gradient(135deg,#050810 0%,#0a1628 40%,#080e1e 100%);display:flex!important;align-items:center;justify-content:center;flex-direction:column;gap:24px;position:relative;overflow:hidden}
+#s1{background:linear-gradient(135deg,#050810 0%,#0b1830 40%,#080e1e 100%);display:flex!important;align-items:center;justify-content:center;flex-direction:column;gap:24px;position:relative;overflow:hidden}
 #s1::before{content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 70%)}
 #s1::after{content:'';position:absolute;bottom:-80px;left:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(6,182,212,.08) 0%,transparent 70%)}
 .cover-logo{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--accent2)}
 .cover-title{font-size:40px;font-weight:900;color:#fff;text-align:center;letter-spacing:-.5px;line-height:1.15}
 .cover-title span{color:var(--accent)}
 .cover-sub{font-size:14px;color:var(--muted);text-align:center}
-.cover-meta{display:flex;gap:24px;font-size:12px;color:var(--dim)}
+.cover-meta{
+  display:flex;gap:20px;font-size:11.5px;color:var(--dim);
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:8px;padding:8px 16px;
+}
 .cover-meta span{display:flex;align-items:center;gap:6px}
 .cover-meta strong{color:var(--muted)}
 </style>
@@ -363,8 +434,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   </div>
   <div class="cover-meta">
     <span><strong>Server:</strong> ded701.inmotionhosting.com</span>
-    <span><strong>Stack:</strong> Magento 2.4.6 · PHP 8.2 · MariaDB 10.6</span>
-    <span><strong>OS:</strong> AlmaLinux 8.10</span>
+    <span><strong>Stack:</strong> Magento 2.4.7-p3 · PHP 8.2 · MariaDB 10.6.17</span>
+    <span><strong>OS:</strong> AlmaLinux 9.6 (RHEL 9)</span>
   </div>
 </div>
 
@@ -1983,6 +2054,18 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 // ── GLOBAL NAV ALIASES ──
 function goPrev(){ showSlide(current - 1); }
 function goNext(){ showSlide(current + 1); }
+// ── CHART INSTANCE CACHE ── (prevents memory leak on repeated visits)
+const _chartCache = new Map();
+function _getOrCreateChart(canvasId, config) {
+  if (_chartCache.has(canvasId)) {
+    return _chartCache.get(canvasId);
+  }
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return null;
+  const chart = new Chart(canvas, config);
+  _chartCache.set(canvasId, chart);
+  return chart;
+}
 
 // ── SLIDE ENGINE ──
 const slides = document.querySelectorAll('.slide');
@@ -2030,7 +2113,13 @@ const NOTES = {
 function showSlide(n) {
   if (n < 0) n = 0;
   if (n >= TOTAL) n = TOTAL - 1;
-  slides[current].classList.remove('active');
+  const prev = slides[current];
+  if (n !== current) {
+    prev.classList.add('exit');
+    setTimeout(() => { prev.classList.remove('active','exit'); }, 280);
+  } else {
+    prev.classList.remove('active');
+  }
   current = n;
   slides[current].classList.add('active');
   document.getElementById('nav-counter').textContent = (current + 1) + ' / ' + TOTAL;
@@ -2094,7 +2183,7 @@ function initChartsForSlide(sid) {
 
   // ── S5: Git Commits ──
   if (sid === 's5') {
-    new Chart(document.getElementById('chartCommits'), {
+    _getOrCreateChart('chartCommits', {
       type: 'bar',
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul (partial)'],
@@ -2110,7 +2199,7 @@ function initChartsForSlide(sid) {
         scales: { x: { ticks: FONT, grid: GRID }, y: { ticks: FONT, grid: GRID } }
       }
     });
-    new Chart(document.getElementById('chartCommitType'), {
+    _getOrCreateChart('chartCommitType', {
       type: 'doughnut',
       data: {
         labels: ['feat','fix','chore/refactor'],
@@ -2126,7 +2215,7 @@ function initChartsForSlide(sid) {
 
   // ── S9: Redis Gauge ──
   if (sid === 's9') {
-    new Chart(document.getElementById('chartRedisGauge'), {
+    _getOrCreateChart('chartRedisGauge', {
       type: 'doughnut',
       data: {
         datasets: [{
@@ -2161,7 +2250,7 @@ function initChartsForSlide(sid) {
 
   // ── S12: Monthly Orders ──
   if (sid === 's12') {
-    new Chart(document.getElementById('chartMonthly'), {
+    _getOrCreateChart('chartMonthly', {
       type: 'bar',
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun'],
@@ -2188,7 +2277,7 @@ function initChartsForSlide(sid) {
 
   // ── S13: Order Status ──
   if (sid === 's13') {
-    new Chart(document.getElementById('chartStatus'), {
+    _getOrCreateChart('chartStatus', {
       type: 'doughnut',
       data: {
         labels: ['Complete','Processing','Cancelled','Pending','Other'],
@@ -2200,7 +2289,7 @@ function initChartsForSlide(sid) {
         plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 10, font: { size: 11 } } } }
       }
     });
-    new Chart(document.getElementById('chartCancelRate'), {
+    _getOrCreateChart('chartCancelRate', {
       type: 'bar',
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun'],
@@ -2222,7 +2311,7 @@ function initChartsForSlide(sid) {
 
   // ── S14: Customers ──
   if (sid === 's14') {
-    new Chart(document.getElementById('chartCustomers'), {
+    _getOrCreateChart('chartCustomers', {
       type: 'bar',
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun'],
@@ -2250,7 +2339,7 @@ function initChartsForSlide(sid) {
 
   // ── S17: YoY ──
   if (sid === 's17') {
-    new Chart(document.getElementById('chartYoY'), {
+    _getOrCreateChart('chartYoY', {
       type: 'bar',
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun'],
@@ -2271,7 +2360,7 @@ function initChartsForSlide(sid) {
 
   // ── S22: SSH Attacks ──
   if (sid === 's22') {
-    new Chart(document.getElementById('chartSSH'), {
+    _getOrCreateChart('chartSSH', {
       type: 'bar',
       data: {
         labels: ['Jun 8','Jun 9','Jun 10','Jun 11','Jun 12','Jun 13','Jun 14'],
@@ -2298,7 +2387,7 @@ function initChartsForSlide(sid) {
 
   // ── S24: Ecomscan / Imunify360 timeline ──
   if (sid === 's24') {
-    new Chart(document.getElementById('chartEcomscan'), {
+    _getOrCreateChart('chartEcomscan', {
       type: 'bar',
       data: {
         labels: ['Jun 8\nFull Scan','Jun 9','Jun 11','Jun 14','Jun 16\nMass Flag','Jun 21-28','Jun 29–Jul 7'],
@@ -2326,7 +2415,7 @@ function initChartsForSlide(sid) {
 
   // ── S27: Load Timeline ──
   if (sid === 's27') {
-    new Chart(document.getElementById('chartLoad'), {
+    _getOrCreateChart('chartLoad', {
       type: 'line',
       data: {
         labels: ['00:00\nCrisis','00:34\nDB restart','00:59\nT+25min','01:30\nQoder killed','02:00\nConfig fix','02:35\nMonitoring','04:00\nResolved','Current'],
@@ -2360,7 +2449,7 @@ function initChartsForSlide(sid) {
 
   // ── S28: Cache Performance ──
   if (sid === 's28') {
-    new Chart(document.getElementById('chartCache'), {
+    _getOrCreateChart('chartCache', {
       type: 'bar',
       data: {
         labels: ['Redis', 'Varnish', 'MariaDB\n(RAM hit %)', 'Cloudflare'],
@@ -2385,7 +2474,7 @@ function initChartsForSlide(sid) {
 
   // ── S31: Risk Bubble ──
   if (sid === 's31') {
-    new Chart(document.getElementById('chartRisk'), {
+    _getOrCreateChart('chartRisk', {
       type: 'bubble',
       data: {
         datasets: [
@@ -2520,6 +2609,26 @@ document.querySelectorAll('#algeria-map .wilaya').forEach(g => {
     document.getElementById('mapTooltip').style.display = 'none';
   });
 });
+
+// ── KEYBOARD HINT ── (shown once on first load, auto-dismiss after 3s)
+(function() {
+  if (sessionStorage.getItem('tsm_hint_shown')) return;
+  sessionStorage.setItem('tsm_hint_shown', '1');
+  const hint = document.createElement('div');
+  hint.id = 'kbd-hint';
+  hint.style.cssText = [
+    'position:fixed','bottom:68px','left:50%','transform:translateX(-50%)',
+    'background:rgba(10,15,30,.92)','border:1px solid rgba(59,130,246,.3)',
+    'border-radius:8px','padding:8px 18px','font-size:11px',
+    'color:#94a3b8','z-index:100','display:flex','align-items:center','gap:10px',
+    'box-shadow:0 4px 20px rgba(0,0,0,.5)','backdrop-filter:blur(8px)',
+    'transition:opacity .4s ease','pointer-events:none'
+  ].join(';');
+  hint.innerHTML = '<span style="color:#3b82f6;font-weight:700">&#9654; &#9650; &#9660; &#9664;</span> Arrow keys &nbsp;·&nbsp; <span style="color:#3b82f6;font-weight:700">Space</span> Next &nbsp;·&nbsp; <span style="color:#3b82f6;font-weight:700">F</span> Fullscreen &nbsp;·&nbsp; <span style="color:#3b82f6;font-weight:700">Esc</span> Cover';
+  document.body.appendChild(hint);
+  setTimeout(() => { hint.style.opacity = '0'; }, 3000);
+  setTimeout(() => { hint.remove(); }, 3500);
+})();
 
 // ── INIT ──
 showSlide(0);

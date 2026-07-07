@@ -1,5 +1,6 @@
 import { Box, Typography, Button, IconButton, Chip, useTheme, Menu, MenuItem, Tooltip, ListItemIcon, ListItemText } from '@mui/material';
-import { Menu as MenuIcon, ExitToApp, CloudDone, Warning, Speed, Memory, Storage, Cached, LightMode, DarkMode, Settings, Language, Check, Storage as StorageIcon } from '@mui/icons-material';
+import { Menu as MenuIcon, ExitToApp, CloudDone, Warning, Speed, Memory, Storage, Cached, LightMode, DarkMode, Settings, Language, Check, Storage as StorageIcon, SlideshowOutlined } from '@mui/icons-material';
+import logoTechno from '../../assets/logo_techno.png';
 import { useAuth } from '../../hooks/useAuth.tsx';
 import { useSystemOverview } from '../../hooks/useSystemData.ts';
 import { useState } from 'react';
@@ -68,10 +69,17 @@ export default function Header({ onMenuClick }: HeaderProps) {
       backdropFilter: 'blur(12px)',
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
     }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <IconButton onClick={onMenuClick} sx={{ color: 'text.secondary', display: { md: 'none' } }}>
           <MenuIcon />
         </IconButton>
+        {/* Techno logo */}
+        <Box
+          component="img"
+          src={logoTechno}
+          alt="TechnoStationery"
+          sx={{ height: 32, width: 'auto', objectFit: 'contain', display: { xs: 'none', sm: 'block' } }}
+        />
         <Box>
           <Typography variant="subtitle2" sx={{ fontWeight: 800, lineHeight: 1, letterSpacing: '-0.02em' }}>
             TECHNO <Box component="span" sx={{ color: 'primary.main' }}>MONITOR</Box>
@@ -102,6 +110,17 @@ export default function Header({ onMenuClick }: HeaderProps) {
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* Presentation quick-link */}
+        <Tooltip title="Open Executive Presentation">
+          <IconButton
+            size="small"
+            onClick={() => window.open('/presentation/', '_blank', 'noopener,noreferrer')}
+            sx={{ color: 'text.secondary', '&:hover': { color: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)' } }}
+          >
+            <SlideshowOutlined sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+
         {/* phpMyAdmin - Admin only */}
         {isAdmin && (
           <Tooltip title="phpMyAdmin">

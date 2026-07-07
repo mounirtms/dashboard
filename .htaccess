@@ -25,17 +25,25 @@ Header set Surrogate-Control "no-store"
 </FilesMatch>
 
 # Prevent caching of CSS and JS (dashboard assets)
+# Note: build/.htaccess overrides this with 'Header always set' for /build/assets/*.js
 <FilesMatch "\.(css|js)$">
     Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private"
     Header set Pragma "no-cache"
     Header set Expires "0"
 </FilesMatch>
 
+# Correct MIME type for service worker (must be application/javascript, not text/html)
+<FilesMatch "webpushr-sw\.js$">
+    AddType application/javascript .js
+    Header always set Service-Worker-Allowed "/"
+    Header always set Cache-Control "no-cache, no-store, must-revalidate"
+</FilesMatch>
+
 # Security headers
 Header set X-Content-Type-Options "nosniff"
 Header set X-Frame-Options "SAMEORIGIN"
 Header set X-XSS-Protection "1; mode=block"
-Header set Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://www.clarity.ms https://scripts.clarity.ms https://connect.facebook.net https://www.googletagmanager.com https://gc.kes.v2.scr.kaspersky-labs.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://cdn.webpushr.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com https://*.clarity.ms https://www.clarity.ms https://www.google-analytics.com https://analytics.google.com https://*.google.com https://stats.g.doubleclick.net https://*.facebook.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://*.webpushr.com;"
+Header set Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://www.clarity.ms https://scripts.clarity.ms https://connect.facebook.net https://www.googletagmanager.com https://gc.kes.v2.scr.kaspersky-labs.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://cdn.webpushr.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com https://*.clarity.ms https://www.clarity.ms https://www.google-analytics.com https://analytics.google.com https://*.google.com https://stats.g.doubleclick.net https://*.facebook.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://*.webpushr.com; worker-src 'self' https://cdn.webpushr.com;"
 
 # Flight v2 API routing
 <IfModule mod_rewrite.c>

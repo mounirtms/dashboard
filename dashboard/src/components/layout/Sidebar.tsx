@@ -57,6 +57,7 @@ import {
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { ADMIN_PATHS } from '../../config/routes';
+import logoTechno from '../../assets/logo_techno.png';
 
 interface NavItem {
   label: string;
@@ -324,17 +325,23 @@ export default function Sidebar({ onClose }: SidebarProps) {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: 1 }}>
       <Box sx={{ px: 2.5, py: 1.5, mb: 1 }}>
-        <Typography variant="h6" sx={{ 
-          color: 'primary.main', 
-          fontWeight: 900, 
-          letterSpacing: '-0.05em',
-          fontSize: '1rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}>
-          TECHNO <Box component="span" sx={{ color: 'text.primary', fontWeight: 400 }}>MONITOR</Box>
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+          <Box
+            component="img"
+            src={logoTechno}
+            alt="TechnoStationery"
+            sx={{ height: 28, width: 'auto', objectFit: 'contain' }}
+          />
+          <Typography variant="h6" sx={{ 
+            color: 'primary.main', 
+            fontWeight: 900, 
+            letterSpacing: '-0.05em',
+            fontSize: '1rem',
+            lineHeight: 1,
+          }}>
+            TECHNO <Box component="span" sx={{ color: 'text.primary', fontWeight: 400 }}>MONITOR</Box>
+          </Typography>
+        </Box>
         <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: '0.6rem' }}>
           Infrastructure Platform
         </Typography>
@@ -506,8 +513,16 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </List>
 
       <Box sx={{ mt: 'auto', p: 2, borderTop: '1px solid', borderColor: 'divider', background: 'rgba(0,0,0,0.2)' }}>
-        <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
-        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v3.1.5</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+          <Box
+            component="img"
+            src={logoTechno}
+            alt="TechnoStationery"
+            sx={{ height: 16, width: 'auto', objectFit: 'contain', opacity: 0.6 }}
+          />
+          <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
+        </Box>
+        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v3.1.5 · technostationery.com</Typography>
       </Box>
     </Box>
   );

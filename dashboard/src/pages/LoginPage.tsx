@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Checkbox, FormControlLabel, Card, CardContent, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Link } from '@mui/material';
 import { Person, Lock, CheckCircle, Warning } from '@mui/icons-material';
+import logoTechno from '../assets/logo_techno.png';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client.ts';
@@ -239,6 +240,13 @@ export default function LoginPage() {
         }}>
           <CardContent sx={{ p: '44px 36px' }}>
             <Box sx={{ textAlign: 'center', mb: 4 }}>
+              {/* Techno logo */}
+              <Box
+                component="img"
+                src={logoTechno}
+                alt="TechnoStationery"
+                sx={{ height: 48, width: 'auto', objectFit: 'contain', mb: 2, display: 'block', mx: 'auto' }}
+              />
               <Typography variant="h5" sx={{ 
                 fontWeight: 900, 
                 letterSpacing: '-0.05em',
@@ -366,9 +374,14 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
-        <Typography sx={{ textAlign: 'center', mt: 3, color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>
-          v3.1.0 &nbsp;·&nbsp; {new Date().toLocaleTimeString()}
-        </Typography>
+        <Box sx={{ textAlign: 'center', mt: 3 }}>
+          <Typography sx={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500, mb: 1 }}>
+            v3.1.0 &nbsp;·&nbsp; {new Date().toLocaleTimeString()}
+          </Typography>
+          <Typography sx={{ color: '#475569', fontSize: '0.62rem' }}>
+            TSM Platform v3.1.5
+          </Typography>
+        </Box>
       </Box>
 
       {/* Forgot Password Dialog */}
