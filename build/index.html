@@ -1,14 +1,22 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="description" content="TechnoStationery Server Dashboard" />
   <title>Techno Server Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://cdn.webpushr.com" />
+  <style>
+    body{margin:0;background:#0a0e1a;color:#e2e8f0;font-family:system-ui,sans-serif}
+    #root:empty::before{content:'';display:block;width:44px;height:44px;border:3px solid #1e2d45;border-top-color:#3b82f6;border-radius:50%;animation:_spin .8s linear infinite;position:fixed;top:50%;left:50%;margin:-22px 0 0 -22px}
+    @keyframes _spin{to{transform:rotate(360deg)}}
+  </style>
   <script type="module" crossorigin src="/assets/index-BO8IyIBT.js"></script>
 </head>
-
 <body>
   <div id="root"></div>
   <!-- start webpushr tracking code -->
@@ -19,18 +27,16 @@
     webpushr('setup', { 'key': 'BBgwdueYTwU-xcs46oY7Z0dKLTckJS3cbjWvReJNjfJSpwTMy002Eg0GQeeaj1V2843vSWajKY1XVun_h6Yzqq8' });</script>
   <!-- end webpushr tracking code -->
   <script>
-    // Auto-prompt for push notification subscription after page loads
     (function() {
       if (sessionStorage.getItem('webpushr_prompted')) return;
-      var check = setInterval(function() {
+      var t = setInterval(function() {
         if (typeof webpushr === 'function') {
-          clearInterval(check);
+          clearInterval(t);
           setTimeout(function() { webpushr('subscribe'); sessionStorage.setItem('webpushr_prompted', '1'); }, 3000);
         }
       }, 200);
-      setTimeout(function() { clearInterval(check); }, 10000);
+      setTimeout(function() { clearInterval(t); }, 10000);
     })();
   </script>
 </body>
-
 </html>

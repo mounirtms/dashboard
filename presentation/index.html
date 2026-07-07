@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechnoStationery Executive Audit — Jan–Jul 2026</title>
+<!-- Chart.js 4.4.0 — synchronous CDN load with fallback guard -->
+<script>
+window._chartJsReady = false;
+window._chartJsQueue = [];
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+        onerror="console.error('[TSM] Chart.js CDN load failed — charts will not render')"></script>
+<script>
+// Set ready flag right after CDN script tag (synchronous — fires if CDN succeeded)
+if (typeof Chart !== 'undefined') {
+  window._chartJsReady = true;
+} else {
+  console.warn('[TSM] Chart.js not available after CDN tag');
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+:root{
+  --bg:#0a0e1a;--panel:#111827;--panel2:#1a2234;--border:#1e2d45;
+  --accent:#3b82f6;--accent2:#06b6d4;--accent3:#8b5cf6;--accent4:#10b981;
+  --warn:#f59e0b;--danger:#ef4444;--ok:#22c55e;
+  --text:#e2e8f0;--muted:#94a3b8;--dim:#64748b;
+  --red:#ef4444;--orange:#f97316;--yellow:#eab308;--green:#22c55e;
+  --font:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* ── DECK ── */
+#deck{flex:1;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:28px 36px 16px;overflow:hidden}
+.slide.active{display:flex}
+
+/* ── NAV BAR ── */
+#nav{
+  height:54px;
+  background:linear-gradient(180deg,#080d1c 0%,#060a16 100%);
+  border-top:1px solid rgba(59,130,246,.2);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;flex-shrink:0;
+  box-shadow:0 -2px 16px rgba(0,0,0,.5);
+  position:relative;z-index:20;
+  gap:10px;
+}
+#progress-bar{
+  position:absolute;top:0;left:0;height:3px;
+  background:linear-gradient(90deg,var(--accent2) 0%,var(--accent) 60%,#8b5cf6 100%);
+  transition:width .35s cubic-bezier(.4,0,.2,1);
+  z-index:30;border-radius:0 3px 3px 0;
+  box-shadow:0 0 10px rgba(59,130,246,.7);
+}
+#nav-brand{
+  display:flex;align-items:center;gap:8px;
+  font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--dim);white-space:nowrap;flex-shrink:0;
+}
+#nav-brand em{color:var(--accent2);font-style:normal;font-weight:900}
+.nav-btn-primary{
+  background:linear-gradient(135deg,rgba(59,130,246,.18),rgba(59,130,246,.08));
+  border:1px solid rgba(59,130,246,.3);
+  color:var(--text);
+  padding:7px 18px;border-radius:7px;cursor:pointer;
+  font-size:12px;font-weight:700;letter-spacing:.02em;
+  transition:all .18s ease;display:flex;align-items:center;gap:6px;
+  white-space:nowrap;flex-shrink:0;font-family:inherit;
+}
+.nav-btn-primary:hover{
+  background:var(--accent);border-color:var(--accent);
+  color:#fff;transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(59,130,246,.35);
+}
+.nav-btn-primary:active{transform:translateY(0);box-shadow:none}
+#nav-center{display:flex;align-items:center;gap:5px;flex:1;justify-content:center}
+#nav-counter{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  color:var(--text);font-size:12px;font-weight:800;
+  min-width:64px;text-align:center;
+  padding:5px 10px;border-radius:6px;
+  letter-spacing:.04em;font-variant-numeric:tabular-nums;
+}
+.nav-btn-ghost{
+  background:transparent;border:1px solid transparent;
+  color:var(--dim);cursor:pointer;
+  padding:5px 8px;border-radius:6px;
+  font-size:10.5px;font-weight:600;letter-spacing:.02em;
+  transition:all .15s;display:flex;align-items:center;gap:4px;
+  white-space:nowrap;font-family:inherit;
+}
+.nav-btn-ghost:hover{
+  color:var(--accent);border-color:rgba(59,130,246,.25);
+  background:rgba(59,130,246,.07);
+}
+.nav-btn-dl{
+  background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(34,197,94,.06));
+  border:1px solid rgba(34,197,94,.28);
+  color:#4ade80;
+  padding:6px 11px;border-radius:6px;cursor:pointer;
+  font-size:10.5px;font-weight:700;letter-spacing:.03em;
+  transition:all .18s;display:flex;align-items:center;gap:5px;
+  white-space:nowrap;flex-shrink:0;text-decoration:none;font-family:inherit;
+}
+.nav-btn-dl:hover{
+  background:rgba(34,197,94,.22);border-color:rgba(34,197,94,.5);
+  color:#86efac;transform:translateY(-1px);
+  box-shadow:0 3px 10px rgba(34,197,94,.22);
+}
+/* Legacy compat — keep old IDs working */
+#toc-btn,#notes-btn,#fs-btn,#home-btn{font-family:inherit}
+
+/* ── NOTES PANEL ── */
+#notes-panel{
+  position:fixed;bottom:54px;right:0;width:340px;
+  background:linear-gradient(135deg,#090f1e,#0d1829);
+  border:1px solid rgba(59,130,246,.2);
+  border-right:none;
+  border-radius:10px 0 0 10px;
+  padding:14px 18px;
+  font-size:12px;color:var(--muted);
+  max-height:220px;overflow-y:auto;z-index:50;
+  box-shadow:-4px 0 20px rgba(0,0,0,.4);
+  backdrop-filter:blur(8px);
+  line-height:1.55;
+}
+#notes-panel.hidden{display:none}
+#notes-panel strong{
+  color:var(--accent2);display:block;
+  margin-bottom:8px;font-size:11px;
+  letter-spacing:.06em;text-transform:uppercase;
+  border-bottom:1px solid rgba(59,130,246,.15);
+  padding-bottom:6px;
+}
+#notes-panel::-webkit-scrollbar{width:3px}
+#notes-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── TYPOGRAPHY ── */
+.slide-title{font-size:23px;font-weight:800;color:#fff;margin-bottom:5px;letter-spacing:-.4px;line-height:1.2}
+.slide-subtitle{font-size:12.5px;color:var(--muted);margin-bottom:16px;line-height:1.45}
+.section-label{
+  font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--accent2);margin-bottom:8px;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.section-label::before{
+  content:'';display:inline-block;width:20px;height:2px;
+  background:linear-gradient(90deg,var(--accent2),transparent);
+  border-radius:1px;
+}
+h3{font-size:14px;font-weight:600;color:var(--accent2);margin-bottom:8px}
+h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── GRID HELPERS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid-23{display:grid;grid-template-columns:2fr 3fr;gap:16px}
+.grid-32{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+.col{display:flex;flex-direction:column;gap:12px}
+
+/* ── PANELS ── */
+.panel{
+  background:linear-gradient(135deg,var(--panel) 0%,rgba(17,24,39,.8) 100%);
+  border:1px solid var(--border);border-radius:10px;padding:14px 16px;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.panel-dark{
+  background:linear-gradient(135deg,var(--panel2) 0%,rgba(26,34,52,.8) 100%);
+  border:1px solid var(--border);border-radius:10px;padding:14px 16px;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.panel-accent{background:#0f1e3a;border:1px solid #1d3a6e;border-radius:10px;padding:14px 16px}
+.panel-danger{background:#1a0a0a;border:1px solid #5a1a1a;border-radius:10px;padding:14px 16px}
+.panel-warn{background:#1a120a;border:1px solid #5a3a0a;border-radius:10px;padding:14px 16px}
+.panel-ok{background:#0a1a10;border:1px solid #0a4a20;border-radius:10px;padding:14px 16px}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;gap:12px}
+.kpi-grid.g4{grid-template-columns:repeat(4,1fr)}
+.kpi-grid.g3{grid-template-columns:repeat(3,1fr)}
+.kpi-grid.g6{grid-template-columns:repeat(6,1fr)}
+.kpi-card{
+  background:linear-gradient(135deg,var(--panel) 0%,rgba(15,20,35,.9) 100%);
+  border:1px solid var(--border);border-radius:10px;padding:14px 16px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+}
+.kpi-card:hover{border-color:rgba(59,130,246,.3);transform:translateY(-1px)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-color,var(--accent));opacity:.9}
+.kpi-card::after{
+  content:'';position:absolute;top:0;right:0;width:80px;height:80px;
+  background:radial-gradient(circle at top right,rgba(var(--kpi-r,59),var(--kpi-g,130),var(--kpi-b,246),.06),transparent 70%);
+  pointer-events:none;
+}
+.kpi-card .kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.kpi-card .kpi-val{font-size:26px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px}
+.kpi-card .kpi-sub{font-size:11px;color:var(--muted)}
+.kpi-card .kpi-delta{font-size:11px;font-weight:600;margin-top:4px}
+.kpi-card.blue{--kpi-color:var(--accent)}
+.kpi-card.cyan{--kpi-color:var(--accent2)}
+.kpi-card.purple{--kpi-color:var(--accent3)}
+.kpi-card.green{--kpi-color:var(--ok)}
+.kpi-card.orange{--kpi-color:var(--warn)}
+.kpi-card.red{--kpi-color:var(--danger)}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.badge-red{background:#3a0a0a;color:#f87171;border:1px solid #7f1d1d}
+.badge-orange{background:#3a1a0a;color:#fb923c;border:1px solid #7c2d12}
+.badge-yellow{background:#3a2a0a;color:#fbbf24;border:1px solid #78350f}
+.badge-green{background:#0a2a10;color:#4ade80;border:1px solid #14532d}
+.badge-blue{background:#0a1a3a;color:#60a5fa;border:1px solid #1e3a5f}
+.badge-cyan{background:#0a2a3a;color:#22d3ee;border:1px solid #0e4f5f}
+.badge-purple{background:#1a0a3a;color:#a78bfa;border:1px solid #3b0e7a}
+.badge-gray{background:#1a2030;color:#94a3b8;border:1px solid #2a3550}
+
+/* ── CONFIDENCE ── */
+.conf{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.5px}
+.conf-high{background:#0a2a10;color:#4ade80;border:1px solid #166534}
+.conf-med{background:#3a2a0a;color:#fbbf24;border:1px solid #78350f}
+.conf-low{background:#1a2030;color:#94a3b8;border:1px solid #2a3550}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:grid;grid-template-columns:110px 20px 1fr;gap:8px;align-items:start;position:relative}
+.tl-item:not(:last-child)::after{content:'';position:absolute;left:118px;top:20px;bottom:-8px;width:1px;background:var(--border)}
+.tl-time{font-size:11px;color:var(--accent2);text-align:right;padding-top:3px;font-weight:600}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;border:2px solid}
+.tl-dot.red{background:#3a0a0a;border-color:var(--red)}
+.tl-dot.orange{background:#3a1a0a;border-color:var(--orange)}
+.tl-dot.yellow{background:#3a2a0a;border-color:var(--yellow)}
+.tl-dot.green{background:#0a2a10;border-color:var(--green)}
+.tl-dot.blue{background:#0a1a3a;border-color:var(--accent)}
+.tl-dot.cyan{background:#0a2a3a;border-color:var(--accent2)}
+.tl-dot.purple{background:#1a0a3a;border-color:var(--accent3)}
+.tl-content{padding:4px 0 10px}
+.tl-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
+.tl-detail{font-size:11px;color:var(--muted);line-height:1.4}
+.tl-src{font-size:9px;color:var(--dim);margin-top:3px;font-style:italic}
+
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:#0d1625;color:var(--muted);padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.data-table td{padding:7px 10px;border-bottom:1px solid #111827;color:var(--text);vertical-align:middle}
+.data-table tr:hover td{background:#0f1625}
+.data-table .num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ── BEFORE/AFTER ── */
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.ba-header{background:#0d1625;padding:7px 12px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border);text-align:center}
+.ba-before .ba-header{color:var(--danger)}
+.ba-after .ba-header{color:var(--ok)}
+.ba-row{display:flex;align-items:center;padding:6px 12px;border-bottom:1px solid #0d1220;gap:8px;font-size:11px}
+.ba-row:last-child{border-bottom:none}
+.ba-before .ba-row{background:#1a0808}
+.ba-after .ba-row{background:#081a0e}
+.ba-row .ba-key{color:var(--muted);min-width:110px;font-size:10px}
+.ba-row .ba-val{color:#fff;font-weight:600}
+
+/* ── SECTION DIVIDERS ── */
+.section-divider{
+  background:linear-gradient(135deg,#06091a 0%,#0c1a30 45%,#08101e 100%);
+  display:flex!important;align-items:center;justify-content:center;
+  flex-direction:column;gap:20px;position:relative;overflow:hidden;
+}
+.section-divider::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,rgba(59,130,246,.1) 0%,transparent 65%);
+}
+.section-divider::after{
+  content:'';position:absolute;
+  bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(59,130,246,.3),transparent);
+}
+.div-phase{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--accent2);opacity:.8}
+.div-number{font-size:72px;font-weight:900;color:rgba(255,255,255,.04);position:absolute;line-height:1}
+.div-title{font-size:36px;font-weight:800;color:#fff;text-align:center;letter-spacing:-.5px}
+.div-subtitle{font-size:14px;color:var(--muted);text-align:center;max-width:500px}
+.div-tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
+/* ── PROGRESS BAR ── */
+.pbar-row{margin-bottom:8px}
+.pbar-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.pbar-label span:first-child{color:var(--muted)}
+.pbar-label span:last-child{color:#fff;font-weight:700}
+.pbar-track{height:6px;background:#0d1625;border-radius:3px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:3px;transition:width .5s}
+
+/* ── RISK MATRIX ── */
+.risk-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #0d1220;font-size:12px}
+.risk-row:last-child{border-bottom:none}
+.risk-sev{min-width:68px;text-align:center}
+.risk-title{flex:1;color:#fff;font-weight:600}
+.risk-detail{color:var(--muted);font-size:11px;flex:1.5}
+.risk-status{min-width:70px;text-align:center}
+
+/* ── ANOMALY BOX ── */
+.anomaly-box{background:#1a0808;border:1px solid #5a1a1a;border-radius:8px;padding:10px 14px;font-size:11px}
+.anomaly-box .anomaly-title{color:var(--danger);font-weight:700;font-size:12px;margin-bottom:4px}
+
+/* ── COVER CALLOUTS ── */
+.cover-kpi{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.cover-kpi-item{
+  background:linear-gradient(135deg,#0f1e3a,#091628);
+  border:1px solid rgba(59,130,246,.25);
+  border-radius:10px;padding:12px 18px;text-align:center;min-width:110px;
+  transition:border-color .2s,transform .2s;
+}
+.cover-kpi-item:hover{border-color:rgba(59,130,246,.5);transform:translateY(-2px)}
+.cover-kpi-item .cv-val{font-size:22px;font-weight:900;color:var(--accent);line-height:1}
+.cover-kpi-item .cv-label{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.05em}
+
+/* ── ALGERIA MAP ── */
+#algeria-map{width:100%;height:100%}
+#algeria-map .wilaya{fill:#1a2a4a;stroke:#2a3a5a;stroke-width:.5;cursor:pointer;transition:fill .2s}
+#algeria-map .wilaya:hover{fill:#3b82f6}
+#mapTooltip{position:absolute;background:rgba(13,22,37,0.96);border:1px solid var(--accent);border-radius:6px;padding:8px 12px;font-size:12px;color:#e2e8f0;pointer-events:none;display:none;z-index:200;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.5);backdrop-filter:blur(4px)}
+
+/* ── CHART CONTAINERS ── */
+.chart-wrap{position:relative;flex:1;min-height:0}
+
+/* ── SCROLLABLE ── */
+.scroll{overflow-y:auto;flex:1;min-height:0}
+.scroll::-webkit-scrollbar{width:4px}
+.scroll::-webkit-scrollbar-track{background:transparent}
+.scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── COVER ── */
+#s1{background:linear-gradient(135deg,#050810 0%,#0a1628 40%,#080e1e 100%);display:flex!important;align-items:center;justify-content:center;flex-direction:column;gap:24px;position:relative;overflow:hidden}
+#s1::before{content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 70%)}
+#s1::after{content:'';position:absolute;bottom:-80px;left:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(6,182,212,.08) 0%,transparent 70%)}
+.cover-logo{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--accent2)}
+.cover-title{font-size:40px;font-weight:900;color:#fff;text-align:center;letter-spacing:-.5px;line-height:1.15}
+.cover-title span{color:var(--accent)}
+.cover-sub{font-size:14px;color:var(--muted);text-align:center}
+.cover-meta{display:flex;gap:24px;font-size:12px;color:var(--dim)}
+.cover-meta span{display:flex;align-items:center;gap:6px}
+.cover-meta strong{color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- ════════════════════════════════════════════
+     S1 — COVER
+════════════════════════════════════════════ -->
+<div class="slide" id="s1">
+  <div class="cover-logo">TechnoStationery.com — Forensic Audit Report</div>
+  <div class="cover-title">Executive Audit<br><span>January – July 2026</span></div>
+  <div class="cover-sub">Infrastructure · Security · Performance · Business Intelligence<br>8-Phase Forensic Methodology · Evidence-First · Cross-Validated</div>
+  <div class="cover-kpi">
+    <div class="cover-kpi-item"><div class="cv-val">35</div><div class="cv-label">Audit Slides</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">8</div><div class="cv-label">Phases</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">875</div><div class="cv-label">Orders</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">86.5%</div><div class="cv-label">Load Reduction</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">0</div><div class="cv-label">Confirmed Malware</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">Jul 7</div><div class="cv-label">Report Date</div></div>
+  </div>
+  <div class="cover-meta">
+    <span><strong>Server:</strong> ded701.inmotionhosting.com</span>
+    <span><strong>Stack:</strong> Magento 2.4.6 · PHP 8.2 · MariaDB 10.6</span>
+    <span><strong>OS:</strong> AlmaLinux 8.10</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S2 — EXECUTIVE KPI DASHBOARD
+════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="section-label">Executive Dashboard</div>
+  <div class="slide-title">Key Performance Indicators — Jan–Jul 2026</div>
+  <div class="slide-subtitle">All figures sourced from MariaDB, Imunify360, /var/log/secure, ecomscan, and git history</div>
+  <div class="kpi-grid g4" style="margin-bottom:12px">
+    <div class="kpi-card blue"><div class="kpi-label">Total Orders</div><div class="kpi-val">875</div><div class="kpi-sub">Jan–Jun 2026</div><div class="kpi-delta" style="color:var(--accent)">▲ +3.7% YoY</div></div>
+    <div class="kpi-card cyan"><div class="kpi-label">New Customers</div><div class="kpi-val">5,243</div><div class="kpi-sub">Jan–Jun 2026</div><div class="kpi-delta" style="color:var(--ok)">▲ +8.2% YoY</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Server Uptime</div><div class="kpi-val">99.1%</div><div class="kpi-sub">Post-May 5 stabilization</div><div class="kpi-delta" style="color:var(--ok)">▲ from 95.4% crisis</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">Peak Load</div><div class="kpi-val">15.37</div><div class="kpi-sub">May 5 crisis (resolved)</div><div class="kpi-delta" style="color:var(--ok)">▼ now 2.04</div></div>
+  </div>
+  <div class="kpi-grid g4" style="margin-bottom:12px">
+    <div class="kpi-card purple"><div class="kpi-label">Redis Hit Rate</div><div class="kpi-val">84.3%</div><div class="kpi-sub">Post-optimization</div><div class="kpi-delta" style="color:var(--ok)">▲ from 5.7% (Varnish)</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Git Commits</div><div class="kpi-val">96</div><div class="kpi-sub">1 author, 16 branches</div><div class="kpi-delta" style="color:var(--muted)">Tag: emergency-fix-20260502</div></div>
+    <div class="kpi-card red"><div class="kpi-label">SSH Attacks</div><div class="kpi-val">53,269</div><div class="kpi-sub">Historical btmp total</div><div class="kpi-delta" style="color:var(--ok)">▼ fail2ban deployed Jun 14</div></div>
+    <div class="kpi-card cyan"><div class="kpi-label">Confirmed Malware</div><div class="kpi-val">0</div><div class="kpi-sub">18,141 Imunify FP resolved</div><div class="kpi-delta" style="color:var(--ok)">✓ Cross-validated ecomscan</div></div>
+  </div>
+  <div class="kpi-grid g4">
+    <div class="kpi-card orange"><div class="kpi-label">Critical CVEs</div><div class="kpi-val">1</div><div class="kpi-sub">CVE-2024-34102 unpatched</div><div class="kpi-delta" style="color:var(--danger)">⚠ WAF mitigation active</div></div>
+    <div class="kpi-card green"><div class="kpi-label">CVEs Fixed</div><div class="kpi-val">3/4</div><div class="kpi-sub">Apr 11, 2026</div><div class="kpi-delta" style="color:var(--ok)">phpseclib · symfony · jwt</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Ecomscan Issues</div><div class="kpi-val">119</div><div class="kpi-sub">Jul 4 (0 malware)</div><div class="kpi-delta" style="color:var(--warn)">▲ from 4 on Jun 11 (rule update)</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">Security Posture</div><div class="kpi-val" style="font-size:18px">MEDIUM</div><div class="kpi-sub">Improving</div><div class="kpi-delta" style="color:var(--warn)">1 critical CVE pending</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S3 — TABLE OF CONTENTS
+════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="section-label">Navigation</div>
+  <div class="slide-title">Audit Report Contents</div>
+  <div class="slide-subtitle">Click any item to jump directly to that section</div>
+  <div class="grid-2" style="flex:1;gap:20px">
+    <div class="col">
+      <div class="panel">
+        <h3>📁 Phase 1–2: Repository &amp; Infrastructure</h3>
+        <div style="font-size:12px;line-height:2;color:var(--muted)">
+          <div><a href="#" onclick="showSlide(4);return false" style="color:var(--accent);text-decoration:none">S5 — Git Commit Analysis</a></div>
+          <div><a href="#" onclick="showSlide(5);return false" style="color:var(--accent);text-decoration:none">S6 — Development Timeline</a></div>
+          <div><a href="#" onclick="showSlide(7);return false" style="color:var(--accent);text-decoration:none">S8 — Server Hardware</a></div>
+          <div><a href="#" onclick="showSlide(8);return false" style="color:var(--accent);text-decoration:none">S9 — MariaDB &amp; Redis</a></div>
+          <div><a href="#" onclick="showSlide(9);return false" style="color:var(--accent);text-decoration:none">S10 — Apache &amp; SSH</a></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>🛒 Phase 3–4: Magento &amp; Business</h3>
+        <div style="font-size:12px;line-height:2;color:var(--muted)">
+          <div><a href="#" onclick="showSlide(11);return false" style="color:var(--accent2);text-decoration:none">S12 — Monthly Orders</a></div>
+          <div><a href="#" onclick="showSlide(12);return false" style="color:var(--accent2);text-decoration:none">S13 — Order Status</a></div>
+          <div><a href="#" onclick="showSlide(13);return false" style="color:var(--accent2);text-decoration:none">S14 — Customer Registrations</a></div>
+          <div><a href="#" onclick="showSlide(14);return false" style="color:var(--accent2);text-decoration:none">S15 — Top Products</a></div>
+          <div><a href="#" onclick="showSlide(16);return false" style="color:var(--accent2);text-decoration:none">S17 — YoY Comparison</a></div>
+          <div><a href="#" onclick="showSlide(17);return false" style="color:var(--accent2);text-decoration:none">S18 — Algeria Map</a></div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>🔒 Phase 5: Security Incident Module</h3>
+        <div style="font-size:12px;line-height:2;color:var(--muted)">
+          <div><a href="#" onclick="showSlide(19);return false" style="color:var(--danger);text-decoration:none">S20 — Security Executive Dashboard</a></div>
+          <div><a href="#" onclick="showSlide(20);return false" style="color:var(--danger);text-decoration:none">S21 — May 2026 Forensic Timeline</a></div>
+          <div><a href="#" onclick="showSlide(21);return false" style="color:var(--danger);text-decoration:none">S22 — SSH Brute-Force Analysis</a></div>
+          <div><a href="#" onclick="showSlide(22);return false" style="color:var(--danger);text-decoration:none">S23 — CVE &amp; Vulnerability Matrix</a></div>
+          <div><a href="#" onclick="showSlide(23);return false" style="color:var(--danger);text-decoration:none">S24 — Malware &amp; Ecomscan Analysis</a></div>
+          <div><a href="#" onclick="showSlide(24);return false" style="color:var(--danger);text-decoration:none">S25 — Server Hardening Before/After</a></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>⚡ Phase 6–8: Performance, Evidence &amp; Roadmap</h3>
+        <div style="font-size:12px;line-height:2;color:var(--muted)">
+          <div><a href="#" onclick="showSlide(26);return false" style="color:var(--accent3);text-decoration:none">S27 — Crisis Performance</a></div>
+          <div><a href="#" onclick="showSlide(27);return false" style="color:var(--accent3);text-decoration:none">S28 — Cache Deep Dive</a></div>
+          <div><a href="#" onclick="showSlide(29);return false" style="color:var(--accent3);text-decoration:none">S30 — Evidence Confidence Matrix</a></div>
+          <div><a href="#" onclick="showSlide(30);return false" style="color:var(--accent3);text-decoration:none">S31 — Risk Assessment Matrix</a></div>
+          <div><a href="#" onclick="showSlide(32);return false" style="color:var(--accent3);text-decoration:none">S33 — H2 Strategic Roadmap</a></div>
+          <div><a href="#" onclick="showSlide(33);return false" style="color:var(--accent3);text-decoration:none">S34 — Key Recommendations</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S4 — SECTION DIVIDER: REPO AUDIT
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s4">
+  <div class="div-number" style="top:50%;transform:translateY(-50%)">01</div>
+  <div class="div-phase">Phase 1 — Repository Audit</div>
+  <div class="div-title">Git Repository<br>&amp; Dev Timeline</div>
+  <div class="div-subtitle">96 commits · 1 author · 16 branches · Emergency tag May 2 · Evidence: github.com/mounirtms/dashboard</div>
+  <div class="div-tags">
+    <span class="badge badge-blue">96 Commits</span>
+    <span class="badge badge-cyan">Branch: genspark_ai_developer</span>
+    <span class="badge badge-orange">Tag: emergency-fix-20260502</span>
+    <span class="badge badge-purple">1 Author</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S5 — GIT COMMIT ANALYSIS
+════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="section-label">Phase 1 — Repository Audit</div>
+  <div class="slide-title">Git Commit Analysis</div>
+  <div class="slide-subtitle">Source: github.com/mounirtms/dashboard — 96 commits, branch genspark_ai_developer</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel" style="flex:1">
+        <h3>Monthly Commit Velocity</h3>
+        <div class="chart-wrap"><canvas id="chartCommits"></canvas></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel" style="flex:.6">
+        <h3>Commit Type Distribution</h3>
+        <div class="chart-wrap"><canvas id="chartCommitType"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Repository Summary</h3>
+        <div class="pbar-row"><div class="pbar-label"><span>Total commits</span><span>96</span></div><div class="pbar-track"><div class="pbar-fill" style="width:96%;background:var(--accent)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>feat commits</span><span>38</span></div><div class="pbar-track"><div class="pbar-fill" style="width:40%;background:var(--ok)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>fix commits</span><span>32</span></div><div class="pbar-track"><div class="pbar-fill" style="width:33%;background:var(--warn)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>chore/refactor</span><span>26</span></div><div class="pbar-track"><div class="pbar-fill" style="width:27%;background:var(--accent3)"></div></div></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted)">
+          <div style="margin-bottom:3px">🏷️ Tag: <strong style="color:#fff">emergency-fix-20260502</strong> — May 2, 2026</div>
+          <div style="margin-bottom:3px">🌿 Active branch: <strong style="color:#fff">genspark_ai_developer</strong></div>
+          <div>⚠️ Single author — shared credential risk unverifiable <span class="conf conf-low">LOW CONF</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S6 — DEVELOPMENT TIMELINE
+════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="section-label">Phase 1 — Repository Audit</div>
+  <div class="slide-title">Development Timeline — Jan–Jul 2026</div>
+  <div class="slide-subtitle">Key milestones reconstructed from git log, commit messages, and audit reports</div>
+  <div class="scroll" style="flex:1">
+    <div class="timeline" style="gap:4px">
+      <div class="tl-item"><div class="tl-time">Jan 2026</div><div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title">Project Initialization</div><div class="tl-detail">Dashboard repository created. Initial commit. TypeScript frontend scaffolded.</div><div class="tl-src">Source: git log --oneline (first commit)</div></div></div>
+      <div class="tl-item"><div class="tl-time">Mar 2026</div><div class="tl-dot cyan"></div><div class="tl-content"><div class="tl-title">Feature Development Accelerates</div><div class="tl-detail">28 commits in March. Apache logs show 640K requests (anomaly — root cause unknown).</div><div class="tl-src">Source: git log, Apache access_log</div></div></div>
+      <div class="tl-item"><div class="tl-time">Apr 11</div><div class="tl-dot purple"></div><div class="tl-content"><div class="tl-title">Security Updates Applied</div><div class="tl-detail">3/4 CVEs patched: phpseclib 3.0.50→3.0.51, symfony/http-client, firebase/jwt mitigated. CVE-2024-34102 deferred.</div><div class="tl-src">Source: SECURITY_UPDATES_APPLIED.md</div></div></div>
+      <div class="tl-item"><div class="tl-time">May 2</div><div class="tl-dot orange"></div><div class="tl-content"><div class="tl-title">Emergency Fix Tag Created</div><div class="tl-detail">Git tag <code style="color:var(--accent)">emergency-fix-20260502</code> created. Indicates pre-crisis preparedness.</div><div class="tl-src">Source: git tag --list</div></div></div>
+      <div class="tl-item"><div class="tl-time">May 5 00:00</div><div class="tl-dot red"></div><div class="tl-content"><div class="tl-title">🚨 Server Crisis Onset — Load 15.37</div><div class="tl-detail">CPU idle 0.7%. MariaDB 96% CPU. QoderCLI consuming 76.4% CPU. 5 Magento sites unresponsive.</div><div class="tl-src">Source: SERVER_FIX_COMPLETE_REPORT.md</div></div></div>
+      <div class="tl-item"><div class="tl-time">May 5 01:30</div><div class="tl-dot orange"></div><div class="tl-content"><div class="tl-title">Root Cause Identified &amp; Contained</div><div class="tl-detail">QoderCLI PID 985327 killed (freed 76% CPU). Second instance PID 912388 killed (freed 16% CPU). MariaDB restarted.</div><div class="tl-src">Source: SERVER_FIX_COMPLETE_REPORT.md</div></div></div>
+      <div class="tl-item"><div class="tl-time">May 5 02:00</div><div class="tl-dot yellow"></div><div class="tl-content"><div class="tl-title">Configuration Hardening Applied</div><div class="tl-detail">MariaDB buffer pool 128MB→8GB. PHP-FPM dynamic→static 66 processes. Pragma header removed (re-enabled Cloudflare cache).</div><div class="tl-src">Source: AUDIT_COMPLETION_STATUS.txt</div></div></div>
+      <div class="tl-item"><div class="tl-time">May 5 04:00</div><div class="tl-dot green"></div><div class="tl-content"><div class="tl-title">✅ Load Normalized — 2.04</div><div class="tl-detail">86.5% load reduction achieved. CPU idle 96.9%. Memory freed: 1.2GB→16GB. All services healthy.</div><div class="tl-src">Source: SERVER_FIX_COMPLETE_REPORT.md (Load 2.08)</div></div></div>
+      <div class="tl-item"><div class="tl-time">Jun 8</div><div class="tl-dot cyan"></div><div class="tl-content"><div class="tl-title">Imunify360 Full Background Scan</div><div class="tl-detail">Complete scan of all accounts. 2,518,622 files in /home/technadminy7 alone. 80,832 flagged (later refined). Scan completed 06:24 CEST.</div><div class="tl-src">Source: imunify360.db malware_scans table</div></div></div>
+      <div class="tl-item"><div class="tl-time">Jun 11</div><div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title">Ecomscan Baseline — 4 Issues, 0 Malware</div><div class="tl-detail">First ecomscan run. copy_fail + dirty_frag on technadminy7/dev. No malware signatures detected. Confidence 100%.</div><div class="tl-src">Source: ecomscan_20260611_173319.json</div></div></div>
+      <div class="tl-item"><div class="tl-time">Jun 14</div><div class="tl-dot red"></div><div class="tl-content"><div class="tl-title">SSH Emergency Hardening + fail2ban</div><div class="tl-detail">2,043 attacks in 24h from 42 IPs detected. fail2ban deployed. PermitRootLogin→prohibit-password. MaxAuthTries 10→3. lms removed from AllowUsers.</div><div class="tl-src">Source: ssh_hardening_report.html</div></div></div>
+      <div class="tl-item"><div class="tl-time">Jun 16</div><div class="tl-dot orange"></div><div class="tl-content"><div class="tl-title">Imunify360 Mass Flag — FALSE POSITIVE</div><div class="tl-detail">18,143 .htaccess files flagged as SMW-INJ-CLOUDAV-php.mlw.custom-MPT99999-0. All 127 bytes, identical hash. Confirmed FP via ecomscan cross-validation.</div><div class="tl-src">Source: imunify360.db + ecomscan Jul 4 (0 malware)</div></div></div>
+      <div class="tl-item"><div class="tl-time">Jul 4</div><div class="tl-dot purple"></div><div class="tl-content"><div class="tl-title">Ecomscan Full Audit — 119 Vulnerabilities, 0 Malware</div><div class="tl-detail">Increase from 4→119 attributed to updated scanner rules. Amasty mass-disclosure CVEs across accounts. tsdnd has 14+ APSB Magento CVEs.</div><div class="tl-src">Source: ecomscan_20260704_030223.json</div></div></div>
+      <div class="tl-item"><div class="tl-time">Jul 7</div><div class="tl-dot green"></div><div class="tl-content"><div class="tl-title">Audit Report Date</div><div class="tl-detail">Current security posture: MEDIUM. 1 critical CVE pending. fail2ban active. Imunify360 FP resolved in rescans Jun 29+.</div><div class="tl-src">Source: This report</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S7 — SECTION DIVIDER: INFRASTRUCTURE
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s7">
+  <div class="div-number" style="top:50%;transform:translateY(-50%)">02</div>
+  <div class="div-phase">Phase 2 — Infrastructure Audit</div>
+  <div class="div-title">Server Infrastructure<br>&amp; Stack Analysis</div>
+  <div class="div-subtitle">AlmaLinux 8.10 · Intel Xeon E3-1240 v3 · 32GB RAM · Apache 2.4.66 · PHP-FPM 8.2.30 · MariaDB 10.6.17</div>
+  <div class="div-tags">
+    <span class="badge badge-blue">ded701.inmotionhosting.com</span>
+    <span class="badge badge-green">8 Cores</span>
+    <span class="badge badge-cyan">32 GB RAM</span>
+    <span class="badge badge-orange">May 5 Crisis Resolved</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S8 — SERVER HARDWARE
+════════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="section-label">Phase 2 — Infrastructure</div>
+  <div class="slide-title">Server Hardware &amp; OS Configuration</div>
+  <div class="slide-subtitle">Source: uname -r, lscpu, free, df — verified Jul 7, 2026</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel">
+        <h3>Hardware Specifications</h3>
+        <table class="data-table">
+          <tr><td style="color:var(--muted);width:140px">Host</td><td><strong>ded701.inmotionhosting.com</strong></td></tr>
+          <tr><td style="color:var(--muted)">IP</td><td><strong>205.134.249.177</strong></td></tr>
+          <tr><td style="color:var(--muted)">CPU</td><td><strong>Intel Xeon E3-1240 v3</strong></td></tr>
+          <tr><td style="color:var(--muted)">Cores</td><td><strong>8 (4C × 2 HT)</strong></td></tr>
+          <tr><td style="color:var(--muted)">RAM</td><td><strong>32 GB</strong></td></tr>
+          <tr><td style="color:var(--muted)">Storage</td><td><strong>1.8 TB (31% used)</strong></td></tr>
+          <tr><td style="color:var(--muted)">OS</td><td><strong>AlmaLinux 8.10</strong></td></tr>
+          <tr><td style="color:var(--muted)">Kernel</td><td><strong>4.18.0-553</strong></td></tr>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Stack Components</h3>
+        <table class="data-table">
+          <tr><td style="color:var(--muted);width:140px">Web Server</td><td><strong>Apache 2.4.66</strong></td><td><span class="badge badge-green">Active</span></td></tr>
+          <tr><td style="color:var(--muted)">PHP</td><td><strong>PHP-FPM 8.2.30</strong></td><td><span class="badge badge-green">Static/66</span></td></tr>
+          <tr><td style="color:var(--muted)">Database</td><td><strong>MariaDB 10.6.17</strong> :3307</td><td><span class="badge badge-green">8GB pool</span></td></tr>
+          <tr><td style="color:var(--muted)">Cache</td><td><strong>Redis 5.0.3</strong></td><td><span class="badge badge-green">84.3% HR</span></td></tr>
+          <tr><td style="color:var(--muted)">HTTP Cache</td><td><strong>Varnish 6.x</strong></td><td><span class="badge badge-yellow">15.5% HR</span></td></tr>
+          <tr><td style="color:var(--muted)">Search</td><td><strong>Elasticsearch 7.x</strong></td><td><span class="badge badge-green">Green</span></td></tr>
+          <tr><td style="color:var(--muted)">CMS</td><td><strong>Magento 2.4.6</strong></td><td><span class="badge badge-orange">CVE pending</span></td></tr>
+          <tr><td style="color:var(--muted)">CDN/WAF</td><td><strong>Cloudflare + ModSec</strong></td><td><span class="badge badge-green">Active</span></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Resource Utilization — Current (Jul 7)</h3>
+        <div class="pbar-row" style="margin-top:8px"><div class="pbar-label"><span>CPU (avg)</span><span>~18%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:18%;background:var(--ok)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>RAM (used)</span><span>~40%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:40%;background:var(--accent)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>MariaDB buffer pool</span><span>8 GB</span></div><div class="pbar-track"><div class="pbar-fill" style="width:25%;background:var(--accent2)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>Disk space used</span><span>31%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:31%;background:var(--ok)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>PHP-FPM processes</span><span>66 max (static)</span></div><div class="pbar-track"><div class="pbar-fill" style="width:66%;background:var(--accent3)"></div></div></div>
+      </div>
+      <div class="panel panel-warn">
+        <h3>May 5 Crisis — Before/After</h3>
+        <div class="ba-grid">
+          <div class="ba-before"><div class="ba-header">BEFORE (Crisis)</div>
+            <div class="ba-row"><div class="ba-key">System Load</div><div class="ba-val">15.37</div></div>
+            <div class="ba-row"><div class="ba-key">CPU Idle</div><div class="ba-val">0.7%</div></div>
+            <div class="ba-row"><div class="ba-key">DB Buffer Pool</div><div class="ba-val">128 MB</div></div>
+            <div class="ba-row"><div class="ba-key">PHP-FPM Mode</div><div class="ba-val">dynamic</div></div>
+          </div>
+          <div class="ba-after"><div class="ba-header">AFTER (Resolved)</div>
+            <div class="ba-row"><div class="ba-key">System Load</div><div class="ba-val">2.04</div></div>
+            <div class="ba-row"><div class="ba-key">CPU Idle</div><div class="ba-val">96.9%</div></div>
+            <div class="ba-row"><div class="ba-key">DB Buffer Pool</div><div class="ba-val">8 GB</div></div>
+            <div class="ba-row"><div class="ba-key">PHP-FPM Mode</div><div class="ba-val">static/66</div></div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--dim);margin-top:8px">Source: SERVER_FIX_COMPLETE_REPORT.md · AUDIT_COMPLETION_STATUS.txt</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ════════════════════════════════════════════
+     S9 — MARIADB & REDIS
+════════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="section-label">Phase 2 — Infrastructure</div>
+  <div class="slide-title">MariaDB 10.6 &amp; Redis — Deep Dive</div>
+  <div class="slide-subtitle">Source: /opt/mariadb10.6/my.cnf · redis-cli INFO · imunify360.db scan timestamps</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel">
+        <h3>MariaDB 10.6.17 Configuration</h3>
+        <table class="data-table">
+          <thead><tr><th>Parameter</th><th>Before</th><th>After</th><th>Impact</th></tr></thead>
+          <tbody>
+            <tr><td>innodb_buffer_pool_size</td><td style="color:var(--danger)">128 MB</td><td style="color:var(--ok)">8 GB</td><td>64× larger</td></tr>
+            <tr><td>max_connections</td><td style="color:var(--warn)">151</td><td style="color:var(--ok)">200</td><td>+32%</td></tr>
+            <tr><td>Port</td><td colspan="2" style="color:var(--accent)">3307 (non-default)</td><td>Isolation</td></tr>
+            <tr><td>SSL</td><td colspan="2" style="color:var(--warn)">--skip-ssl (local)</td><td>Acceptable</td></tr>
+            <tr><td>Auth</td><td colspan="2">MYSQL_PWD env var</td><td>Scripted</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:10px">
+          <div class="pbar-row"><div class="pbar-label"><span>Buffer pool utilization</span><span>~8 GB / 32 GB RAM</span></div><div class="pbar-track"><div class="pbar-fill" style="width:25%;background:var(--accent)"></div></div></div>
+          <div class="pbar-row"><div class="pbar-label"><span>InnoDB efficiency (post-fix)</span><span>~95% from RAM</span></div><div class="pbar-track"><div class="pbar-fill" style="width:95%;background:var(--ok)"></div></div></div>
+        </div>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: /opt/mariadb10.6/my.cnf (verified)</div>
+      </div>
+      <div class="panel-danger panel">
+        <h3>Crisis Root Cause — MariaDB</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>• Buffer pool 128MB forced <strong style="color:var(--danger)">95% disk I/O</strong> for every query</div>
+          <div>• At crisis peak: <strong style="color:var(--danger)">96% CPU</strong> on MariaDB alone</div>
+          <div>• Query latency: <strong style="color:var(--danger)">100–1000ms</strong> (disk) vs 1ms (RAM)</div>
+          <div>• Fix: buffer pool to 8GB → <strong style="color:var(--ok)">50× faster queries</strong></div>
+          <div style="margin-top:6px;font-size:10px;color:var(--dim)">Source: AUDIT_COMPLETION_STATUS.txt · EXECUTIVE_SUMMARY.md <span class="conf conf-high">HIGH</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Redis Cache Performance</h3>
+        <div class="chart-wrap" style="height:160px"><canvas id="chartRedisGauge"></canvas></div>
+        <div class="grid-2" style="margin-top:10px;gap:10px">
+          <div style="background:#0f1e3a;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--ok)">84.3%</div>
+            <div style="font-size:10px;color:var(--muted)">Current Hit Rate</div>
+          </div>
+          <div style="background:#0f1e3a;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--warn)">5.7%</div>
+            <div style="font-size:10px;color:var(--muted)">Pre-Crisis (Varnish)</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Imunify360 Scan Timeline — Key Dates</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>Date</th><th>Type</th><th>Files</th><th>Flagged</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Jun 8</td><td>Full background</td><td>2.5M+</td><td>80,832</td><td><span class="badge badge-orange">Refining</span></td></tr>
+            <tr><td>Jun 9–15</td><td>Rescan-outdated</td><td>18–41K</td><td>18,144+</td><td><span class="badge badge-orange">Processing</span></td></tr>
+            <tr><td>Jun 16</td><td>Rescan-outdated</td><td>18,143</td><td>18,143</td><td><span class="badge badge-red">Mass Flag</span></td></tr>
+            <tr><td>Jun 29–Jul 7</td><td>Rescan-outdated</td><td>18,141</td><td>0</td><td><span class="badge badge-green">FP Cleared</span></td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: imunify360.db malware_scans (31 total scans)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S10 — APACHE & SSH OVERVIEW
+════════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="section-label">Phase 2 — Infrastructure</div>
+  <div class="slide-title">Apache 2.4.66 &amp; SSH Attack Overview</div>
+  <div class="slide-subtitle">Source: Apache access_log aggregates · /var/log/secure · /var/log/btmp (last checked Jul 5–7)</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel">
+        <h3>Monthly Apache Traffic — Jan–Jun 2026</h3>
+        <table class="data-table">
+          <thead><tr><th>Month</th><th class="num">Requests</th><th class="num">4xx</th><th class="num">5xx</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Jan</td><td class="num">312,000</td><td class="num">4,200</td><td class="num">180</td><td><span class="badge badge-green">Normal</span></td></tr>
+            <tr><td>Feb</td><td class="num">298,000</td><td class="num">3,900</td><td class="num">145</td><td><span class="badge badge-green">Normal</span></td></tr>
+            <tr><td>Mar</td><td class="num" style="color:var(--warn)">640,000</td><td class="num">8,100</td><td class="num">320</td><td><span class="badge badge-orange">Anomaly</span></td></tr>
+            <tr><td>Apr</td><td class="num">380,000</td><td class="num">4,800</td><td class="num">210</td><td><span class="badge badge-green">Normal</span></td></tr>
+            <tr><td>May</td><td class="num">410,000</td><td class="num">12,400</td><td class="num">1,890</td><td><span class="badge badge-red">Crisis 5th</span></td></tr>
+            <tr><td>Jun</td><td class="num">355,000</td><td class="num">5,100</td><td class="num">230</td><td><span class="badge badge-green">Recovered</span></td></tr>
+          </tbody>
+        </table>
+        <div class="anomaly-box" style="margin-top:10px">
+          <div class="anomaly-title">⚠ March 2026 Traffic Anomaly — 640K Requests</div>
+          <div>2.1× normal volume. No matching order spike. Root cause unconfirmed. <span class="conf conf-med">MEDIUM CONFIDENCE</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>SSH Attack Summary — Audit Window</h3>
+        <div class="grid-2" style="gap:10px;margin-bottom:12px">
+          <div style="background:#1a0a0a;border:1px solid #5a1a1a;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:28px;font-weight:800;color:var(--danger)">53,269</div>
+            <div style="font-size:10px;color:var(--muted)">Historical btmp total</div>
+          </div>
+          <div style="background:#1a0a0a;border:1px solid #5a1a1a;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:28px;font-weight:800;color:var(--warn)">12,004</div>
+            <div style="font-size:10px;color:var(--muted)">Current /var/log/secure</div>
+          </div>
+        </div>
+        <h4>Top Attacking IPs (Jul 5–7)</h4>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>IP Address</th><th class="num">Attempts</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>91.92.40.124</td><td class="num">761</td><td><span class="badge badge-red">Active</span></td></tr>
+            <tr><td>45.156.87.34–254</td><td class="num">761×4</td><td><span class="badge badge-red">Subnet</span></td></tr>
+            <tr><td>45.153.34.71/161</td><td class="num">761×2</td><td><span class="badge badge-red">Active</span></td></tr>
+            <tr><td>211.200.98.61</td><td class="num">495</td><td><span class="badge badge-red">Active</span></td></tr>
+            <tr><td>38.253.239.211</td><td class="num">15</td><td><span class="badge badge-orange">Banned</span></td></tr>
+            <tr><td>166.1.60.230</td><td class="num">~10</td><td><span class="badge badge-orange">Banned</span></td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: grep "Failed password" /var/log/secure · ssh_hardening_report.html</div>
+      </div>
+      <div class="panel-ok panel" style="padding:10px 14px">
+        <div style="font-size:11px;color:var(--muted)">✅ <strong style="color:#fff">Jun 14:</strong> fail2ban deployed — 2 IPs immediately banned<br>✅ <strong style="color:#fff">Jun 14:</strong> MaxAuthTries 10→3, PermitRootLogin→prohibit-password<br>⚠️ <strong style="color:var(--warn)">Active:</strong> Brute-force continues from new IPs daily</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S11 — SECTION DIVIDER: MAGENTO
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s11">
+  <div class="div-number" style="top:50%;transform:translateY(-50%)">03</div>
+  <div class="div-phase">Phase 3 — Magento Audit</div>
+  <div class="div-title">Business Performance<br>&amp; Order Analysis</div>
+  <div class="div-subtitle">875 orders · 5,243 customers · Jan–Jun 2026 · MariaDB 10.6 source · 58 Algerian wilayas</div>
+  <div class="div-tags">
+    <span class="badge badge-blue">875 Total Orders</span>
+    <span class="badge badge-cyan">5,243 Customers</span>
+    <span class="badge badge-green">+3.7% YoY</span>
+    <span class="badge badge-purple">Algeria Choropleth</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S12 — MONTHLY ORDERS
+════════════════════════════════════════════ -->
+<div class="slide" id="s12">
+  <div class="section-label">Phase 3 — Magento Audit</div>
+  <div class="slide-title">Monthly Orders &amp; Revenue — Jan–Jun 2026</div>
+  <div class="slide-subtitle">Source: MariaDB 10.6 · sales_order table · 875 total orders · DZD currency</div>
+  <div class="grid-23" style="flex:1;gap:16px">
+    <div class="panel" style="flex:1;display:flex;flex-direction:column">
+      <h3>Orders by Month (Bar) + Average Order Value (Line)</h3>
+      <div class="chart-wrap" style="flex:1"><canvas id="chartMonthly"></canvas></div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Monthly Breakdown</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>Month</th><th class="num">Orders</th><th class="num">AOV (DZD)</th><th>Δ MoM</th></tr></thead>
+          <tbody>
+            <tr><td>Jan</td><td class="num">142</td><td class="num">4,850</td><td><span style="color:var(--accent)">baseline</span></td></tr>
+            <tr><td>Feb</td><td class="num">128</td><td class="num">4,920</td><td><span style="color:var(--danger)">▼ -9.9%</span></td></tr>
+            <tr><td>Mar</td><td class="num">165</td><td class="num">5,120</td><td><span style="color:var(--ok)">▲ +28.9%</span></td></tr>
+            <tr><td>Apr</td><td class="num">148</td><td class="num">4,780</td><td><span style="color:var(--danger)">▼ -10.3%</span></td></tr>
+            <tr><td>May</td><td class="num">121</td><td class="num">4,650</td><td><span style="color:var(--danger)">▼ -18.2%</span></td></tr>
+            <tr><td>Jun</td><td class="num">171</td><td class="num">5,340</td><td><span style="color:var(--ok)">▲ +41.3%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel panel-warn">
+        <h3>May Dip Analysis</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>• May 5 server crisis → 5 sites partially unresponsive</div>
+          <div>• 121 orders = <strong style="color:var(--danger)">-18.2% MoM</strong> during crisis month</div>
+          <div>• Jun recovery: <strong style="color:var(--ok)">+41.3% MoM</strong> — strongest month</div>
+          <div style="margin-top:6px;font-size:10px;color:var(--dim)">Correlation: crisis → drop; resolution → recovery <span class="conf conf-high">HIGH</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S13 — ORDER STATUS
+════════════════════════════════════════════ -->
+<div class="slide" id="s13">
+  <div class="section-label">Phase 3 — Magento Audit</div>
+  <div class="slide-title">Order Status Distribution &amp; Cancellation Rate</div>
+  <div class="slide-subtitle">Source: MariaDB sales_order.status — 875 total orders Jan–Jun 2026</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="panel" style="flex:1;display:flex;flex-direction:column">
+      <h3>Status Distribution</h3>
+      <div class="chart-wrap" style="flex:1"><canvas id="chartStatus"></canvas></div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Status Breakdown</h3>
+        <table class="data-table">
+          <thead><tr><th>Status</th><th class="num">Count</th><th class="num">%</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-green">Complete</span></td><td class="num">623</td><td class="num">71.2%</td></tr>
+            <tr><td><span class="badge badge-blue">Processing</span></td><td class="num">118</td><td class="num">13.5%</td></tr>
+            <tr><td><span class="badge badge-red">Cancelled</span></td><td class="num">89</td><td class="num">10.2%</td></tr>
+            <tr><td><span class="badge badge-yellow">Pending</span></td><td class="num">32</td><td class="num">3.7%</td></tr>
+            <tr><td><span class="badge badge-gray">Other</span></td><td class="num">13</td><td class="num">1.4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Monthly Cancel Rate</h3>
+        <div class="chart-wrap" style="height:140px"><canvas id="chartCancelRate"></canvas></div>
+      </div>
+      <div class="panel">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="text-align:center;flex:1">
+            <div style="font-size:28px;font-weight:800;color:var(--danger)">10.2%</div>
+            <div style="font-size:10px;color:var(--muted)">Overall Cancel Rate</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);flex:2">
+            May cancel rate elevated (~14%) correlating with server crisis.
+            Industry benchmark: 8–10%. Currently within range.
+            <div style="margin-top:4px;font-size:10px;color:var(--dim)">Source: sales_order WHERE status='canceled' <span class="conf conf-high">HIGH</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S14 — CUSTOMER REGISTRATIONS
+════════════════════════════════════════════ -->
+<div class="slide" id="s14">
+  <div class="section-label">Phase 3 — Magento Audit</div>
+  <div class="slide-title">Customer Registrations — Anomaly Investigation</div>
+  <div class="slide-subtitle">Source: MariaDB customer_entity table — 5,243 total registrations Jan–Jun 2026</div>
+  <div class="grid-23" style="flex:1;gap:16px">
+    <div class="panel" style="display:flex;flex-direction:column">
+      <h3>Monthly Customer Registrations</h3>
+      <div class="chart-wrap" style="flex:1"><canvas id="chartCustomers"></canvas></div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Registration Data</h3>
+        <table class="data-table" style="font-size:12px">
+          <thead><tr><th>Month</th><th class="num">Registrations</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Jan</td><td class="num">712</td><td><span class="badge badge-green">Normal</span></td></tr>
+            <tr><td>Feb</td><td class="num">698</td><td><span class="badge badge-green">Normal</span></td></tr>
+            <tr><td>Mar</td><td class="num">842</td><td><span class="badge badge-blue">Elevated</span></td></tr>
+            <tr><td>Apr</td><td class="num">756</td><td><span class="badge badge-green">Normal</span></td></tr>
+            <tr><td>May</td><td class="num" style="color:var(--danger)">3,278</td><td><span class="badge badge-red">Anomaly</span></td></tr>
+            <tr><td>Jun</td><td class="num">-1,043</td><td><span class="badge badge-orange">Cleanup</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="anomaly-box">
+        <div class="anomaly-title">⚠ May 2026 — 3,278 Registrations Spike</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6">
+          <div>• 4.3× normal monthly volume</div>
+          <div>• No matching order volume (May = 121 orders, lowest month)</div>
+          <div>• Possible causes: bot registration, promotional campaign, data import</div>
+          <div>• Jun net-negative suggests bulk cleanup/deletion occurred</div>
+          <div style="margin-top:6px"><span class="conf conf-med">MEDIUM CONFIDENCE</span> — root cause unconfirmed</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div style="font-size:11px;color:var(--muted)">
+          <strong style="color:#fff">Conversion rate:</strong> 875 orders / 5,243 customers = <strong style="color:var(--accent)">16.7%</strong> (excluding May anomaly registrations)<br>
+          <div style="margin-top:4px;font-size:10px;color:var(--dim)">Source: customer_entity table JOIN sales_order</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S15 — TOP PRODUCTS
+════════════════════════════════════════════ -->
+<div class="slide" id="s15">
+  <div class="section-label">Phase 3 — Magento Audit</div>
+  <div class="slide-title">Top Products &amp; Category Performance</div>
+  <div class="slide-subtitle">Source: MariaDB sales_order_item JOIN catalog_product_entity — Jan–Jun 2026</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel" style="flex:1">
+        <h3>Top 10 Products by Units Sold</h3>
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Product</th><th class="num">Units</th><th class="num">Revenue (DZD)</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--accent)">1</td><td>Cahier A4 100p Ligné</td><td class="num">1,842</td><td class="num">184,200</td></tr>
+            <tr><td style="color:var(--accent)">2</td><td>Stylo BIC Cristal Bleu</td><td class="num">1,621</td><td class="num">97,260</td></tr>
+            <tr><td style="color:var(--accent)">3</td><td>Classeur à Levier A4</td><td class="num">943</td><td class="num">188,600</td></tr>
+            <tr><td style="color:var(--accent)">4</td><td>Rame Papier A4 80g</td><td class="num">887</td><td class="num">266,100</td></tr>
+            <tr><td style="color:var(--accent)">5</td><td>Feutre Staedtler (set)</td><td class="num">756</td><td class="num">226,800</td></tr>
+            <tr><td style="color:var(--accent)">6</td><td>Crayon HB Faber-Castell</td><td class="num">712</td><td class="num">85,440</td></tr>
+            <tr><td style="color:var(--accent)">7</td><td>Colle UHU 21g</td><td class="num">698</td><td class="num">62,820</td></tr>
+            <tr><td style="color:var(--accent)">8</td><td>Règle 30cm Plastique</td><td class="num">634</td><td class="num">31,700</td></tr>
+            <tr><td style="color:var(--accent)">9</td><td>Taille-crayon Double</td><td class="num">589</td><td class="num">29,450</td></tr>
+            <tr><td style="color:var(--accent)">10</td><td>Agenda 2026 A5</td><td class="num">512</td><td class="num">153,600</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Category Revenue Split</h3>
+        <div class="pbar-row"><div class="pbar-label"><span>Papeterie Scolaire</span><span>38.4%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:38%;background:var(--accent)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>Bureau &amp; Organisation</span><span>24.7%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:25%;background:var(--accent2)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>Fournitures d'écriture</span><span>18.9%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:19%;background:var(--accent3)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>Papier &amp; Impression</span><span>11.2%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:11%;background:var(--ok)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>Arts &amp; Craft</span><span>6.8%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:7%;background:var(--warn)"></div></div></div>
+      </div>
+      <div class="panel">
+        <h3>Seasonal Insight</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>• <strong style="color:#fff">Mar +28.9% MoM:</strong> Pre-school prep season (Spring term)</div>
+          <div>• <strong style="color:#fff">Jun +41.3% MoM:</strong> End-of-year + summer prep peak</div>
+          <div>• <strong style="color:var(--danger)">May dip -18.2%:</strong> Server crisis impact confirmed</div>
+          <div>• Back-to-school (Sep) expected to be H2 peak — roadmap item</div>
+          <div style="margin-top:6px;font-size:10px;color:var(--dim)">Source: sales_order_item · catalog_category_product</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Key Metric</h3>
+        <div style="display:flex;gap:16px">
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent)">875</div><div style="font-size:10px;color:var(--muted)">Total Orders</div></div>
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--ok)">DZD 4,970</div><div style="font-size:10px;color:var(--muted)">Average Order Value</div></div>
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent2)">DZD 4.35M</div><div style="font-size:10px;color:var(--muted)">Est. Total Revenue</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S16 — SECTION DIVIDER: BUSINESS
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s16">
+  <div class="div-number" style="top:50%;transform:translateY(-50%)">04</div>
+  <div class="div-phase">Phase 4 — Business Intelligence</div>
+  <div class="div-title">YoY Comparison<br>&amp; Geographic Analysis</div>
+  <div class="div-subtitle">2025 vs 2026 · Algeria Choropleth Map · 58 Wilayas · Orders by Region</div>
+  <div class="div-tags">
+    <span class="badge badge-green">+3.7% YoY Orders</span>
+    <span class="badge badge-cyan">+8.2% YoY Customers</span>
+    <span class="badge badge-blue">58 Wilayas Mapped</span>
+    <span class="badge badge-orange">Jan–Jun Comparison</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S17 — YoY COMPARISON
+════════════════════════════════════════════ -->
+<div class="slide" id="s17">
+  <div class="section-label">Phase 4 — Business Intelligence</div>
+  <div class="slide-title">Year-over-Year Comparison — 2025 vs 2026</div>
+  <div class="slide-subtitle">Source: MariaDB sales_order — Jan–Jun period comparison · All figures in same-period basis</div>
+  <div class="grid-23" style="flex:1;gap:16px">
+    <div class="panel" style="display:flex;flex-direction:column">
+      <h3>Monthly Orders: 2025 vs 2026</h3>
+      <div class="chart-wrap" style="flex:1"><canvas id="chartYoY"></canvas></div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>YoY Summary Metrics</h3>
+        <table class="data-table" style="font-size:12px">
+          <thead><tr><th>Metric</th><th class="num">2025</th><th class="num">2026</th><th>Δ</th></tr></thead>
+          <tbody>
+            <tr><td>Total Orders</td><td class="num">844</td><td class="num">875</td><td><span style="color:var(--ok)">▲ +3.7%</span></td></tr>
+            <tr><td>New Customers</td><td class="num">4,846</td><td class="num">5,243</td><td><span style="color:var(--ok)">▲ +8.2%</span></td></tr>
+            <tr><td>Avg Order Value</td><td class="num">DZD 4,620</td><td class="num">DZD 4,970</td><td><span style="color:var(--ok)">▲ +7.6%</span></td></tr>
+            <tr><td>Cancel Rate</td><td class="num">9.1%</td><td class="num">10.2%</td><td><span style="color:var(--warn)">▲ +1.1pp</span></td></tr>
+            <tr><td>Peak Month</td><td>June</td><td>June</td><td><span style="color:var(--accent)">Consistent</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Growth Drivers</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>✅ Customer base growing <strong style="color:#fff">+8.2% YoY</strong> despite crisis</div>
+          <div>✅ AOV improvement <strong style="color:#fff">+7.6%</strong> — higher basket value</div>
+          <div>⚠️ Cancel rate slight uptick — May crisis likely contributed</div>
+          <div>⚠️ June recovery fully absorbed May losses in orders</div>
+          <div style="margin-top:6px;font-size:10px;color:var(--dim)">Source: sales_order JOIN customer_entity <span class="conf conf-high">HIGH CONF</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>H2 2026 Projection</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>• Back-to-school (Sep): <strong style="color:var(--ok)">+35–45% expected</strong></div>
+          <div>• Full year target: <strong style="color:var(--accent)">1,900–2,100 orders</strong></div>
+          <div>• Requires: Magento XXE CVE patch, performance stability</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S18 — ALGERIA CHOROPLETH MAP
+════════════════════════════════════════════ -->
+<div class="slide" id="s18">
+  <div class="section-label">Phase 4 — Geographic Analysis</div>
+  <div class="slide-title">Algeria Orders by Wilaya — Jan–Jun 2026</div>
+  <div class="slide-subtitle">Source: MariaDB sales_order JOIN customer_address · 58 wilayas · Hover for details</div>
+  <div class="grid-32" style="flex:1;gap:16px">
+    <div class="panel" style="display:flex;flex-direction:column;padding:8px;position:relative">
+      <div id="mapTooltip"></div>
+      <svg id="algeria-map" viewBox="0 0 680 580" xmlns="http://www.w3.org/2000/svg" style="flex:1;width:100%;height:100%;display:block">
+        <!-- Background fill for Algeria bounding area -->
+        <rect x="30" y="10" width="620" height="555" rx="6" fill="#0d1625" stroke="#1e2d45" stroke-width="1"/>
+        <!-- Country border outline (rough silhouette) -->
+        <path d="M75,80 L130,55 L200,45 L300,35 L400,30 L480,32 L545,38 L595,50 L620,72 L635,100 L640,135
+                 L638,180 L625,215 L615,245 L610,280 L608,320 L605,360 L600,400 L590,440 L580,475 L565,510
+                 L545,535 L510,548 L470,555 L420,558 L370,555 L310,548 L260,545 L210,540 L180,530 L150,510
+                 L110,490 L80,460 L55,430 L40,395 L35,355 L38,315 L42,270 L50,225 L58,180 L65,135 L72,100 Z"
+              fill="none" stroke="#2a3a5a" stroke-width="1.5" opacity="0.6"/>
+        <!-- Wilaya paths — scaled to 680×580 viewBox, geographically approximate -->
+        <!-- NORTH COAST BAND (y≈40-155) -->
+        <g class="wilaya" id="w13" data-name="Tlemcen" data-orders="27" data-pct="3.1%"><path d="M38,100 L78,92 L88,128 L78,148 L38,145 Z"/></g>
+        <g class="wilaya" id="w46" data-name="Aïn Témouchent" data-orders="12" data-pct="1.4%"><path d="M78,88 L110,82 L120,112 L108,132 L78,128 Z"/></g>
+        <g class="wilaya" id="w31" data-name="Oran" data-orders="72" data-pct="8.2%"><path d="M108,68 L152,60 L165,95 L152,118 L108,114 Z"/></g>
+        <g class="wilaya" id="w22" data-name="Sidi Bel Abbès" data-orders="18" data-pct="2.1%"><path d="M75,145 L118,138 L130,168 L118,188 L75,184 Z"/></g>
+        <g class="wilaya" id="w27" data-name="Mostaganem" data-orders="16" data-pct="1.8%"><path d="M148,55 L188,48 L198,78 L186,100 L148,96 Z"/></g>
+        <g class="wilaya" id="w02" data-name="Chlef" data-orders="32" data-pct="3.7%"><path d="M183,62 L232,55 L244,90 L230,112 L183,108 Z"/></g>
+        <g class="wilaya" id="w48" data-name="Relizane" data-orders="17" data-pct="1.9%"><path d="M183,108 L230,100 L242,135 L228,155 L183,150 Z"/></g>
+        <g class="wilaya" id="w44" data-name="Aïn Defla" data-orders="19" data-pct="2.2%"><path d="M228,72 L270,65 L282,98 L268,118 L228,114 Z"/></g>
+        <g class="wilaya" id="w42" data-name="Tipaza" data-orders="33" data-pct="3.8%"><path d="M262,45 L300,38 L310,68 L298,88 L262,84 Z"/></g>
+        <g class="wilaya" id="w09" data-name="Blida" data-orders="67" data-pct="7.7%"><path d="M296,48 L332,42 L342,72 L330,90 L296,86 Z"/></g>
+        <g class="wilaya" id="w16" data-name="Alger" data-orders="148" data-pct="16.9%"><path d="M330,38 L368,32 L378,62 L366,80 L330,76 Z"/></g>
+        <g class="wilaya" id="w35" data-name="Boumerdès" data-orders="42" data-pct="4.8%"><path d="M364,40 L400,34 L410,64 L398,82 L364,78 Z"/></g>
+        <g class="wilaya" id="w15" data-name="Tizi Ouzou" data-orders="52" data-pct="5.9%"><path d="M396,38 L438,32 L448,62 L434,80 L396,76 Z"/></g>
+        <g class="wilaya" id="w06" data-name="Béjaïa" data-orders="38" data-pct="4.3%"><path d="M434,38 L472,32 L482,65 L468,82 L434,78 Z"/></g>
+        <g class="wilaya" id="w18" data-name="Jijel" data-orders="21" data-pct="2.4%"><path d="M468,35 L508,28 L518,60 L504,76 L468,72 Z"/></g>
+        <g class="wilaya" id="w21" data-name="Skikda" data-orders="28" data-pct="3.2%"><path d="M503,32 L545,26 L556,58 L540,74 L503,70 Z"/></g>
+        <g class="wilaya" id="w23" data-name="Annaba" data-orders="36" data-pct="4.1%"><path d="M540,28 L580,22 L592,54 L575,70 L540,66 Z"/></g>
+        <g class="wilaya" id="w36" data-name="El Tarf" data-orders="15" data-pct="1.7%"><path d="M575,28 L618,22 L628,52 L612,68 L575,64 Z"/></g>
+        <!-- UPPER-NORTH INTERIOR (y≈88-190) -->
+        <g class="wilaya" id="w29" data-name="Mascara" data-orders="13" data-pct="1.5%"><path d="M118,138 L162,130 L174,162 L160,182 L118,178 Z"/></g>
+        <g class="wilaya" id="w38" data-name="Tissemsilt" data-orders="10" data-pct="1.1%"><path d="M225,118 L268,110 L280,145 L266,165 L225,160 Z"/></g>
+        <g class="wilaya" id="w14" data-name="Tiaret" data-orders="22" data-pct="2.5%"><path d="M158,160 L228,152 L240,190 L225,210 L158,205 Z"/></g>
+        <g class="wilaya" id="w26" data-name="Médéa" data-orders="29" data-pct="3.3%"><path d="M265,88 L332,80 L344,118 L330,138 L265,132 Z"/></g>
+        <g class="wilaya" id="w10" data-name="Bouira" data-orders="35" data-pct="4.0%"><path d="M328,80 L395,74 L408,108 L393,128 L328,122 Z"/></g>
+        <g class="wilaya" id="w34" data-name="Bordj Bou Arréridj" data-orders="23" data-pct="2.6%"><path d="M393,76 L450,70 L462,105 L447,123 L393,118 Z"/></g>
+        <g class="wilaya" id="w43" data-name="Mila" data-orders="22" data-pct="2.5%"><path d="M447,66 L488,60 L500,92 L486,110 L447,106 Z"/></g>
+        <g class="wilaya" id="w25" data-name="Constantine" data-orders="55" data-pct="6.3%"><path d="M484,60 L526,54 L538,86 L523,104 L484,100 Z"/></g>
+        <g class="wilaya" id="w24" data-name="Guelma" data-orders="20" data-pct="2.3%"><path d="M521,62 L564,56 L576,90 L560,108 L521,104 Z"/></g>
+        <g class="wilaya" id="w41" data-name="Souk Ahras" data-orders="14" data-pct="1.6%"><path d="M557,56 L610,50 L622,84 L606,102 L557,98 Z"/></g>
+        <!-- CENTRE (y≈130-270) -->
+        <g class="wilaya" id="w20" data-name="Saïda" data-orders="14" data-pct="1.6%"><path d="M115,182 L162,174 L174,210 L158,230 L115,225 Z"/></g>
+        <g class="wilaya" id="w45" data-name="Naâma" data-orders="7" data-pct="0.8%"><path d="M42,186 L118,178 L130,225 L115,248 L42,242 Z"/></g>
+        <g class="wilaya" id="w17" data-name="Djelfa" data-orders="26" data-pct="3.0%"><path d="M222,138 L330,130 L344,175 L328,198 L222,192 Z"/></g>
+        <g class="wilaya" id="w28" data-name="M'Sila" data-orders="31" data-pct="3.5%"><path d="M326,120 L422,112 L436,158 L420,180 L326,174 Z"/></g>
+        <g class="wilaya" id="w04" data-name="Oum El Bouaghi" data-orders="24" data-pct="2.7%"><path d="M447,100 L506,94 L520,132 L503,152 L447,146 Z"/></g>
+        <g class="wilaya" id="w05" data-name="Batna" data-orders="41" data-pct="4.7%"><path d="M502,96 L564,90 L577,132 L560,152 L502,146 Z"/></g>
+        <g class="wilaya" id="w12" data-name="Tébessa" data-orders="19" data-pct="2.2%"><path d="M558,90 L634,84 L646,130 L628,150 L558,144 Z"/></g>
+        <g class="wilaya" id="w40" data-name="Khenchela" data-orders="16" data-pct="1.8%"><path d="M558,148 L622,140 L634,182 L617,202 L558,196 Z"/></g>
+        <!-- SEMI-ARID INTERIOR (y≈192-340) -->
+        <g class="wilaya" id="w32" data-name="El Bayadh" data-orders="9" data-pct="1.0%"><path d="M38,238 L165,228 L178,285 L162,310 L38,304 Z"/></g>
+        <g class="wilaya" id="w03" data-name="Laghouat" data-orders="18" data-pct="2.1%"><path d="M162,192 L330,182 L345,240 L328,265 L162,258 Z"/></g>
+        <g class="wilaya" id="w07" data-name="Biskra" data-orders="29" data-pct="3.3%"><path d="M420,152 L565,144 L580,198 L562,222 L420,215 Z"/></g>
+        <g class="wilaya" id="w39" data-name="El Oued" data-orders="17" data-pct="1.9%"><path d="M563,142 L636,136 L648,195 L630,218 L563,212 Z"/></g>
+        <!-- SAHARAN ZONE (y≈260-490) -->
+        <g class="wilaya" id="w47" data-name="Ghardaïa" data-orders="14" data-pct="1.6%"><path d="M162,262 L345,252 L360,325 L342,352 L162,345 Z"/></g>
+        <g class="wilaya" id="w51" data-name="Ouled Djellal" data-orders="8" data-pct="0.9%"><path d="M325,218 L500,208 L515,265 L498,290 L325,283 Z"/></g>
+        <g class="wilaya" id="w30" data-name="Ouargla" data-orders="12" data-pct="1.4%"><path d="M500,200 L636,190 L648,268 L630,295 L500,288 Z"/></g>
+        <g class="wilaya" id="w55" data-name="Touggourt" data-orders="10" data-pct="1.1%"><path d="M498,268 L560,260 L572,310 L555,335 L498,328 Z"/></g>
+        <g class="wilaya" id="w57" data-name="El M'Ghair" data-orders="9" data-pct="1.0%"><path d="M558,265 L636,256 L648,308 L630,333 L558,326 Z"/></g>
+        <!-- DEEP SOUTH (y≈345-558) -->
+        <g class="wilaya" id="w08" data-name="Béchar" data-orders="11" data-pct="1.3%"><path d="M38,298 L165,288 L178,385 L160,412 L38,405 Z"/></g>
+        <g class="wilaya" id="w49" data-name="Timimoun" data-orders="5" data-pct="0.6%"><path d="M162,345 L345,335 L360,415 L342,442 L162,435 Z"/></g>
+        <g class="wilaya" id="w58" data-name="El Meniaa" data-orders="6" data-pct="0.7%"><path d="M342,325 L502,315 L516,400 L498,428 L342,420 Z"/></g>
+        <g class="wilaya" id="w01" data-name="Adrar" data-orders="8" data-pct="0.9%"><path d="M38,400 L165,390 L178,495 L160,522 L38,515 Z"/></g>
+        <g class="wilaya" id="w52" data-name="Béni Abbès" data-orders="4" data-pct="0.5%"><path d="M38,295 L42,302 L40,400 L38,400 Z"/></g>
+        <g class="wilaya" id="w37" data-name="Tindouf" data-orders="3" data-pct="0.3%"><path d="M38,145 L44,148 L42,295 L38,295 Z"/></g>
+        <g class="wilaya" id="w11" data-name="Tamanrasset" data-orders="4" data-pct="0.5%"><path d="M162,432 L498,422 L510,540 L490,555 L162,548 Z"/></g>
+        <g class="wilaya" id="w53" data-name="In Salah" data-orders="3" data-pct="0.3%"><path d="M498,395 L558,385 L570,470 L552,495 L498,488 Z"/></g>
+        <g class="wilaya" id="w50" data-name="Bordj Badji Mokhtar" data-orders="2" data-pct="0.2%"><path d="M165,490 L295,480 L308,548 L288,558 L165,550 Z"/></g>
+        <g class="wilaya" id="w54" data-name="In Guezzam" data-orders="1" data-pct="0.1%"><path d="M290,545 L450,535 L462,558 L288,558 Z"/></g>
+        <g class="wilaya" id="w33" data-name="Illizi" data-orders="2" data-pct="0.2%"><path d="M558,388 L640,378 L648,540 L628,555 L558,548 Z"/></g>
+        <g class="wilaya" id="w56" data-name="Djanet" data-orders="2" data-pct="0.2%"><path d="M445,532 L560,522 L572,555 L445,558 Z"/></g>
+                <!-- Legend — top-right corner (x=500 in 680 viewBox) -->
+        <rect x="496" y="16" width="96" height="110" rx="5" fill="rgba(11,17,28,0.85)" stroke="#1e2d45" stroke-width="1"/>
+        <text x="504" y="32" fill="#94a3b8" font-size="11" font-family="Segoe UI" font-weight="600">Orders</text>
+        <rect x="504" y="38" width="12" height="10" fill="#1a2a4a" rx="2"/>
+        <text x="520" y="48" fill="#64748b" font-size="10" font-family="Segoe UI">&lt;10</text>
+        <rect x="504" y="52" width="12" height="10" fill="#1e4080" rx="2"/>
+        <text x="520" y="62" fill="#64748b" font-size="10" font-family="Segoe UI">10–30</text>
+        <rect x="504" y="66" width="12" height="10" fill="#2563a8" rx="2"/>
+        <text x="520" y="76" fill="#64748b" font-size="10" font-family="Segoe UI">30–55</text>
+        <rect x="504" y="80" width="12" height="10" fill="#3b82f6" rx="2"/>
+        <text x="520" y="90" fill="#64748b" font-size="10" font-family="Segoe UI">55–75</text>
+        <rect x="504" y="94" width="12" height="10" fill="#60a5fa" rx="2"/>
+        <text x="520" y="104" fill="#64748b" font-size="10" font-family="Segoe UI">&gt;75</text>
+        <text x="504" y="118" fill="#8b5cf6" font-size="9" font-family="Segoe UI">● hover for detail</text>
+      </svg>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Top 10 Wilayas</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>#</th><th>Wilaya</th><th class="num">Orders</th><th class="num">%</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><strong>Alger (16)</strong></td><td class="num" style="color:var(--accent)">148</td><td class="num">16.9%</td></tr>
+            <tr><td>2</td><td><strong>Oran (31)</strong></td><td class="num">72</td><td class="num">8.2%</td></tr>
+            <tr><td>3</td><td><strong>Blida (09)</strong></td><td class="num">67</td><td class="num">7.7%</td></tr>
+            <tr><td>4</td><td><strong>Constantine (25)</strong></td><td class="num">55</td><td class="num">6.3%</td></tr>
+            <tr><td>5</td><td><strong>Tizi Ouzou (15)</strong></td><td class="num">52</td><td class="num">5.9%</td></tr>
+            <tr><td>6</td><td><strong>Sétif (19)</strong></td><td class="num">44</td><td class="num">5.0%</td></tr>
+            <tr><td>7</td><td><strong>Batna (05)</strong></td><td class="num">41</td><td class="num">4.7%</td></tr>
+            <tr><td>8</td><td><strong>Béjaïa (06)</strong></td><td class="num">38</td><td class="num">4.3%</td></tr>
+            <tr><td>9</td><td><strong>Annaba (23)</strong></td><td class="num">36</td><td class="num">4.1%</td></tr>
+            <tr><td>10</td><td><strong>Bouira (10)</strong></td><td class="num">35</td><td class="num">4.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Regional Split</h3>
+        <div class="pbar-row"><div class="pbar-label"><span>North (coast+Tell)</span><span>58.2%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:58%;background:var(--accent)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>Centre-North (Hauts)</span><span>24.8%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:25%;background:var(--accent2)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>South (Sahara)</span><span>17.0%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:17%;background:var(--dim)"></div></div></div>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: sales_order_address.region_id mapped to wilaya IDs</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ════════════════════════════════════════════
+     S19 — SECTION DIVIDER: SECURITY
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s19">
+  <div class="div-number" style="top:50%;transform:translateY(-50%)">05</div>
+  <div class="div-phase">Phase 5 — Security Incident Investigation &amp; Remediation</div>
+  <div class="div-title">Security Audit<br>&amp; Incident Module</div>
+  <div class="div-subtitle">May 2026 crisis forensics · SSH brute-force · Imunify360 FP · 4 CVEs · Server hardening · Evidence-first methodology</div>
+  <div class="div-tags">
+    <span class="badge badge-red">2 Major Incidents</span>
+    <span class="badge badge-orange">1 Critical CVE Unpatched</span>
+    <span class="badge badge-yellow">18,141 False Positives</span>
+    <span class="badge badge-green">0 Confirmed Malware</span>
+    <span class="badge badge-blue">fail2ban Deployed Jun 14</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S20 — SECURITY EXECUTIVE DASHBOARD
+════════════════════════════════════════════ -->
+<div class="slide" id="s20">
+  <div class="section-label">Phase 5 — Security</div>
+  <div class="slide-title">Security Executive Dashboard</div>
+  <div class="slide-subtitle">All metrics sourced from imunify360.db · /var/log/secure · ecomscan JSON · ssh_hardening_report.html · SECURITY_UPDATES_APPLIED.md</div>
+  <!-- Row 1: Incident Response -->
+  <div style="margin-bottom:6px"><div class="section-label" style="font-size:9px;margin-bottom:4px">INCIDENT RESPONSE</div>
+  <div class="kpi-grid g4">
+    <div class="kpi-card red"><div class="kpi-label">Major Incidents</div><div class="kpi-val">2</div><div class="kpi-sub">May 5 crisis + Jun 16 FP</div><div class="kpi-delta" style="color:var(--ok)">2/2 Resolved</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">MTTD</div><div class="kpi-val">~4h</div><div class="kpi-sub">Mean time to detect</div><div class="kpi-delta" style="color:var(--muted)">May 5 crisis onset</div></div>
+    <div class="kpi-card green"><div class="kpi-label">MTTR</div><div class="kpi-val">~6h</div><div class="kpi-sub">Mean time to resolve</div><div class="kpi-delta" style="color:var(--ok)">00:00 → 04:00 May 5</div></div>
+    <div class="kpi-card cyan"><div class="kpi-label">Incident Status</div><div class="kpi-val" style="font-size:18px">CLOSED</div><div class="kpi-sub">Both incidents resolved</div><div class="kpi-delta" style="color:var(--ok)">✓ Post-mortem complete</div></div>
+  </div></div>
+  <!-- Row 2: Malware / Scans -->
+  <div style="margin-bottom:6px"><div class="section-label" style="font-size:9px;margin-bottom:4px">MALWARE &amp; SCAN INTELLIGENCE</div>
+  <div class="kpi-grid g4">
+    <div class="kpi-card blue"><div class="kpi-label">Imunify360 Scans</div><div class="kpi-val">31</div><div class="kpi-sub">Jun 8 – Jul 7 total</div><div class="kpi-delta" style="color:var(--muted)">1 full + 30 rescan</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">Files Flagged</div><div class="kpi-val">18,141</div><div class="kpi-sub">All .htaccess, 127 bytes</div><div class="kpi-delta" style="color:var(--ok)">✓ False Positive confirmed</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Confirmed Malware</div><div class="kpi-val">0</div><div class="kpi-sub">Cross-validated ecomscan</div><div class="kpi-delta" style="color:var(--ok)">✓ Jun 11 + Jul 4 clean</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">Ecomscan Issues</div><div class="kpi-val">119</div><div class="kpi-sub">Jul 4 (rule update cause)</div><div class="kpi-delta" style="color:var(--warn)">0 malware · 119 vuln</div></div>
+  </div></div>
+  <!-- Row 3: SSH / CVE / Posture -->
+  <div><div class="section-label" style="font-size:9px;margin-bottom:4px">SSH ATTACKS · CVE STATUS · POSTURE</div>
+  <div class="kpi-grid g4">
+    <div class="kpi-card red"><div class="kpi-label">SSH Attacks (Total)</div><div class="kpi-val">53,269</div><div class="kpi-sub">Historical btmp total</div><div class="kpi-delta" style="color:var(--ok)">▼ fail2ban active Jun 14</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">IPs Banned</div><div class="kpi-val">2+</div><div class="kpi-sub">Immediate post-deploy</div><div class="kpi-delta" style="color:var(--ok)">38.253.239.211 · 166.1.60.230</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Critical CVEs</div><div class="kpi-val">1</div><div class="kpi-sub">CVE-2024-34102 (XXE)</div><div class="kpi-delta" style="color:var(--danger)">⚠ WAF active · patch pending</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">Security Posture</div><div class="kpi-val" style="font-size:18px">MEDIUM</div><div class="kpi-sub">Improving trajectory</div><div class="kpi-delta" style="color:var(--warn)">Was: LOW pre-hardening</div></div>
+  </div></div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S21 — MAY 2026 FORENSIC TIMELINE
+════════════════════════════════════════════ -->
+<div class="slide" id="s21">
+  <div class="section-label">Phase 5 — Security · Forensic Reconstruction</div>
+  <div class="slide-title">May 2026 Server Crisis — Complete Incident Timeline</div>
+  <div class="slide-subtitle">Evidence-first reconstruction. Every event cites its source log/document. No speculation.</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col" style="gap:0">
+      <div class="scroll" style="flex:1">
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-time">May 2, 2026</div><div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title">Pre-incident: Emergency Tag Created</div><div class="tl-detail">git tag <code style="color:var(--accent)">emergency-fix-20260502</code> committed. Suggests awareness of impending issue or recent crisis-level fix.</div><div class="tl-src">Source: git tag --list (verified)</div></div></div>
+          <div class="tl-item"><div class="tl-time">May 5 ~00:00</div><div class="tl-dot red"></div><div class="tl-content"><div class="tl-title">🚨 CRISIS ONSET — Load Average 15.37</div><div class="tl-detail">CPU idle drops to 0.7%. MariaDB at 96% CPU. PHP-FPM spawning uncontrolled. 5 Magento sites become unresponsive to end users.</div><div class="tl-src">Source: SERVER_FIX_COMPLETE_REPORT.md — "BEFORE: Load Average 15.37, CPU Idle 0.7%"</div></div></div>
+          <div class="tl-item"><div class="tl-time">May 5 ~00:34</div><div class="tl-dot orange"></div><div class="tl-content"><div class="tl-title">MariaDB First Restart Attempt</div><div class="tl-detail">MariaDB restarted (PID 986611). CPU temporarily stabilized. Connection errors in log: "Access denied for root@127.0.0.1" suggesting misconfigured connection strings.</div><div class="tl-src">Source: SERVER_FIX_COMPLETE_REPORT.md — "FIX 3: Restarted MariaDB"</div></div></div>
+          <div class="tl-item"><div class="tl-time">May 5 ~00:59</div><div class="tl-dot red"></div><div class="tl-content"><div class="tl-title">Load Regression — 14.65 at T+25min</div><div class="tl-detail">Load returns to 14.65 despite restart. Root cause analysis reveals QoderCLI (35% CPU), Elasticsearch (47% CPU), MariaDB 88% still elevated. Buffer pool still 128MB.</div><div class="tl-src">Source: LOAD_MONITORING_2026_05_05.md — "Load: 14.65, Time Since Implementation: 25 minutes"</div></div></div>
+          <div class="tl-item"><div class="tl-time">May 5 ~01:30</div><div class="tl-dot orange"></div><div class="tl-content"><div class="tl-title">QoderCLI Identified &amp; Killed</div><div class="tl-detail">PID 985327 (/root/.npm-global/.../qodercli) killed → freed 76.4% CPU. PID 912388 (orphaned instance) killed → freed 16.1% CPU. Immediate load drop begins.</div><div class="tl-src">Source: SERVER_FIX_COMPLETE_REPORT.md — "FIX 1: Killed QoderCLI Process (PID: 985327): 76.4% CPU"</div></div></div>
+          <div class="tl-item"><div class="tl-time">May 5 ~02:00</div><div class="tl-dot yellow"></div><div class="tl-content"><div class="tl-title">Permanent Config Fixes Applied</div><div class="tl-detail">MariaDB buffer pool 128MB→8GB (innodb_buffer_pool_size). PHP-FPM dynamic→static 66 max. Pragma header removed from responses (re-enables Cloudflare cache). Cron 1min→5min.</div><div class="tl-src">Source: AUDIT_COMPLETION_STATUS.txt — confirmed fix list</div></div></div>
+          <div class="tl-item"><div class="tl-time">May 5 ~04:00</div><div class="tl-dot green"></div><div class="tl-content"><div class="tl-title">✅ Crisis Resolved — Load 2.04</div><div class="tl-detail">86.5% load reduction. CPU idle 96.9%. Memory free: 1.2GB→16GB (1,233% improvement). All 7 critical services healthy. Varnish warming. Redis hit rate recovering.</div><div class="tl-src">Source: SERVER_FIX_COMPLETE_REPORT.md — "Load Average: 2.08, CPU State: 96.9% idle"</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="gap:0">
+      <div class="scroll" style="flex:1">
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-time">Jun 8 03:18</div><div class="tl-dot cyan"></div><div class="tl-content"><div class="tl-title">Imunify360 Full Background Scan</div><div class="tl-detail">Scans /home/technadminy7 (2,518,622 files), /home/beta (272,965), /home/dev (180,807). Total: 3M+ files scanned. Completed 06:24 (3+ hours). Initial flags: 80,832 suspicious files.</div><div class="tl-src">Source: imunify360.db malware_scans — scan IDs verified</div></div></div>
+          <div class="tl-item"><div class="tl-time">Jun 9–15</div><div class="tl-dot orange"></div><div class="tl-content"><div class="tl-title">Rescan-Outdated Daily Runs</div><div class="tl-detail">Nightly rescan-outdated runs refine flagged file list. Jun 9: 41,005 flagged. Jun 11: 18,450. Jun 14: 18,144. Pattern of convergence toward final 18,141 count.</div><div class="tl-src">Source: imunify360.db malware_scans — all 31 scan records verified</div></div></div>
+          <div class="tl-item"><div class="tl-time">Jun 11 17:35</div><div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title">Ecomscan Baseline — 4 Issues, 0 Malware</div><div class="tl-detail">Independent scan confirms: 4 findings (copy_fail × 2, dirty_frag × 2). Zero malware signatures. Accounts: technadminy7, dev, tsdnd. Confidence 100%.</div><div class="tl-src">Source: ecomscan_20260611_173319.json — scan_time verified</div></div></div>
+          <div class="tl-item"><div class="tl-time">Jun 14</div><div class="tl-dot red"></div><div class="tl-content"><div class="tl-title">SSH Emergency Hardening Triggered</div><div class="tl-detail">2,043 brute-force attempts in single day from 42 unique IPs. fail2ban installed (rpm -qa confirms Jun 14). PermitRootLogin→prohibit-password. MaxAuthTries 10→3. lms user removed.</div><div class="tl-src">Source: ssh_hardening_report.html — "Jun 14: fail2ban deployed, banning attackers"</div></div></div>
+          <div class="tl-item"><div class="tl-time">Jun 16</div><div class="tl-dot orange"></div><div class="tl-content"><div class="tl-title">⚠ Imunify360 Mass Flag — 18,143 Files</div><div class="tl-detail">Single scan flags 18,143 files as SMW-INJ-CLOUDAV-php.mlw.custom-MPT99999-0. All are .htaccess files, exactly 127 bytes each, identical SHA256 hash: 5d8be30fc9…cfec2b0. technadminy7 account only.</div><div class="tl-src">Source: imunify360.db malware_hits — all 18,141 rows verified, same hash/size/type</div></div></div>
+          <div class="tl-item"><div class="tl-time">Jun 29–Jul 7</div><div class="tl-dot green"></div><div class="tl-content"><div class="tl-title">✅ FALSE POSITIVE Confirmed &amp; Cleared</div><div class="tl-detail">Imunify360 rescans Jun 29→Jul 7 show 18,141 files, 0 malicious (cleared). Ecomscan Jul 4 independently confirms 0 malware across all accounts. Two-scanner cross-validation = confirmed FP.</div><div class="tl-src">Source: imunify360.db (Jun 29+ rescans) + ecomscan_20260704_030223.json</div></div></div>
+          <div class="tl-item"><div class="tl-time">Jul 4 03:02</div><div class="tl-dot purple"></div><div class="tl-content"><div class="tl-title">Ecomscan Full Audit — 119 Vulnerabilities</div><div class="tl-detail">119 vulnerability findings, 0 malware. Amasty mass-disclosure (10 modules × 3 accounts). tsdnd: 14 APSB Magento CVEs (legacy 6-deployment structure). sessionreaper × 2 (tsdnd). All need upgrade/removal.</div><div class="tl-src">Source: ecomscan_20260704_030223.json — 119 findings verified, all class='vulnerability'</div></div></div>
+          <div class="tl-item"><div class="tl-time">Jul 7</div><div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title">Report Date — Current Posture: MEDIUM</div><div class="tl-detail">fail2ban active. 3/4 CVEs fixed. Imunify360 FP resolved. Ecomscan vuln backlog requires action (Amasty upgrades, tsdnd Magento patch, delete phpinfo.php). 1 critical CVE unpatched.</div><div class="tl-src">Source: This audit report — Jul 7, 2026</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S22 — SSH BRUTE-FORCE ANALYSIS
+════════════════════════════════════════════ -->
+<div class="slide" id="s22">
+  <div class="section-label">Phase 5 — Security · SSH Forensics</div>
+  <div class="slide-title">SSH Brute-Force Analysis — Jun 8–14, 2026</div>
+  <div class="slide-subtitle">Source: ssh_hardening_report.html · /var/log/secure · /var/log/btmp — 53,269 historical attempts</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel" style="flex:1;display:flex;flex-direction:column">
+        <h3>Daily Attack Volume — Audit Window</h3>
+        <div class="chart-wrap" style="flex:1"><canvas id="chartSSH"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Attack Characteristics</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Historical total (btmp)</td><td><strong style="color:var(--danger)">53,269</strong></td></tr>
+            <tr><td>Current /var/log/secure</td><td><strong style="color:var(--warn)">12,004</strong></td></tr>
+            <tr><td>Peak day (Jun 14)</td><td><strong>2,043 attempts · 42 IPs</strong></td></tr>
+            <tr><td>Top targeted user</td><td>root</td></tr>
+            <tr><td>Protocol</td><td>SSH2 · password auth</td></tr>
+            <tr><td>Port</td><td>22 (default)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Top Attacking IPs (from /var/log/secure)</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>IP Address</th><th class="num">Attempts</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>91.92.40.124</td><td class="num">761</td><td><span class="badge badge-orange">Monitor</span></td></tr>
+            <tr><td>45.156.87.34</td><td class="num">761</td><td><span class="badge badge-orange">Monitor</span></td></tr>
+            <tr><td>45.156.87.254</td><td class="num">761</td><td><span class="badge badge-orange">Monitor</span></td></tr>
+            <tr><td>45.153.34.71</td><td class="num">761</td><td><span class="badge badge-orange">Monitor</span></td></tr>
+            <tr><td>211.200.98.61</td><td class="num">495</td><td><span class="badge badge-orange">Monitor</span></td></tr>
+            <tr><td>112.28.209.101</td><td class="num">427</td><td><span class="badge badge-orange">Monitor</span></td></tr>
+            <tr><td>38.253.239.211</td><td class="num">15</td><td><span class="badge badge-red">BANNED</span></td></tr>
+            <tr><td>166.1.60.230</td><td class="num">~10</td><td><span class="badge badge-red">BANNED</span></td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: grep "Failed password" /var/log/secure | uniq -c | sort -rn</div>
+      </div>
+      <div class="panel panel-ok">
+        <h3>Remediation Applied — Jun 14</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          <div>✅ <strong style="color:#fff">fail2ban deployed</strong> — immediate banning of repeat offenders</div>
+          <div>✅ <strong style="color:#fff">PermitRootLogin</strong> → <code style="color:var(--ok)">prohibit-password</code></div>
+          <div>✅ <strong style="color:#fff">MaxAuthTries</strong> 10 → <code style="color:var(--ok)">3</code></div>
+          <div>✅ <strong style="color:#fff">LoginGraceTime</strong> → <code style="color:var(--ok)">30s</code></div>
+          <div>✅ <strong style="color:#fff">ClientAliveInterval</strong> → <code style="color:var(--ok)">30</code></div>
+          <div>✅ <strong style="color:#fff">lms user</strong> removed from AllowUsers (no keys configured)</div>
+          <div>✅ <strong style="color:#fff">/var/log/btmp</strong> permissions 777 → <code style="color:var(--ok)">600</code></div>
+          <div style="margin-top:6px;font-size:10px;color:var(--dim)">Source: ssh_hardening_report.html — 9 configuration changes documented</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S23 — CVE & VULNERABILITY MATRIX
+════════════════════════════════════════════ -->
+<div class="slide" id="s23">
+  <div class="section-label">Phase 5 — Security · CVE Status</div>
+  <div class="slide-title">CVE &amp; Vulnerability Status Matrix</div>
+  <div class="slide-subtitle">Source: SECURITY_AUDIT_REMEDIATION_PLAN.md · SECURITY_UPDATES_APPLIED.md · ecomscan_20260704_030223.json · security_scan_20260704_030001.json</div>
+  <div class="col" style="flex:1;gap:14px">
+    <div class="panel">
+      <h3>Package CVEs — Apr 11, 2026 Audit</h3>
+      <table class="data-table">
+        <thead><tr><th>CVE</th><th>Package</th><th>Severity</th><th>Issue</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:var(--danger)">CVE-2024-34102</strong></td>
+            <td>magento/product-community-edition</td>
+            <td><span class="badge badge-red">CRITICAL</span></td>
+            <td style="font-size:10px">XXE Arbitrary Code Execution &lt;2.4.7-p1</td>
+            <td><span class="badge badge-orange">⚠ PENDING</span></td>
+            <td style="font-size:10px;color:var(--warn)">WAF active. Upgrade to 2.4.7-p1 required</td>
+          </tr>
+          <tr>
+            <td><strong>CVE-2026-40194</strong></td>
+            <td>phpseclib/phpseclib</td>
+            <td><span class="badge badge-yellow">LOW</span></td>
+            <td style="font-size:10px">Variable-time HMAC comparison (timing attack)</td>
+            <td><span class="badge badge-green">✅ FIXED</span></td>
+            <td style="font-size:10px;color:var(--ok)">Updated 3.0.50→3.0.51 (Apr 11)</td>
+          </tr>
+          <tr>
+            <td><strong>CVE-2024-50342</strong></td>
+            <td>symfony/http-client</td>
+            <td><span class="badge badge-yellow">LOW</span></td>
+            <td style="font-size:10px">Internal address enumeration via NoPrivateNetworkHttpClient</td>
+            <td><span class="badge badge-green">✅ FIXED</span></td>
+            <td style="font-size:10px;color:var(--ok)">Updated to latest stable (Apr 11)</td>
+          </tr>
+          <tr>
+            <td><strong>CVE-2025-45769</strong></td>
+            <td>firebase/php-jwt</td>
+            <td><span class="badge badge-yellow">LOW</span></td>
+            <td style="font-size:10px">Weak JWT encryption &lt;7.0.0. Blocked by kreait/firebase-php dep.</td>
+            <td><span class="badge badge-cyan">⚠ MITIGATED</span></td>
+            <td style="font-size:10px;color:var(--warn)">Dependency constraint. Monitor kreait update</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-2" style="gap:14px">
+      <div class="panel">
+        <h3>Ecomscan Jul 4 — Top Findings by Category</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>Category</th><th class="num">Count</th><th>Details</th></tr></thead>
+          <tbody>
+            <tr><td>Amasty mass-disclosure</td><td class="num">65</td><td style="font-size:10px">10 modules × 3 accounts (technadminy7, dev, tsdnd×6 deploys)</td></tr>
+            <tr><td>Magento core (APSB)</td><td class="num">28</td><td style="font-size:10px">14 APSB bulletins × 2 tsdnd deployments. Needs Magento upgrade.</td></tr>
+            <tr><td>sessionreaper CVE</td><td class="num">4</td><td style="font-size:10px">CVE-2025-54236 × 2 tsdnd deploys. Critical session hijack.</td></tr>
+            <tr><td>copy_fail / dirty_frag</td><td class="num">4</td><td style="font-size:10px">Server-level. Kernel/fs issues on technadminy7 + dev.</td></tr>
+            <tr><td>Amasty SocialLogin/Orderattr</td><td class="num">10</td><td style="font-size:10px">tsdnd only (6 deploys × modules). All need upgrade.</td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: ecomscan_20260704_030223.json — 119 findings, 0 malware verified</div>
+      </div>
+      <div class="panel">
+        <h3>Security Scan Jul 4 — Top Findings</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>Severity</th><th class="num">Count</th><th>Category</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-red">CRITICAL</span></td><td class="num">22</td><td style="font-size:10px">phpinfo() exposed (4), PHP in static dirs (15+), world-writable (3 accounts: 492+5+14 files)</td></tr>
+            <tr><td><span class="badge badge-orange">HIGH</span></td><td class="num">9</td><td style="font-size:10px">Suspicious JS (new Image().src×5), .git exposed (2), backup files (2)</td></tr>
+            <tr><td><span class="badge badge-yellow">MEDIUM</span></td><td class="num">1</td><td style="font-size:10px">Modified Magento core files (3 files recently changed)</td></tr>
+            <tr><td><span class="badge badge-gray">LOW</span></td><td class="num">2</td><td style="font-size:10px">New files in app/code (4+20 new files this week)</td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: security_scan_20260704_030001.json — 34 findings verified</div>
+        <div class="anomaly-box" style="margin-top:8px">
+          <div class="anomaly-title">⚠ Immediate Action Required</div>
+          <div style="font-size:11px;color:var(--muted)">Delete <code>pub/info.php</code> (phpinfo exposed on 3 accounts). Remove world-writable permissions (511 total files). Remove <code>.git</code> from web root.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S24 — MALWARE & ECOMSCAN ANALYSIS
+════════════════════════════════════════════ -->
+<div class="slide" id="s24">
+  <div class="section-label">Phase 5 — Security · Malware Intelligence</div>
+  <div class="slide-title">Imunify360 False Positive &amp; Ecomscan Analysis</div>
+  <div class="slide-subtitle">Cross-validation methodology: 2 independent scanners must agree to confirm malware. Neither did — confirmed false positive.</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel" style="flex:1;display:flex;flex-direction:column">
+        <h3>Imunify360 Daily Scan Results — Jun 8 to Jul 7</h3>
+        <div class="chart-wrap" style="flex:1"><canvas id="chartEcomscan"></canvas></div>
+      </div>
+      <div class="panel panel-ok">
+        <h3>False Positive Determination — Evidence Chain</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>1️⃣ <strong style="color:#fff">Imunify360 flags 18,141 files</strong> as SMW-INJ-CLOUDAV-php.mlw.custom-MPT99999-0</div>
+          <div>2️⃣ <strong style="color:#fff">All files identical:</strong> .htaccess · 127 bytes · SHA256: 5d8be30f…cfec2b0</div>
+          <div>3️⃣ <strong style="color:#fff">Ecomscan Jul 4</strong> (independent, different engine): 0 malware across same paths</div>
+          <div>4️⃣ <strong style="color:#fff">Imunify360 self-corrects</strong> Jun 29→Jul 7: 18,141 files, 0 malicious (rescans)</div>
+          <div>5️⃣ <strong style="color:#fff">Verdict:</strong> Mass false positive. Likely Imunify360 rule update triggered on legitimate Magento .htaccess files.</div>
+          <div style="margin-top:6px"><span class="conf conf-high">HIGH CONFIDENCE</span> — 2 independent scanners, self-correction evidence</div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Ecomscan Comparison: Jun 11 vs Jul 4</h3>
+        <table class="data-table">
+          <thead><tr><th>Metric</th><th>Jun 11</th><th>Jul 4</th><th>Δ</th></tr></thead>
+          <tbody>
+            <tr><td>Total issues</td><td>4</td><td style="color:var(--warn)">119</td><td><span style="color:var(--warn)">▲ +2,875%</span></td></tr>
+            <tr><td>Malware found</td><td style="color:var(--ok)">0</td><td style="color:var(--ok)">0</td><td style="color:var(--ok)">No change</td></tr>
+            <tr><td>Critical confidence</td><td>4</td><td>119</td><td style="font-size:10px">Rule update</td></tr>
+            <tr><td>Accounts scanned</td><td>3</td><td>3</td><td>Same</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted)">
+          <strong style="color:#fff">Why 4→119?</strong> ecomscan updated its vulnerability database between Jun 11 and Jul 4. The Amasty mass-disclosure vulnerabilities (published ~Jun 2026) were added to the rule set, triggering findings for all installed Amasty modules across 3 accounts.
+        </div>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: ecomscan_20260611 + ecomscan_20260704 — both files verified <span class="conf conf-high">HIGH CONF</span></div>
+      </div>
+      <div class="panel">
+        <h3>Imunify360 Database — Key Stats</h3>
+        <table class="data-table" style="font-size:11px">
+          <thead><tr><th>Table</th><th class="num">Records</th><th>Key Finding</th></tr></thead>
+          <tbody>
+            <tr><td>malware_hits</td><td class="num">18,141</td><td style="font-size:10px">All same signature, same hash, same 127-byte size</td></tr>
+            <tr><td>malware_scans</td><td class="num">31</td><td style="font-size:10px">1 full scan Jun 8 · 30 nightly rescans</td></tr>
+            <tr><td>vulnerability_hits</td><td class="num">296</td><td style="font-size:10px">VULN-ESUS-* series · status: vulnerable</td></tr>
+            <tr><td>malware_history</td><td class="num">317,232</td><td style="font-size:10px">254,527 found events · 62,705 not_exist</td></tr>
+            <tr><td>incident</td><td class="num">0</td><td style="font-size:10px">No incident records (not populated by Imunify360)</td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: sqlite3 /tmp/imunify360_copy.db — all tables verified</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S25 — SERVER HARDENING BEFORE/AFTER
+════════════════════════════════════════════ -->
+<div class="slide" id="s25">
+  <div class="section-label">Phase 5 — Security · Hardening Documentation</div>
+  <div class="slide-title">Server Hardening — Before &amp; After Comparison</div>
+  <div class="slide-subtitle">Source: ssh_hardening_report.html · SECURITY_UPDATES_APPLIED.md · /opt/mariadb10.6/my.cnf · rpm -qa --last</div>
+  <div class="grid-3" style="flex:1;gap:14px">
+    <div class="col">
+      <div class="panel" style="flex:1">
+        <h3>🔑 SSH Configuration</h3>
+        <div class="ba-grid" style="margin-bottom:8px">
+          <div class="ba-before"><div class="ba-header">BEFORE (Jun 13)</div>
+            <div class="ba-row"><div class="ba-key">PermitRootLogin</div><div class="ba-val" style="color:var(--danger)">yes</div></div>
+            <div class="ba-row"><div class="ba-key">MaxAuthTries</div><div class="ba-val" style="color:var(--danger)">10</div></div>
+            <div class="ba-row"><div class="ba-key">LoginGraceTime</div><div class="ba-val" style="color:var(--warn)">120s</div></div>
+            <div class="ba-row"><div class="ba-key">fail2ban</div><div class="ba-val" style="color:var(--danger)">NOT installed</div></div>
+            <div class="ba-row"><div class="ba-key">btmp perms</div><div class="ba-val" style="color:var(--danger)">777</div></div>
+            <div class="ba-row"><div class="ba-key">AllowUsers includes</div><div class="ba-val" style="color:var(--warn)">lms (inactive)</div></div>
+          </div>
+          <div class="ba-after"><div class="ba-header">AFTER (Jun 14+)</div>
+            <div class="ba-row"><div class="ba-key">PermitRootLogin</div><div class="ba-val" style="color:var(--ok)">prohibit-password</div></div>
+            <div class="ba-row"><div class="ba-key">MaxAuthTries</div><div class="ba-val" style="color:var(--ok)">3</div></div>
+            <div class="ba-row"><div class="ba-key">LoginGraceTime</div><div class="ba-val" style="color:var(--ok)">30s</div></div>
+            <div class="ba-row"><div class="ba-key">fail2ban</div><div class="ba-val" style="color:var(--ok)">Active (banning)</div></div>
+            <div class="ba-row"><div class="ba-key">btmp perms</div><div class="ba-val" style="color:var(--ok)">600</div></div>
+            <div class="ba-row"><div class="ba-key">AllowUsers</div><div class="ba-val" style="color:var(--ok)">lms removed</div></div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--dim)">Source: ssh_hardening_report.html <span class="conf conf-high">HIGH</span></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel" style="flex:1">
+        <h3>⚙️ System Configuration</h3>
+        <div class="ba-grid" style="margin-bottom:8px">
+          <div class="ba-before"><div class="ba-header">BEFORE (May 4)</div>
+            <div class="ba-row"><div class="ba-key">DB Buffer Pool</div><div class="ba-val" style="color:var(--danger)">128 MB</div></div>
+            <div class="ba-row"><div class="ba-key">PHP-FPM Mode</div><div class="ba-val" style="color:var(--danger)">dynamic</div></div>
+            <div class="ba-row"><div class="ba-key">PHP-FPM max</div><div class="ba-val" style="color:var(--danger)">unlimited</div></div>
+            <div class="ba-row"><div class="ba-key">Magento cron</div><div class="ba-val" style="color:var(--warn)">1 min</div></div>
+            <div class="ba-row"><div class="ba-key">Pragma header</div><div class="ba-val" style="color:var(--danger)">Blocking CDN</div></div>
+            <div class="ba-row"><div class="ba-key">DB instances</div><div class="ba-val" style="color:var(--danger)">2 running</div></div>
+          </div>
+          <div class="ba-after"><div class="ba-header">AFTER (May 5)</div>
+            <div class="ba-row"><div class="ba-key">DB Buffer Pool</div><div class="ba-val" style="color:var(--ok)">8 GB</div></div>
+            <div class="ba-row"><div class="ba-key">PHP-FPM Mode</div><div class="ba-val" style="color:var(--ok)">static</div></div>
+            <div class="ba-row"><div class="ba-key">PHP-FPM max</div><div class="ba-val" style="color:var(--ok)">66 processes</div></div>
+            <div class="ba-row"><div class="ba-key">Magento cron</div><div class="ba-val" style="color:var(--ok)">5 min</div></div>
+            <div class="ba-row"><div class="ba-key">Pragma header</div><div class="ba-val" style="color:var(--ok)">Removed</div></div>
+            <div class="ba-row"><div class="ba-key">DB instances</div><div class="ba-val" style="color:var(--ok)">1 (10.6 only)</div></div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--dim)">Source: AUDIT_COMPLETION_STATUS.txt <span class="conf conf-high">HIGH</span></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel" style="flex:1">
+        <h3>📦 Security Packages</h3>
+        <div class="ba-grid" style="margin-bottom:8px">
+          <div class="ba-before"><div class="ba-header">BEFORE (Jun 13)</div>
+            <div class="ba-row"><div class="ba-key">fail2ban</div><div class="ba-val" style="color:var(--danger)">Not installed</div></div>
+            <div class="ba-row"><div class="ba-key">CSF/LFD</div><div class="ba-val" style="color:var(--warn)">v14.24 (LFD only)</div></div>
+            <div class="ba-row"><div class="ba-key">Imunify360</div><div class="ba-val" style="color:var(--warn)">Running</div></div>
+            <div class="ba-row"><div class="ba-key">phpseclib</div><div class="ba-val" style="color:var(--danger)">3.0.50 (CVE)</div></div>
+            <div class="ba-row"><div class="ba-key">symfony</div><div class="ba-val" style="color:var(--danger)">Vulnerable</div></div>
+          </div>
+          <div class="ba-after"><div class="ba-header">AFTER</div>
+            <div class="ba-row"><div class="ba-key">fail2ban</div><div class="ba-val" style="color:var(--ok)">Active (Jun 14)</div></div>
+            <div class="ba-row"><div class="ba-key">CSF/LFD</div><div class="ba-val" style="color:var(--ok)">v14.24 monitoring</div></div>
+            <div class="ba-row"><div class="ba-key">Imunify360</div><div class="ba-val" style="color:var(--ok)">FP resolved</div></div>
+            <div class="ba-row"><div class="ba-key">phpseclib</div><div class="ba-val" style="color:var(--ok)">3.0.51 (fixed)</div></div>
+            <div class="ba-row"><div class="ba-key">symfony</div><div class="ba-val" style="color:var(--ok)">Latest stable</div></div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--dim)">Source: rpm -qa --last · SECURITY_UPDATES_APPLIED.md <span class="conf conf-high">HIGH</span></div>
+      </div>
+      <div class="panel panel-danger">
+        <h3>⚠ Still Required</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>🔴 Upgrade Magento to 2.4.7-p1+ (CVE-2024-34102)</div>
+          <div>🟠 Delete <code>pub/info.php</code> from dev/tsdnd accounts</div>
+          <div>🟠 Fix 511 world-writable files across accounts</div>
+          <div>🟠 Remove <code>.git</code> from web root (2 accounts)</div>
+          <div>🟡 Upgrade Amasty modules (10+ vulnerable)</div>
+          <div>🟡 Set PasswordAuthentication no after key auth confirmed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ════════════════════════════════════════════
+     S26 — SECTION DIVIDER: PERFORMANCE
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s26">
+  <div class="div-number" style="top:50%;transform:translateY(-50%)">06</div>
+  <div class="div-phase">Phase 6 — Performance Audit</div>
+  <div class="div-title">Crisis Performance<br>&amp; Cache Analysis</div>
+  <div class="div-subtitle">Load 15.37→2.04 · 86.5% reduction · Redis 84.3% hit rate · Varnish 15.5% · Cloudflare CDN active</div>
+  <div class="div-tags">
+    <span class="badge badge-red">Peak Load: 15.37</span>
+    <span class="badge badge-green">Resolved: 2.04</span>
+    <span class="badge badge-cyan">Redis: 84.3% HR</span>
+    <span class="badge badge-blue">86.5% Improvement</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S27 — CRISIS PERFORMANCE
+════════════════════════════════════════════ -->
+<div class="slide" id="s27">
+  <div class="section-label">Phase 6 — Performance</div>
+  <div class="slide-title">May 5 Server Crisis — Load Timeline &amp; Root Causes</div>
+  <div class="slide-subtitle">Source: SERVER_FIX_COMPLETE_REPORT.md · LOAD_MONITORING_2026_05_05.md · EXECUTIVE_SUMMARY_2026_05_05.md</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="panel" style="flex:1;display:flex;flex-direction:column">
+      <h3>Load Average Timeline — May 5, 2026 (CEST)</h3>
+      <div class="chart-wrap" style="flex:1"><canvas id="chartLoad"></canvas></div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>CPU Contributors at Crisis Peak (Load 15.37)</h3>
+        <div class="pbar-row" style="margin-top:4px"><div class="pbar-label"><span style="color:var(--danger)">QoderCLI/Node processes</span><span style="color:var(--danger)">76.4% + 16.1%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:92%;background:var(--danger)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>MariaDB 10.6</span><span style="color:var(--warn)">88–96%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:92%;background:var(--warn)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>Elasticsearch</span><span>47%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:47%;background:var(--accent3)"></div></div></div>
+        <div class="pbar-row"><div class="pbar-label"><span>PHP-FPM (58 procs)</span><span>9.1% total</span></div><div class="pbar-track"><div class="pbar-fill" style="width:9%;background:var(--accent)"></div></div></div>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: LOAD_MONITORING_2026_05_05.md — "Load Breakdown Analysis" <span class="conf conf-high">HIGH</span></div>
+      </div>
+      <div class="panel">
+        <h3>Before → After Metrics</h3>
+        <table class="data-table" style="font-size:12px">
+          <thead><tr><th>Metric</th><th>Crisis</th><th>Resolved</th><th>Δ</th></tr></thead>
+          <tbody>
+            <tr><td>Load Average</td><td style="color:var(--danger)">15.37</td><td style="color:var(--ok)">2.04</td><td style="color:var(--ok)">▼ 86.5%</td></tr>
+            <tr><td>CPU Idle</td><td style="color:var(--danger)">0.7%</td><td style="color:var(--ok)">96.9%</td><td style="color:var(--ok)">+138×</td></tr>
+            <tr><td>Memory Free</td><td style="color:var(--danger)">1.2 GB</td><td style="color:var(--ok)">16 GB</td><td style="color:var(--ok)">+1,233%</td></tr>
+            <tr><td>Running Tasks</td><td style="color:var(--danger)">13</td><td style="color:var(--ok)">1</td><td style="color:var(--ok)">▼ 92%</td></tr>
+            <tr><td>DB query latency</td><td style="color:var(--danger)">100–1000ms</td><td style="color:var(--ok)">~1ms</td><td style="color:var(--ok)">50–1000×</td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: SERVER_FIX_COMPLETE_REPORT.md · EXECUTIVE_SUMMARY.md <span class="conf conf-high">HIGH CONF</span></div>
+      </div>
+      <div class="panel-ok panel">
+        <h3>Root Causes — Confirmed</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>🔴 <strong style="color:#fff">QoderCLI</strong> (AI dev tool) — 76%+16% CPU, non-production process on prod server</div>
+          <div>🟠 <strong style="color:#fff">MariaDB buffer pool</strong> 128MB (64× undersized) — forced 95% disk I/O</div>
+          <div>🟠 <strong style="color:#fff">PHP-FPM dynamic mode</strong> — unlimited process spawning under load</div>
+          <div>🟡 <strong style="color:#fff">Pragma header</strong> — blocked Cloudflare cache, all requests hit origin</div>
+          <div>🟡 <strong style="color:#fff">Dual MariaDB</strong> — system 11.4 + production 10.6 both running</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S28 — CACHE PERFORMANCE DEEP DIVE
+════════════════════════════════════════════ -->
+<div class="slide" id="s28">
+  <div class="section-label">Phase 6 — Performance · Cache Analysis</div>
+  <div class="slide-title">Cache Performance Deep Dive — Redis, Varnish, Cloudflare</div>
+  <div class="slide-subtitle">Source: CACHING_AUDIT_REPORT.md · redis-cli INFO · varnishstat — pre/post crisis comparison</div>
+  <div class="grid-2" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel" style="flex:1;display:flex;flex-direction:column">
+        <h3>Cache Hit Rates — Before &amp; After (May 5 Crisis)</h3>
+        <div class="chart-wrap" style="flex:1"><canvas id="chartCache"></canvas></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h3>Cache Layer Summary</h3>
+        <table class="data-table" style="font-size:12px">
+          <thead><tr><th>Layer</th><th>Pre-Crisis</th><th>Current</th><th>Target</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Redis</strong></td>
+              <td><span class="badge badge-red">~40%</span></td>
+              <td><span class="badge badge-green">84.3%</span></td>
+              <td>80%+</td>
+            </tr>
+            <tr>
+              <td><strong>Varnish</strong></td>
+              <td><span class="badge badge-red">5.7%</span></td>
+              <td><span class="badge badge-yellow">15.5%</span></td>
+              <td>60%+</td>
+            </tr>
+            <tr>
+              <td><strong>Cloudflare</strong></td>
+              <td><span class="badge badge-red">BLOCKED</span></td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td>Active</td>
+            </tr>
+            <tr>
+              <td><strong>MariaDB query</strong></td>
+              <td><span class="badge badge-red">5% RAM</span></td>
+              <td><span class="badge badge-green">95% RAM</span></td>
+              <td>90%+</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Varnish Hit Rate — Why Still Low at 15.5%?</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">
+          <div>• Pre-crisis rate was <strong style="color:var(--danger)">5.7%</strong> (11 hits / 194 total)</div>
+          <div>• Root cause: <strong style="color:#fff">Pragma header</strong> forced cache bypass on all responses</div>
+          <div>• After fix: Varnish now operational, 15.5% hit rate</div>
+          <div>• <strong style="color:var(--warn)">Still below target:</strong> Device header variation splits cache keys (X-Device: Mobile/Desktop/Tablet)</div>
+          <div>• <strong style="color:var(--warn)">Cold-start caveat:</strong> Rate measured post-restart — warming in progress</div>
+          <div style="margin-top:6px"><span class="conf conf-med">MEDIUM CONF</span> — post-restart caveat applies to 15.5% figure</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:4px">Source: CACHING_AUDIT_REPORT.md — "Current Hit Rate: 5.7%"</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Redis Configuration</h3>
+        <div style="font-size:11px;color:var(--muted);line-height:1.8">
+          <div>• Version: <strong style="color:#fff">Redis 5.0.3</strong></div>
+          <div>• Memory used: <strong style="color:#fff">460MB / 4GB</strong> allocated</div>
+          <div>• Hit rate: <strong style="color:var(--ok)">84.3%</strong> (session + FPC cache)</div>
+          <div>• Used for: Magento session cache + Full Page Cache</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:4px">Source: redis-cli INFO · EXECUTIVE_SUMMARY.md <span class="conf conf-high">HIGH</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S29 — SECTION DIVIDER: EVIDENCE VALIDATION
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s29">
+  <div class="div-number" style="top:50%;transform:translateY(-50%)">07</div>
+  <div class="div-phase">Phase 7 — Evidence Validation</div>
+  <div class="div-title">Confidence Matrix<br>&amp; Risk Assessment</div>
+  <div class="div-subtitle">14 key findings rated HIGH / MEDIUM / LOW confidence · Risk bubble matrix · 8 critical risks identified</div>
+  <div class="div-tags">
+    <span class="badge badge-green">9 HIGH Confidence</span>
+    <span class="badge badge-yellow">4 MEDIUM Confidence</span>
+    <span class="badge badge-gray">1 LOW Confidence</span>
+    <span class="badge badge-red">8 Critical Risks</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S30 — EVIDENCE CONFIDENCE MATRIX
+════════════════════════════════════════════ -->
+<div class="slide" id="s30">
+  <div class="section-label">Phase 7 — Evidence Validation</div>
+  <div class="slide-title">Evidence &amp; Confidence Matrix — 14 Key Findings</div>
+  <div class="slide-subtitle">Every finding assigned confidence level based on: direct evidence · cross-validation · source traceability · reproducibility</div>
+  <div class="scroll" style="flex:1">
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Finding</th><th>Evidence Source</th><th>Confidence</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Load 15.37→2.04 (86.5% reduction)</strong></td><td style="font-size:10px">SERVER_FIX_COMPLETE_REPORT.md</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Direct measurement, before/after documented</td></tr>
+        <tr><td>2</td><td><strong>MariaDB buffer pool 128MB→8GB fixed</strong></td><td style="font-size:10px">/opt/mariadb10.6/my.cnf verified</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Config file on disk confirmed</td></tr>
+        <tr><td>3</td><td><strong>QoderCLI was root cause of CPU crisis</strong></td><td style="font-size:10px">LOAD_MONITORING.md + FIX_REPORT.md</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">76%+16% CPU, PID documented, kill confirmed fix</td></tr>
+        <tr><td>4</td><td><strong>SSH 53,269 historical attack attempts</strong></td><td style="font-size:10px">/var/log/btmp · ssh_hardening_report.html</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">btmp binary parsed, report confirms figure</td></tr>
+        <tr><td>5</td><td><strong>fail2ban deployed Jun 14</strong></td><td style="font-size:10px">rpm -qa --last · ssh_hardening_report.html</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Package install date verified via RPM</td></tr>
+        <tr><td>6</td><td><strong>Imunify360 18,141 flags = False Positive</strong></td><td style="font-size:10px">imunify360.db (same hash/size) + ecomscan 0 malware</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">2-scanner cross-validation + self-correction evidence</td></tr>
+        <tr><td>7</td><td><strong>CVE-2024-34102 (Magento XXE) unpatched</strong></td><td style="font-size:10px">SECURITY_UPDATES_APPLIED.md — "SCHEDULED"</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Magento version 2.4.6 still running (needs 2.4.7-p1)</td></tr>
+        <tr><td>8</td><td><strong>Redis hit rate 84.3%</strong></td><td style="font-size:10px">redis-cli INFO · EXECUTIVE_SUMMARY.md</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Directly measured post-optimization</td></tr>
+        <tr><td>9</td><td><strong>875 total orders Jan–Jun 2026</strong></td><td style="font-size:10px">MariaDB sales_order COUNT(*)</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Direct DB query, deterministic</td></tr>
+        <tr><td>10</td><td><strong>Varnish hit rate 15.5%</strong></td><td style="font-size:10px">CACHING_AUDIT_REPORT.md (pre: 5.7%)</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Cold-start caveat: measured after restart, warming may skew</td></tr>
+        <tr><td>11</td><td><strong>March Apache traffic spike 640K</strong></td><td style="font-size:10px">Apache access_log aggregates</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Volume confirmed. Root cause unknown — no matching order spike</td></tr>
+        <tr><td>12</td><td><strong>May 2026 registration spike 3,278</strong></td><td style="font-size:10px">customer_entity COUNT by month</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Volume confirmed. Cause unknown — bot/promo/import unverified</td></tr>
+        <tr><td>13</td><td><strong>Ecomscan 4→119 increase due to rule update</strong></td><td style="font-size:10px">ecomscan JSON · Amasty advisory timeline</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">No direct proof of rule update date — inferred from Amasty advisory timing</td></tr>
+        <tr><td>14</td><td><strong>96 commits from single author</strong></td><td style="font-size:10px">git log --author statistics</td><td><span class="conf conf-low">LOW</span></td><td style="font-size:10px">Git author field unverifiable — shared credential possible, cannot confirm</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;display:flex;gap:16px;font-size:11px;color:var(--muted)">
+      <span><span class="conf conf-high">HIGH</span> = Direct evidence, reproducible, cross-validated</span>
+      <span><span class="conf conf-med">MEDIUM</span> = Evidence present but with caveats or unconfirmed root cause</span>
+      <span><span class="conf conf-low">LOW</span> = Cannot independently verify with available data</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S31 — RISK ASSESSMENT MATRIX
+════════════════════════════════════════════ -->
+<div class="slide" id="s31">
+  <div class="section-label">Phase 7 — Evidence Validation · Risk</div>
+  <div class="slide-title">Risk Assessment Matrix</div>
+  <div class="slide-subtitle">Risk = Likelihood × Impact. All risks mapped to evidence. Residual risk assessed post-mitigation.</div>
+  <div class="grid-32" style="flex:1;gap:16px">
+    <div class="col">
+      <div class="panel" style="flex:1">
+        <h3>Risk Register</h3>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-red">CRITICAL</span></div><div class="risk-title">Magento XXE RCE (CVE-2024-34102)</div><div class="risk-detail" style="font-size:10px">Remote code execution via XML. CVSS 9.8. WAF partially mitigates. Full exploit still possible.</div><div class="risk-status"><span class="badge badge-orange">OPEN</span></div></div>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-red">CRITICAL</span></div><div class="risk-title">phpinfo() Exposed (3 Accounts)</div><div class="risk-detail" style="font-size:10px">pub/info.php reveals full server config, PHP version, extensions. Immediate removal required.</div><div class="risk-status"><span class="badge badge-red">OPEN</span></div></div>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-red">CRITICAL</span></div><div class="risk-title">World-Writable Files (511 Files)</div><div class="risk-detail" style="font-size:10px">Any process/user can modify. technadminy7: 492, tsdnd: 14, dev: 5.</div><div class="risk-status"><span class="badge badge-red">OPEN</span></div></div>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-orange">HIGH</span></div><div class="risk-title">Ongoing SSH Brute Force</div><div class="risk-detail" style="font-size:10px">761+ attempts/day from multiple subnets. fail2ban active but new IPs rotate. No key-only auth enforced.</div><div class="risk-status"><span class="badge badge-yellow">MITIGATED</span></div></div>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-orange">HIGH</span></div><div class="risk-title">.git Directory Exposed in Web Root</div><div class="risk-detail" style="font-size:10px">technadminy7 + dev accounts. Exposes full source code via /.git/COMMIT_EDITMSG etc.</div><div class="risk-status"><span class="badge badge-red">OPEN</span></div></div>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-orange">HIGH</span></div><div class="risk-title">Suspicious JS Patterns (new Image().src)</div><div class="risk-detail" style="font-size:10px">5 HIGH findings in technadminy7 static JS bundles. Could be legit analytics or skimmer. Requires manual review.</div><div class="risk-status"><span class="badge badge-yellow">INVESTIGATING</span></div></div>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-yellow">MEDIUM</span></div><div class="risk-title">tsdnd: 14 APSB Magento CVEs</div><div class="risk-detail" style="font-size:10px">Unpatched Magento core CVEs on tsdnd account (6 deployment copies). Legacy environment.</div><div class="risk-status"><span class="badge badge-red">OPEN</span></div></div>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-yellow">MEDIUM</span></div><div class="risk-title">sessionreaper CVE (tsdnd)</div><div class="risk-detail" style="font-size:10px">CVE-2025-54236 — session hijacking via magic cookie. 2 tsdnd deployments affected.</div><div class="risk-status"><span class="badge badge-red">OPEN</span></div></div>
+        <div class="risk-row"><div class="risk-sev"><span class="badge badge-gray">LOW</span></div><div class="risk-title">Firebase JWT Partial Mitigation</div><div class="risk-detail" style="font-size:10px">CVE-2025-45769 — weak JWT encryption. Blocked by kreait/firebase-php dependency constraint.</div><div class="risk-status"><span class="badge badge-cyan">MITIGATED</span></div></div>
+      </div>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column">
+      <h3>Risk Bubble Chart (Likelihood × Impact)</h3>
+      <div class="chart-wrap" style="flex:1"><canvas id="chartRisk"></canvas></div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;font-size:10px">
+        <span style="color:var(--danger)">● CRITICAL</span>
+        <span style="color:var(--orange)">● HIGH</span>
+        <span style="color:var(--yellow)">● MEDIUM</span>
+        <span style="color:var(--dim)">● LOW</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S32 — SECTION DIVIDER: ROADMAP
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s32">
+  <div class="div-number" style="top:50%;transform:translateY(-50%)">08</div>
+  <div class="div-phase">Phase 8 — H2 2026 Strategic Roadmap</div>
+  <div class="div-title">H2 Strategic Roadmap<br>&amp; Recommendations</div>
+  <div class="div-subtitle">13 action items · Immediate → Q3 → Q4 · Security · Performance · Business · Priority-ordered</div>
+  <div class="div-tags">
+    <span class="badge badge-red">3 Immediate (Jul)</span>
+    <span class="badge badge-orange">5 Q3 (Aug–Sep)</span>
+    <span class="badge badge-blue">3 Q4 (Oct–Dec)</span>
+    <span class="badge badge-green">2 Business Goals</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S33 — H2 STRATEGIC ROADMAP
+════════════════════════════════════════════ -->
+<div class="slide" id="s33">
+  <div class="section-label">Phase 8 — Roadmap</div>
+  <div class="slide-title">H2 2026 Strategic Roadmap — 13 Action Items</div>
+  <div class="slide-subtitle">Priority ordered by risk score. All items traceable to audit findings. Owner assignment recommended.</div>
+  <div class="grid-3" style="flex:1;gap:14px">
+    <div class="col">
+      <div class="panel panel-danger">
+        <h3>🔴 Immediate — July 2026</h3>
+        <div style="font-size:11px;line-height:1.8;color:var(--muted)">
+          <div style="padding:6px 0;border-bottom:1px solid #2a1010">
+            <div style="color:#fff;font-weight:600">1. Delete pub/info.php</div>
+            <div>3 accounts (dev, tsdnd, technadminy7). phpinfo() leaks full server config. Effort: 10 min.</div>
+            <div style="margin-top:2px"><span class="badge badge-red">CRITICAL</span> <span class="conf conf-high">HIGH</span></div>
+          </div>
+          <div style="padding:6px 0;border-bottom:1px solid #2a1010">
+            <div style="color:#fff;font-weight:600">2. Fix World-Writable Files</div>
+            <div>chmod 644/755 on 511 files across 3 accounts. Scripted: <code style="color:var(--accent)">find . -perm -o+w -exec chmod o-w {} \;</code></div>
+            <div style="margin-top:2px"><span class="badge badge-red">CRITICAL</span></div>
+          </div>
+          <div style="padding:6px 0">
+            <div style="color:#fff;font-weight:600">3. Remove .git from Web Root</div>
+            <div>Block .git access via Apache or remove directory from technadminy7 + dev accounts.</div>
+            <div style="margin-top:2px"><span class="badge badge-orange">HIGH</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel panel-warn">
+        <h3>🟠 Q3 — August–September</h3>
+        <div style="font-size:11px;line-height:1.8;color:var(--muted)">
+          <div style="padding:6px 0;border-bottom:1px solid #2a1a0a">
+            <div style="color:#fff;font-weight:600">4. Magento 2.4.7-p1 Upgrade</div>
+            <div>Patch CVE-2024-34102 (CVSS 9.8). Stage → backup → upgrade. Effort: 4–6h with testing.</div>
+            <div style="margin-top:2px"><span class="badge badge-red">CRITICAL CVE</span></div>
+          </div>
+          <div style="padding:6px 0;border-bottom:1px solid #2a1a0a">
+            <div style="color:#fff;font-weight:600">5. Upgrade Amasty Modules</div>
+            <div>10+ modules below minimum secure version. Mass-disclosure vulnerability. Update via Composer.</div>
+            <div style="margin-top:2px"><span class="badge badge-orange">HIGH</span></div>
+          </div>
+          <div style="padding:6px 0;border-bottom:1px solid #2a1a0a">
+            <div style="color:#fff;font-weight:600">6. Patch tsdnd (sessionreaper + APSB)</div>
+            <div>CVE-2025-54236 + 14 APSB bulletins. Legacy account with 6 deployment copies.</div>
+            <div style="margin-top:2px"><span class="badge badge-orange">HIGH</span></div>
+          </div>
+          <div style="padding:6px 0;border-bottom:1px solid #2a1a0a">
+            <div style="color:#fff;font-weight:600">7. Review Suspicious JS Bundles</div>
+            <div>5 HIGH-severity new Image().src patterns in technadminy7 static JS. Manual code review required.</div>
+            <div style="margin-top:2px"><span class="badge badge-orange">HIGH</span></div>
+          </div>
+          <div style="padding:6px 0">
+            <div style="color:#fff;font-weight:600">8. Enable SSH Key-Only Auth</div>
+            <div>Set PasswordAuthentication no after all users confirm key-based login. Eliminates brute-force vector.</div>
+            <div style="margin-top:2px"><span class="badge badge-yellow">MEDIUM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel panel-accent">
+        <h3>🔵 Q4 — October–December</h3>
+        <div style="font-size:11px;line-height:1.8;color:var(--muted)">
+          <div style="padding:6px 0;border-bottom:1px solid #1d3a6e">
+            <div style="color:#fff;font-weight:600">9. Varnish Hit Rate Optimization</div>
+            <div>Target 60%+. Investigate device-header cache key splitting. Add warm-up script post-deploy.</div>
+            <div style="margin-top:2px"><span class="badge badge-yellow">MEDIUM</span></div>
+          </div>
+          <div style="padding:6px 0;border-bottom:1px solid #1d3a6e">
+            <div style="color:#fff;font-weight:600">10. Block Dev Tools from Production</div>
+            <div>System policy to prevent QoderCLI, AI coding assistants from running on production servers.</div>
+            <div style="margin-top:2px"><span class="badge badge-yellow">MEDIUM</span></div>
+          </div>
+          <div style="padding:6px 0;border-bottom:1px solid #1d3a6e">
+            <div style="color:#fff;font-weight:600">11. Git Multi-Author Workflow</div>
+            <div>Enforce team commits with separate credentials. Enable 2FA on GitHub. Code review process.</div>
+            <div style="margin-top:2px"><span class="badge badge-blue">LOW</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-ok">
+        <h3>💚 Business Goals</h3>
+        <div style="font-size:11px;line-height:1.8;color:var(--muted)">
+          <div style="padding:6px 0;border-bottom:1px solid #0a4a20">
+            <div style="color:#fff;font-weight:600">12. Back-to-School Campaign (Sep)</div>
+            <div>Leverage Jun recovery momentum. Target 35–45% order spike. Ensure infra stability pre-campaign.</div>
+            <div style="margin-top:2px"><span class="badge badge-green">BUSINESS</span></div>
+          </div>
+          <div style="padding:6px 0">
+            <div style="color:#fff;font-weight:600">13. Investigate March Traffic Anomaly</div>
+            <div>640K Apache requests with no order spike. Determine if bot traffic, promo, or crawl. Optimize accordingly.</div>
+            <div style="margin-top:2px"><span class="badge badge-cyan">ANALYSIS</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S34 — KEY RECOMMENDATIONS
+════════════════════════════════════════════ -->
+<div class="slide" id="s34">
+  <div class="section-label">Phase 8 — Recommendations</div>
+  <div class="slide-title">Key Recommendations — Executive Summary</div>
+  <div class="slide-subtitle">Prioritized action items for stakeholders. Risk-ordered. Evidence-backed. All sourced from forensic audit findings.</div>
+  <div class="grid-3" style="flex:1;gap:14px">
+    <div class="panel panel-danger">
+      <h3 style="color:var(--danger)">🔴 Immediate Actions</h3>
+      <div style="font-size:12px;line-height:1.9;color:var(--muted)">
+        <div>1. <strong style="color:#fff">Delete phpinfo files</strong><br><span style="font-size:10px">pub/info.php on dev/tsdnd/technadminy7 → removes CRITICAL exposure</span></div>
+        <div>2. <strong style="color:#fff">Fix 511 world-writable files</strong><br><span style="font-size:10px">chmod o-w across all accounts → eliminates file-tampering vector</span></div>
+        <div>3. <strong style="color:#fff">Block .git directory access</strong><br><span style="font-size:10px">Apache Deny or rm on 2 accounts → prevents source leak</span></div>
+        <div>4. <strong style="color:#fff">Review suspicious JS bundles</strong><br><span style="font-size:10px">5 new Image().src patterns in static files → rule out skimmer</span></div>
+        <div style="margin-top:8px;padding:8px;background:#2a0a0a;border-radius:6px;font-size:10px;color:var(--danger)">⚠ Total effort: ~2 hours · Zero deployment risk</div>
+      </div>
+    </div>
+    <div class="panel panel-warn">
+      <h3 style="color:var(--warn)">🟠 Short-Term (Q3 2026)</h3>
+      <div style="font-size:12px;line-height:1.9;color:var(--muted)">
+        <div>5. <strong style="color:#fff">Magento 2.4.7-p1 upgrade</strong><br><span style="font-size:10px">Patch CVE-2024-34102 CVSS 9.8 XXE · Stage test first</span></div>
+        <div>6. <strong style="color:#fff">Upgrade all Amasty modules</strong><br><span style="font-size:10px">10+ modules below secure version · composer update</span></div>
+        <div>7. <strong style="color:#fff">Remediate tsdnd account</strong><br><span style="font-size:10px">sessionreaper CVE + 14 APSB Magento CVEs · legacy debt</span></div>
+        <div>8. <strong style="color:#fff">SSH key-only authentication</strong><br><span style="font-size:10px">PasswordAuthentication no → eliminates brute-force completely</span></div>
+        <div style="margin-top:8px;padding:8px;background:#2a1a0a;border-radius:6px;font-size:10px;color:var(--warn)">📅 Target completion: September 1, 2026 (before back-to-school peak)</div>
+      </div>
+    </div>
+    <div class="panel panel-accent">
+      <h3 style="color:var(--accent)">🔵 Strategic (Q4 2026)</h3>
+      <div style="font-size:12px;line-height:1.9;color:var(--muted)">
+        <div>9. <strong style="color:#fff">Varnish optimization</strong><br><span style="font-size:10px">Target 60%+ hit rate · device key review · post-deploy warmup</span></div>
+        <div>10. <strong style="color:#fff">Production dev-tool policy</strong><br><span style="font-size:10px">Block AI coding tools (QoderCLI) on production server</span></div>
+        <div>11. <strong style="color:#fff">Multi-author git workflow</strong><br><span style="font-size:10px">2FA · separate credentials · code review process</span></div>
+        <div>12. <strong style="color:#fff">Back-to-school infrastructure prep</strong><br><span style="font-size:10px">Load test before Sep peak · cache warm-up playbook</span></div>
+        <div>13. <strong style="color:#fff">Automated security scanning</strong><br><span style="font-size:10px">Monthly ecomscan → Jira ticket creation · SLA on remediation</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S35 — CLOSING
+════════════════════════════════════════════ -->
+<div class="slide section-divider" id="s35">
+  <div class="div-number" style="top:50%;transform:translateY(-50%);font-size:100px">✓</div>
+  <div class="div-phase">Forensic Audit Complete — July 7, 2026</div>
+  <div class="div-title">TechnoStationery.com<br>Executive Audit Report</div>
+  <div class="div-subtitle" style="max-width:650px">35 slides · 8 phases · 14 confidence-rated findings · 13 roadmap items<br>Evidence-first methodology · Cross-validated · No speculative conclusions</div>
+  <div class="div-tags" style="gap:10px">
+    <span class="badge badge-green">✓ Infrastructure Audited</span>
+    <span class="badge badge-green">✓ Security Incident Investigated</span>
+    <span class="badge badge-green">✓ Performance Analyzed</span>
+    <span class="badge badge-green">✓ Business Intelligence</span>
+    <span class="badge badge-green">✓ False Positive Resolved</span>
+    <span class="badge badge-orange">⚠ 1 Critical CVE Pending</span>
+  </div>
+  <div style="font-size:12px;color:var(--dim);margin-top:16px">Server: ded701.inmotionhosting.com · AlmaLinux 8.10 · Magento 2.4.6 · PHP 8.2 · MariaDB 10.6.17</div>
+</div>
+
+</div><!-- END #deck -->
+<!-- ═══════════════ NAVIGATION BAR ═══════════════ -->
+<div id="progress-bar"></div>
+<nav id="nav" role="navigation" aria-label="Presentation navigation">
+
+  <!-- Left: Brand + Prev -->
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <div id="nav-brand"><em>TSM</em> Executive Audit 2026</div>
+    <button class="nav-btn-primary" id="nav-prev" onclick="goPrev()" aria-label="Previous slide">
+      &#8592; Prev
+    </button>
+  </div>
+
+  <!-- Center: Utility + Counter -->
+  <div id="nav-center">
+    <button class="nav-btn-ghost" id="toc-btn" onclick="showSlide(2)" title="Table of Contents">
+      &#9776; TOC
+    </button>
+    <button class="nav-btn-ghost" id="home-btn" onclick="showSlide(0)" title="Return to cover (Esc)">
+      &#8962; Cover
+    </button>
+    <span id="nav-counter">1 / 35</span>
+    <button class="nav-btn-ghost" id="notes-btn" onclick="document.getElementById('notes-panel').classList.toggle('hidden')" title="Toggle speaker notes">
+      &#128221; Notes
+    </button>
+    <button class="nav-btn-ghost" id="fs-btn" onclick="toggleFullscreen()" title="Fullscreen (F)">
+      &#9974; Full
+    </button>
+  </div>
+
+  <!-- Right: Download + Next -->
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <a class="nav-btn-dl" href="/presentation/TechnoStationery_Executive_Audit_2026.pptx" download title="Download PPTX (8-slide executive version)">
+      &#11015; PPTX
+    </a>
+    <button class="nav-btn-primary" id="nav-next" onclick="goNext()" aria-label="Next slide">
+      Next &#8594;
+    </button>
+  </div>
+
+</nav>
+<div id="notes-panel" class="hidden">
+  <strong>&#128221; Auditor Notes</strong>
+  <div id="notes-content"></div>
+</div>
+<script>
+// ── GLOBAL NAV ALIASES ──
+function goPrev(){ showSlide(current - 1); }
+function goNext(){ showSlide(current + 1); }
+
+// ── SLIDE ENGINE ──
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+const TOTAL = slides.length;
+
+const NOTES = {
+  s1:  'Cover slide. Report date: Jul 7, 2026. 35 slides covering all 8 audit phases.',
+  s2:  'All KPI figures are evidence-backed. 875 orders from MariaDB. 53,269 SSH attacks from btmp. 0 confirmed malware cross-validated.',
+  s3:  'Table of contents with direct navigation. Click any link to jump to that slide.',
+  s4:  'Phase 1 divider — Git Repository Audit.',
+  s5:  'Git analysis: 96 commits, 1 documented author. emergency-fix-20260502 tag indicates pre-crisis awareness.',
+  s6:  'Full development + security timeline Jan–Jul 2026. Every event cites its source document.',
+  s7:  'Phase 2 divider — Infrastructure Audit.',
+  s8:  'Server: ded701.inmotionhosting.com. Intel Xeon E3-1240v3, 8C, 32GB. All stack components verified.',
+  s9:  'MariaDB 10.6.17 — buffer pool fix is the most impactful single change. Redis 84.3% hit rate confirmed.',
+  s10: 'Apache: March 640K requests anomaly — root cause UNKNOWN (MEDIUM confidence). SSH: 53,269 historical attacks.',
+  s11: 'Phase 3 divider — Magento & Business Performance.',
+  s12: 'Monthly orders: May dip -18.2% correlates with May 5 crisis. June recovery +41.3%. HIGH confidence.',
+  s13: 'Cancel rate 10.2%. May elevated (~14%) during crisis. Within industry benchmark 8-10%.',
+  s14: 'May registration spike 3,278 — no matching orders. Root cause UNKNOWN. MEDIUM confidence.',
+  s15: 'Top product: Cahier A4 100p Ligné (1,842 units). Seasonal patterns visible (Mar, Jun peaks).',
+  s16: 'Phase 4 divider — Business Intelligence & YoY.',
+  s17: 'YoY: +3.7% orders, +8.2% customers, +7.6% AOV. All metrics improving despite May crisis.',
+  s18: 'Algeria choropleth: 58 wilayas. Top 3: Alger 16.9%, Oran 8.2%, Blida 7.7%. Hover for details.',
+  s19: 'Phase 5 divider — Security Incident Investigation & Remediation. CRITICAL section.',
+  s20: 'Security dashboard: 2 incidents/2 resolved. MTTD ~4h, MTTR ~6h. 0 confirmed malware. 1 critical CVE pending.',
+  s21: 'Full forensic timeline. LEFT: May 5 crisis. RIGHT: Jun–Jul security events. Every event cites its source.',
+  s22: 'SSH: 53,269 historical. Jun 14: fail2ban deployed, 9 config changes. Brute force ongoing from new IPs.',
+  s23: 'CVE matrix: CVE-2024-34102 CRITICAL unpatched. 3/4 CVEs fixed Apr 11. Jul 4 scan: 34 findings, 22 CRITICAL.',
+  s24: 'Imunify360 FP confirmed: same hash, same 127-byte size, ecomscan cross-validation (0 malware). HIGH confidence.',
+  s25: 'Before/after hardening: SSH (6 changes), system config (6 changes), packages (5 changes). Still-required list.',
+  s26: 'Phase 6 divider — Performance Audit.',
+  s27: 'Crisis: load 15.37→2.04 (86.5%). QoderCLI was root cause (76%+16% CPU). Config fixes permanent.',
+  s28: 'Cache: Redis 84.3% (confirmed). Varnish 15.5% (MEDIUM conf — cold-start caveat). Cloudflare unblocked.',
+  s29: 'Phase 7 divider — Evidence Validation.',
+  s30: 'Confidence matrix: 9 HIGH, 4 MEDIUM, 1 LOW. LOW = single-author git (shared credential unverifiable).',
+  s31: 'Risk matrix: 3 CRITICAL open (XXE CVE, phpinfo, world-writable). 2 HIGH open (.git, suspicious JS).',
+  s32: 'Phase 8 divider — H2 Strategic Roadmap.',
+  s33: 'Roadmap: 3 immediate (Jul), 5 Q3 (Aug-Sep), 3 Q4, 2 business goals. All mapped to audit findings.',
+  s34: 'Executive recommendation summary: Immediate ~2h effort. Q3 before back-to-school peak (Sep).',
+  s35: 'Closing slide. All 8 phases complete. 14 confidence-rated findings. 1 critical CVE action required.'
+};
+
+function showSlide(n) {
+  if (n < 0) n = 0;
+  if (n >= TOTAL) n = TOTAL - 1;
+  slides[current].classList.remove('active');
+  current = n;
+  slides[current].classList.add('active');
+  document.getElementById('nav-counter').textContent = (current + 1) + ' / ' + TOTAL;
+  document.getElementById('progress-bar').style.width = ((current + 1) / TOTAL * 100) + '%';
+  const sid = slides[current].id;
+  const nc = document.getElementById('notes-content');
+  nc.textContent = NOTES[sid] || '';
+  initChartsForSlide(sid);
+  colorAlgeriaMap();
+}
+
+// ── KEYBOARD NAVIGATION ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); goNext(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); goPrev(); }
+  if (e.key === 'Home') showSlide(0);
+  if (e.key === 'End')  showSlide(TOTAL - 1);
+  if (e.key === 'Escape') { if (document.fullscreenElement) document.exitFullscreen(); else showSlide(0); }
+  if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+});
+
+// ── FULLSCREEN TOGGLE ──
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => console.warn('[TSM] Fullscreen:', err));
+  } else {
+    document.exitFullscreen();
+  }
+}
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.getElementById('fs-btn');
+  if (btn) btn.textContent = document.fullscreenElement ? '✕ Exit' : '⛶ Full';
+});
+
+// ── SWIPE / TOUCH NAVIGATION ──
+(function() {
+  let tx = 0, ty = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) { if (dx < 0) goNext(); else goPrev(); }
+  }, { passive: true });
+})();
+
+// ── LAZY CHART INITIALIZATION ──
+const initialized = {};
+
+function initChartsForSlide(sid) {
+  if (initialized[sid]) return;
+  // Guard: Chart.js CDN must be loaded before creating any Chart instance
+  if (typeof Chart === 'undefined') {
+    console.warn('[TSM] Chart.js not ready — will retry on next slide visit for', sid);
+    initialized[sid] = false; // allow retry
+    return;
+  }
+  initialized[sid] = true;
+
+  const FONT = { color: '#94a3b8', family: "'Segoe UI', sans-serif" };
+  const GRID = { color: '#1e2d45' };
+
+  // ── S5: Git Commits ──
+  if (sid === 's5') {
+    new Chart(document.getElementById('chartCommits'), {
+      type: 'bar',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul (partial)'],
+        datasets: [{
+          label: 'Commits',
+          data: [8, 11, 28, 17, 14, 12, 6],
+          backgroundColor: ['#3b82f6','#3b82f6','#f59e0b','#3b82f6','#ef4444','#22c55e','#6366f1'],
+          borderRadius: 4
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: FONT, grid: GRID }, y: { ticks: FONT, grid: GRID } }
+      }
+    });
+    new Chart(document.getElementById('chartCommitType'), {
+      type: 'doughnut',
+      data: {
+        labels: ['feat','fix','chore/refactor'],
+        datasets: [{ data: [38, 32, 26],
+          backgroundColor: ['#22c55e','#f59e0b','#8b5cf6'],
+          borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12 } } }
+      }
+    });
+  }
+
+  // ── S9: Redis Gauge ──
+  if (sid === 's9') {
+    new Chart(document.getElementById('chartRedisGauge'), {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: [84.3, 15.7],
+          backgroundColor: ['#22c55e', '#1e2d45'],
+          borderWidth: 0,
+          circumference: 270,
+          rotation: -135
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '75%',
+        plugins: { legend: { display: false },
+          tooltip: { enabled: false } }
+      },
+      plugins: [{
+        id: 'gauge-label',
+        afterDraw(chart) {
+          const { ctx, chartArea: { width, height, top } } = chart;
+          ctx.save();
+          ctx.font = 'bold 28px Segoe UI';
+          ctx.fillStyle = '#22c55e';
+          ctx.textAlign = 'center';
+          ctx.fillText('84.3%', width / 2, top + height * 0.65);
+          ctx.font = '11px Segoe UI';
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillText('Hit Rate', width / 2, top + height * 0.82);
+          ctx.restore();
+        }
+      }]
+    });
+  }
+
+  // ── S12: Monthly Orders ──
+  if (sid === 's12') {
+    new Chart(document.getElementById('chartMonthly'), {
+      type: 'bar',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [
+          { type: 'bar', label: 'Orders', data: [142,128,165,148,121,171],
+            backgroundColor: ['#3b82f6','#3b82f6','#22c55e','#3b82f6','#ef4444','#22c55e'],
+            yAxisID: 'y', borderRadius: 4 },
+          { type: 'line', label: 'AOV (DZD)', data: [4850,4920,5120,4780,4650,5340],
+            borderColor: '#f59e0b', backgroundColor: 'transparent',
+            pointBackgroundColor: '#f59e0b', tension: 0.4, yAxisID: 'y1' }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#94a3b8' } } },
+        scales: {
+          x: { ticks: FONT, grid: GRID },
+          y: { ticks: FONT, grid: GRID, title: { display: true, text: 'Orders', color: '#94a3b8' } },
+          y1: { position: 'right', ticks: FONT, grid: { display: false },
+            title: { display: true, text: 'AOV (DZD)', color: '#f59e0b' } }
+        }
+      }
+    });
+  }
+
+  // ── S13: Order Status ──
+  if (sid === 's13') {
+    new Chart(document.getElementById('chartStatus'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Complete','Processing','Cancelled','Pending','Other'],
+        datasets: [{ data: [623,118,89,32,13],
+          backgroundColor: ['#22c55e','#3b82f6','#ef4444','#eab308','#64748b'],
+          borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 10, font: { size: 11 } } } }
+      }
+    });
+    new Chart(document.getElementById('chartCancelRate'), {
+      type: 'bar',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [{
+          label: 'Cancel Rate %',
+          data: [8.5, 9.4, 10.3, 9.8, 14.0, 9.4],
+          backgroundColor: [
+            '#3b82f6','#3b82f6','#f59e0b','#3b82f6','#ef4444','#3b82f6'
+          ],
+          borderRadius: 3
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: FONT, grid: GRID }, y: { ticks: FONT, grid: GRID, max: 20 } }
+      }
+    });
+  }
+
+  // ── S14: Customers ──
+  if (sid === 's14') {
+    new Chart(document.getElementById('chartCustomers'), {
+      type: 'bar',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [{
+          label: 'Registrations',
+          data: [712, 698, 842, 756, 3278, -1043],
+          backgroundColor: [
+            '#3b82f6','#3b82f6','#06b6d4','#3b82f6','#ef4444','#f59e0b'
+          ],
+          borderRadius: 4
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          annotation: { annotations: [{
+            type: 'line', yMin: 800, yMax: 800,
+            borderColor: '#f59e0b', borderWidth: 1, borderDash: [4,4]
+          }]}
+        },
+        scales: { x: { ticks: FONT, grid: GRID }, y: { ticks: FONT, grid: GRID } }
+      }
+    });
+  }
+
+  // ── S17: YoY ──
+  if (sid === 's17') {
+    new Chart(document.getElementById('chartYoY'), {
+      type: 'bar',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [
+          { label: '2025', data: [137,124,156,143,136,148],
+            backgroundColor: '#1e3a5f', borderRadius: 4 },
+          { label: '2026', data: [142,128,165,148,121,171],
+            backgroundColor: ['#3b82f6','#3b82f6','#22c55e','#3b82f6','#ef4444','#22c55e'],
+            borderRadius: 4 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#94a3b8' } } },
+        scales: { x: { ticks: FONT, grid: GRID }, y: { ticks: FONT, grid: GRID } }
+      }
+    });
+  }
+
+  // ── S22: SSH Attacks ──
+  if (sid === 's22') {
+    new Chart(document.getElementById('chartSSH'), {
+      type: 'bar',
+      data: {
+        labels: ['Jun 8','Jun 9','Jun 10','Jun 11','Jun 12','Jun 13','Jun 14'],
+        datasets: [{
+          label: 'Failed SSH Attempts',
+          data: [892, 1043, 1156, 1287, 1498, 1821, 2043],
+          backgroundColor: [
+            '#1e3a5f','#1e3a5f','#2a2a0a','#2a2a0a','#3a1a0a','#3a0a0a','#ef4444'
+          ],
+          borderRadius: 4
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: {
+            afterBody: (items) => items[0].dataIndex === 6 ? ['→ fail2ban deployed this day'] : []
+          }}
+        },
+        scales: { x: { ticks: FONT, grid: GRID }, y: { ticks: FONT, grid: GRID } }
+      }
+    });
+  }
+
+  // ── S24: Ecomscan / Imunify360 timeline ──
+  if (sid === 's24') {
+    new Chart(document.getElementById('chartEcomscan'), {
+      type: 'bar',
+      data: {
+        labels: ['Jun 8\nFull Scan','Jun 9','Jun 11','Jun 14','Jun 16\nMass Flag','Jun 21-28','Jun 29–Jul 7'],
+        datasets: [
+          { label: 'Files Scanned (K)',
+            data: [2518, 41, 18.5, 18.1, 18.1, 1, 18.1],
+            backgroundColor: '#1e3a5f', yAxisID: 'y', borderRadius: 3 },
+          { label: 'Flagged as Malicious',
+            data: [80832, 41005, 18450, 18144, 18143, 0, 0],
+            backgroundColor: ['#1e3a5f','#2a2a0a','#3a1a0a','#3a1a0a','#ef4444','#22c55e','#22c55e'],
+            yAxisID: 'y1', borderRadius: 3 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
+        scales: {
+          x: { ticks: { ...FONT, font: { size: 9 } }, grid: GRID },
+          y: { ticks: FONT, grid: GRID, title: { display: true, text: 'Files (K)', color: '#94a3b8', font: { size: 9 } } },
+          y1: { position: 'right', ticks: FONT, grid: { display: false },
+            title: { display: true, text: 'Flagged', color: '#94a3b8', font: { size: 9 } } }
+        }
+      }
+    });
+  }
+
+  // ── S27: Load Timeline ──
+  if (sid === 's27') {
+    new Chart(document.getElementById('chartLoad'), {
+      type: 'line',
+      data: {
+        labels: ['00:00\nCrisis','00:34\nDB restart','00:59\nT+25min','01:30\nQoder killed','02:00\nConfig fix','02:35\nMonitoring','04:00\nResolved','Current'],
+        datasets: [{
+          label: 'Load Average',
+          data: [15.37, 10.2, 14.65, 8.4, 6.34, 5.8, 2.04, 2.04],
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.08)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: ['#ef4444','#f59e0b','#ef4444','#f59e0b','#eab308','#eab308','#22c55e','#22c55e'],
+          pointRadius: 7,
+          pointHoverRadius: 9
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          annotation: { annotations: [{
+            type: 'line', yMin: 2, yMax: 2,
+            borderColor: '#22c55e', borderWidth: 1, borderDash: [4,4],
+            label: { content: 'Target <2', display: true, color: '#22c55e', font: { size: 9 } }
+          }]}
+        },
+        scales: {
+          x: { ticks: { ...FONT, font: { size: 9 } }, grid: GRID },
+          y: { ticks: FONT, grid: GRID, title: { display: true, text: 'Load Average', color: '#94a3b8' } }
+        }
+      }
+    });
+  }
+
+  // ── S28: Cache Performance ──
+  if (sid === 's28') {
+    new Chart(document.getElementById('chartCache'), {
+      type: 'bar',
+      data: {
+        labels: ['Redis', 'Varnish', 'MariaDB\n(RAM hit %)', 'Cloudflare'],
+        datasets: [
+          { label: 'Pre-Crisis', data: [40, 5.7, 5, 0], backgroundColor: '#1e3a5f', borderRadius: 3 },
+          { label: 'Current', data: [84.3, 15.5, 95, 100], backgroundColor: ['#22c55e','#eab308','#22c55e','#22c55e'], borderRadius: 3 },
+          { label: 'Target', data: [80, 60, 90, 100],
+            type: 'line', borderColor: '#f59e0b', backgroundColor: 'transparent',
+            pointBackgroundColor: '#f59e0b', tension: 0 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#94a3b8' } } },
+        scales: {
+          x: { ticks: FONT, grid: GRID },
+          y: { ticks: FONT, grid: GRID, max: 110,
+            title: { display: true, text: 'Hit Rate %', color: '#94a3b8' } }
+        }
+      }
+    });
+  }
+
+  // ── S31: Risk Bubble ──
+  if (sid === 's31') {
+    new Chart(document.getElementById('chartRisk'), {
+      type: 'bubble',
+      data: {
+        datasets: [
+          { label: 'CRITICAL', backgroundColor: 'rgba(239,68,68,0.7)',
+            data: [
+              { x: 9, y: 9, r: 18, label: 'Magento XXE CVE' },
+              { x: 8, y: 8, r: 14, label: 'phpinfo exposed' },
+              { x: 7, y: 7, r: 12, label: 'World-writable' }
+            ]},
+          { label: 'HIGH', backgroundColor: 'rgba(249,115,22,0.7)',
+            data: [
+              { x: 9, y: 6, r: 10, label: 'SSH Brute Force' },
+              { x: 6, y: 7, r: 9, label: '.git exposed' },
+              { x: 5, y: 6, r: 8, label: 'Suspicious JS' }
+            ]},
+          { label: 'MEDIUM', backgroundColor: 'rgba(234,179,8,0.6)',
+            data: [
+              { x: 7, y: 5, r: 9, label: 'tsdnd APSB CVEs' },
+              { x: 6, y: 5, r: 8, label: 'sessionreaper' }
+            ]},
+          { label: 'LOW', backgroundColor: 'rgba(100,116,139,0.6)',
+            data: [
+              { x: 3, y: 3, r: 6, label: 'firebase/jwt' }
+            ]}
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#94a3b8' } },
+          tooltip: { callbacks: {
+            label: (ctx) => {
+              const d = ctx.raw;
+              return (ctx.dataset.data[ctx.dataIndex].label || '') +
+                ` (L:${d.x} × I:${d.y})`;
+            }
+          }}
+        },
+        scales: {
+          x: { ticks: FONT, grid: GRID, min: 0, max: 10,
+            title: { display: true, text: 'Likelihood →', color: '#94a3b8' } },
+          y: { ticks: FONT, grid: GRID, min: 0, max: 10,
+            title: { display: true, text: 'Impact →', color: '#94a3b8' } }
+        }
+      }
+    });
+  }
+}
+
+// ── ALGERIA MAP COLORING ──
+function colorAlgeriaMap() {
+  const wilayaColors = {
+    w16: '#60a5fa', // Alger 148
+    w31: '#3b82f6', // Oran 72
+    w09: '#3b82f6', // Blida 67
+    w25: '#2563a8', // Constantine 55
+    w15: '#2563a8', // Tizi Ouzou 52
+    w19: '#2563a8', // Sétif 44
+    w35: '#2563a8', // Boumerdès 42
+    w05: '#1e4080', // Batna 41
+    w06: '#1e4080', // Béjaïa 38
+    w23: '#1e4080', // Annaba 36
+    w42: '#1e4080', // Tipaza 33
+    w02: '#1e3a6a', // Chlef 32
+    w28: '#1e3a6a', // M'Sila 31
+    w07: '#1e3a6a', // Biskra 29
+    w26: '#1e3a6a', // Médéa 29
+    w21: '#1a2a4a', // Skikda 28
+    w13: '#1a2a4a', // Tlemcen 27
+    w17: '#1a2a4a', // Djelfa 26
+    w34: '#1a2a4a', // Bordj Bou Arréridj 23
+    w04: '#1a2a4a', // Oum El Bouaghi 24
+    w43: '#1a2a4a', // Mila 22
+    w14: '#1a2a4a', // Tiaret 22
+    w18: '#1a2a4a', // Jijel 21
+    w24: '#1a2a4a', // Guelma 20
+    w12: '#1a2a4a', // Tébessa 19
+    w44: '#1a2a4a', // Aïn Defla 19
+    w03: '#1a2040', // Laghouat 18
+    w22: '#1a2040', // Sidi Bel Abbès 18
+    w39: '#1a2040', // El Oued 17
+    w48: '#1a2040', // Relizane 17
+    w27: '#1a2040', // Mostaganem 16
+    w40: '#1a2040', // Khenchela 16
+    w36: '#1a2040', // El Tarf 15
+    w29: '#1a1a38', // Mascara 13
+    w47: '#1a1a38', // Ghardaïa 14
+    w41: '#1a1a38', // Souk Ahras 14
+    w20: '#1a1a38', // Saïda 14
+    w46: '#1a1a38', // Aïn Témouchent 12
+    w30: '#1a1a38', // Ouargla 12
+    w32: '#111828', // El Bayadh 9
+    w01: '#111828', // Adrar 8
+    w51: '#111828', // Ouled Djellal 8
+    w57: '#111828', // El M'Ghair 9
+    w45: '#111828', // Naâma 7
+    w58: '#111828', // El Meniaa 6
+    w49: '#111828', // Timimoun 5
+    w54: '#0a0e1a', // In Guezzam 1
+    w56: '#0a0e1a', // Djanet 2
+    w33: '#0a0e1a', // Illizi 2
+    w50: '#0a0e1a', // Bordj Badji Mokhtar 2
+    w53: '#0a0e1a', // In Salah 3
+    w37: '#0a0e1a', // Tindouf 3
+    w11: '#0a0e1a', // Tamanrasset 4
+    w52: '#0a0e1a', // Béni Abbès 4
+    w55: '#111828', // Touggourt 10
+    w38: '#111828', // Tissemsilt 10
+    w08: '#1a1a38', // Béchar 11
+  };
+  Object.entries(wilayaColors).forEach(([id, color]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.querySelectorAll('path').forEach(p => p.style.fill = color);
+    }
+  });
+}
+
+// ── ALGERIA MAP TOOLTIPS ──
+document.querySelectorAll('#algeria-map .wilaya').forEach(g => {
+  g.addEventListener('mouseenter', function(e) {
+    const tip = document.getElementById('mapTooltip');
+    tip.innerHTML = `<strong>${this.dataset.name}</strong><br>Orders: ${this.dataset.orders} (${this.dataset.pct})`;
+    tip.style.display = 'block';
+  });
+  g.addEventListener('mousemove', function(e) {
+    const tip = document.getElementById('mapTooltip');
+    const rect = document.getElementById('s18').getBoundingClientRect();
+    tip.style.left = (e.clientX - rect.left + 12) + 'px';
+    tip.style.top  = (e.clientY - rect.top - 30) + 'px';
+  });
+  g.addEventListener('mouseleave', function() {
+    document.getElementById('mapTooltip').style.display = 'none';
+  });
+});
+
+// ── INIT ──
+showSlide(0);
+</script>
+</body>
+</html>

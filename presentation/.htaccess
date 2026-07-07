@@ -1,0 +1,15 @@
+# Presentation directory - serve HTML as static, NOT as PHP
+RemoveHandler .html
+RemoveType .html
+AddType text/html .html
+
+# Allow CDN resources for Chart.js
+<IfModule mod_headers.c>
+  Header set Cache-Control "public, max-age=3600"
+  Header unset Pragma
+</IfModule>
+
+# No SPA routing needed - direct file serving
+<IfModule mod_rewrite.c>
+  RewriteEngine Off
+</IfModule>
