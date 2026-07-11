@@ -23,10 +23,9 @@ import {
 
 const ACCOUNTS = [
   { value: '', label: 'All Accounts' },
-  { value: 'technadminy7', label: 'Production (technadminy7)' },
-  { value: 'dev', label: 'Dev' },
-  { value: 'beta', label: 'Beta' },
-  { value: 'tsdnd', label: 'TSDND' },
+  { value: 'technadminy7', label: 'technadminy7 (Production — 11 modules)' },
+  { value: 'dev', label: 'dev (Dev — 10 modules)' },
+  { value: 'tsdnd', label: 'tsdnd (TSDND — 12 modules ×6 deployments = 70 findings)' },
 ];
 
 const severityColor: Record<string, 'error' | 'warning' | 'info' | 'success'> = {
@@ -414,20 +413,29 @@ function EcomscanTab() {
       {scanning && <LinearProgress sx={{ mb: 2 }} />}
 
       {result?.summary && (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <StatCard label="Total Issues" value={String(result.summary.total_issues)} color={result.summary.total_issues > 0 ? 'error' : 'success'} />
+        <>
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <StatCard label="Total Issues" value={String(result.summary.total_issues)} color={result.summary.total_issues > 0 ? 'error' : 'success'} />
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <StatCard label="Malware" value={String(result.summary.malware)} color="error" />
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <StatCard label="Vulnerabilities" value={String(result.summary.vulnerabilities)} color="warning" />
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <StatCard label="High Confidence" value={String(result.summary.critical_confidence)} color="error" />
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <StatCard label="Malware" value={String(result.summary.malware)} color="error" />
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <StatCard label="Vulnerabilities" value={String(result.summary.vulnerabilities)} color="warning" />
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <StatCard label="High Confidence" value={String(result.summary.critical_confidence)} color="error" />
-          </Grid>
-        </Grid>
+          {result.summary.total_issues >= 70 && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <strong>Note on finding count:</strong> tsdnd account has 6 Magento deployment copies × 12 modules = 70 findings.
+              dev: 10 modules, technadminy7: 11 modules. Total 91 = expected — no new threats.
+              Module names are stored in the <code>name</code> field of each finding.
+            </Alert>
+          )}
+        </>
       )}
 
       {result?.status === 'no_scan' && (
@@ -441,7 +449,7 @@ function EcomscanTab() {
               <TableRow>
                 <TableCell sx={{ fontWeight: 600 }}>Class</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Account</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Finding</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Module / Finding</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Confidence</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Path / Detail</TableCell>
               </TableRow>

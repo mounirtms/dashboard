@@ -1,15 +1,26 @@
-# Presentation directory - serve HTML as static, NOT as PHP
-RemoveHandler .html
-RemoveType .html
-AddType text/html .html
+# Presentation directory — auth-gated via PHP
+# index.php is the canonical entry point with inline auth gate
 
-# Allow CDN resources for Chart.js
-<IfModule mod_headers.c>
-  Header set Cache-Control "public, max-age=3600"
-  Header unset Pragma
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Serve index.php for directory requests
+  DirectoryIndex index.php
+
+  # Redirect index.html → index.php (relative redirect)
+  RewriteRule ^index\.html$ /presentation/index.php [R=301,L]
 </IfModule>
 
-# No SPA routing needed - direct file serving
-<IfModule mod_rewrite.c>
-  RewriteEngine Off
+# Block direct access to backup files
+<FilesMatch "\.(bak|backup|old|orig)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+</FilesMatch>
+
+# Security headers
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+  Header set Cache-Control "no-store, no-cache, must-revalidate, private, max-age=0"
+  Header set Pragma "no-cache"
 </IfModule>

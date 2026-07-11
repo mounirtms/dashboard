@@ -1,6 +1,6 @@
-import { Box, Typography, Card, CardContent, Grid, Chip, Divider, Button, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Chip, Button, Snackbar, Alert, CircularProgress, FormControlLabel, Switch } from '@mui/material';
 import { Mail, SettingsSuggest, Engineering, Autorenew, Refresh } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchQueues, QueueData, runEmergencyCleanup } from '../api/system';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
@@ -10,19 +10,29 @@ export default function QueuesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [restarting, setRestarting] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(false);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true);
     fetchQueues()
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
+
+  useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (autoRefresh) {
+      timerRef.current = setInterval(loadData, 15000);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [autoRefresh, loadData]);
 
   const handleRestartConsumers = async () => {
     setRestarting(true);
@@ -55,7 +65,11 @@ export default function QueuesPage() {
             Real-time status of message brokers and consumer workers.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <FormControlLabel
+            control={<Switch size="small" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />}
+            label={<Typography variant="caption" sx={{ color: 'text.secondary' }}>Auto (15s)</Typography>}
+          />
           <Button startIcon={<Refresh />} variant="outlined" onClick={loadData} disabled={loading}>Refresh</Button>
           <Button 
             startIcon={restarting ? <CircularProgress size={18} color="inherit" /> : <Autorenew />} 
@@ -127,18 +141,33 @@ export default function QueuesPage() {
         <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Registered Consumers</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {data.consumers.map((consumer) => (
-                  <Chip 
-                    key={consumer} 
-                    label={consumer} 
-                    size="small" 
-                    variant="outlined" 
-                    sx={{ fontSize: '0.75rem', fontFamily: 'monospace' }} 
-                  />
-                ))}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>Registered Consumers</Typography>
+                <Chip
+                  label={`${data.consumers.length} total`}
+                  size="small"
+                  color={data.consumers.length > 0 ? 'success' : 'default'}
+                  variant="outlined"
+                />
               </Box>
+              {data.consumers.length === 0 ? (
+                <Typography variant="body2" sx={{ color: 'text.disabled', textAlign: 'center', py: 3 }}>
+                  No consumers registered
+                </Typography>
+              ) : (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {data.consumers.map((consumer) => (
+                    <Chip
+                      key={consumer}
+                      label={consumer}
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                      sx={{ fontSize: '0.75rem', fontFamily: 'monospace' }}
+                    />
+                  ))}
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>

@@ -4,7 +4,7 @@ import {
   Sync, CheckCircle, ArrowForward, SlideshowOutlined,
   Code, BugReport, Commit, TaskAlt, TrendingUp, OpenInNew,
 } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
@@ -15,18 +15,18 @@ export default function MasterDashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchMasterData = () => {
+  const fetchMasterData = useCallback(() => {
     apiClient.get('/api/monitor.php?action=master_stats')
       .then(({ data }) => setData(data))
       .catch(e => console.error(e))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     fetchMasterData();
     const timer = setInterval(fetchMasterData, 30000);
     return () => clearInterval(timer);
-  }, []);
+  }, [fetchMasterData]);
 
   if (loading && !data) return <LoadingState message="Initializing Cockpit..." />;
 
@@ -43,6 +43,9 @@ export default function MasterDashboardPage() {
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Unified platform summary &amp; real-time infrastructure telemetry.
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
+              v4.3.0-TSM &nbsp;·&nbsp; Deployed: July 8, 2026 &nbsp;·&nbsp; Build: 38f7dcd4
             </Typography>
           </Box>
         </Box>
@@ -127,7 +130,7 @@ export default function MasterDashboardPage() {
             value={data?.commerce?.orders_24h ?? '--'}
             icon={<ShoppingCart color="warning" />}
             progress={100}
-            footer="Magento 2.4.7"
+            footer="Magento 2.4.7-p3"
           />
         </Grid>
       </Grid>
@@ -173,7 +176,7 @@ export default function MasterDashboardPage() {
               <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5 }}>Database Status</Typography>
               <Box sx={{ p: 2, borderRadius: 1.5, backgroundColor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="caption">Production (MariaDB 10.6)</Typography>
+                  <Typography variant="caption">Production (MariaDB 10.6.17 · port 3307)</Typography>
                   <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 900 }}>ONLINE</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -197,10 +200,10 @@ export default function MasterDashboardPage() {
               </Typography>
               <Grid container spacing={1.5}>
                 {[
-                  { label: 'Total Commits', value: '112', icon: <Commit sx={{ fontSize: 16 }} />, color: '#3b82f6' },
-                  { label: 'Bugs Fixed', value: '37', icon: <BugReport sx={{ fontSize: 16 }} />, color: '#ef4444' },
-                  { label: 'Features', value: '44', icon: <TrendingUp sx={{ fontSize: 16 }} />, color: '#22c55e' },
-                  { label: 'Tasks Done', value: '31', icon: <TaskAlt sx={{ fontSize: 16 }} />, color: '#f59e0b' },
+                  { label: 'Total Commits', value: '94', icon: <Commit sx={{ fontSize: 16 }} />, color: '#3b82f6' },
+                  { label: 'Bugs Fixed', value: '26', icon: <BugReport sx={{ fontSize: 16 }} />, color: '#ef4444' },
+                  { label: 'Features', value: '30', icon: <TrendingUp sx={{ fontSize: 16 }} />, color: '#22c55e' },
+                  { label: 'Tasks Done', value: '37', icon: <TaskAlt sx={{ fontSize: 16 }} />, color: '#f59e0b' },
                 ].map(stat => (
                   <Grid key={stat.label} size={{ xs: 6 }}>
                     <Box sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', background: 'rgba(255,255,255,0.02)' }}>
@@ -219,7 +222,7 @@ export default function MasterDashboardPage() {
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                   Branch: <code style={{ color: '#8b5cf6' }}>main</code>
                   &nbsp;·&nbsp; Repo: <code style={{ color: '#8b5cf6' }}>mounirtms/dashboard</code>
-                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>6fc21289</code>
+                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>38f7dcd4</code>
                 </Typography>
               </Box>
             </CardContent>
@@ -234,14 +237,16 @@ export default function MasterDashboardPage() {
                 <TaskAlt sx={{ color: '#22c55e' }} /> Sprint Progress
               </Typography>
               {[
-                { label: 'Build & Deploy Pipeline',        done: 100, color: '#22c55e' },
-                { label: 'Branch Consolidation (→main)',   done: 100, color: '#3b82f6' },
-                { label: 'Audit Presentation v3 (30 fixes)', done: 100, color: '#ec4899' },
-                { label: 'Audit Presentation v4 (37 slides)', done: 100, color: '#f472b6' },
-                { label: 'Magento Commerce Pages',         done: 100, color: '#8b5cf6' },
-                { label: 'Security Hardening',             done: 88,  color: '#f59e0b' },
-                { label: 'Performance Tuning',             done: 78,  color: '#06b6d4' },
-                { label: 'Dashboard Tuning & Analytics',   done: 65,  color: '#a78bfa' },
+                { label: 'Build & Deploy Pipeline',          done: 100, color: '#22c55e' },
+                { label: 'Branch Consolidation (→main)',     done: 100, color: '#3b82f6' },
+                { label: 'Audit Presentation v5 (real data)',  done: 100, color: '#ec4899' },
+                { label: 'Algeria Map Geo-Accurate (58)',      done: 100, color: '#f472b6' },
+                { label: 'Magento Commerce Pages',             done: 100, color: '#8b5cf6' },
+                { label: 'Comprehensive Audit Pass v7+v8',     done: 100, color: '#10b981' },
+                { label: 'Dashboard S10+S11 — 21 pages fixed', done: 100, color: '#06b6d4' },
+                { label: 'Server Tuning (MariaDB+PHP-FPM)',    done: 100, color: '#a78bfa' },
+                { label: 'Security Hardening',                 done: 92,  color: '#f59e0b' },
+                { label: 'Cache Optimization (Varnish)',       done: 85,  color: '#3b82f6' },
               ].map(item => (
                 <Box key={item.label} sx={{ mb: 1.5 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>

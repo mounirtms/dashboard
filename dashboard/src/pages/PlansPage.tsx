@@ -1,5 +1,5 @@
-import { Box, Typography, Card, CardContent, Grid, Chip, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import { Add, Task, CheckCircle, HourglassEmpty, Pending, Delete } from '@mui/icons-material';
+import { Box, Typography, Card, CardContent, Grid, Chip, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, LinearProgress, Divider, Alert } from '@mui/material';
+import { Add, Task, CheckCircle, HourglassEmpty, Pending, Delete, RocketLaunch, TrendingUp, Security, Speed, Warning } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
@@ -32,6 +32,7 @@ export default function PlansPage() {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id?: number; title?: string }>({ open: false });
   const [newTask, setNewTask] = useState({ title: '', description: '', status: 'pending', priority: 'medium' });
 
   const loadTasks = useCallback(() => {
@@ -72,10 +73,11 @@ export default function PlansPage() {
       .catch(() => {});
   };
 
-  const handleDelete = (taskId: number) => {
-    apiClient.post(`/api/tasks.php?action=delete&id=${taskId}`)
-      .then(() => loadTasks())
-      .catch(() => {});
+  const handleDeleteConfirm = () => {
+    if (!deleteDialog.id) return;
+    apiClient.post(`/api/tasks.php?action=delete&id=${deleteDialog.id}`)
+      .then(() => { loadTasks(); setDeleteDialog({ open: false }); })
+      .catch(() => setDeleteDialog({ open: false }));
   };
 
   if (loading && tasks.length === 0) return <LoadingState message="Loading plans..." />;
@@ -101,6 +103,84 @@ export default function PlansPage() {
           Add Plan
         </Button>
       </Box>
+
+      {/* Q3 2026 Roadmap Section */}
+      <Card sx={{ mb: 3, background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(59,130,246,0.04) 100%)', border: '1px solid rgba(139,92,246,0.2)' }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <RocketLaunch sx={{ fontSize: 18, color: '#8b5cf6' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>Q3 2026 Roadmap — TechnoStationery Platform</Typography>
+            <Chip label="Jul – Sep 2026" size="small" variant="outlined" sx={{ ml: 'auto', fontSize: '0.6rem', color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.4)' }} />
+          </Box>
+          <Grid container spacing={2}>
+            {[
+              {
+                icon: <Speed sx={{ fontSize: 16, color: '#06b6d4' }} />,
+                title: 'Performance & Caching',
+                color: '#06b6d4',
+                items: [
+                  { label: 'Varnish hit rate → 60%+', done: 30 },
+                  { label: 'Redis full-page cache warm', done: 45 },
+                  { label: 'Cloudflare Polish + Rocket Loader', done: 60 },
+                  { label: 'DB query optimization (slow log)', done: 20 },
+                ],
+              },
+              {
+                icon: <Security sx={{ fontSize: 16, color: '#f59e0b' }} />,
+                title: 'Security & Hardening',
+                color: '#f59e0b',
+                items: [
+                  { label: 'Imunify360 daily schedule review', done: 80 },
+                  { label: 'eComscan false-positive audit', done: 65 },
+                  { label: 'ModSecurity rule tuning', done: 40 },
+                  { label: 'PHP-FPM chroot isolation', done: 10 },
+                ],
+              },
+              {
+                icon: <TrendingUp sx={{ fontSize: 16, color: '#22c55e' }} />,
+                title: 'Commerce & Analytics',
+                color: '#22c55e',
+                items: [
+                  { label: 'H2 2026 sales target: 950 orders', done: 0 },
+                  { label: 'Yalidine shipping API v2', done: 35 },
+                  { label: 'Customer retention dashboard', done: 15 },
+                  { label: 'Abandoned cart automation', done: 5 },
+                ],
+              },
+            ].map(section => (
+              <Grid size={{ xs: 12, md: 4 }} key={section.title}>
+                <Box sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid rgba(255,255,255,0.06)', height: '100%' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                    {section.icon}
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: section.color, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                      {section.title}
+                    </Typography>
+                  </Box>
+                  {section.items.map(item => (
+                    <Box key={item.label} sx={{ mb: 1.2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem' }}>{item.label}</Typography>
+                        <Typography variant="caption" sx={{ color: section.color, fontWeight: 700, fontSize: '0.7rem' }}>{item.done}%</Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={item.done}
+                        sx={{
+                          height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.05)',
+                          '& .MuiLinearProgress-bar': { backgroundColor: section.color, borderRadius: 2 },
+                        }}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </CardContent>
+      </Card>
+
+      <Divider sx={{ mb: 3 }} />
+      <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2 }}>Live Task Board</Typography>
 
       {/* Summary */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -168,7 +248,7 @@ export default function PlansPage() {
                             Reset
                           </Button>
                         )}
-                        <Button size="small" color="error" sx={{ minWidth: 'auto', p: 0.3, fontSize: '0.6rem', ml: 'auto' }} onClick={() => handleDelete(task.id)}>
+                        <Button size="small" color="error" sx={{ minWidth: 'auto', p: 0.3, fontSize: '0.6rem', ml: 'auto' }} onClick={() => setDeleteDialog({ open: true, id: task.id, title: task.title })}>
                           <Delete sx={{ fontSize: 12 }} />
                         </Button>
                       </Box>
@@ -186,6 +266,27 @@ export default function PlansPage() {
           );
         })}
       </Grid>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false })}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Warning sx={{ color: 'error.main', fontSize: 20 }} /> Delete Plan
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 1 }}>
+            This action cannot be undone.
+          </Alert>
+          <Typography variant="body2">
+            Delete plan: <strong>{deleteDialog.title}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog({ open: false })}>Cancel</Button>
+          <Button variant="contained" color="error" startIcon={<Delete />} onClick={handleDeleteConfirm}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Create Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>

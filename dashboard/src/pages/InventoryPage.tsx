@@ -31,9 +31,11 @@ export default function InventoryPage() {
   const [editQty,     setEditQty]     = useState('');
   const [saving,      setSaving]      = useState(false);
   const [toast,       setToast]       = useState<{ message: string; severity: 'success' | 'error' } | null>(null);
+  const [loadError,   setLoadError]   = useState<string | null>(null);
 
   const loadData = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     fetchMagentoStock(env, paginationModel.page + 1)
       .then((data: any) => {
         const mapped = (data.items || []).map((item: any) => ({
@@ -42,7 +44,7 @@ export default function InventoryPage() {
         }));
         setAllItems(mapped);
       })
-      .catch((e: any) => console.error(e))
+      .catch((e: any) => setLoadError(e.response?.data?.message || e.message || 'Failed to load stock data'))
       .finally(() => setLoading(false));
   }, [env, paginationModel.page]);
 
@@ -204,6 +206,13 @@ export default function InventoryPage() {
           size="small" color="info" variant="outlined"
         />
       </Box>
+
+      {/* ── Load error ── */}
+      {loadError && (
+        <Alert severity="error" sx={{ mb: 2 }} action={<Button size="small" color="inherit" onClick={loadData}>Retry</Button>}>
+          {loadError}
+        </Alert>
+      )}
 
       {/* ── DataGrid ── */}
       <Card>

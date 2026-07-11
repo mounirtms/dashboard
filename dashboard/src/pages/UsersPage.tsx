@@ -1,13 +1,20 @@
 import { Box, Typography, Card, CardContent, Button, Chip, IconButton, Tooltip, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, InputAdornment } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { Person, Shield, Lock, PowerSettingsNew, Refresh, Edit, Add, Delete, Visibility, VisibilityOff, CheckCircle } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchUsers, createUser, updateUser, deleteUser, resetUserPassword, toggleUserStatus, type CreateUserInput, type UpdateUserInput, type UserRole } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
 import { validatePassword, validatePasswordMatch } from '../utils/validation';
+import { useAuth } from '../hooks/useAuth';
+import { usePermissions } from '../hooks/usePermissions';
 
 export default function UsersPage() {
+  const { user: currentUser } = useAuth();
+  const { isAdmin, hasPermission } = usePermissions();
+  // Only admins can manage users (this page is already admin-gated by route)
+  // but we guard individual actions so the page is safe even if role check is bypassed
+  const canManageUsers = isAdmin || hasPermission('can_manage_users');
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({ open: false, message: '', severity: 'info' });
@@ -24,17 +31,17 @@ export default function UsersPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true);
     fetchUsers()
       .then(setUsers)
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const openAddDialog = () => {
     setFormUsername('');
@@ -212,22 +219,41 @@ export default function UsersPage() {
       field: 'actions',
       headerName: 'Actions',
       width: 180,
-      renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Tooltip title="Edit User"><IconButton size="small" onClick={() => openEditDialog(params.row)}><Edit sx={{ fontSize: 16 }} /></IconButton></Tooltip>
-          <Tooltip title="Reset Password"><IconButton size="small" onClick={() => openResetDialog(params.row)}><Lock sx={{ fontSize: 16 }} /></IconButton></Tooltip>
-          <Tooltip title={params.row.is_active ? 'Disable User' : 'Enable User'}>
-            <IconButton size="small" color={params.row.is_active ? 'error' : 'success'} onClick={() => handleToggleStatus(params.row.id)}>
-              <PowerSettingsNew sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete User">
-            <IconButton size="small" color="error" onClick={() => setDeleteDialog({ open: true, user: params.row })}>
-              <Delete sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      )
+      renderCell: (params: GridRenderCellParams) => {
+        // Prevent self-deletion; only allow actions if user has manage permission
+        const isSelf = params.row.username === currentUser?.username;
+        return (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {canManageUsers && (
+              <Tooltip title="Edit User">
+                <IconButton size="small" onClick={() => openEditDialog(params.row)}><Edit sx={{ fontSize: 16 }} /></IconButton>
+              </Tooltip>
+            )}
+            {canManageUsers && (
+              <Tooltip title="Reset Password">
+                <IconButton size="small" onClick={() => openResetDialog(params.row)} disabled={!params.row.email}><Lock sx={{ fontSize: 16 }} /></IconButton>
+              </Tooltip>
+            )}
+            {canManageUsers && !isSelf && (
+              <Tooltip title={params.row.is_active ? 'Disable User' : 'Enable User'}>
+                <IconButton size="small" color={params.row.is_active ? 'error' : 'success'} onClick={() => handleToggleStatus(params.row.id)}>
+                  <PowerSettingsNew sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+            {canManageUsers && !isSelf && (
+              <Tooltip title="Delete User">
+                <IconButton size="small" color="error" onClick={() => setDeleteDialog({ open: true, user: params.row })}>
+                  <Delete sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+            {!canManageUsers && (
+              <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.65rem' }}>Read-only</Typography>
+            )}
+          </Box>
+        );
+      }
     }
   ];
 
@@ -246,7 +272,9 @@ export default function UsersPage() {
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button variant="outlined" startIcon={<Refresh />} onClick={loadData}>Sync</Button>
-          <Button variant="contained" startIcon={<Add />} onClick={openAddDialog}>Add User</Button>
+          {canManageUsers && (
+            <Button variant="contained" startIcon={<Add />} onClick={openAddDialog}>Add User</Button>
+          )}
         </Box>
       </Box>
 

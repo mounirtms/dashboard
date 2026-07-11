@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, TextField, IconButton, List, ListItem, Paper, Avatar, CircularProgress, Button, Divider } from '@mui/material';
+import { Box, Typography, Card, TextField, IconButton, Paper, Avatar, CircularProgress, Button, Divider, Snackbar, Alert } from '@mui/material';
 import { Send, SmartToy, Person, AutoAwesome, Assessment, Telegram } from '@mui/icons-material';
 import { useState, useRef, useEffect } from 'react';
 import apiClient from '../api/client';
@@ -10,6 +10,10 @@ export default function TerminalAiPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
+  const [telegramLoading, setTelegramLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
+    open: false, message: '', severity: 'info'
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,17 +49,22 @@ export default function TerminalAiPage() {
       if (data.success) {
         setMessages(prev => [...prev, { role: 'assistant', content: `**GENERATED SYSTEM INSIGHT:**\n\n${data.response}` }]);
       }
-    } catch (e) {} finally {
+    } catch (e) {
+      setSnackbar({ open: true, message: 'Failed to generate report', severity: 'error' });
+    } finally {
       setReportLoading(false);
     }
   };
 
   const handleTelegramReport = async () => {
+    setTelegramLoading(true);
     try {
       await apiClient.get('/api/ai.php?action=telegram_report');
-      alert('AI Insight Report has been dispatched to Telegram!');
+      setSnackbar({ open: true, message: 'AI Insight Report dispatched to Telegram!', severity: 'success' });
     } catch (e) {
-      alert('Failed to send Telegram report.');
+      setSnackbar({ open: true, message: 'Failed to send Telegram report.', severity: 'error' });
+    } finally {
+      setTelegramLoading(false);
     }
   };
 
@@ -81,9 +90,10 @@ export default function TerminalAiPage() {
           </Button>
           <Button 
             variant="contained" 
-            startIcon={<Telegram />} 
+            startIcon={telegramLoading ? <CircularProgress size={16} color="inherit" /> : <Telegram />}
             onClick={handleTelegramReport}
             color="info"
+            disabled={telegramLoading}
           >
             Dispatch to Staff
           </Button>
@@ -153,6 +163,22 @@ export default function TerminalAiPage() {
           </Box>
         </Box>
       </Card>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          variant="filled"
+          onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

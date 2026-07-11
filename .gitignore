@@ -45,3 +45,17 @@ uploads/
 fix-*.sh
 verify-*.sh
 scripts/
+.git-credentials
+
+# Presentation auto-generated backups
+presentation/index_backup_*.html
+
+# Auto-generated daily scan reports (cron-produced, excluded from commits)
+/reports/ecomscan_20[0-9][0-9][0-9][0-9][0-9][0-9]_*.json
+/reports/security_scan_20[0-9][0-9][0-9][0-9][0-9][0-9]_*.json
+
+# Temp Python scripts used during development
+webapp/fix_*.py
+webapp/patch_*.py
+webapp/final_fix.py
+webapp/convert_svg.py

@@ -1,13 +1,13 @@
 import {
   Box, Typography, Card, CardContent, Grid, LinearProgress,
   Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  useTheme, Alert, Tooltip,
+  useTheme, Alert, Tooltip, Divider,
 } from '@mui/material';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer, Legend, ReferenceLine,
 } from 'recharts';
-import { CheckCircle, Cancel, Speed, CachedOutlined, CloudDone, OfflineBolt } from '@mui/icons-material';
+import { CheckCircle, Cancel, Speed, CachedOutlined, CloudDone, OfflineBolt, Storage, Code, Memory } from '@mui/icons-material';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
@@ -186,6 +186,81 @@ export default function PerformancePage() {
               <Bar dataKey="uncached" name="Uncached" fill={`${theme.palette.error.main}66`}   radius={[3,3,0,0]} stackId="a" />
             </BarChart>
           </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* ── Server Tuning Status ── */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Storage sx={{ fontSize: 16, color: '#06b6d4' }} /> Server Tuning Status — Audit Jul 8, 2026
+            </Typography>
+            <Chip label="APPLIED" size="small" color="success" sx={{ fontWeight: 800 }} />
+          </Box>
+          <Grid container spacing={2}>
+            {[
+              {
+                icon: <Storage sx={{ fontSize: 18, color: '#3b82f6' }} />,
+                title: 'MariaDB 10.6.17',
+                items: [
+                  { key: 'innodb_buffer_pool_size', before: '128 MB', after: '8 GB', status: 'ok' },
+                  { key: 'max_connections',         before: '151',    after: '300',   status: 'ok' },
+                  { key: 'innodb_flush_log_at_trx_commit', before: '1', after: '2',  status: 'ok' },
+                  { key: 'Port',                    before: '3306',   after: '3307',  status: 'ok' },
+                ],
+              },
+              {
+                icon: <Code sx={{ fontSize: 18, color: '#8b5cf6' }} />,
+                title: 'PHP-FPM 8.2.30',
+                items: [
+                  { key: 'pm',                      before: 'dynamic', after: 'static', status: 'ok' },
+                  { key: 'pm.max_children',         before: '40',      after: '30',     status: 'ok' },
+                  { key: 'opcache.jit',             before: 'off',     after: '1255',   status: 'ok' },
+                  { key: 'opcache.memory_consumption', before: '128MB', after: '256MB', status: 'ok' },
+                ],
+              },
+              {
+                icon: <Memory sx={{ fontSize: 18, color: '#f59e0b' }} />,
+                title: 'Stack Health',
+                items: [
+                  { key: 'Server Load',      before: '15.37', after: '2.08',   status: 'ok' },
+                  { key: 'QoderCLI',         before: 'Running (92% CPU)', after: 'Killed', status: 'ok' },
+                  { key: 'Varnish Hit Rate', before: '5.7%',  after: 'Optimizing', status: 'warn' },
+                  { key: 'Cron Interval',    before: '1 min', after: '5 min',  status: 'ok' },
+                ],
+              },
+            ].map(section => (
+              <Grid size={{ xs: 12, md: 4 }} key={section.title}>
+                <Box sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                    {section.icon}
+                    <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                      {section.title}
+                    </Typography>
+                  </Box>
+                  {section.items.map(row => (
+                    <Box key={row.key} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: 'monospace', fontSize: '0.7rem' }}>{row.key}</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                        <Typography variant="caption" sx={{ color: 'error.main', fontFamily: 'monospace', fontSize: '0.68rem', textDecoration: 'line-through', opacity: 0.7 }}>{row.before}</Typography>
+                        <Typography variant="caption" sx={{ color: '#475569' }}>\u2192</Typography>
+                        <Typography variant="caption" sx={{ color: row.status === 'ok' ? 'success.main' : 'warning.main', fontFamily: 'monospace', fontWeight: 700, fontSize: '0.68rem' }}>{row.after}</Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+          <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, background: 'rgba(6,182,212,0.06)', border: '1px solid rgba(6,182,212,0.15)' }}>
+            <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+              Source: <code style={{ color: '#06b6d4' }}>AUDIT_COMPLETION_STATUS.txt</code> &nbsp;\u00b7&nbsp;
+              <code style={{ color: '#06b6d4' }}>MARIADB_PHP_ISSUES_ANALYSIS.md</code> &nbsp;\u00b7&nbsp;
+              <code style={{ color: '#06b6d4' }}>SERVER_FIX_COMPLETE_REPORT.md</code> &nbsp;\u00b7&nbsp;
+              Load: <strong style={{ color: '#22c55e' }}>86.5% reduction</strong>
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
 

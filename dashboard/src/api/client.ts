@@ -11,6 +11,20 @@ function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * Auth endpoints that must NOT trigger the 401 → redirect loop.
+ * If the login/status/reset-password endpoints themselves return 401
+ * we handle it in the UI, not here.
+ */
+const AUTH_URLS = [
+  '/api/auth.php',
+];
+
+function isAuthUrl(url?: string): boolean {
+  if (!url) return false;
+  return AUTH_URLS.some(a => url.includes(a));
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -18,7 +32,10 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401) {
       error.isAuthError = true;
-      if (!window.location.hash.startsWith('#/login')) {
+      // Don't redirect if already on login page or request is an auth endpoint itself
+      const onLoginPage = window.location.hash.startsWith('#/login') ||
+                          window.location.hash.startsWith('#/reset-password');
+      if (!onLoginPage && !isAuthUrl(config?.url)) {
         window.location.hash = '#/login';
       }
       return Promise.reject(error);
@@ -29,7 +46,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     const retryCount = config.__retryCount ?? 0;
 
-    // Retry GET requests on 429 (rate limited) with backoff
+    // Retry GET requests on 429 (rate limited) with exponential backoff
     if (config.method === 'get' && status === 429 && retryCount < 2) {
       config.__retryCount = retryCount + 1;
       const retryAfter = parseInt(error.response?.headers?.['retry-after'] ?? '0', 10);
@@ -38,8 +55,13 @@ apiClient.interceptors.response.use(
       return apiClient(config);
     }
 
-    // Retry GET requests once on network errors
-    if (config.method === 'get' && !config.__retried && error.code !== 'ERR_CANCELED') {
+    // Retry GET requests once on transient network errors (not auth/cancel)
+    if (
+      config.method === 'get' &&
+      !config.__retried &&
+      error.code !== 'ERR_CANCELED' &&
+      !isAuthUrl(config.url)
+    ) {
       config.__retried = true;
       try {
         return await apiClient(config);

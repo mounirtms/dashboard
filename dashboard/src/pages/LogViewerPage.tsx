@@ -73,7 +73,8 @@ function StructuredLogTable({ entries }: { entries: any[] }) {
 }
 
 export default function LogViewerPage() {
-  const [site, setSite] = useState('prod');
+  // Default to Global/Server (empty site) so 'system' log type is valid on mount
+  const [site, setSite] = useState('');
   const [type, setType] = useState('system');
   const [lines, setLines] = useState(100);
   const [logData, setLogData] = useState<any>(null);
@@ -101,11 +102,24 @@ export default function LogViewerPage() {
     { key: 'pim', name: 'PIM Akeneo' },
   ];
 
-  // Reset filters when switching log types
+  // Reset filters and fix type mismatch when switching between site modes
   useEffect(() => {
     setChannelFilter('');
     setLevelFilter('');
   }, [type]);
+
+  // When site changes, reset type to the appropriate default
+  useEffect(() => {
+    if (site) {
+      // Site-specific: only Magento logs make sense
+      setType('system');
+    } else {
+      // Global/server: keep current type or reset to system
+      setType(prev => ['system','apache_error','apache_access','varnish','php_fpm','mariadb','cron','auth','notification','app','bash'].includes(prev) ? prev : 'system');
+    }
+    setTextSearch('');
+    setLogData(null);
+  }, [site]);
 
   const fetchLogs = useCallback(() => {
     if (fetchRef.current) return;
@@ -190,12 +204,13 @@ export default function LogViewerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, site, lines, logDate, bashUser]);
 
-  // Auto-refresh interval - separate from dependency changes
+  // Auto-refresh interval - 5s for normal logs, 2s only for site-specific (Magento) logs
   useEffect(() => {
     if (!autoRefresh) return;
-    const timer = setInterval(fetchLogs, 2000);
+    const interval = site ? 3000 : 5000;
+    const timer = setInterval(fetchLogs, interval);
     return () => clearInterval(timer);
-  }, [autoRefresh, fetchLogs]);
+  }, [autoRefresh, fetchLogs, site]);
 
   const scrollToBottom = () => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -203,7 +218,10 @@ export default function LogViewerPage() {
 
   const handleDownload = () => {
     if (!logData?.lines?.length) return;
-    const content = logData.lines.join('\n');
+    // For structured logs (objects), convert to readable text first
+    const content = logData.structured
+      ? logData.lines.map((e: any) => `${e.timestamp} [${e.level}] [${e.channel}] ${e.message}`).join('\n')
+      : (logData.lines as string[]).join('\n');
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -357,6 +375,41 @@ export default function LogViewerPage() {
         </Box>
       </Box>
 
+      {/* Quick Filter Presets */}
+      <Box sx={{ mb: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+        <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, mr: 0.5 }}>Quick:</Typography>
+        {[
+          { label: 'PHP Errors',     filter: 'PHP Fatal|PHP Warning|PHP Notice' },
+          { label: 'Exceptions',     filter: 'Exception|Uncaught' },
+          { label: 'SQL Errors',     filter: 'SQLSTATE|mysql_query|PDO' },
+          { label: 'Timeout',        filter: 'timeout|timed out|504|Gateway' },
+          { label: 'Out of Memory',  filter: 'Allowed memory|out of memory' },
+          { label: 'Auth Fail',      filter: 'authentication failure|invalid password|403' },
+          { label: 'Magento Cron',   filter: 'cron|schedule_generate|schedule_clean' },
+          { label: 'Varnish Miss',   filter: 'MISS|uncacheable|no-cache|Pragma' },
+        ].map(preset => (
+          <Chip
+            key={preset.label}
+            label={preset.label}
+            size="small"
+            onClick={() => setTextSearch(preset.filter)}
+            variant={textSearch === preset.filter ? 'filled' : 'outlined'}
+            color={textSearch === preset.filter ? 'primary' : 'default'}
+            sx={{ fontSize: '0.62rem', height: 20, cursor: 'pointer', fontWeight: 600 }}
+          />
+        ))}
+        {textSearch && (
+          <Chip
+            label="Clear"
+            size="small"
+            onClick={() => setTextSearch('')}
+            color="error"
+            variant="outlined"
+            sx={{ fontSize: '0.62rem', height: 20, cursor: 'pointer' }}
+          />
+        )}
+      </Box>
+
       {/* Text Search Bar */}
       <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
         <TextField
@@ -424,7 +477,12 @@ export default function LogViewerPage() {
           <ConsoleOutput
             lines={(logData?.lines || []).filter((line: string) => {
               if (!textSearch) return true;
-              return line.toLowerCase().includes(textSearch.toLowerCase());
+              try {
+                // Support both plain text and regex patterns (e.g. "PHP Fatal|PHP Warning")
+                return new RegExp(textSearch, 'i').test(line);
+              } catch {
+                return line.toLowerCase().includes(textSearch.toLowerCase());
+              }
             })}
             autoScroll={autoRefresh}
             showHeader={false}

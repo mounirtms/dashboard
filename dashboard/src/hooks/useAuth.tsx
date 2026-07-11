@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import apiClient from '../api/client';
+import { clearPermissionsCache } from './usePermissions';
 
 export type UserRole = 'admin' | 'editor' | 'moderator' | 'viewer' | 'marketing';
 
@@ -78,11 +79,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await apiClient.post('/api/auth.php?action=logout');
     } catch (e) {}
-    
+
+    // Purge permission cache so next login gets fresh permissions
+    clearPermissionsCache();
+
     // Clear remember token
     localStorage.removeItem(REMEMBER_TOKEN_KEY);
     document.cookie = 'remember_token=; path=/; max-age=0; samesite=lax';
-    
+
     setIsAuthenticated(false);
     setUser(null);
     window.location.hash = '/login';

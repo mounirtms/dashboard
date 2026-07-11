@@ -56,7 +56,7 @@ import {
 } from '@mui/icons-material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
-import { ADMIN_PATHS } from '../../config/routes';
+import { ADMIN_PATHS, PERMISSION_PATHS } from '../../config/routes';
 import logoTechno from '../../assets/logo_techno.png';
 
 interface NavItem {
@@ -182,7 +182,7 @@ interface SidebarProps { onClose?: () => void }
 export default function Sidebar({ onClose }: SidebarProps) {
   const location = useLocation();
   const theme = useTheme();
-  const { isAdmin } = usePermissions();
+  const { isAdmin, hasPermission } = usePermissions();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
     'Monitoring': true,
     'Cloudflare': false
@@ -242,14 +242,18 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
   // Check if a nav item should be visible based on permissions
   const isNavItemVisible = useCallback((item: NavItem): boolean => {
-    if (item.path && ADMIN_PATHS.has(item.path) && !isAdmin) {
-      return false;
+    if (item.path) {
+      // Hard admin-only paths
+      if (ADMIN_PATHS.has(item.path) && !isAdmin) return false;
+      // Fine-grained permission paths
+      const permKey = PERMISSION_PATHS[item.path];
+      if (permKey && !hasPermission(permKey)) return false;
     }
     if (item.children) {
       return item.children.some(child => isNavItemVisible(child));
     }
     return true;
-  }, [isAdmin]);
+  }, [isAdmin, hasPermission]);
 
   // Deep filter nav items by both search and permissions
   const deepFilterItems = useCallback((items: NavItem[]): NavItem[] => {
@@ -522,7 +526,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
           />
           <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
         </Box>
-        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v3.1.5 · technostationery.com</Typography>
+        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v4.3.0-TSM · technostationery.com</Typography>
       </Box>
     </Box>
   );

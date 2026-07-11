@@ -1,5 +1,5 @@
-import { Box, Typography, Card, CardContent, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Collapse, TablePagination } from '@mui/material';
-import { Person, ExpandMore, ExpandLess, Terminal, Storage, Memory, NetworkPing, AccessTime } from '@mui/icons-material';
+import { Box, Typography, Card, CardContent, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Collapse, TablePagination, Button, Alert } from '@mui/material';
+import { Person, ExpandMore, ExpandLess, Terminal, Storage, Memory, NetworkPing, AccessTime, Refresh } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchUserActivity, fetchBashHistory, UserData, BashHistoryEntry } from '../api/monitor';
 import LoadingState from '../components/common/LoadingState';
@@ -184,15 +184,20 @@ function UserRow({ user, expanded, onToggle }: { user: UserData; expanded: boole
 export default function UserActivityPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadData = useCallback(() => {
     setLoading(true);
+    setError(null);
     fetchUserActivity()
-      .then((d) => setData(d))
-      .catch((e) => console.error('Failed to fetch user activity', e))
+      .then((d) => { setData(d); })
+      .catch((e) => {
+        console.error('Failed to fetch user activity', e);
+        setError(e.message || 'Failed to load user activity');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -211,14 +216,25 @@ export default function UserActivityPage() {
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
-          User Activity
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Monitor system users, active sessions, and resource usage.
-        </Typography>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
+            User Activity
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            Monitor system users, active sessions, and resource usage.
+          </Typography>
+        </Box>
+        <Button variant="outlined" size="small" startIcon={<Refresh />} onClick={loadData} disabled={loading}>
+          Refresh
+        </Button>
       </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       {/* Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -271,7 +287,8 @@ export default function UserActivityPage() {
         page={page}
         onPageChange={(_, p) => setPage(p)}
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[10]}
+        onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+        rowsPerPageOptions={[10, 25, 50, 100]}
         sx={{ color: 'text.secondary', '.MuiTablePagination-selectLabel,.MuiTablePagination-displayedRows': { fontSize: '0.7rem' } }}
       />
     </Box>

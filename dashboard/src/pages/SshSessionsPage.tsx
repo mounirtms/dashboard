@@ -66,6 +66,7 @@ export default function SshSessionsPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as any });
   const [addDialog, setAddDialog] = useState(false);
   const [removeDialog, setRemoveDialog] = useState<{ open: boolean; username?: string }>({ open: false });
+  const [killDialog, setKillDialog] = useState<{ open: boolean; sessionId?: string; killAll?: boolean; restartSshd?: boolean }>({ open: false });
   const [newUsername, setNewUsername] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -84,7 +85,7 @@ export default function SshSessionsPage() {
     setLoadingUsers(true);
     apiClient.get('/api/monitor.php?action=ssh_users')
       .then(({ data }) => setSshUsers(data))
-      .catch((e) => console.error('ssh_users:', e))
+      .catch((e) => setSnackbar({ open: true, message: e.response?.data?.message || e.message || 'Failed to load SSH user list', severity: 'error' }))
       .finally(() => setLoadingUsers(false));
   }, []);
 
@@ -95,34 +96,35 @@ export default function SshSessionsPage() {
     return () => clearInterval(interval);
   }, [loadData, loadSshUsers]);
 
-  const handleKillSession = async (id: string) => {
-    if (!confirm(`Are you sure you want to terminate session ${id}?`)) return;
-    try {
-      const { data } = await apiClient.post('/api/monitor.php?action=ssh_kill_single', { session_id: id });
-      setSnackbar({ open: true, message: data.message || 'Session terminated', severity: data.success ? 'success' : 'error' });
-      if (data.success) loadData();
-    } catch (e: any) {
-      setSnackbar({ open: true, message: e.message, severity: 'error' });
-    }
+  const handleKillSession = (id: string) => {
+    setKillDialog({ open: true, sessionId: id });
   };
 
-  const handleKillAll = async () => {
-    if (!confirm('Are you sure you want to kill ALL other SSH sessions?')) return;
-    try {
-      const { data } = await apiClient.post('/api/monitor.php?action=ssh_kill');
-      setSnackbar({ open: true, message: data.message || 'All sessions killed', severity: data.success ? 'success' : 'error' });
-      if (data.success) loadData();
-    } catch (e: any) {
-      setSnackbar({ open: true, message: e.message, severity: 'error' });
-    }
+  const handleKillAll = () => {
+    setKillDialog({ open: true, killAll: true });
   };
 
-  const handleRestartSshd = async () => {
-    if (!confirm('Warning: Restarting SSHD might briefly interrupt connections. Continue?')) return;
+  const handleRestartSshd = () => {
+    setKillDialog({ open: true, restartSshd: true });
+  };
+
+  const handleKillConfirm = async () => {
+    const { sessionId, killAll, restartSshd } = killDialog;
+    setKillDialog({ open: false });
     try {
-      const { data } = await apiClient.get('/api/monitor.php?action=sshd_restart');
-      setSnackbar({ open: true, message: data.message || 'SSHD restarted', severity: data.success ? 'success' : 'error' });
-      if (data.success) { loadData(); loadSshUsers(); }
+      if (restartSshd) {
+        const { data } = await apiClient.get('/api/monitor.php?action=sshd_restart');
+        setSnackbar({ open: true, message: data.message || 'SSHD restarted', severity: data.success ? 'success' : 'error' });
+        if (data.success) { loadData(); loadSshUsers(); }
+      } else if (killAll) {
+        const { data } = await apiClient.post('/api/monitor.php?action=ssh_kill');
+        setSnackbar({ open: true, message: data.message || 'All sessions killed', severity: data.success ? 'success' : 'error' });
+        if (data.success) loadData();
+      } else if (sessionId) {
+        const { data } = await apiClient.post('/api/monitor.php?action=ssh_kill_single', { session_id: sessionId });
+        setSnackbar({ open: true, message: data.message || 'Session terminated', severity: data.success ? 'success' : 'error' });
+        if (data.success) loadData();
+      }
     } catch (e: any) {
       setSnackbar({ open: true, message: e.message, severity: 'error' });
     }
@@ -448,6 +450,35 @@ export default function SshSessionsPage() {
           </Alert>
         </Grid>
       </Grid>
+
+      {/* Kill / Restart Confirmation Dialog */}
+      <Dialog open={killDialog.open} onClose={() => setKillDialog({ open: false })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 800, color: killDialog.restartSshd ? 'warning.main' : 'error.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Dangerous sx={{ fontSize: 20 }} />
+          {killDialog.restartSshd ? 'Restart SSHD' : killDialog.killAll ? 'Kill All Sessions' : `Kill Session ${killDialog.sessionId}`}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            {killDialog.restartSshd
+              ? 'Restarting SSHD may briefly interrupt all active SSH connections. Are you sure you want to continue?'
+              : killDialog.killAll
+              ? 'This will immediately terminate ALL other SSH sessions on the server. Active users will be disconnected.'
+              : `Terminate SSH session with ID ${killDialog.sessionId}? The connected user will be disconnected immediately.`
+            }
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setKillDialog({ open: false })} variant="outlined">Cancel</Button>
+          <Button
+            onClick={handleKillConfirm}
+            variant="contained"
+            color={killDialog.restartSshd ? 'warning' : 'error'}
+            autoFocus
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Add User Dialog */}
       <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="xs" fullWidth>

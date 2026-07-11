@@ -37,9 +37,12 @@ export default function TasksPage() {
   const [moreAnchor, setMoreAnchor] = useState<null | HTMLElement>(null);
   const [formData, setFormData] = useState({ title: '', description: '', priority: 'medium' as any, status: 'pending' as any, assigned_to: '', due_date: '', category: 'general' });
   const [pagination, setPagination] = useState({ page: 1, perPage: 25, total: 0, totalPages: 0 });
+  const [deleteTaskDialog, setDeleteTaskDialog] = useState<{ open: boolean; id?: number }>({ open: false });
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const filters: TaskFilters = {
         page: pagination.page,
@@ -58,15 +61,18 @@ export default function TasksPage() {
 
       const [result, s, u, nc] = await Promise.all([fetchTasks(filters), fetchTaskStats(), fetchUsers(), fetchTaskNotesCount()]);
       setTasks(result.tasks);
-      setPagination({ page: result.page, perPage: result.per_page, total: result.total, totalPages: result.total_pages });
+      setPagination(prev => ({ ...prev, page: result.page, perPage: result.per_page, total: result.total, totalPages: result.total_pages }));
       setStats(s);
       setUsers(u);
       setNotesCount(nc);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  };
+    } catch (e: any) {
+      setLoadError(e.response?.data?.error || e.message || 'Failed to load tasks');
+    } finally {
+      setLoading(false);
+    }
+  }, [filterStatus, filterPriority, filterCategory, filterAssignee, myTasksOnly, showOverdueOnly, search, pagination.page, pagination.perPage, currentUsername, filterDepartment]);
 
-  useEffect(() => { loadData(); }, [filterStatus, filterPriority, filterCategory, filterAssignee, myTasksOnly, showOverdueOnly, search, pagination.page, pagination.perPage]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const openCreate = () => {
     setEditingTask(null);
@@ -104,8 +110,14 @@ export default function TasksPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this task?')) return;
+  const handleDelete = (id: number) => {
+    setDeleteTaskDialog({ open: true, id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    const { id } = deleteTaskDialog;
+    setDeleteTaskDialog({ open: false });
+    if (!id) return;
     try {
       await deleteTask(id);
       setSnackbar({ open: true, message: 'Task deleted', severity: 'success' });
@@ -234,8 +246,9 @@ export default function TasksPage() {
     }},
     { field: 'category', headerName: 'Category', width: 100, renderCell: (p: GridRenderCellParams) => <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>{p.value}</Typography> },
     { field: 'actions', headerName: '', width: 120, sortable: false, renderCell: (p: GridRenderCellParams) => {
-      const isOwner = p.row.created_by === currentUsername;
-      const canEdit = isOwner; // Only the task owner can edit
+      const isOwner = p.row.created_by === currentUsername || p.row.assigned_to === currentUsername;
+      // can_update_any_task lets moderators/admins edit any task; otherwise only owner
+      const canEdit = isOwner || !!permissions?.can_update_any_task;
       const canDelete = permissions?.can_delete_tasks;
       return (
         <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -402,6 +415,13 @@ export default function TasksPage() {
         </Card>
       )}
 
+      {/* Load error */}
+      {loadError && (
+        <Alert severity="error" sx={{ mb: 2 }} action={<Button size="small" color="inherit" onClick={loadData}>Retry</Button>}>
+          {loadError}
+        </Alert>
+      )}
+
       {/* DataGrid */}
       <Card sx={{ flexGrow: 1, mb: 2 }}>
         <DataGrid 
@@ -504,6 +524,18 @@ export default function TasksPage() {
           <Button variant="contained" color="warning" onClick={() => { setDuplicateWarning({ show: false, existingId: null }); handleSave(true); }}>
             Create Anyway
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Task Confirmation */}
+      <Dialog open={deleteTaskDialog.open} onClose={() => setDeleteTaskDialog({ open: false })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ color: 'error.main' }}>Delete Task</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">Delete task #{deleteTaskDialog.id}? This action cannot be undone.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTaskDialog({ open: false })} variant="outlined">Cancel</Button>
+          <Button onClick={handleDeleteConfirm} variant="contained" color="error" autoFocus>Delete</Button>
         </DialogActions>
       </Dialog>
 

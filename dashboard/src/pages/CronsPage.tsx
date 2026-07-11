@@ -1,6 +1,6 @@
 import { Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, Tooltip, Alert, Snackbar, CircularProgress, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { Schedule, PlayArrow, Comment, Refresh, Dns, Code } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { Schedule, PlayArrow, Comment, Refresh } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchCrons, runCron, CronEntry } from '../api/system';
 import LoadingState from '../components/common/LoadingState';
 
@@ -21,17 +21,18 @@ export default function CronsPage() {
   const [executing, setExecuting] = useState<string | null>(null);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
 
-  const loadCrons = () => {
+  const loadCrons = useCallback(() => {
     setLoading(true);
+    setError(null);
     fetchCrons(selectedSite || undefined)
       .then((data) => setCrons(data.entries))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  };
+  }, [selectedSite]);
 
   useEffect(() => {
     loadCrons();
-  }, [selectedSite]);
+  }, [loadCrons]);
 
   const handleRunNow = async (command: string) => {
     setExecuting(command);
@@ -53,7 +54,15 @@ export default function CronsPage() {
   };
 
   if (loading && crons.length === 0) return <LoadingState message="Loading cron jobs..." />;
-  if (error) return <LoadingState message={`Error: ${error}`} />;
+  if (error) return (
+    <Box sx={{ p: 3 }}>
+      <Alert severity="error" action={
+        <Button color="inherit" size="small" onClick={loadCrons}>Retry</Button>
+      }>
+        Failed to load cron jobs: {error}
+      </Alert>
+    </Box>
+  );
 
   return (
     <Box>

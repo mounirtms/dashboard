@@ -1,6 +1,6 @@
-import { Box, Typography, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, LinearProgress, Button, Alert, Snackbar, CircularProgress } from '@mui/material';
-import { Storage, CleaningServices, Info, CheckCircle, Refresh } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { Box, Typography, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, LinearProgress, Button, Alert, Snackbar, CircularProgress, Chip } from '@mui/material';
+import { Storage, CleaningServices, Info, CheckCircle, Refresh, TuneOutlined } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchDbHealth, performDbAction } from '../api/system';
 import LoadingState from '../components/common/LoadingState';
 import { formatNumber } from '../utils/formatters';
@@ -11,16 +11,16 @@ export default function DbHealthPage() {
   const [executing, setExecuting] = useState<string | null>(null);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true);
     fetchDbHealth()
       .then(setData)
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleOptimize = async (db: string, table: string) => {
     const key = `${db}-${table}`;
@@ -146,6 +146,30 @@ export default function DbHealthPage() {
           </Box>
         </Grid>
       </Grid>
+
+      {/* ── Audit Tuning Applied Banner ── */}
+      <Card sx={{ mb: 0, mt: 1, background: 'linear-gradient(135deg, rgba(6,182,212,0.06) 0%, rgba(59,130,246,0.06) 100%)', border: '1px solid rgba(6,182,212,0.2)' }}>
+        <CardContent sx={{ py: '12px !important' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TuneOutlined sx={{ fontSize: 16, color: '#06b6d4' }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8' }}>Audit Tuning Applied — Jul 8, 2026</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {[
+                { label: 'buffer_pool = 8 GB', color: 'success' as const },
+                { label: 'max_connections = 300', color: 'success' as const },
+                { label: 'innodb_flush = 2', color: 'info' as const },
+                { label: 'port = 3307', color: 'default' as const },
+                { label: 'pm=static max=30', color: 'secondary' as const },
+              ].map(c => (
+                <Chip key={c.label} label={c.label} size="small" color={c.color} variant="outlined"
+                  sx={{ fontSize: '0.6rem', height: 20, fontFamily: 'monospace', fontWeight: 700 }} />
+              ))}
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
 
       <Snackbar 
         open={notify.open} 

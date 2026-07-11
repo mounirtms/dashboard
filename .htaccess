@@ -10,11 +10,15 @@ Header set CDN-Cache-Control "no-cache, no-store, must-revalidate, private, max-
 Header set Cloudflare-CDN-Cache-Control "no-cache, no-store, must-revalidate, private, max-age=0"
 Header set Surrogate-Control "no-store"
 
-# Prevent caching of HTML pages
+# Prevent caching of HTML pages (except /build/ — handled by build/.htaccess)
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} !^/build/
+  RewriteRule \.(html|htm)$ - [E=NO_CACHE_HTML:1]
+</IfModule>
 <FilesMatch "\.(html|htm)$">
-    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private"
-    Header set Pragma "no-cache"
-    Header set Expires "0"
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private" env=NO_CACHE_HTML
+    Header set Pragma "no-cache" env=NO_CACHE_HTML
+    Header set Expires "0" env=NO_CACHE_HTML
 </FilesMatch>
 
 # Prevent caching of API responses
@@ -24,12 +28,16 @@ Header set Surrogate-Control "no-store"
     Header set Expires "0"
 </FilesMatch>
 
-# Prevent caching of CSS and JS (dashboard assets)
-# Note: build/.htaccess overrides this with 'Header always set' for /build/assets/*.js
+# Prevent caching of CSS and JS for all non-build assets
+# /build/assets/ is excluded — its .htaccess sets immutable cache for hashed bundles
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} !^/build/
+  RewriteRule \.(css|js)$ - [E=NO_CACHE_JS:1]
+</IfModule>
 <FilesMatch "\.(css|js)$">
-    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private"
-    Header set Pragma "no-cache"
-    Header set Expires "0"
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private" env=NO_CACHE_JS
+    Header set Pragma "no-cache" env=NO_CACHE_JS
+    Header set Expires "0" env=NO_CACHE_JS
 </FilesMatch>
 
 # Correct MIME type for service worker (must be application/javascript, not text/html)
@@ -39,9 +47,10 @@ Header set Surrogate-Control "no-store"
     Header always set Cache-Control "no-cache, no-store, must-revalidate"
 </FilesMatch>
 
-# Security headers
-Header set X-Content-Type-Options "nosniff"
-Header set X-Frame-Options "SAMEORIGIN"
+# Security headers — use "always" so they appear on all responses including errors
+# Child .htaccess (build/) uses "always unset" first to avoid duplicates
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
 Header set X-XSS-Protection "1; mode=block"
 Header set Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://www.clarity.ms https://scripts.clarity.ms https://connect.facebook.net https://www.googletagmanager.com https://gc.kes.v2.scr.kaspersky-labs.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://cdn.webpushr.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com https://*.clarity.ms https://www.clarity.ms https://www.google-analytics.com https://analytics.google.com https://*.google.com https://stats.g.doubleclick.net https://*.facebook.com wss://gc.kes.v2.scr.kaspersky-labs.com https://challenges.cloudflare.com https://*.webpushr.com; worker-src 'self' https://cdn.webpushr.com;"
 

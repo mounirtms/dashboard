@@ -778,16 +778,16 @@ export default function SettingsPage() {
                   <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>Techno Monitor</Typography>
                   <Typography variant="body2" sx={{ mb: 2 }}>The comprehensive infrastructure management platform for TechnoStationery e-commerce systems.</Typography>
                   <Box sx={{ display: 'grid', gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v4.2.0-TSM</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>6c45aeaf</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>July 7, 2026</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v4.3.0-TSM</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>c0934e53</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>July 8, 2026</strong></Typography>
                   </Box>
                 </Box>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>System Dependencies</Typography>
                 <List disablePadding>
-                  {['PHP 8.2.30', 'MariaDB 10.6', 'Redis 7.0', 'Varnish 6.0', 'Node.js 20.x', 'Magento 2.4.7', 'React 18.3', 'Vite 8.0'].map(dep => (
+                  {['PHP 8.2.30', 'MariaDB 10.6.17', 'Redis 5.0.3', 'Varnish 6.0', 'Node.js 20.x', 'Magento 2.4.7-p3', 'React 18.3', 'Vite 8.0'].map(dep => (
                     <ListItem key={dep} sx={{ py: 0.5, px: 0 }}>
                       <ListItemText 
                         primary={<Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>{dep}</Typography>} 

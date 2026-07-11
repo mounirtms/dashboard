@@ -139,6 +139,21 @@ export default function CacheControlPage() {
 
       {loading && <LinearProgress />}
 
+      {/* Audit Notes Banner */}
+      {tab === 0 && overallHitRate < 20 && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          <strong>Varnish hit rate is low ({overallHitRate.toFixed(1)}%)</strong> — Audit baseline was 5.7%.
+          Known cause: <code>Pragma: no-cache</code> header conflict from Magento. Cron interval was reduced from 1min → 5min.
+          Target: 60%+ after Pragma header fix. See <strong>CACHING_AUDIT_REPORT.md</strong> for details.
+        </Alert>
+      )}
+      {tab === 0 && overallHitRate >= 20 && overallHitRate < 60 && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Varnish hit rate {overallHitRate.toFixed(1)}% — improving from 5.7% baseline (Jul 8 audit).
+          Target: <strong>60%+</strong>. Continue warmup runs and monitor Pragma header conflicts.
+        </Alert>
+      )}
+
       {/* Overview Tab */}
       {tab === 0 && (
         <Grid container spacing={2}>

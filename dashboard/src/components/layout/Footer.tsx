@@ -4,7 +4,7 @@ import { useSystemOverview } from '../../hooks/useSystemData';
 import { Speed, Memory, Storage } from '@mui/icons-material';
 import mounirSignature from '../../assets/mounir-signature.svg';
 
-const APP_VERSION = '3.1.5';
+const APP_VERSION = '4.3.0';
 
 export default function Footer() {
   const [time, setTime] = useState(new Date());
