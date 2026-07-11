@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Chip, Drawer, IconButton, Tooltip, Snackbar, Alert, InputAdornment, TextField, Divider, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, Typography, Button, Chip, Drawer, IconButton, Tooltip, Snackbar, Alert, InputAdornment, TextField, Divider, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, FormControl, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Search, Refresh, Close, LocalShipping, Receipt, Cancel, Pause, PlayArrow, Visibility, Send } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
@@ -36,6 +36,7 @@ export default function MagentoOrdersPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [orderActionDialog, setOrderActionDialog] = useState<{ open: boolean; orderId?: number; op?: string }>({ open: false });
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -60,11 +61,17 @@ export default function MagentoOrdersPage() {
 
   useEffect(() => { loadOrders(); }, [loadOrders]);
 
-  const handleOrderAction = async (orderId: number, op: 'cancel' | 'hold' | 'unhold' | 'ship' | 'invoice') => {
-    if (!confirm(`${op.charAt(0).toUpperCase() + op.slice(1)} order #${orderId}?`)) return;
+  const handleOrderAction = (orderId: number, op: 'cancel' | 'hold' | 'unhold' | 'ship' | 'invoice') => {
+    setOrderActionDialog({ open: true, orderId, op });
+  };
+
+  const handleOrderActionConfirm = async () => {
+    const { orderId, op } = orderActionDialog;
+    setOrderActionDialog({ open: false });
+    if (!orderId || !op) return;
     setActionLoading(orderId);
     try {
-      await performOrderAction(orderId, op, env);
+      await performOrderAction(orderId, op as any, env);
       setToast({ message: `Order #${orderId} ${op} successful`, severity: 'success' });
       loadOrders();
     } catch (e: any) {
@@ -122,6 +129,32 @@ export default function MagentoOrdersPage() {
           <Button variant="outlined" startIcon={<Refresh />} onClick={loadOrders}>Refresh</Button>
         </Box>
       </Box>
+
+      {/* H1 2026 KPI Banner */}
+      {env === 'prod' && (
+        <Box sx={{ mb: 2, p: 1.5, borderRadius: 1.5, background: 'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(59,130,246,0.06) 100%)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>H1 2026 Orders</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: 'success.main', lineHeight: 1 }}>875</Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>Jan–Jun · MariaDB verified</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>H1 2025 Orders</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: '#64748b', lineHeight: 1 }}>844</Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>Jan–Jun · Prior year</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>YoY Growth</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: '#22c55e', lineHeight: 1 }}>+3.7%</Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>875 vs 844</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>Avg Order Value</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: '#3b82f6', lineHeight: 1 }}>4,970 DZD</Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>H1 2026</Typography>
+          </Box>
+        </Box>
+      )}
 
       <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
         <TextField size="small" placeholder="Search order #, email, name..." value={search} onChange={e => setSearch(e.target.value)} sx={{ width: 280 }}
@@ -205,6 +238,24 @@ export default function MagentoOrdersPage() {
           </Box>
         )}
       </Drawer>
+
+      {/* Order Action Confirmation Dialog */}
+      <Dialog open={orderActionDialog.open} onClose={() => setOrderActionDialog({ open: false })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ textTransform: 'capitalize' }}>
+          {orderActionDialog.op} Order #{orderActionDialog.orderId}?
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            Are you sure you want to <strong>{orderActionDialog.op}</strong> order <strong>#{orderActionDialog.orderId}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOrderActionDialog({ open: false })} variant="outlined">Cancel</Button>
+          <Button onClick={handleOrderActionConfirm} variant="contained" color="warning" autoFocus sx={{ textTransform: 'capitalize' }}>
+            {orderActionDialog.op}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar open={!!toast} autoHideDuration={4000} onClose={() => setToast(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         {toast ? <Alert severity={toast.severity} onClose={() => setToast(null)} variant="filled">{toast.message}</Alert> : undefined}

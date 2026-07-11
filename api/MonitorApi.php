@@ -1237,6 +1237,128 @@ class MonitorApi extends BaseApi {
         }
     }
 
+    /**
+     * Dispatch a Telegram bot command from the dashboard.
+     * Supports: test, /status, /services, /load, /processes, /orders, /online, /cache:flush
+     */
+    public function telegramAction() {
+        $command = $_POST['command'] ?? $_GET['command'] ?? 'test';
+
+        try {
+            $telegramConfig = require __DIR__ . '/telegram/config.php';
+            require_once __DIR__ . '/telegram/BotHandler.php';
+
+            $bot      = new BotHandler($telegramConfig, 'server');
+            $chatIds  = $telegramConfig['bots']['server']['authorized_chats'] ?? [];
+
+            if (empty($chatIds)) {
+                return ['success' => false, 'message' => 'No authorized chat IDs configured'];
+            }
+
+            $chatId = $chatIds[0]; // Primary admin chat
+
+            if ($command === 'test') {
+                $msg  = "\xF0\x9F\x94\x94 *Dashboard Test Alert*\n";
+                $msg .= "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n";
+                $msg .= "\xE2\x9C\x85 Connection from dashboard is working\n";
+                $msg .= "\xF0\x9F\x95\x90 " . date('Y-m-d H:i:s') . "\n";
+                $msg .= "\xF0\x9F\x91\xA4 Triggered by admin panel";
+                $result = $bot->sendMessage($chatId, $msg);
+                return [
+                    'success' => ($result['ok'] ?? false) === true,
+                    'message' => ($result['ok'] ?? false) ? 'Test message sent successfully' : ($result['description'] ?? 'Telegram API error'),
+                ];
+            }
+
+            // Route a real command (e.g. /status, /load, etc.)
+            // Simulate an update object so CommandRouter can process it
+            $fakeUpdate = [
+                'message' => [
+                    'chat'  => ['id' => $chatId],
+                    'from'  => ['id' => $chatId, 'first_name' => 'Dashboard', 'username' => 'dashboard_admin'],
+                    'text'  => $command,
+                ],
+            ];
+            $bot->processUpdate($fakeUpdate);
+
+            return ['success' => true, 'message' => "Command \"$command\" dispatched to bot"];
+
+        } catch (Exception $e) {
+            error_log('[TelegramAction] ' . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Return live Telegram bot stats for the dashboard.
+     */
+    public function getTelegramStats() {
+        try {
+            $telegramConfig = require __DIR__ . '/telegram/config.php';
+            $botConfig      = $telegramConfig['bots']['server'] ?? [];
+
+            // Check webhook status via Telegram API
+            $token      = $botConfig['token'] ?? '';
+            $webhookOk  = false;
+            $webhookUrl = '';
+
+            if ($token) {
+                $ch = curl_init("https://api.telegram.org/bot{$token}/getWebhookInfo");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+                $resp = curl_exec($ch);
+                curl_close($ch);
+                if ($resp) {
+                    $info = json_decode($resp, true);
+                    $webhookUrl = $info['result']['url'] ?? '';
+                    $webhookOk  = !empty($webhookUrl);
+                }
+            }
+
+            // Count authorized users
+            $authCount = count($botConfig['authorized_chats'] ?? []);
+
+            // Read recent bot interactions from log
+            $logFile = __DIR__ . '/telegram/logs/bot_interactions.log';
+            $recentLogs = [];
+            if (file_exists($logFile)) {
+                $raw = array_reverse(file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));
+                foreach (array_slice($raw, 0, 10) as $line) {
+                    $d = json_decode($line, true);
+                    if ($d) {
+                        $recentLogs[] = [
+                            'timestamp' => $d['timestamp'] ?? '',
+                            'user'      => $d['username'] ?? 'System',
+                            'command'   => $d['command'] ?? $d['text'] ?? '',
+                            'status'    => ucfirst($d['status'] ?? 'unknown'),
+                        ];
+                    }
+                }
+            }
+
+            return [
+                'success'        => true,
+                'bot_username'   => '@' . ($botConfig['name'] ?? 'ServerNotif205bot'),
+                'webhook_status' => $webhookOk,
+                'webhook_url'    => $webhookUrl,
+                'auth_count'     => $authCount,
+                'alerts_enabled' => $telegramConfig['alerts']['enabled'] ?? true,
+                'recent_logs'    => $recentLogs,
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'success'        => false,
+                'bot_username'   => '@ServerNotif205bot',
+                'webhook_status' => false,
+                'auth_count'     => 1,
+                'alerts_enabled' => true,
+                'recent_logs'    => [],
+                'error'          => $e->getMessage(),
+            ];
+        }
+    }
+
     public function getCrons($site = null) {
         $cacheKey = $site ? "crons_$site" : 'crons';
         return $this->cache->remember($cacheKey, 30, function() use ($site) {
@@ -2150,7 +2272,7 @@ class MonitorApi extends BaseApi {
     public function getUserActivity() {
         return $this->cache->remember('user_activity', 30, function() {
             $db = $this->getDb();
-            $knownUsers = ['root', 'technadminy7', 'dashboard', 'salah', 'dev', 'dnd', 'pim'];
+            $knownUsers = ['root', 'dev', 'beta', 'technadminy7', 'dnd', 'dashboard', 'pim', 'salah', 'tsdnd'];
             $users = [];
 
             foreach ($knownUsers as $username) {
@@ -2409,7 +2531,7 @@ class MonitorApi extends BaseApi {
         $script = '/home/dashboard/public_html/scripts/maintenance/malware_scan.sh';
 
         $args = '--json';
-        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta'])) {
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta', 'tsdnd'])) {
             $args .= " --account $account";
         }
 
@@ -2441,7 +2563,7 @@ class MonitorApi extends BaseApi {
 
         $args = '';
         if ($checkOnly) $args .= ' --check-only';
-        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta'])) {
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'beta', 'tsdnd'])) {
             $args .= " --account $account";
         }
 
@@ -2505,7 +2627,7 @@ class MonitorApi extends BaseApi {
         $account = $_POST['account'] ?? $_GET['account'] ?? '';
         $script = '/home/dashboard/public_html/scripts/maintenance/ecomscan_all.sh';
         $args = '--json';
-        if (!empty($account) && in_array($account, ['technadminy7', 'dev'])) {
+        if (!empty($account) && in_array($account, ['technadminy7', 'dev', 'tsdnd'])) {
             $args .= " --account $account";
         }
         $result = $this->cmd("bash $script $args 2>&1", 600);

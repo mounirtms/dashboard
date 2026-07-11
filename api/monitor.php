@@ -52,7 +52,7 @@ $allowedActions = [
     'db_action', 'cron_action', 'process_action', 'site_action', 'indexer_action',
     'ssh', 'ssh_kill', 'ssh_kill_single', 'sshd_restart', 'ssh_users', 'ssh_user_add', 'ssh_user_remove',
     'csf', 'csf_action',
-    'services', 'network', 'notification_log',
+    'services', 'network', 'notification_log', 'telegram_action', 'telegram_stats',
     'user_activity', 'bash_history',
     'security_scan', 'security_scan_run', 'security_harden', 'security_harden_run',
     'ecomscan', 'ecomscan_run'
@@ -179,6 +179,12 @@ try {
             break;
         case 'cloudflare_action': 
             $data = $monitorApi->cloudflareAction(); 
+            break;
+        case 'telegram_action':
+            $data = $monitorApi->telegramAction();
+            break;
+        case 'telegram_stats':
+            $data = $monitorApi->getTelegramStats();
             break;
         case 'db_action': 
             $data = $monitorApi->dbAction(); 

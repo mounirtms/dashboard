@@ -1,5 +1,6 @@
-import { Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Switch, Paper, Chip, Snackbar, Alert, CircularProgress } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Switch, Paper, Chip, Snackbar, Alert, CircularProgress, Button } from '@mui/material';
+import { Refresh } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchAllRolePermissions, updateRolePermission, type RolePermissions } from '../api/permissions';
 import LoadingState from '../components/common/LoadingState';
 
@@ -87,18 +88,20 @@ const ROLE_COLORS: Record<string, string> = { admin: 'error', editor: 'primary',
 export default function PermissionsPage() {
   const [permissions, setPermissions] = useState<Record<string, RolePermissions> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     fetchAllRolePermissions()
       .then(setPermissions)
-      .catch((e) => console.error(e))
+      .catch((e) => setLoadError(e.response?.data?.error || e.message || 'Failed to load permissions'))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const handleToggle = async (role: string, permission: string, value: boolean) => {
     setSaving(true);
@@ -125,14 +128,19 @@ export default function PermissionsPage() {
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
-          Permissions Matrix
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Manage role-based permissions. Changes take effect immediately on next request.
-        </Typography>
+      {/* Header with Refresh */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
+            Permissions Matrix
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            Manage role-based permissions. Changes take effect immediately on next request.
+          </Typography>
+        </Box>
+        <Button variant="outlined" startIcon={<Refresh />} onClick={loadData} disabled={loading || saving}>
+          Refresh
+        </Button>
       </Box>
 
       {/* Matrix */}

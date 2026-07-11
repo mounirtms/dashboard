@@ -1,4 +1,4 @@
-import { Box, Typography, Button, TextField, Chip, Drawer, IconButton, Tooltip, Snackbar, Alert, InputAdornment, Divider, Grid, Card, CardContent, FormControl, Select, MenuItem } from '@mui/material';
+import { Box, Typography, Button, TextField, Chip, Drawer, IconButton, Tooltip, Snackbar, Alert, InputAdornment, Divider, Grid, Card, CardContent, FormControl, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Add, Delete, Edit, Search, Refresh, Close, Save, Email, Person } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
@@ -47,8 +47,14 @@ export default function MagentoCustomersPage() {
 
   useEffect(() => { loadCustomers(); }, [loadCustomers]);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm(`Delete customer #${id}?`)) return;
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id?: number }>({ open: false });
+
+  const handleDelete = (id: number) => setDeleteDialog({ open: true, id });
+
+  const handleDeleteConfirm = async () => {
+    const { id } = deleteDialog;
+    setDeleteDialog({ open: false });
+    if (!id) return;
     try {
       await deleteMagentoCustomer(id, env);
       setToast({ message: 'Customer deleted', severity: 'success' });
@@ -168,6 +174,17 @@ export default function MagentoCustomersPage() {
           </Box>
         )}
       </Drawer>
+
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ color: 'error.main' }}>Delete Customer</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">Delete customer #{deleteDialog.id}? This cannot be undone.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog({ open: false })} variant="outlined">Cancel</Button>
+          <Button onClick={handleDeleteConfirm} variant="contained" color="error" autoFocus>Delete</Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar open={!!toast} autoHideDuration={4000} onClose={() => setToast(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         {toast ? <Alert severity={toast.severity} onClose={() => setToast(null)} variant="filled">{toast.message}</Alert> : undefined}

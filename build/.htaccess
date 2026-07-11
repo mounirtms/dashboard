@@ -1,19 +1,24 @@
-# /build/.htaccess — Static SPA assets — NO PHP, correct MIME types
-RemoveHandler .html .htm
-RemoveType    .html .htm
-<FilesMatch "\.html?$">
-    SetHandler default-handler
-</FilesMatch>
-AddType application/javascript  .js .mjs
-AddType text/css                .css
-AddType image/png               .png
-AddType image/svg+xml           .svg
-AddType image/x-icon            .ico
-Options -Indexes
-<IfModule mod_rewrite.c>
-    RewriteEngine Off
-</IfModule>
-<FilesMatch "\.(js|css|png|svg|ico|woff2?)$">
+# /build/.htaccess — Techno Server Dashboard SPA (HashRouter)
+# Assets get long-lived immutable cache; index.html is always no-cache
+
+<IfModule mod_headers.c>
+  # Immutable cache for content-hashed JS/CSS/PNG/SVG bundles
+  # Use 'Header always set' to override parent directory rules
+  <FilesMatch "\.(js|css|png|svg|woff2?)$">
     Header always set Cache-Control "public, max-age=31536000, immutable"
-</FilesMatch>
-AddDefaultCharset UTF-8
+  </FilesMatch>
+
+  # Never cache index.html so SW picks up new build stamps immediately
+  <FilesMatch "index\.html$">
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+  </FilesMatch>
+
+  # Security headers
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# SPA uses HashRouter — all navigation is client-side (#/route)
+# No rewrite rules needed; index.html serves every path

@@ -28,6 +28,7 @@ export default function MagentoProductsPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; sku?: string; bulkSkus?: string[] }>({ open: false });
   const [uploadSku, setUploadSku] = useState('');
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -53,26 +54,34 @@ export default function MagentoProductsPage() {
 
   useEffect(() => { loadProducts(); }, [loadProducts]);
 
-  const handleDelete = async (sku: string) => {
-    if (!confirm(`Delete product ${sku}?`)) return;
+  const handleDelete = (sku: string) => {
+    setDeleteDialog({ open: true, sku });
+  };
+
+  const handleBulkDelete = () => {
+    const skus = selection.map(id => products.find(p => p.id === id)?.sku).filter((s): s is string => !!s);
+    if (!skus.length) return;
+    setDeleteDialog({ open: true, bulkSkus: skus });
+  };
+
+  const handleDeleteConfirm = async () => {
+    const { sku, bulkSkus } = deleteDialog;
+    setDeleteDialog({ open: false });
     try {
-      await deleteMagentoProduct(sku, env);
-      setToast({ message: `Product ${sku} deleted`, severity: 'success' });
+      if (bulkSkus) {
+        for (const s of bulkSkus) {
+          try { await deleteMagentoProduct(s, env); } catch { /* continue */ }
+        }
+        setToast({ message: `${bulkSkus.length} product(s) deleted`, severity: 'success' });
+        setSelection([]);
+      } else if (sku) {
+        await deleteMagentoProduct(sku, env);
+        setToast({ message: `Product ${sku} deleted`, severity: 'success' });
+      }
       loadProducts();
     } catch (e: any) {
       setToast({ message: e.message, severity: 'error' });
     }
-  };
-
-  const handleBulkDelete = async () => {
-    const skus = selection.map(id => products.find(p => p.id === id)?.sku).filter((s): s is string => !!s);
-    if (!skus.length || !confirm(`Delete ${skus.length} product(s)?`)) return;
-    for (const sku of skus) {
-      try { await deleteMagentoProduct(sku, env); } catch { /* continue */ }
-    }
-    setToast({ message: `${skus.length} product(s) deleted`, severity: 'success' });
-    setSelection([]);
-    loadProducts();
   };
 
   const handleSave = async () => {
@@ -304,6 +313,22 @@ export default function MagentoProductsPage() {
           <Button variant="contained" onClick={handleUploadSubmit} disabled={uploading || !uploadSku || !uploadFiles.length}>
             {uploading ? 'Uploading...' : 'Upload'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ color: 'error.main' }}>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            {deleteDialog.bulkSkus
+              ? `Delete ${deleteDialog.bulkSkus.length} selected product(s)? This cannot be undone.`
+              : `Delete product "${deleteDialog.sku}"? This cannot be undone.`}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog({ open: false })} variant="outlined">Cancel</Button>
+          <Button onClick={handleDeleteConfirm} variant="contained" color="error" autoFocus>Delete</Button>
         </DialogActions>
       </Dialog>
 

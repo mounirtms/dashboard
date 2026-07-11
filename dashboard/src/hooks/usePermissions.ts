@@ -1,15 +1,21 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { fetchRolePermissions, type RolePermissions } from '../api/permissions';
 
 export type PermissionKey = keyof Omit<RolePermissions, 'id' | 'role' | 'created_at' | 'updated_at'>;
 
-/** Module-level cache to deduplicate requests across components */
+/** Module-level cache — keyed by role. Deduplicates concurrent fetches. */
 const cache = new Map<string, { data: RolePermissions; timestamp: number }>();
-const CACHE_TTL_MS = 30_000; // 30 seconds
+const CACHE_TTL_MS = 60_000; // 60 seconds
 
-/** Shared promise for in-flight requests (prevents duplicate concurrent fetches) */
+/** Shared in-flight promise map — prevents duplicate parallel requests */
 const inFlight = new Map<string, Promise<RolePermissions>>();
+
+/** Call this on logout to purge stale cached permissions */
+export function clearPermissionsCache(): void {
+  cache.clear();
+  inFlight.clear();
+}
 
 function fetchWithCache(role: string): Promise<RolePermissions> {
   const now = Date.now();
@@ -22,14 +28,16 @@ function fetchWithCache(role: string): Promise<RolePermissions> {
     return inFlight.get(role)!;
   }
 
-  const promise = fetchRolePermissions(role).then((data) => {
-    cache.set(role, { data, timestamp: Date.now() });
-    inFlight.delete(role);
-    return data;
-  }).catch((err) => {
-    inFlight.delete(role);
-    throw err;
-  });
+  const promise = fetchRolePermissions(role)
+    .then((data) => {
+      cache.set(role, { data, timestamp: Date.now() });
+      inFlight.delete(role);
+      return data;
+    })
+    .catch((err) => {
+      inFlight.delete(role);
+      throw err;
+    });
 
   inFlight.set(role, promise);
   return promise;
@@ -44,6 +52,7 @@ export function usePermissions() {
   const role = user?.role || '';
 
   useEffect(() => {
+    // Clear permissions when logged out
     if (!isAuthenticated || !role) {
       setPermissions(null);
       setError(null);
@@ -76,23 +85,37 @@ export function usePermissions() {
 
   const hasPermission = useCallback(
     (permission: PermissionKey): boolean => {
-      // Admin always has all permissions
+      // Admins always pass all permission checks
       if (role === 'admin') return true;
       if (!permissions) return false;
-      const value: unknown = permissions[permission];
+      const value: unknown = permissions[permission as keyof RolePermissions];
       return value === true || value === 1;
     },
     [permissions, role],
   );
 
+  /** Force-refresh permissions from server (bypasses cache) */
+  const refreshPermissions = useCallback(async () => {
+    if (!role) return;
+    cache.delete(role);
+    inFlight.delete(role);
+    try {
+      const data = await fetchWithCache(role);
+      setPermissions(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to refresh permissions');
+    }
+  }, [role]);
+
   return {
     role,
     permissions,
     hasPermission,
-    isAdmin: role === 'admin',
-    isEditor: role === 'editor',
+    refreshPermissions,
+    isAdmin:     role === 'admin',
+    isEditor:    role === 'editor',
     isModerator: role === 'moderator',
-    isViewer: role === 'viewer',
+    isViewer:    role === 'viewer',
     isMarketing: role === 'marketing',
     loading,
     error,

@@ -23,6 +23,7 @@ import InventoryPage from './pages/InventoryPage.tsx';
 import IndexersPage from './pages/IndexersPage.tsx';
 import UsersPage from './pages/UsersPage.tsx';
 import EtlStatusPage from './pages/EtlStatusPage.tsx';
+import EtlLogsPage from './pages/EtlLogsPage.tsx';
 import DbHealthPage from './pages/DbHealthPage.tsx';
 import TelegramPage from './pages/TelegramPage.tsx';
 import PushNotificationsPage from './pages/PushNotificationsPage.tsx';
@@ -49,6 +50,7 @@ import MagentoCustomersPage from './pages/MagentoCustomersPage.tsx';
 import MagentoOrdersPage from './pages/MagentoOrdersPage.tsx';
 import MagentoCmsPage from './pages/MagentoCmsPage.tsx';
 import MagentoSettingsPage from './pages/MagentoSettingsPage.tsx';
+import CiCdPage from './pages/CiCdPage.tsx';
 
 export default function App() {
   return (
@@ -61,27 +63,11 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Admin-only routes */}
-            <Route element={<ProtectedRoute requiredRole="admin" />}>
-              <Route path="/" element={<AppLayout />}>
-                <Route path="tools/users" element={<UsersPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="tools/actions" element={<ActionsPage />} />
-                <Route path="cache-control" element={<CacheControlPage />} />
-                <Route path="process-explorer" element={<ProcessExplorerPage />} />
-                <Route path="tools/permissions" element={<PermissionsPage />} />
-                <Route path="monitoring/ssh" element={<SshSessionsPage />} />
-                <Route path="monitoring/commands" element={<ServerCommandHistoryPage />} />
-                <Route path="tools/backups" element={<BackupsPage />} />
-                <Route path="commerce/settings" element={<MagentoSettingsPage />} />
-              </Route>
-            </Route>
-
-            {/* All authenticated routes */}
+            {/* All authenticated routes — ProtectedRoute enforces ADMIN_PATHS + PERMISSION_PATHS */}
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<AppLayout />}>
                 <Route index element={<MasterDashboardPage />} />
-                
+
                 {/* Monitoring */}
                 <Route path="system-overview" element={<SystemOverviewPage />} />
                 <Route path="sites" element={<SitesPage />} />
@@ -90,7 +76,20 @@ export default function App() {
                 <Route path="monitoring/users" element={<UserActivityPage />} />
                 <Route path="terminal-ai" element={<TerminalAiPage />} />
                 <Route path="system-health" element={<SystemHealthPage />} />
-                
+                <Route path="monitoring/ssh" element={<SshSessionsPage />} />
+                <Route path="monitoring/commands" element={<ServerCommandHistoryPage />} />
+
+                {/* Admin-only tools (ADMIN_PATHS checked in ProtectedRoute) */}
+                <Route path="tools/users" element={<UsersPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="tools/actions" element={<ActionsPage />} />
+                <Route path="tools/permissions" element={<PermissionsPage />} />
+
+                {/* Permission-matrix-gated pages */}
+                <Route path="cache-control" element={<CacheControlPage />} />
+                <Route path="process-explorer" element={<ProcessExplorerPage />} />
+                <Route path="tools/backups" element={<BackupsPage />} />
+
                 {/* Commerce */}
                 <Route path="commerce/sales" element={<SalesOverviewPage />} />
                 <Route path="commerce/products" element={<MagentoProductsPage />} />
@@ -99,37 +98,38 @@ export default function App() {
                 <Route path="commerce/inventory" element={<InventoryPage />} />
                 <Route path="commerce/cms" element={<MagentoCmsPage />} />
                 <Route path="commerce/indexers" element={<IndexersPage />} />
-                
+                <Route path="commerce/settings" element={<MagentoSettingsPage />} />
+
                 {/* Dev & CI/CD */}
-                <Route path="cicd" element={<PlaceholderPage title="CI/CD Pipeline" />} />
+                <Route path="cicd" element={<CiCdPage />} />
                 <Route path="scripts" element={<ActionsPage />} />
-                
+
                 {/* Automation */}
                 <Route path="crons" element={<CronsPage />} />
                 <Route path="queues" element={<QueuesPage />} />
-                
+
                 {/* Notifications */}
                 <Route path="notifications/telegram" element={<TelegramPage />} />
                 <Route path="notifications/push" element={<PushNotificationsPage />} />
-                
+
                 {/* Cloudflare */}
                 <Route path="cloudflare" element={<OverviewPage />} />
                 <Route path="traffic" element={<TrafficPage />} />
                 <Route path="performance" element={<PerformancePage />} />
                 <Route path="geography" element={<GeographyPage />} />
                 <Route path="security" element={<SecurityPage />} />
-                
-                {/* Tools (non-admin) */}
+
+                {/* Tools */}
                 <Route path="tools/db-health" element={<DbHealthPage />} />
                 <Route path="tools/audit" element={<AuditTrailPage />} />
                 <Route path="tools/system-audit" element={<SystemAuditPage />} />
                 <Route path="plans" element={<PlansPage />} />
                 <Route path="tasks" element={<TasksPage />} />
                 <Route path="tasks/:id" element={<TaskDetailPage />} />
-                
+
                 {/* ETL */}
                 <Route path="etl/status" element={<EtlStatusPage />} />
-                <Route path="etl/logs" element={<PlaceholderPage title="ETL Execution Logs" />} />
+                <Route path="etl/logs" element={<EtlLogsPage />} />
               </Route>
             </Route>
 

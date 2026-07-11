@@ -1,6 +1,6 @@
-import { Box, Typography, Card, CardContent, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Shield, Storage, Security, BugReport, Warning as WarningIcon, CheckCircle } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, Card, CardContent, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, FormControlLabel, Switch, Alert } from '@mui/material';
+import { Shield, Storage, Security, Warning as WarningIcon, CheckCircle, Refresh } from '@mui/icons-material';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 
@@ -58,9 +58,13 @@ function AuditCard({ title, value, icon, color, subtitle }: { title: string; val
 export default function SystemAuditPage() {
   const [data, setData] = useState<AuditData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadData = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     // Use existing overview + sites + ssh endpoints to compose audit data
     Promise.allSettled([
       apiClient.get('/api/monitor.php?action=overview'),
@@ -109,7 +113,7 @@ export default function SystemAuditPage() {
       }
 
       setData(auditData);
-    }).catch((e) => console.error('Audit load failed', e))
+    }).catch((e) => setLoadError(e.response?.data?.message || e.message || 'Failed to load audit data'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -117,7 +121,21 @@ export default function SystemAuditPage() {
     loadData();
   }, [loadData]);
 
+  useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (autoRefresh) {
+      timerRef.current = setInterval(loadData, 30000);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [autoRefresh, loadData]);
+
   if (loading && !data) return <LoadingState message="Running system audit..." />;
+
+  if (loadError && !data) return (
+    <Alert severity="error" sx={{ m: 2 }} action={<Button size="small" color="inherit" onClick={loadData}>Retry</Button>}>
+      {loadError}
+    </Alert>
+  );
 
   const services = data?.services || {};
   const summary = data?.service_summary || { total: 0, active: 0, inactive: 0, failed: 0 };
@@ -140,13 +158,30 @@ export default function SystemAuditPage() {
             Comprehensive health and security audit of the infrastructure.
           </Typography>
         </Box>
-        <Chip
-          icon={<CheckCircle sx={{ fontSize: 14 }} />}
-          label={`Last checked: ${new Date(data?.timestamp || Date.now()).toLocaleTimeString()}`}
-          size="small"
-          sx={{ bgcolor: 'rgba(74,222,128,0.1)', color: '#4ade80', fontWeight: 600 }}
-        />
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+          <Chip
+            icon={<CheckCircle sx={{ fontSize: 14 }} />}
+            label={`Last: ${new Date(data?.timestamp || Date.now()).toLocaleTimeString()}`}
+            size="small"
+            sx={{ bgcolor: 'rgba(74,222,128,0.1)', color: '#4ade80', fontWeight: 600 }}
+          />
+          <FormControlLabel
+            control={
+              <Switch size="small" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
+            }
+            label={<Typography variant="caption" sx={{ color: 'text.secondary' }}>Auto (30s)</Typography>}
+          />
+          <Button variant="outlined" size="small" startIcon={<Refresh />} onClick={loadData} disabled={loading}>
+            Refresh
+          </Button>
+        </Box>
       </Box>
+
+      {loadError && data && (
+        <Alert severity="error" sx={{ mb: 2 }} action={<Button size="small" color="inherit" onClick={loadData}>Retry</Button>}>
+          {loadError}
+        </Alert>
+      )}
 
       {/* Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -178,10 +213,10 @@ export default function SystemAuditPage() {
         <Grid size={{ xs: 6, md: 3 }}>
           <AuditCard
             title="Disk Usage"
-            value={data?.disk_usage[0]?.usage_pct ? `${data.disk_usage[0].usage_pct}%` : 'N/A'}
+            value={data?.disk_usage?.[0]?.usage_pct != null ? `${data.disk_usage[0].usage_pct}%` : 'N/A'}
             icon={<Storage sx={{ fontSize: 20 }} />}
             color="#3b82f6"
-            subtitle={data?.disk_usage[0]?.used ? `${data.disk_usage[0].used} used` : ''}
+            subtitle={data?.disk_usage?.[0]?.used ? `${data.disk_usage[0].used} used` : ''}
           />
         </Grid>
       </Grid>

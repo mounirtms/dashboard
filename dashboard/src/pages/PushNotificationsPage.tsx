@@ -36,6 +36,8 @@ export default function PushNotificationsPage() {
   const [stats, setStats] = useState<PushStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  // Valid envs that match webpushr.php config keys: dashboard, production, beta, dev
+  const VALID_ENVS = ['dashboard', 'production', 'beta', 'dev'];
   const [selectedEnv, setSelectedEnv] = useState('production');
   const [segments, setSegments] = useState<SegmentType[]>([]);
   const [payload, setPayload] = useState({
@@ -156,9 +158,9 @@ export default function PushNotificationsPage() {
   }, [activeTab]);
 
   const handleEnvChange = (env: string) => {
+    // useEffect on selectedEnv will trigger loadStats + loadAnalytics automatically
     setSelectedEnv(env);
     setPayload({ ...payload, env, segment_id: '' });
-    setLoading(true);
   };
 
   const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,6 +210,7 @@ export default function PushNotificationsPage() {
     try {
       await sendPushNotification({
         ...payload,
+        env: selectedEnv,
         icon: iconUrl || undefined,
         image: imageUrl || undefined,
         tag: tag || undefined,
@@ -240,6 +243,7 @@ export default function PushNotificationsPage() {
       const scheduledAt = `${scheduleDate}T${scheduleTime}`;
       await sendPushNotification({ 
         ...payload, 
+        env: selectedEnv,
         scheduled_at: scheduledAt,
         icon: iconUrl || undefined,
         image: imageUrl || undefined,
@@ -301,7 +305,7 @@ export default function PushNotificationsPage() {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {['dashboard', 'production', 'beta', 'tsdnd', 'dev'].map((env) => (
+          {VALID_ENVS.map((env) => (
             <Chip
               key={env}
               label={env.charAt(0).toUpperCase() + env.slice(1)}

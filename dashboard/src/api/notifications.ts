@@ -3,6 +3,7 @@ import apiClient from './client';
 export interface TelegramStats {
   bot_username: string;
   webhook_status: boolean;
+  webhook_url?: string;
   auth_count: number;
   alerts_enabled: boolean;
 }
@@ -15,19 +16,29 @@ export interface TelegramLog {
 }
 
 export async function fetchTelegramStats(): Promise<TelegramStats> {
-  const { data } = await apiClient.get('/api/monitor.php?action=alerts');
-  // Re-mapping from the complex alert history to simple stats for now
+  const { data } = await apiClient.get('/api/monitor.php?action=telegram_stats');
   return {
-    bot_username: '@ServerNotif205bot',
-    webhook_status: true,
-    auth_count: data.stats?.authorized_users || 1,
-    alerts_enabled: true
+    bot_username: data.bot_username || '@ServerNotif205bot',
+    webhook_status: data.webhook_status === true,
+    webhook_url: data.webhook_url || '',
+    auth_count: data.auth_count ?? 1,
+    alerts_enabled: data.alerts_enabled !== false,
   };
 }
 
+export async function fetchTelegramRecentLogs(): Promise<TelegramLog[]> {
+  const { data } = await apiClient.get('/api/monitor.php?action=telegram_stats');
+  return (data.recent_logs || []).map((l: any) => ({
+    timestamp: l.timestamp || '',
+    user: l.user || 'System',
+    command: l.command || '',
+    status: l.status || 'Unknown',
+  }));
+}
+
 export async function sendTelegramTest(): Promise<any> {
-  const { data } = await apiClient.post('/api/monitor.php?action=cloudflare_action', {
-    action: 'test_telegram'
+  const { data } = await apiClient.post('/api/monitor.php?action=telegram_action', {
+    command: 'test'
   });
   return data;
 }

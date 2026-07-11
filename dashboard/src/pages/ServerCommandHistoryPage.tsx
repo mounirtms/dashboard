@@ -1,5 +1,5 @@
-import { Box, Typography, Card, CardContent, Grid, Button, TextField, Select, MenuItem, FormControl, InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, InputAdornment } from '@mui/material';
-import { History, Search, Refresh, Person, Terminal, FilterList, Download } from '@mui/icons-material';
+import { Box, Typography, Card, CardContent, Button, TextField, Select, MenuItem, FormControl, InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, InputAdornment, Alert } from '@mui/material';
+import { Search, Refresh, Person, Terminal, Download } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
@@ -14,6 +14,7 @@ export default function ServerCommandHistoryPage() {
   const [user, setUser] = useState('dev');
   const [history, setHistory] = useState<BashEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [limit, setLimit] = useState(200);
 
@@ -21,9 +22,13 @@ export default function ServerCommandHistoryPage() {
 
   const loadHistory = useCallback(() => {
     setLoading(true);
+    setError(null);
     apiClient.get(`/api/monitor.php?action=bash_history&username=${user}&lines=${limit}`)
       .then(({ data }) => setHistory(data.history || []))
-      .catch((e) => console.error(e))
+      .catch((e) => {
+        console.error(e);
+        setError(e.response?.data?.message || e.message || 'Failed to fetch command history');
+      })
       .finally(() => setLoading(false));
   }, [user, limit]);
 
@@ -57,7 +62,8 @@ export default function ServerCommandHistoryPage() {
             Unified view of bash command history across all system users.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+          {loading && <Typography variant="caption" sx={{ color: 'text.disabled' }}>Loading…</Typography>}
           <Button variant="outlined" startIcon={<Download />} onClick={handleDownload} disabled={filtered.length === 0}>
             Export
           </Button>
@@ -111,6 +117,12 @@ export default function ServerCommandHistoryPage() {
           />
         </CardContent>
       </Card>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       <TableContainer component={Paper} sx={{ bgcolor: 'transparent', border: '1px solid rgba(255,255,255,0.06)', flexGrow: 1, overflow: 'auto' }}>
         <Table stickyHeader size="small">

@@ -63,6 +63,7 @@ export default function MagentoCmsPage() {
   const [pagesPage, setPagesPage] = useState(0);
   const [blocksPage, setBlocksPage] = useState(0);
   const [homeUploadOpen, setHomeUploadOpen] = useState(false);
+  const [cmsDeleteDialog, setCmsDeleteDialog] = useState<{ open: boolean; type?: 'page' | 'block'; id?: number }>({ open: false });
   const [homeUploadSku, setHomeUploadSku] = useState('');
   const [homeUploadFiles, setHomeUploadFiles] = useState<File[]>([]);
   const [homeUploading, setHomeUploading] = useState(false);
@@ -99,14 +100,24 @@ export default function MagentoCmsPage() {
     Promise.all([loadPages(), loadBlocks(), loadCategories()]).finally(() => setLoading(false));
   }, [loadPages, loadBlocks, loadCategories]);
 
-  const handleDeletePage = async (id: number) => {
-    if (!confirm(`Delete CMS page #${id}?`)) return;
-    try { await deleteMagentoCmsPage(id, env); setToast({ message: 'CMS page deleted', severity: 'success' }); loadPages(); } catch (e: any) { setToast({ message: e.message, severity: 'error' }); }
-  };
+  const handleDeletePage = (id: number) => setCmsDeleteDialog({ open: true, type: 'page', id });
+  const handleDeleteBlock = (id: number) => setCmsDeleteDialog({ open: true, type: 'block', id });
 
-  const handleDeleteBlock = async (id: number) => {
-    if (!confirm(`Delete CMS block #${id}?`)) return;
-    try { await deleteMagentoCmsBlock(id, env); setToast({ message: 'CMS block deleted', severity: 'success' }); loadBlocks(); } catch (e: any) { setToast({ message: e.message, severity: 'error' }); }
+  const handleCmsDeleteConfirm = async () => {
+    const { type, id } = cmsDeleteDialog;
+    setCmsDeleteDialog({ open: false });
+    if (!id) return;
+    try {
+      if (type === 'page') {
+        await deleteMagentoCmsPage(id, env);
+        setToast({ message: 'CMS page deleted', severity: 'success' });
+        loadPages();
+      } else {
+        await deleteMagentoCmsBlock(id, env);
+        setToast({ message: 'CMS block deleted', severity: 'success' });
+        loadBlocks();
+      }
+    } catch (e: any) { setToast({ message: e.message, severity: 'error' }); }
   };
 
   const handleSave = async () => {
@@ -299,6 +310,22 @@ export default function MagentoCmsPage() {
           <Button variant="contained" onClick={handleHomeUpload} disabled={homeUploading || !homeUploadSku || !homeUploadFiles.length}>
             {homeUploading ? 'Uploading...' : 'Upload'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* CMS Delete Confirmation Dialog */}
+      <Dialog open={cmsDeleteDialog.open} onClose={() => setCmsDeleteDialog({ open: false })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ color: 'error.main' }}>
+          Delete CMS {cmsDeleteDialog.type === 'page' ? 'Page' : 'Block'}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            Delete CMS {cmsDeleteDialog.type} #{cmsDeleteDialog.id}? This cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCmsDeleteDialog({ open: false })} variant="outlined">Cancel</Button>
+          <Button onClick={handleCmsDeleteConfirm} variant="contained" color="error" autoFocus>Delete</Button>
         </DialogActions>
       </Dialog>
 

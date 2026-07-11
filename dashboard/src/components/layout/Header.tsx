@@ -169,22 +169,40 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </MenuItem>
         </Menu>
 
-        {/* User chip - clickable to settings */}
+        {/* User chip with role badge — clickable to settings */}
         {user && (
-          <Chip 
-            label={user.full_name || user.username} 
-            size="small" 
-            onClick={goToProfile}
-            sx={{ 
-              cursor: 'pointer',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-              color: '#3b82f6', 
-              fontWeight: 600,
-              fontSize: '0.7rem',
-              border: '1px solid rgba(59, 130, 246, 0.2)',
-              '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.2)' }
-            }} 
-          />
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.2 }}>
+            <Chip
+              label={user.full_name || user.username}
+              size="small"
+              onClick={goToProfile}
+              sx={{
+                cursor: 'pointer',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                color: '#3b82f6',
+                fontWeight: 600,
+                fontSize: '0.7rem',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.2)' }
+              }}
+            />
+            {user.role && (
+              <Typography sx={{
+                fontSize: '0.58rem',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: user.role === 'admin' ? '#ef4444'
+                     : user.role === 'editor' ? '#3b82f6'
+                     : user.role === 'moderator' ? '#f59e0b'
+                     : user.role === 'marketing' ? '#a78bfa'
+                     : '#64748b',
+                lineHeight: 1,
+              }}>
+                {user.role}
+              </Typography>
+            )}
+          </Box>
         )}
         
         <Button 

@@ -1,31 +1,41 @@
-import { Box, Typography, Button, IconButton, Tooltip, Chip, Card, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, IconButton, Tooltip, Chip, Card, Snackbar, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { Language, Refresh, OpenInNew, Delete, Settings, Storage, PowerSettingsNew, VisibilityOff } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { Language, Refresh, OpenInNew, Storage, PowerSettingsNew, VisibilityOff, Warning } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchSites, performSiteAction, SiteInfo } from '../api/system';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
+
+interface SiteActionDialog {
+  open: boolean;
+  site: string;
+  op: string;
+  label: string;
+  description: string;
+  color: 'warning' | 'error' | 'success';
+}
 
 export default function SitesPage() {
   const [sites, setSites] = useState<SiteInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState<string | null>(null);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
+  const [actionDialog, setActionDialog] = useState<SiteActionDialog>({ open: false, site: '', op: '', label: '', description: '', color: 'warning' });
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true);
     fetchSites()
       .then(setSites)
       .catch((e) => setNotify({ open: true, message: e.message, severity: 'error' }))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
-  const handleMaintenance = async (site: string, current: boolean) => {
-    const op = current ? 'maint_off' : 'maint_on';
+  const executeSiteAction = async (site: string, op: string) => {
+    setActionDialog(d => ({ ...d, open: false }));
     setExecuting(`${site}-${op}`);
     try {
       const res = await performSiteAction(site, op);
@@ -38,17 +48,27 @@ export default function SitesPage() {
     }
   };
 
-  const handleSuspendResume = async (site: string, op: 'suspend' | 'resume') => {
-    setExecuting(`${site}-${op}`);
-    try {
-      const res = await performSiteAction(site, op);
-      setNotify({ open: true, message: res.message, severity: res.success ? 'success' : 'error' });
-      if (res.success) loadData();
-    } catch (e: any) {
-      setNotify({ open: true, message: e.message, severity: 'error' });
-    } finally {
-      setExecuting(null);
-    }
+  const promptMaintenance = (site: string, current: boolean) => {
+    const op = current ? 'maint_off' : 'maint_on';
+    setActionDialog({
+      open: true, site, op,
+      label: current ? 'Disable Maintenance Mode' : 'Enable Maintenance Mode',
+      description: current
+        ? `Take ${site} out of maintenance mode — visitors will see the live site.`
+        : `Put ${site} into maintenance mode — visitors will see a 503 page.`,
+      color: current ? 'success' : 'warning',
+    });
+  };
+
+  const promptSuspend = (site: string, op: 'suspend' | 'resume') => {
+    setActionDialog({
+      open: true, site, op,
+      label: op === 'suspend' ? `Suspend ${site}` : `Resume ${site}`,
+      description: op === 'suspend'
+        ? `Suspend the ${site} site — it will become inaccessible to all visitors.`
+        : `Resume the ${site} site — restore normal access for all visitors.`,
+      color: op === 'suspend' ? 'error' : 'success',
+    });
   };
 
   const columns: GridColDef[] = [
@@ -134,7 +154,7 @@ export default function SitesPage() {
               <IconButton 
                 size="small" 
                 color={params.row.maintenance ? "success" : "warning"}
-                onClick={() => handleMaintenance(params.row.key, params.row.maintenance)}
+                onClick={() => promptMaintenance(params.row.key, params.row.maintenance)}
                 disabled={!!executing}
               >
                 {executing?.startsWith(params.row.key) ? <CircularProgress size={16} color="inherit" /> : <PowerSettingsNew sx={{ fontSize: 18 }} />}
@@ -147,7 +167,7 @@ export default function SitesPage() {
                 <IconButton
                   size="small"
                   color="success"
-                  onClick={() => handleSuspendResume(params.row.key, 'resume')}
+                  onClick={() => promptSuspend(params.row.key, 'resume')}
                   disabled={!!executing}
                 >
                   {executing?.startsWith(params.row.key) ? <CircularProgress size={16} color="inherit" /> : <VisibilityOff sx={{ fontSize: 18 }} />}
@@ -158,7 +178,7 @@ export default function SitesPage() {
                 <IconButton
                   size="small"
                   color="warning"
-                  onClick={() => handleSuspendResume(params.row.key, 'suspend')}
+                  onClick={() => promptSuspend(params.row.key, 'suspend')}
                   disabled={!!executing}
                 >
                   {executing?.startsWith(params.row.key) ? <CircularProgress size={16} color="inherit" /> : <VisibilityOff sx={{ fontSize: 18 }} />}
@@ -213,6 +233,30 @@ export default function SitesPage() {
           }}
         />
       </Card>
+
+      {/* Site Action Confirmation Dialog */}
+      <Dialog open={actionDialog.open} onClose={() => setActionDialog(d => ({ ...d, open: false }))}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Warning sx={{ color: `${actionDialog.color}.main`, fontSize: 22 }} />
+          {actionDialog.label}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">{actionDialog.description}</Typography>
+          <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.disabled', fontFamily: 'monospace' }}>
+            Site: <strong>{actionDialog.site}</strong> &nbsp;·&nbsp; Action: <strong>{actionDialog.op}</strong>
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setActionDialog(d => ({ ...d, open: false }))}>Cancel</Button>
+          <Button
+            variant="contained"
+            color={actionDialog.color}
+            onClick={() => executeSiteAction(actionDialog.site, actionDialog.op)}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar 
         open={notify.open} 

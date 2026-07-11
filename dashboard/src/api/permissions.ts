@@ -36,6 +36,17 @@ export interface RolePermissions {
   can_access_magento_cms: boolean;
   can_edit_cms: boolean;
   can_access_magento_settings: boolean;
+  // System & DevOps page-access permissions
+  can_access_cloudflare: boolean;
+  can_access_ssh_monitor: boolean;
+  can_access_command_audit: boolean;
+  can_access_user_activity: boolean;
+  can_access_system_audit: boolean;
+  can_access_plans: boolean;
+  can_access_cicd: boolean;
+  can_access_script_runner: boolean;
+  // ETL
+  can_access_etl: boolean;
   created_at: string;
   updated_at: string;
 }

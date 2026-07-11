@@ -1,6 +1,6 @@
-import { Box, Typography, Grid, Card, CardContent, Chip, Divider, Button } from '@mui/material';
-import { DataObject, Sync, CheckCircle, Warning, Error as ErrorIcon, History } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { Box, Typography, Grid, Card, CardContent, Chip, Divider, Button, Alert, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { DataObject, Sync, CheckCircle, Warning, Error as ErrorIcon, History, Refresh } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchEtlStatus, triggerPriceSync } from '../api/etl';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
@@ -11,26 +11,31 @@ export default function EtlStatusPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncConfirm, setSyncConfirm] = useState(false);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true);
+    setError(null);
     fetchEtlStatus()
       .then(setData)
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(e.response?.data?.message || e.message || 'Failed to load ETL status'))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleSync = async () => {
+    setSyncConfirm(false);
     setSyncing(true);
+    setSyncError(null);
     try {
       await triggerPriceSync();
       loadData();
     } catch (e: any) {
-      alert('Sync failed: ' + e.message);
+      setSyncError(e.response?.data?.message || e.message || 'Sync failed');
     } finally {
       setSyncing(false);
     }
@@ -49,15 +54,31 @@ export default function EtlStatusPage() {
             Data synchronization between SQL Server (MDM/CEGID) and Magento.
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
-          startIcon={<Sync />} 
-          onClick={handleSync}
-          disabled={syncing}
-        >
-          {syncing ? 'Syncing...' : 'Trigger Full Sync'}
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button variant="outlined" startIcon={<Refresh />} onClick={loadData} disabled={loading}>
+            Refresh
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<Sync />} 
+            onClick={() => setSyncConfirm(true)}
+            disabled={syncing}
+          >
+            {syncing ? 'Syncing...' : 'Trigger Full Sync'}
+          </Button>
+        </Box>
       </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} action={<Button size="small" onClick={loadData}>Retry</Button>}>
+          {error}
+        </Alert>
+      )}
+      {syncError && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setSyncError(null)}>
+          Sync failed: {syncError}
+        </Alert>
+      )}
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, md: 6 }}>
@@ -138,6 +159,26 @@ export default function EtlStatusPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Trigger Full Sync Confirmation Dialog */}
+      <Dialog open={syncConfirm} onClose={() => setSyncConfirm(false)}>
+        <DialogTitle>Trigger Full ETL Sync?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            This will trigger a full synchronization from MDM/CEGID → Magento,
+            including price sync and inventory updates. The operation may take several minutes.
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1, color: 'warning.main' }}>
+            Do not navigate away during the sync process.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSyncConfirm(false)}>Cancel</Button>
+          <Button variant="contained" color="primary" startIcon={<Sync />} onClick={handleSync}>
+            Start Sync
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
