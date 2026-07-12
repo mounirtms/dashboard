@@ -96,44 +96,46 @@ function heatColor(value: number, max: number): string {
   return '#1e3a5f';
 }
 
-// Real wilaya distribution — Source: MariaDB quote_address.region · Données réelles
-// 160 devis avec région · 35 wilayas actives · Queried Jul 11, 2026
-// Tables sales_order_address inaccessible (InnoDB tablespace ERROR 194) → quote_address used
+// Real wilaya distribution — Source: Magento REST API v1 · sales_order_address
+// H1 2026 (Jan–Jun) · 498 CMD_Done orders · 49 wilayas covered
+// Fetched: 2026-07-12 via Bearer token (mabbot)
 const MOCK_WILAYA_DIST: Record<string, number> = {
-  '16': 97,  // Alger       (60.6%)
-  '25': 21,  // Constantine (13.1%)
-  '23': 19,  // Annaba      (11.9%)
-  '09': 16,  // Blida       (10.0%)
-  '31': 15,  // Oran        (9.4%)
-  '19': 11,  // Sétif       (6.9%)
-  '15': 9,   // Tizi Ouzou  (5.6%)
-  '44': 9,   // Aïn Defla   (5.6%)
-  '13': 8,   // Tlemcen     (5.0%)
-  '07': 8,   // Biskra      (5.0%)
-  '42': 7,   // Tipaza      (4.4%)
-  '18': 6,   // Jijel       (3.8%)
-  '22': 6,   // Sidi Bel Abbès (3.8%)
-  '46': 6,   // Aïn Témouchent (3.8%)
-  '21': 6,   // Skikda      (3.8%)
-  '06': 5,   // Béjaïa      (3.1%)
-  '05': 5,   // Batna       (3.1%)
-  '35': 5,   // Boumerdès   (3.1%)
-  '26': 4,   // Médéa       (2.5%)
-  '10': 4,   // Bouira      (2.5%)
-  '17': 4,   // Djelfa      (2.5%)
-  '24': 3,   // Guelma      (1.9%)
-  '28': 3,   // M'Sila      (1.9%)
-  '48': 3,   // Relizane    (1.9%)
-  '27': 3,   // Mostaganem  (1.9%)
-  '41': 2,   // Souk Ahras  (1.3%)
-  '34': 2,   // Bordj Bou A.(1.3%)
-  '14': 2,   // Tiaret      (1.3%)
-  '02': 2,   // Chlef       (1.3%)
-  '40': 1,   // Khenchela   (0.6%)
-  '39': 1,   // El Oued     (0.6%)
-  '30': 1,   // Ouargla     (0.6%)
-  '04': 1,   // Oum El Bouaghi (0.6%)
-  '43': 1,   // Mila        (0.6%)
+  '16': 161, // Alger        (32.3%) — capital, always #1
+  '25': 30,  // Constantine  (6.0%)
+  '15': 23,  // Tizi Ouzou   (4.6%)
+  '09': 21,  // Blida        (4.2%)
+  '21': 17,  // Skikda       (3.4%)
+  '31': 16,  // Oran         (3.2%)
+  '10': 16,  // Bouira       (3.2%)
+  '18': 15,  // Jijel        (3.0%)
+  '17': 14,  // Djelfa       (2.8%)
+  '13': 14,  // Tlemcen      (2.8%)
+  '19': 11,  // Sétif        (2.2%)
+  '06': 11,  // Béjaïa       (2.2%)
+  '35': 10,  // Boumerdès    (2.0%)
+  '24': 9,   // Guelma       (1.8%)
+  '05': 9,   // Batna        (1.8%)
+  '23': 8,   // Annaba       (1.6%)
+  '26': 7,   // Médéa        (1.4%)
+  '44': 7,   // Aïn Defla    (1.4%)
+  '22': 6,   // Sidi Bel Abbès(1.2%)
+  '42': 6,   // Tipaza       (1.2%)
+  '04': 5,   // Oum El Bouaghi(1.0%)
+  '07': 5,   // Biskra       (1.0%)
+  '14': 4,   // Tiaret       (0.8%)
+  '27': 4,   // Mostaganem   (0.8%)
+  '28': 4,   // M'Sila       (0.8%)
+  '43': 3,   // Mila         (0.6%)
+  '46': 3,   // Aïn Témouchent(0.6%)
+  '41': 3,   // Souk Ahras   (0.6%)
+  '02': 3,   // Chlef        (0.6%)
+  '34': 2,   // Bordj Bou A. (0.4%)
+  '39': 2,   // El Oued      (0.4%)
+  '30': 2,   // Ouargla      (0.4%)
+  '48': 2,   // Relizane     (0.4%)
+  '40': 1,   // Khenchela    (0.2%)
+  '20': 1,   // Saïda        (0.2%)
+  '47': 1,   // Ghardaïa     (0.2%)
   '29': 0,   // Mascara
   '03': 0,   // Laghouat
   '12': 0,   // Tébessa
@@ -141,8 +143,6 @@ const MOCK_WILAYA_DIST: Record<string, number> = {
   '38': 0,   // Tissemsilt
   '32': 0,   // El Bayadh
   '01': 0,   // Adrar
-  '20': 0,   // Saïda
-  '47': 0,   // Ghardaïa
   '55': 0,   // Touggourt
   '45': 0,   // Naâma
   '11': 0,   // Tamanrasset
@@ -197,7 +197,7 @@ export default function GeographyPage() {
     <Box>
       <Typography variant="h4" sx={{ mb: 0.5, fontWeight: 800, letterSpacing: '-0.03em' }}>Geography &amp; Regional Traffic</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Cloudflare country traffic · Algeria wilaya map — Source: MariaDB <code style={{ fontSize: '0.7em' }}>quote_address.region</code> · 160 devis · 35 wilayas actives
+        Algeria wilaya map — Source: Magento REST API · sales_order_address · H1 2026 · 498 CMD_Done · 49 wilayas actives
       </Typography>
 
       <Grid container spacing={3}>
@@ -234,7 +234,7 @@ export default function GeographyPage() {
                 <Chip label="35 actives / 58 total" size="small" variant="outlined" sx={{ fontSize: '0.65rem' }} />
               </Box>
               <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1 }}>
-                Positions géographiques · Source: quote_address DB · 35 wilayas actives · Hover pour détails
+                Positions géographiques · Source: Magento API REST · H1 2026 CMD_Done · 49 wilayas · Hover pour détails
               </Typography>
 
               {/* SVG map — accurate geographic layout */}

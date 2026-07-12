@@ -81,7 +81,11 @@ class Config {
         ];
 
         // Try loading from credentials file if tokens are empty
-        $credsFile = __DIR__ . '/magento_credentials.json';
+        // Primary: config/magento_credentials.json (global single source of truth)
+        // Fallback: api/magento_credentials.json (symlink to config/ or legacy location)
+        $credsFilePrimary  = dirname(__DIR__) . '/config/magento_credentials.json';
+        $credsFileFallback = __DIR__ . '/magento_credentials.json';
+        $credsFile = file_exists($credsFilePrimary) ? $credsFilePrimary : $credsFileFallback;
         if (file_exists($credsFile)) {
             $creds = json_decode(file_get_contents($credsFile), true);
             foreach (['prod', 'beta', 'tsdnd', 'dev', 'pim'] as $env) {

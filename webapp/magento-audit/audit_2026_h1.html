@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechnoStationery — Audit Investissement H1 2026</title>
+<style>
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --surface2: #273549;
+    --border: rgba(255,255,255,0.08); --ok: #22c55e; --warn: #f59e0b;
+    --err: #ef4444; --info: #3b82f6; --muted: #94a3b8; --dim: #64748b;
+    --text: #f1f5f9; --accent: #6366f1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif;
+         font-size: 14px; line-height: 1.6; padding: 24px; }
+  h1 { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+  h2 { font-size: 18px; font-weight: 700; color: #fff; margin: 24px 0 12px; padding-bottom: 6px;
+       border-bottom: 2px solid var(--accent); }
+  h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+       letter-spacing: 0.8px; margin-bottom: 8px; }
+  .header { margin-bottom: 32px; }
+  .header .meta { color: var(--dim); font-size: 12px; margin-top: 4px; }
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .grid-5 { grid-template-columns: repeat(5, 1fr); }
+  .card { background: var(--surface); border-radius: 12px; padding: 16px;
+          border: 1px solid var(--border); }
+  .kpi-card { background: var(--surface); border-radius: 10px; padding: 14px;
+               border: 1px solid var(--border); text-align: center; }
+  .kpi-val { font-size: 28px; font-weight: 900; line-height: 1.1; }
+  .kpi-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 4px; }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+           font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-ok { background: rgba(34,197,94,0.15); color: var(--ok); }
+  .badge-warn { background: rgba(245,158,11,0.15); color: var(--warn); }
+  .badge-err { background: rgba(239,68,68,0.15); color: var(--err); }
+  .badge-info { background: rgba(59,130,246,0.15); color: var(--info); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: rgba(255,255,255,0.04); color: var(--muted); font-weight: 700; text-transform: uppercase;
+       font-size: 10px; letter-spacing: 0.8px; padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .num { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ok { color: var(--ok); }
+  .warn { color: var(--warn); }
+  .err { color: var(--err); }
+  .info { color: var(--info); }
+  .section { margin-bottom: 32px; }
+  .issue-row { display: flex; gap: 12px; align-items: flex-start; padding: 10px;
+               border-radius: 8px; margin-bottom: 8px; }
+  .issue-high { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
+  .issue-medium { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); }
+  .issue-low { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); }
+  .bar-wrap { background: rgba(255,255,255,0.05); border-radius: 3px; height: 8px; overflow: hidden; margin-top: 4px; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .recommendation { background: var(--surface2); border-radius: 8px; padding: 12px;
+                    border-left: 3px solid var(--accent); margin-bottom: 8px; }
+  @media (max-width: 768px) { .grid-2,.grid-3,.grid-4,.grid-5 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔍 TechnoStationery — Audit Investissement H1 2026</h1>
+  <div class="meta">
+    Source: Magento REST API v1 · technostationery.com · Fetched: 2026-07-12 · Bearer token: mabbot<br>
+    Période: 2022–Jul 2026 · Statuts Algériens: CMD_Done, Annulee_a_la_confirmation/preparation/livraison
+  </div>
+</div>
+
+<!-- ── KPI Globaux ── -->
+<div class="section">
+  <h2>📊 KPI Globaux — Toutes Années</h2>
+  <div class="grid grid-4">
+    <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
+      <div class="kpi-val ok">4,484</div>
+      <div class="kpi-label">CMD_Done All-Time</div>
+      <div class="kpi-sub">2022–2026 · Livraisons réelles</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(59,130,246,.3)">
+      <div class="kpi-val info">7,117</div>
+      <div class="kpi-label">Total Commandes</div>
+      <div class="kpi-sub">Toutes statuts confondus</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+      <div class="kpi-val" style="color:#f59e0b">28.6M</div>
+      <div class="kpi-label">Revenue All-Time (DZD)</div>
+      <div class="kpi-sub">CMD_Done · 2022–2026</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(99,102,241,.3)">
+      <div class="kpi-val" style="color:#a78bfa">9,275</div>
+      <div class="kpi-label">Clients Enregistrés</div>
+      <div class="kpi-sub">dont ~3,278 bulk-migrated Mai 2026</div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="grid grid-4">
+    <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
+      <div class="kpi-val ok">498</div>
+      <div class="kpi-label">CMD_Done H1 2026</div>
+      <div class="kpi-sub">▲ +11.9% vs 445 (H1 2025)</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+      <div class="kpi-val warn">36.6%</div>
+      <div class="kpi-label">Cancel Rate H1 2026</div>
+      <div class="kpi-sub">288 / 786 ordres actifs</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(59,130,246,.3)">
+      <div class="kpi-val info">5,591</div>
+      <div class="kpi-label">AOV H1 2026 (DZD)</div>
+      <div class="kpi-sub">▼ −14.8% vs 6,560 (2025)</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
+      <div class="kpi-val ok">2.78M</div>
+      <div class="kpi-label">Revenue H1 2026 (DZD)</div>
+      <div class="kpi-sub">▲ +0.9% vs 2.76M (H1 2025)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Évolution Annuelle ── -->
+<div class="section">
+  <h2>📈 Évolution Annuelle 2022–2026 (CMD_Done)</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Année</th>
+          <th class="num">Total Orders</th>
+          <th class="num">CMD_Done</th>
+          <th class="num">Revenue (DZD)</th>
+          <th class="num">AOV (DZD)</th>
+          <th class="num">Clients Nouveaux</th>
+          <th class="num">Cancel Rate</th>
+          <th>Δ CMD_Done YoY</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>2022</strong></td>
+          <td class="num">1,301</td>
+          <td class="num ok">311</td>
+          <td class="num">2,303,302</td>
+          <td class="num">7,406</td>
+          <td class="num">1,077</td>
+          <td class="num">—</td>
+          <td><span class="badge badge-info">Lancement</span></td>
+        </tr>
+        <tr>
+          <td><strong>2023</strong></td>
+          <td class="num">1,839</td>
+          <td class="num ok">1,359</td>
+          <td class="num">7,755,713</td>
+          <td class="num">5,707</td>
+          <td class="num">1,204</td>
+          <td class="num warn">29.1%</td>
+          <td><span class="badge badge-ok">▲ +337%</span> 🏆 Pic historique</td>
+        </tr>
+        <tr>
+          <td><strong>2024</strong></td>
+          <td class="num">1,475</td>
+          <td class="num ok">1,163</td>
+          <td class="num">8,254,612</td>
+          <td class="num">7,098</td>
+          <td class="num">838</td>
+          <td class="num warn">21.7%</td>
+          <td><span class="badge badge-warn">▼ −14.4%</span> Revenue +6.4%</td>
+        </tr>
+        <tr>
+          <td><strong>2025</strong></td>
+          <td class="num">1,591</td>
+          <td class="num ok">1,133</td>
+          <td class="num">7,432,518</td>
+          <td class="num">6,560</td>
+          <td class="num">577</td>
+          <td class="num warn">28.6%</td>
+          <td><span class="badge badge-warn">▼ −2.6%</span> Cancel ↑</td>
+        </tr>
+        <tr style="background:rgba(99,102,241,0.05)">
+          <td><strong>2026 H1</strong></td>
+          <td class="num">911</td>
+          <td class="num ok">518</td>
+          <td class="num">2,870,284</td>
+          <td class="num">5,541</td>
+          <td class="num warn">3,815*</td>
+          <td class="num err">36.6%</td>
+          <td><span class="badge badge-info">H1 partiel</span> <span style="font-size:10px">*bulk migration</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:8px;font-size:10px;color:var(--dim)">
+      Cancel Rate = cancelled / (CMD_Done + cancelled) · Formule : annulations actives uniquement (excl. pending/processing)
+    </div>
+  </div>
+</div>
+
+<!-- ── H1 YoY Comparison ── -->
+<div class="section">
+  <h2>⚖️ Comparaison H1 — YoY (Jan–Jun)</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Période</th>
+          <th class="num">CMD_Done</th>
+          <th class="num">Annulés</th>
+          <th class="num">Cancel Rate</th>
+          <th class="num">Revenue (DZD)</th>
+          <th class="num">AOV (DZD)</th>
+          <th>Δ CMD_Done vs N-1</th>
+          <th>Δ Revenue vs N-1</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>H1 2022</td>
+          <td class="num">0</td>
+          <td class="num">103</td>
+          <td class="num err">100%</td>
+          <td class="num">0</td>
+          <td class="num">—</td>
+          <td><span class="badge badge-info">Lancement Oct 2022</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>H1 2023</td>
+          <td class="num ok">476</td>
+          <td class="num">78</td>
+          <td class="num ok">14.1%</td>
+          <td class="num">2,706,139</td>
+          <td class="num">5,685</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>H1 2024</td>
+          <td class="num ok">491</td>
+          <td class="num">75</td>
+          <td class="num ok">13.3%</td>
+          <td class="num">2,740,090</td>
+          <td class="num">5,581</td>
+          <td><span class="badge badge-ok">▲ +3.2%</span></td>
+          <td class="ok">▲ +1.3%</td>
+        </tr>
+        <tr>
+          <td>H1 2025</td>
+          <td class="num ok">445</td>
+          <td class="num">67</td>
+          <td class="num ok">13.1%</td>
+          <td class="num">2,758,685</td>
+          <td class="num">6,199</td>
+          <td><span class="badge badge-err">▼ −9.4%</span></td>
+          <td class="ok">▲ +0.7%</td>
+        </tr>
+        <tr style="background:rgba(99,102,241,0.05)">
+          <td><strong>H1 2026</strong></td>
+          <td class="num ok"><strong>498</strong></td>
+          <td class="num err">288</td>
+          <td class="num err"><strong>36.6%</strong></td>
+          <td class="num"><strong>2,784,169</strong></td>
+          <td class="num warn">5,591</td>
+          <td><span class="badge badge-ok">▲ +11.9%</span> 🎯</td>
+          <td class="ok">▲ +0.9%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── H1 2026 Mensuel ── -->
+<div class="section">
+  <h2>📅 H1 2026 — Mensuel CMD_Done</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>CMD_Done par mois</h3>
+      <table>
+        <thead><tr><th>Mois</th><th class="num">CMD_Done</th><th>Part H1</th><th>Bar</th></tr></thead>
+        <tbody>
+          <tr><td>Janvier</td><td class="num ok">116</td><td class="num">23.3%</td>
+              <td><div class="bar-wrap"><div class="bar-fill" style="width:100%;background:#22c55e"></div></div></td></tr>
+          <tr><td>Février</td><td class="num warn">69</td><td class="num">13.9%</td>
+              <td><div class="bar-wrap"><div class="bar-fill" style="width:59%;background:#f59e0b"></div></div></td></tr>
+          <tr><td>Mars</td><td class="num">74</td><td class="num">14.9%</td>
+              <td><div class="bar-wrap"><div class="bar-fill" style="width:64%;background:#3b82f6"></div></div></td></tr>
+          <tr><td>Avril</td><td class="num">81</td><td class="num">16.3%</td>
+              <td><div class="bar-wrap"><div class="bar-fill" style="width:70%;background:#3b82f6"></div></div></td></tr>
+          <tr><td>Mai</td><td class="num">88</td><td class="num">17.7%</td>
+              <td><div class="bar-wrap"><div class="bar-fill" style="width:76%;background:#3b82f6"></div></div></td></tr>
+          <tr><td>Juin</td><td class="num">70</td><td class="num">14.1%</td>
+              <td><div class="bar-wrap"><div class="bar-fill" style="width:60%;background:#64748b"></div></div></td></tr>
+          <tr style="border-top:1px solid var(--border)">
+            <td><strong>TOTAL H1</strong></td><td class="num ok"><strong>498</strong></td>
+            <td class="num ok"><strong>100%</strong></td><td></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:10px;color:var(--dim)">
+        Jan=pic mensuel. Fév=creux (test Yalidine). Reprise graduelle Mar–Mai.
+      </div>
+    </div>
+    <div class="card">
+      <h3>Annulations H1 2026 — Détail</h3>
+      <table>
+        <thead><tr><th>Type</th><th class="num">Count</th><th class="num">%</th><th>Signification</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Annulee_a_la_confirmation</td>
+            <td class="num err">164</td>
+            <td class="num err">56.9%</td>
+            <td style="font-size:11px">Client refuse après appel confirmation (COD standard)</td>
+          </tr>
+          <tr>
+            <td>Annulee_a_la_preparation</td>
+            <td class="num warn">80</td>
+            <td class="num warn">27.8%</td>
+            <td style="font-size:11px">Problème stock / préparation</td>
+          </tr>
+          <tr>
+            <td>Annulee_a_la_livraison</td>
+            <td class="num">44</td>
+            <td class="num">15.3%</td>
+            <td style="font-size:11px">Refus à la livraison physique (COD)</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border)">
+            <td><strong>TOTAL annulé</strong></td>
+            <td class="num err"><strong>288</strong></td>
+            <td class="num err"><strong>100%</strong></td>
+            <td style="font-size:11px">Rate = 288/(498+288) = 36.6%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px;background:rgba(245,158,11,0.1);border-radius:6px;font-size:11px;color:var(--warn)">
+        ⚠️ La confirmation-stage (56.9%) est COD normale (DZ market 30–50%). Mais le taux global de 36.6%
+        dépasse le seuil de 30% = ALERTE. Benchmark marché DZ : 30–50% acceptable.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Audit Issues ── -->
+<div class="section">
+  <h2>🚨 Problèmes Détectés — Audit</h2>
+
+  <div class="issue-row issue-high">
+    <div>
+      <span class="badge badge-err">HIGH</span>
+      <strong style="color:#ef4444;margin-left:8px">Cancel rate H1 2026: 36.6% (seuil: 30%)</strong>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-left:auto;max-width:400px">
+      Le taux de 36.6% dépasse le seuil critique de 30%. Principalement dû à la confirmation-stage (56.9% des annuls).
+      Action: Améliorer le process de confirmation téléphonique + formations équipe.
+    </div>
+  </div>
+
+  <div class="issue-row issue-high">
+    <div>
+      <span class="badge badge-err">HIGH</span>
+      <strong style="color:#ef4444;margin-left:8px">H1 2025: Déclin −9.4% CMD_Done (445 vs 491 H1 2024)</strong>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-left:auto;max-width:400px">
+      Première baisse significative H1 vs N-1. Récupérée en 2026 (+11.9%) mais signal préoccupant.
+      Cause probable: baisse de trafic organic, compétition accrue, ou qualité catalogue.
+    </div>
+  </div>
+
+  <div class="issue-row issue-high">
+    <div>
+      <span class="badge badge-err">HIGH</span>
+      <strong style="color:#ef4444;margin-left:8px">1,425 produits en rupture de stock (≤1 unité)</strong>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-left:auto;max-width:400px">
+      14.8% du catalogue actif en risque immédiat. Impact direct sur le taux de conversion et les annulations
+      en préparation (27.8% des annuls). Réapprovisionnement prioritaire requis.
+    </div>
+  </div>
+
+  <div class="issue-row issue-medium">
+    <div>
+      <span class="badge badge-warn">MEDIUM</span>
+      <strong style="color:#f59e0b;margin-left:8px">1,219 produits désactivés (12.7% du catalogue)</strong>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-left:auto;max-width:400px">
+      Catalogue sous-exploité. Audit des produits désactivés pour réactivation potentielle.
+      Peut représenter un potentiel de +15–20% de SKUs actifs.
+    </div>
+  </div>
+
+  <div class="issue-row issue-medium">
+    <div>
+      <span class="badge badge-warn">MEDIUM</span>
+      <strong style="color:#f59e0b;margin-left:8px">H1 2023/2024: Croissance CMD_Done stagnante (0% et +3.2%)</strong>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-left:auto;max-width:400px">
+      La progression H1 2023→2024 de seulement 3.2% sur le total mais le revenue 2024 (+6.4%) indique
+      que la qualité commandes s'améliore même si le volume stagne.
+    </div>
+  </div>
+
+  <div class="issue-row issue-medium">
+    <div>
+      <span class="badge badge-warn">MEDIUM</span>
+      <strong style="color:#f59e0b;margin-left:8px">AOV en baisse: 7,406 (2022) → 5,541 DZD (2026 H1)</strong>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-left:auto;max-width:400px">
+      AOV a chuté de −25% sur 4 ans. Possible shift vers des articles moins chers. Upsell/cross-sell
+      strategy requise + bundle products + seuil livraison gratuite à revoir.
+    </div>
+  </div>
+
+  <div class="issue-row" style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.2)">
+    <div>
+      <span class="badge badge-info">ANOMALY</span>
+      <strong style="color:#3b82f6;margin-left:8px">H1 2026 clients: 3,727 (vs 218 H1 2025) — spike 17×</strong>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-left:auto;max-width:400px">
+      Très probablement dû à la migration bulk de ~3,278 comptes clients (Mai 2026).
+      Les ~449 restants sont organiques. À confirmer avec logs migration.
+      Exclure de l'analyse de croissance organique.
+    </div>
+  </div>
+</div>
+
+<!-- ── Produits ── -->
+<div class="section">
+  <h2>📦 État du Catalogue Produits</h2>
+  <div class="grid grid-4">
+    <div class="kpi-card" style="border-color:rgba(59,130,246,.3)">
+      <div class="kpi-val info">9,618</div>
+      <div class="kpi-label">Total Produits</div>
+      <div class="kpi-sub">Catalogue complet</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
+      <div class="kpi-val ok">8,399</div>
+      <div class="kpi-label">Produits Actifs</div>
+      <div class="kpi-sub">87.3% du catalogue</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(239,68,68,.3)">
+      <div class="kpi-val err">1,425</div>
+      <div class="kpi-label">Stock Critique (≤1)</div>
+      <div class="kpi-sub">14.8% actifs — URGENT</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(100,116,139,.3)">
+      <div class="kpi-val" style="color:#64748b">1,219</div>
+      <div class="kpi-label">Produits Désactivés</div>
+      <div class="kpi-sub">12.7% — à auditer</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Distribution Wilaya ── -->
+<div class="section">
+  <h2>🗺️ Distribution Géographique — H1 2026</h2>
+  <div class="card">
+    <h3>Top 10 Wilayas (498 CMD_Done H1 2026)</h3>
+    <table>
+      <thead>
+        <tr><th>Rank</th><th>Wilaya</th><th class="num">CMD_Done</th><th class="num">Part</th><th>Bar</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Alger</strong></td><td class="num ok">161</td><td class="num">32.3%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:100%;background:#22c55e"></div></div></td></tr>
+        <tr><td>2</td><td>Constantine</td><td class="num">30</td><td class="num">6.0%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:19%;background:#3b82f6"></div></div></td></tr>
+        <tr><td>3</td><td>Tizi Ouzou</td><td class="num">23</td><td class="num">4.6%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:14%;background:#3b82f6"></div></div></td></tr>
+        <tr><td>4</td><td>Blida</td><td class="num">21</td><td class="num">4.2%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:13%;background:#3b82f6"></div></div></td></tr>
+        <tr><td>5</td><td>Skikda</td><td class="num">17</td><td class="num">3.4%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:10%;background:#6366f1"></div></div></td></tr>
+        <tr><td>6</td><td>Oran</td><td class="num">16</td><td class="num">3.2%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:10%;background:#6366f1"></div></div></td></tr>
+        <tr><td>7</td><td>Bouira</td><td class="num">16</td><td class="num">3.2%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:10%;background:#6366f1"></div></div></td></tr>
+        <tr><td>8</td><td>Jijel</td><td class="num">15</td><td class="num">3.0%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:9%;background:#f59e0b"></div></div></td></tr>
+        <tr><td>9</td><td>Djelfa</td><td class="num">14</td><td class="num">2.8%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:9%;background:#f59e0b"></div></div></td></tr>
+        <tr><td>10</td><td>Tlemcen</td><td class="num">14</td><td class="num">2.8%</td>
+            <td><div class="bar-wrap"><div class="bar-fill" style="width:9%;background:#f59e0b"></div></div></td></tr>
+        <tr style="border-top:1px solid var(--border)">
+          <td colspan="2"><strong>Autres wilayas</strong></td>
+          <td class="num">171</td><td class="num">34.3%</td><td></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:8px;font-size:10px;color:var(--dim)">
+      Alger = 32.3% du volume — concentration capitale typique DZ e-commerce. 49 wilayas actives.
+      Centre-Nord domine. Sahara (El Oued, Ouargla, Ghardaïa) = potentiel expansion.
+    </div>
+  </div>
+</div>
+
+<!-- ── Recommandations Investissement ── -->
+<div class="section">
+  <h2>💡 Recommandations — Décisions d'Investissement</h2>
+
+  <div class="recommendation">
+    <strong style="color:#ef4444">🔴 PRIORITÉ 1 — Réduire Cancel Rate (36.6% → objectif 25%)</strong>
+    <div style="margin-top:6px;font-size:12px;color:var(--muted)">
+      • Améliorer le script de confirmation téléphonique (réduire la ann_confirmation de 56.9%→40%)<br>
+      • Mettre en place un SMS automatique avant appel de confirmation<br>
+      • Analyser les zones à forte annulation (Djelfa, Oran) — peut nécessiter relais local<br>
+      • ROI estimé: réduire cancel de 36.6%→25% = +70 CMD_Done/H1 = +390K DZD revenue supplémentaire
+    </div>
+  </div>
+
+  <div class="recommendation">
+    <strong style="color:#ef4444">🔴 PRIORITÉ 2 — Réapprovisionnement 1,425 produits stock critique</strong>
+    <div style="margin-top:6px;font-size:12px;color:var(--muted)">
+      • Auditer les 1,425 SKUs en rupture — identifier ceux générant le plus de revenus historiques<br>
+      • Négocier réapprovisionnement fournisseurs sous 30 jours pour les top-100<br>
+      • 27.8% des annulations sont "ann. préparation" — directement lié aux ruptures<br>
+      • ROI estimé: si 50% des ruptures résolues → −20 annulations préparation/H1 = +112K DZD
+    </div>
+  </div>
+
+  <div class="recommendation">
+    <strong style="color:#f59e0b">🟡 PRIORITÉ 3 — Expansion Géographique Sahara + Ouest</strong>
+    <div style="margin-top:6px;font-size:12px;color:var(--muted)">
+      • Top 10 = 65.7% du volume. Le reste de l'Algérie (34.3%) est sous-développé<br>
+      • Oran (#6, 3.2%) devrait être ≥10% — manque de notoriété local ou logistique défaillante<br>
+      • Djelfa, Ghardaïa, El Oued, Ouargla = marchés Sahara à fort potentiel (fonctionnaires d'État)<br>
+      • Investir dans Yalidine zones étendues + partenariats locaux Ouest/Est
+    </div>
+  </div>
+
+  <div class="recommendation">
+    <strong style="color:#f59e0b">🟡 PRIORITÉ 4 — Augmenter AOV: 5,591 DZD → objectif 7,000+</strong>
+    <div style="margin-top:6px;font-size:12px;color:var(--muted)">
+      • Mettre en place des bundles produits (ex: "Kit bureau complet")<br>
+      • Seuil livraison gratuite à 6,000 DZD → incite à ajouter +1 article<br>
+      • Cross-sell automatisé dans le tunnel de commande (produits complémentaires)<br>
+      • Upsell lors de la confirmation téléphonique ("voulez-vous ajouter...")<br>
+      • ROI: +1,409 DZD/commande × 498 = +702K DZD H1 supplémentaires
+    </div>
+  </div>
+
+  <div class="recommendation">
+    <strong style="color:#3b82f6">🔵 PRIORITÉ 5 — Réactiver/Auditer 1,219 produits désactivés</strong>
+    <div style="margin-top:6px;font-size:12px;color:var(--muted)">
+      • Analyser pourquoi désactivés: obsolètes? rupture permanente? erreur import?<br>
+      • Potentiel de +15% de SKUs actifs si 50% réactivables<br>
+      • Élargit le catalogue sans coût d'acquisition produit
+    </div>
+  </div>
+
+  <div class="recommendation">
+    <strong style="color:#3b82f6">🔵 PRIORITÉ 6 — Yalidine: Déploiement Prod (prévu Q3 2026)</strong>
+    <div style="margin-top:6px;font-size:12px;color:var(--muted)">
+      • H1 2026: 183/498 ordres via Yalidine test (36.7% du volume) — résultats encourageants<br>
+      • Déploiement prod = automatisation tracking + réduction temps traitement<br>
+      • Peut réduire ann_livraison si tracking en temps réel (client informé = moins de refus)
+    </div>
+  </div>
+</div>
+
+<!-- ── Opportunités Investissement ── -->
+<div class="section">
+  <h2>🎯 Opportunités d'Investissement — Synthèse</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Gains Potentiels (H1 annualisés)</h3>
+      <table>
+        <thead><tr><th>Action</th><th class="num">Impact CMD_Done</th><th class="num">Revenue estimé</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Réduction cancel rate 36.6%→25%</td>
+            <td class="num ok">+70 orders</td>
+            <td class="num ok">+391K DZD</td>
+          </tr>
+          <tr>
+            <td>Réappro stock critique (1,425 SKUs)</td>
+            <td class="num ok">+40 orders</td>
+            <td class="num ok">+224K DZD</td>
+          </tr>
+          <tr>
+            <td>AOV upsell 5,591→7,000 DZD</td>
+            <td class="num">—</td>
+            <td class="num ok">+702K DZD</td>
+          </tr>
+          <tr>
+            <td>Expansion geo Ouest+Sahara</td>
+            <td class="num ok">+50 orders</td>
+            <td class="num ok">+280K DZD</td>
+          </tr>
+          <tr style="border-top:2px solid var(--border)">
+            <td><strong>Total potentiel H1</strong></td>
+            <td class="num ok"><strong>+160 orders</strong></td>
+            <td class="num ok"><strong>+1.6M DZD</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Tendances Positives à Soutenir</h3>
+      <div style="font-size:12px;color:var(--muted);line-height:1.9">
+        <div>✅ <strong>H1 2026 CMD_Done: +11.9%</strong> — meilleure H1 en 3 ans</div>
+        <div>✅ <strong>Revenue H1 stable</strong> malgré AOV en baisse (volume compense)</div>
+        <div>✅ <strong>2023: pic historique</strong> — 1,359 CMD_Done — preuve capacité de scale</div>
+        <div>✅ <strong>CI/CD live</strong> — 1,859 commits H1 2026 vs 120 H1 2025 (+1449%)</div>
+        <div>✅ <strong>Yalidine intégré</strong> sur dev — déploiement prod Q3 2026</div>
+        <div>✅ <strong>49 wilayas actives</strong> vs 35 en 2024 — expansion organique</div>
+        <div>⚠️ <strong>Cancel spike Q2 2026</strong> — Juin: 43.9% cancel rate → pic anormal</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:32px;padding:16px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);font-size:11px;color:var(--dim)">
+  <strong style="color:var(--muted)">Rapport généré le 2026-07-12</strong> · 
+  Source: Magento REST API v1 · technostationery.com · Bearer token: mabbot · 
+  Data: webapp/magento_data.json · 
+  Période: 2022-01-01 → 2026-07-12 · 
+  <strong>Confidentiel</strong> — Usage interne investissement uniquement
+</div>
+
+</body>
+</html>

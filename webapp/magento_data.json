@@ -1,0 +1,417 @@
+{
+  "meta": {
+    "fetched_at": "2026-07-12T17:36:20.384560Z",
+    "source": "Magento REST API v1"
+  },
+  "orders": {
+    "yearly": {
+      "2022": {
+        "total": 1301,
+        "by_status": {
+          "CMD_Done": 311,
+          "Annulee_a_la_confirmation": 162,
+          "Annulee_a_la_preparation": 16,
+          "Annulee_a_la_livraison": 57,
+          "processing": 0,
+          "pending": 0,
+          "complete": 651,
+          "canceled": 103,
+          "holded": 0
+        },
+        "monthly_cmd_done": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0,
+          "7": 0,
+          "8": 0,
+          "9": 0,
+          "10": 87,
+          "11": 141,
+          "12": 83
+        },
+        "revenue_dzd": 2303301.89,
+        "aov_dzd": 7406,
+        "top_wilaya": {
+          "Alger": 104,
+          "Blida": 26,
+          "Sétif": 20,
+          "Constantine": 12,
+          "Batna": 12,
+          "Laghouat": 10,
+          "Oran": 10,
+          "Bouira": 7,
+          "Tébessa": 7,
+          "Bordj Bou Arreridj": 7,
+          "Saïda": 6,
+          "Tipaza": 6,
+          "Béjaïa": 6,
+          "M'Sila": 6,
+          "Jijel": 5
+        }
+      },
+      "2023": {
+        "total": 1839,
+        "by_status": {
+          "CMD_Done": 1359,
+          "Annulee_a_la_confirmation": 219,
+          "Annulee_a_la_preparation": 17,
+          "Annulee_a_la_livraison": 55,
+          "processing": 0,
+          "pending": 0,
+          "complete": 0,
+          "canceled": 189,
+          "holded": 0
+        },
+        "monthly_cmd_done": {
+          "1": 101,
+          "2": 93,
+          "3": 70,
+          "4": 71,
+          "5": 88,
+          "6": 53,
+          "7": 95,
+          "8": 103,
+          "9": 296,
+          "10": 215,
+          "11": 85,
+          "12": 89
+        },
+        "revenue_dzd": 7755713.48,
+        "aov_dzd": 5707,
+        "top_wilaya": {
+          "Alger": 393,
+          "Oran": 110,
+          "Blida": 107,
+          "Constantine": 60,
+          "Sétif": 46,
+          "Annaba": 34,
+          "Tizi Ouzou": 34,
+          "Tiaret": 31,
+          "Béjaïa": 29,
+          "Bordj Bou Arreridj": 28,
+          "Chlef": 28,
+          "Batna": 27,
+          "Djelfa": 25,
+          "Laghouat": 24,
+          "Skikda": 23
+        }
+      },
+      "2024": {
+        "total": 1475,
+        "by_status": {
+          "CMD_Done": 1163,
+          "Annulee_a_la_confirmation": 126,
+          "Annulee_a_la_preparation": 33,
+          "Annulee_a_la_livraison": 55,
+          "processing": 1,
+          "pending": 1,
+          "complete": 0,
+          "canceled": 94,
+          "holded": 0
+        },
+        "monthly_cmd_done": {
+          "1": 73,
+          "2": 84,
+          "3": 86,
+          "4": 93,
+          "5": 85,
+          "6": 70,
+          "7": 67,
+          "8": 109,
+          "9": 182,
+          "10": 128,
+          "11": 104,
+          "12": 82
+        },
+        "revenue_dzd": 8254612.07,
+        "aov_dzd": 7098,
+        "top_wilaya": {
+          "Alger": 452,
+          "Blida": 59,
+          "Constantine": 42,
+          "Oran": 39,
+          "Boumerdès": 38,
+          "Annaba": 34,
+          "Skikda": 33,
+          "Tizi Ouzou": 29,
+          "Tlemcen": 27,
+          "Jijel": 26,
+          "Batna": 23,
+          "Oum El Bouaghi": 23,
+          "Bouira": 23,
+          "Béjaïa": 20,
+          "Guelma": 19
+        }
+      },
+      "2025": {
+        "total": 1591,
+        "by_status": {
+          "CMD_Done": 1133,
+          "Annulee_a_la_confirmation": 226,
+          "Annulee_a_la_preparation": 79,
+          "Annulee_a_la_livraison": 72,
+          "processing": 0,
+          "pending": 0,
+          "complete": 1,
+          "canceled": 74,
+          "holded": 0
+        },
+        "monthly_cmd_done": {
+          "1": 90,
+          "2": 80,
+          "3": 69,
+          "4": 78,
+          "5": 72,
+          "6": 56,
+          "7": 70,
+          "8": 132,
+          "9": 185,
+          "10": 123,
+          "11": 83,
+          "12": 95
+        },
+        "revenue_dzd": 7432517.77,
+        "aov_dzd": 6560,
+        "top_wilaya": {
+          "Alger": 372,
+          "Blida": 65,
+          "Constantine": 50,
+          "Oran": 49,
+          "Tizi Ouzou": 39,
+          "Tlemcen": 36,
+          "Annaba": 33,
+          "Skikda": 31,
+          "Chlef": 29,
+          "Guelma": 26,
+          "Boumerdès": 26,
+          "Béjaïa": 24,
+          "Jijel": 24,
+          "Aïn Defla": 22,
+          "Oum El Bouaghi": 21
+        }
+      },
+      "2026": {
+        "total": 911,
+        "by_status": {
+          "CMD_Done": 518,
+          "Annulee_a_la_confirmation": 182,
+          "Annulee_a_la_preparation": 84,
+          "Annulee_a_la_livraison": 44,
+          "processing": 40,
+          "pending": 1,
+          "complete": 0,
+          "canceled": 12,
+          "holded": 0
+        },
+        "monthly_cmd_done": {
+          "1": 116,
+          "2": 69,
+          "3": 74,
+          "4": 81,
+          "5": 88,
+          "6": 70,
+          "7": 20,
+          "8": 0,
+          "9": 0,
+          "10": 0,
+          "11": 0,
+          "12": 0
+        },
+        "revenue_dzd": 2870284.1,
+        "aov_dzd": 5541,
+        "top_wilaya": {
+          "Alger": 161,
+          "Constantine": 30,
+          "Tizi Ouzou": 23,
+          "Blida": 21,
+          "Skikda": 17,
+          "Oran": 16,
+          "Bouira": 16,
+          "Jijel": 15,
+          "Djelfa": 14,
+          "Tlemcen": 14,
+          "Sétif": 11,
+          "Béjaïa": 11,
+          "Boumerdès": 10,
+          "Guelma": 9,
+          "Batna": 9
+        }
+      }
+    },
+    "h1_by_year": {
+      "2022": {
+        "cmd_done": 0,
+        "cancelled": 103,
+        "ann_confirmation": 76,
+        "ann_preparation": 7,
+        "ann_livraison": 20,
+        "cancel_rate_pct": 100.0,
+        "revenue_dzd": 0.0,
+        "aov_dzd": 0,
+        "monthly": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        }
+      },
+      "2023": {
+        "cmd_done": 476,
+        "cancelled": 78,
+        "ann_confirmation": 50,
+        "ann_preparation": 7,
+        "ann_livraison": 21,
+        "cancel_rate_pct": 14.1,
+        "revenue_dzd": 2706138.58,
+        "aov_dzd": 5685,
+        "monthly": {
+          "1": 101,
+          "2": 93,
+          "3": 70,
+          "4": 71,
+          "5": 88,
+          "6": 53
+        }
+      },
+      "2024": {
+        "cmd_done": 491,
+        "cancelled": 75,
+        "ann_confirmation": 53,
+        "ann_preparation": 6,
+        "ann_livraison": 16,
+        "cancel_rate_pct": 13.3,
+        "revenue_dzd": 2740089.62,
+        "aov_dzd": 5581,
+        "monthly": {
+          "1": 73,
+          "2": 84,
+          "3": 86,
+          "4": 93,
+          "5": 85,
+          "6": 70
+        }
+      },
+      "2025": {
+        "cmd_done": 445,
+        "cancelled": 67,
+        "ann_confirmation": 30,
+        "ann_preparation": 12,
+        "ann_livraison": 25,
+        "cancel_rate_pct": 13.1,
+        "revenue_dzd": 2758684.74,
+        "aov_dzd": 6199,
+        "monthly": {
+          "1": 90,
+          "2": 80,
+          "3": 69,
+          "4": 78,
+          "5": 72,
+          "6": 56
+        }
+      },
+      "2026": {
+        "cmd_done": 498,
+        "cancelled": 288,
+        "ann_confirmation": 164,
+        "ann_preparation": 80,
+        "ann_livraison": 44,
+        "cancel_rate_pct": 36.6,
+        "revenue_dzd": 2784169.1,
+        "aov_dzd": 5591,
+        "monthly": {
+          "1": 116,
+          "2": 69,
+          "3": 74,
+          "4": 81,
+          "5": 88,
+          "6": 70
+        }
+      }
+    },
+    "status_totals": {}
+  },
+  "customers": {
+    "yearly": {
+      "2022": 1077,
+      "2023": 1204,
+      "2024": 838,
+      "2025": 577,
+      "2026": 3815
+    },
+    "total": 9275,
+    "h1_by_year": {
+      "2022": 475,
+      "2023": 458,
+      "2024": 352,
+      "2025": 218,
+      "2026": 3727
+    }
+  },
+  "products": {
+    "total": 9618,
+    "enabled": 8399,
+    "disabled": 1219,
+    "low_stock": 1425
+  },
+  "audit": {
+    "issues": [
+      {
+        "severity": "HIGH",
+        "issue": "Cancel rate 36.6% > 30% threshold",
+        "action": "Review confirmation process"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "H1 2023 growth only 0.0%",
+        "action": "Accelerate acquisition"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "H1 2024 growth only 3.2%",
+        "action": "Accelerate acquisition"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "H1 2025 orders declined -9.4%",
+        "action": "Urgent: check demand & marketing"
+      }
+    ],
+    "kpis": {
+      "total_orders_alltime": 7117,
+      "total_cmd_done_alltime": 4484,
+      "h1_2026": {
+        "cmd_done": 498,
+        "cancelled": 288,
+        "ann_confirmation": 164,
+        "ann_preparation": 80,
+        "ann_livraison": 44,
+        "cancel_rate_pct": 36.6,
+        "revenue_dzd": 2784169.1,
+        "aov_dzd": 5591,
+        "monthly": {
+          "1": 116,
+          "2": 69,
+          "3": 74,
+          "4": 81,
+          "5": 88,
+          "6": 70
+        }
+      },
+      "yoy_h1_growth": {
+        "H1_2022_2023": 0,
+        "H1_2023_2024": 3.2,
+        "H1_2024_2025": -9.4,
+        "H1_2025_2026": 11.9
+      },
+      "best_month_h1_2026": "Jan",
+      "worst_month_h1_2026": "Feb",
+      "total_customers": 9275,
+      "total_products": 9618
+    }
+  }
+}

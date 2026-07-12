@@ -134,15 +134,15 @@ export default function MagentoOrdersPage() {
       {env === 'prod' && (
         <Box sx={{ mb: 2, p: 1.5, borderRadius: 1.5, background: 'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(59,130,246,0.06) 100%)', border: '1px solid rgba(34,197,94,0.2)' }}>
           <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, display: 'block', mb: 1 }}>
-            Données réelles MariaDB · 2021–2025 · 2026 = 0 commandes
+            Données réelles · API Magento 2026-07-12 · 7,117 total orders · 4,484 CMD_Done · Cancel rate 36.6%
           </Typography>
           <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', alignItems: 'center' }}>
             {[
-              { yr: '2021', orders: '672',   aov: '11,962',  color: '#94a3b8' },
-              { yr: '2022', orders: '1,301', aov: '10,263',  color: '#64748b' },
-              { yr: '2023', orders: '1,839', aov: '20,400',  color: '#3b82f6' },
-              { yr: '2024', orders: '1,475', aov: '12,288',  color: '#22c55e' },
-              { yr: '2025*', orders: '404',  aov: '5,851',   color: '#f59e0b' },
+              { yr: '2022', orders: '1,301', aov: '7,406',  color: '#64748b' },
+              { yr: '2023', orders: '1,839', aov: '5,707',  color: '#3b82f6' },
+              { yr: '2024', orders: '1,475', aov: '7,098',  color: '#22c55e' },
+              { yr: '2025', orders: '1,591', aov: '6,560',  color: '#f59e0b' },
+              { yr: '2026 H1', orders: '911', aov: '5,541', color: '#a78bfa' },
             ].map(({ yr, orders, aov, color }) => (
               <Box key={yr} sx={{ borderLeft: `3px solid ${color}`, pl: 1.5 }}>
                 <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>{yr}</Typography>
@@ -151,9 +151,9 @@ export default function MagentoOrdersPage() {
               </Box>
             ))}
             <Box sx={{ ml: 'auto', textAlign: 'right' }}>
-              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>2023 → 2024</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 900, color: '#ef4444', lineHeight: 1 }}>−19.8%</Typography>
-              <Typography variant="caption" sx={{ color: 'text.disabled' }}>*2025 = Jan–Avr seulement</Typography>
+              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>H1 2025 → H1 2026</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 900, color: '#22c55e', lineHeight: 1 }}>+11.9%</Typography>
+              <Typography variant="caption" sx={{ color: 'text.disabled' }}>CMD_Done · 445 → 498</Typography>
             </Box>
           </Box>
         </Box>

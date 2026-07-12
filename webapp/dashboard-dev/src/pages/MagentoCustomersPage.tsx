@@ -137,15 +137,15 @@ export default function MagentoCustomersPage() {
       {env === 'prod' && (
         <Box sx={{ mb: 2, p: 1.5, borderRadius: 1.5, background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(34,197,94,0.05) 100%)', border: '1px solid rgba(99,102,241,0.2)' }}>
           <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, display: 'block', mb: 1 }}>
-            Inscriptions clients — Source: customer_entity · 2026 = aucun nouveau client
+            Inscriptions clients — Magento REST API 2026-07-12 · ⚠️ 2026 H1: 3,815 (incl. ~3,278 bulk-migrated May)
           </Typography>
           <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', alignItems: 'center' }}>
             {[
-              { yr: '2021', n: '1,764', color: '#94a3b8' },
               { yr: '2022', n: '1,077', color: '#64748b' },
               { yr: '2023', n: '1,204', color: '#3b82f6' },
               { yr: '2024', n: '838',   color: '#22c55e' },
-              { yr: '2025*', n: '150',  color: '#f59e0b' },
+              { yr: '2025', n: '577',   color: '#f59e0b' },
+              { yr: '2026 H1', n: '3,815', color: '#a78bfa', note: 'bulk+organic' },
             ].map(({ yr, n, color }) => (
               <Box key={yr} sx={{ borderLeft: `3px solid ${color}`, pl: 1.5 }}>
                 <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 700, textTransform: 'uppercase' }}>{yr}</Typography>
@@ -155,8 +155,8 @@ export default function MagentoCustomersPage() {
             ))}
             <Box sx={{ ml: 'auto', textAlign: 'right', borderLeft: '3px solid #6366f1', pl: 1.5 }}>
               <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 700 }}>TOTAL BASE</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 900, color: '#6366f1', lineHeight: 1 }}>5,033</Typography>
-              <Typography variant="caption" sx={{ color: 'text.disabled' }}>clients actifs · *2025 = Jan–Avr</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 900, color: '#6366f1', lineHeight: 1 }}>9,275</Typography>
+              <Typography variant="caption" sx={{ color: 'text.disabled' }}>clients enregistrés · API prod</Typography>
             </Box>
           </Box>
         </Box>
