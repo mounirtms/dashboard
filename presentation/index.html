@@ -755,7 +755,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
     </div>
     <div class="col">
       <div class="panel">
-        <h3>Resource Utilization — Current (Jul 7)</h3>
+        <h3>Resource Utilization — Current (Jul 12)</h3>
         <div class="pbar-row" style="margin-top:8px"><div class="pbar-label"><span>CPU (avg)</span><span>~18%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:18%;background:var(--ok)"></div></div></div>
         <div class="pbar-row"><div class="pbar-label"><span>RAM (used)</span><span>~40%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:40%;background:var(--accent)"></div></div></div>
         <div class="pbar-row"><div class="pbar-label"><span>MariaDB buffer pool</span><span>8 GB</span></div><div class="pbar-track"><div class="pbar-fill" style="width:25%;background:var(--accent2)"></div></div></div>
@@ -1162,7 +1162,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <h3>Key Metric</h3>
         <div style="display:flex;gap:16px">
           <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent)">911</div><div style="font-size:10px;color:var(--muted)">Total Orders H1 2026</div></div>
-          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--ok)">DZD 5,541</div><div style="font-size:10px;color:var(--muted)">AOV (CMD_Done)</div></div>
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--ok)">DZD 5,591</div><div style="font-size:10px;color:var(--muted)">AOV (CMD_Done)</div></div>
           <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent2)">DZD 2.78M</div><div style="font-size:10px;color:var(--muted)">Revenue H1 2026</div></div>
         </div>
       </div>
@@ -2785,13 +2785,13 @@ const NOTES = {
   s6:  'Timeline highlights: Oct 2024 init -> Jan 2026=462 commits (mega sprint) -> Apr 2026=535 (all-time peak) -> Jun 9=malware+22CVEs fixed -> Jun 10=Magento 2.4.6-p15 -> Jun 22=2 PHP shells removed -> Jul 1=CI/CD pipeline DND France -> Jul 11=85 Yalidine unit tests. Focus: Yalidine prod deploy via CI/CD.',
   s7:  'Phase 2 divider. Server: ded701.inmotionhosting.com. AlmaLinux 8.10, Xeon E3-1240v3, 8 cores, 32GB. Stack: Apache 2.4.66, PHP-FPM 8.2.30, MariaDB 10.6.17, Redis, Varnish. Prod domain: technostationery.com. Dev: dev.technostationery.com.',
   s8:  'Server hardware. 8 cores, 32GB RAM. May 5 crisis: QoderCLI AI coding tool running on prod server (76% CPU). Policy now: dev tools banned from prod. Dev work on dev.technostationery.com only.',
-  s9:  'MariaDB: innodb_buffer_pool=2G (65% slow query reduction). slow_query_log enabled. Redis: maxmemory 1G allkeys-lru, 84.3% hit rate (target 85%). Buffer pool fix most impactful single tuning.',
+  s9:  'MariaDB: innodb_buffer_pool=8G (65% slow query reduction). slow_query_log enabled. Redis: maxmemory 1G allkeys-lru, 84.3% hit rate (target 85%). Buffer pool tuned May 5 crisis fix — DB Buffer Pool 128MB→8G.',
   s10: 'Apache: Mar 2026 640K requests anomaly — UNKNOWN root cause (MEDIUM confidence). SSH: 53,269 historical attacks. fail2ban Jun 14: 5 attempts/10min -> 1h ban. Custom port. Brute-force down 99%.',
   s11: 'Phase 3 divider. MariaDB prod: 7,117 total orders. 4,484 CMD_Done (valid). 1,899 cancelled (36.6% — NORMAL for DZ e-commerce COD model, industry 30-50%). 9,275 registered customers. 2022-2026 period.',
   s12: 'Monthly CMD_Done 2026: Jan=116, Feb=69, Mar=74, Apr=81, May=88, Jun=70. Total H1=498. 911 total orders H1 (786 actifs = 498 CMD_Done + 288 annulés + 125 pending). 288 cancelled (36.6%). Revenue H1=2.78M DZD. AOV=5,591 DZD. Yalidine: 183/498 orders (36.7%).',
   s13: 'Cancel breakdown: Annulee_a_la_confirmation=164(56.9%), Annulee_a_la_preparation=80, Annulee_a_la_livraison=44, canceled(Magento)=6. Custom Algerian workflow statuses. COD cash-on-delivery model = high confirmation-stage cancels. DZ industry benchmark: 30-50%.',
   s14: 'CONFIRMED: May 2026 = bulk admin guest-to-registered conversion. 3,278 accounts. Password reset emails sent. Monthly organic: Jan=54, Feb=40, Mar=42, Apr=80, Jun=233, Jul=88. True organic base ~5,997. Total: 9,275.',
-  s15: 'Top products H1 2026: art supplies dominate. #1 Carton Toile (289 units). 9,618 catalog products (8,399 enabled). 694 categories. Yalidine: 183/498 CMD_Done orders (36.7%). Total H1 orders=911. AOV=5,541 DZD. H1 2026 revenue=2.78M DZD (CMD_Done only: 5,591 DZD AOV).',
+  s15: 'Top products H1 2026: art supplies dominate. #1 Carton Toile (289 units). 9,618 catalog products (8,399 enabled). 694 categories. Yalidine: 183/498 CMD_Done orders (36.7%). Total H1 orders=911. AOV=5,591 DZD. H1 2026 revenue=2.78M DZD (CMD_Done: 2,784,169 DZD ÷ 498 orders).',
   s16: 'Phase 4 divider. YoY and geographic analysis. H1 2025 vs H1 2026. Algeria wilaya choropleth. Shipping data shows Yalidine coverage.',
   s17: 'YoY: CMD_Done orders +11.9% (445→498). Revenue H1 2025=2.76M, H1 2026=2.78M (+0.9%). AOV H1 2025=6,199 vs H1 2026=5,591 (−9.8%). Cancel rate: H1 2025=13.1% vs H1 2026=36.6% (+23.5pp — COD model expansion). Customers cumul. end-2025=5,460 → 9,275 (+69.9% incl. 3,278 bulk May 2026).',
   s17b:'5-year CMD_Done: 2022=311, 2023=1,359(+337%), 2024=1,163(−14.4% orders but revenue record 8.25M), 2025=1,133(−2.6%), 2026 H1=498. Revenue: 2022=2.3M, 2023=7.76M, 2024=8.25M(record), 2025=7.43M, 2026 H1=2.78M. All-time: 4,484 CMD_Done, 28.6M DZD. Peak orders year: 2023. Peak revenue year: 2024. AOVs: 2022=7,406, 2023=5,707, 2024=7,098, 2025=6,560, 2026H1=5,591.',
