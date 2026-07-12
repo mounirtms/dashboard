@@ -626,40 +626,32 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       </div>
     </div>
     <div class="col">
-      <div class="panel" style="flex:.55">
+      <div class="panel" style="flex:.45">
         <h3>Branch Structure</h3>
         <div class="pbar-row"><div class="pbar-label"><span>dev (active / staging)</span><span style="color:var(--accent2)">1,735</span></div><div class="pbar-track"><div class="pbar-fill" style="width:100%;background:var(--accent2)"></div></div></div>
         <div class="pbar-row"><div class="pbar-label"><span>master (production)</span><span style="color:var(--ok)">477</span></div><div class="pbar-track"><div class="pbar-fill" style="width:27%;background:var(--ok)"></div></div></div>
         <div class="pbar-row"><div class="pbar-label"><span>production (mirror)</span><span style="color:var(--muted)">477</span></div><div class="pbar-track"><div class="pbar-fill" style="width:27%;background:var(--border)"></div></div></div>
         <div class="pbar-row"><div class="pbar-label"><span>tsdnd &#x00B7; main &#x00B7; feature/*</span><span style="color:var(--dim)">minor</span></div><div class="pbar-track"><div class="pbar-fill" style="width:4%;background:var(--border)"></div></div></div>
+        <div style="margin-top:8px;font-size:10.5px;color:var(--muted)">
+          <div>&#x1F464; <strong style="color:#fff">MounirAb</strong>: 2,191 commits (98.9%)</div>
+          <div>&#x1F464; webmaster: 16 &#x00B7; Mounir AB: 4 &#x00B7; DND.fr: 4</div>
+          <div style="margin-top:4px">&#x1F4C5; Init: <strong style="color:#fff">Oct 17, 2024</strong> &#x2014; f064912b8</div>
+          <div>&#x1F4C5; Last: <strong style="color:#fff">Jul 11, 2026</strong> &#x2014; 0c5e54547</div>
+          <div>&#x26A0; Peak: <strong style="color:var(--warn)">Apr 2026 — 535 commits</strong></div>
+        </div>
       </div>
-      <div class="panel">
-        <h3>Repository Summary</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <div style="text-align:center;padding:8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px">
-            <div style="font-size:22px;font-weight:900;color:#fff">2,215</div>
+      <div class="panel" style="flex:1">
+        <h3>Commit Type Distribution</h3>
+        <div class="chart-wrap" style="height:130px"><canvas id="chartCommitType"></canvas></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
+          <div style="text-align:center;padding:6px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:6px">
+            <div style="font-size:18px;font-weight:900;color:#fff">2,215</div>
             <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Total Commits</div>
           </div>
-          <div style="text-align:center;padding:8px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);border-radius:8px">
-            <div style="font-size:22px;font-weight:900;color:#fff">5,766</div>
-            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Tracked Files</div>
+          <div style="text-align:center;padding:6px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);border-radius:6px">
+            <div style="font-size:18px;font-weight:900;color:#fff">46</div>
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Custom Modules</div>
           </div>
-          <div style="text-align:center;padding:8px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px">
-            <div style="font-size:22px;font-weight:900;color:#fff">46</div>
-            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">MAB Custom Modules</div>
-          </div>
-          <div style="text-align:center;padding:8px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px">
-            <div style="font-size:22px;font-weight:900;color:#fff">4</div>
-            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Contributors</div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--muted);line-height:1.7">
-          <div>&#x1F464; <strong style="color:#fff">MounirAb</strong>: 2,191 commits (98.9%) &#x2014; lead developer</div>
-          <div>&#x1F464; webmaster techno: 16 &#x00B7; Mounir AB: 4 &#x00B7; Damien Louis (DND.fr): 4</div>
-          <div style="margin-top:5px">&#x1F4C5; Init: <strong style="color:#fff">Oct 17, 2024</strong> &#x2014; f064912b8</div>
-          <div>&#x1F4C5; Last: <strong style="color:#fff">Jul 11, 2026</strong> &#x2014; 0c5e54547</div>
-          <div style="margin-top:5px">&#x26A0; Peak: <strong style="color:var(--warn)">Apr 2026 &#x2014; 535 commits</strong> (checkout rewrite)</div>
-          <div>&#x1F512; Production: <strong style="color:#fff">Magento 2.4.6-p15</strong> (Jun 10, 2026)</div>
         </div>
       </div>
     </div>
