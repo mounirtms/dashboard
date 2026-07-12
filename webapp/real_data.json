@@ -1,0 +1,129 @@
+{
+  "real_data_date": "2026-07-12",
+  "all_time": {
+    "total_orders": 7788,
+    "total_customers": 9275,
+    "total_products": 9618
+  },
+  "status_all_time": {
+    "CMD_Done": 4484,
+    "Annulee_a_la_confirmation": 938,
+    "Annulee_a_la_preparation": 230,
+    "Annulee_a_la_livraison": 291,
+    "pending": 1,
+    "processing": 41,
+    "complete": 1143,
+    "canceled": 618
+  },
+  "h1_2026": {
+    "total": 819,
+    "CMD_Done": 498,
+    "Annulee_conf": 164,
+    "Annulee_prep": 80,
+    "Annulee_livr": 44,
+    "pending": 0,
+    "cancel_total": 288,
+    "cancel_rate_pct": 35.2,
+    "done_rate_pct": 60.8,
+    "revenue_dzd": 2784169,
+    "aov_dzd": 5613
+  },
+  "h1_2025": {
+    "total": 0,
+    "CMD_Done": 445,
+    "cancel_total": 0
+  },
+  "monthly_cmd_done_2026": [
+    116,
+    69,
+    74,
+    81,
+    88,
+    70
+  ],
+  "monthly_cmd_done_2025": [
+    90,
+    80,
+    69,
+    78,
+    72,
+    56
+  ],
+  "monthly_aov_2026": [
+    5186,
+    5155,
+    6002,
+    6223,
+    5167,
+    6202
+  ],
+  "monthly_revenue_2026": [
+    601614,
+    355742,
+    444195,
+    504104,
+    444368,
+    434147
+  ],
+  "annual": {
+    "2022": {
+      "CMD_Done": 311,
+      "total": 1301
+    },
+    "2023": {
+      "CMD_Done": 1359,
+      "total": 1839
+    },
+    "2024": {
+      "CMD_Done": 1163,
+      "total": 1475
+    },
+    "2025": {
+      "CMD_Done": 1133,
+      "total": 1591
+    },
+    "2026_H1": {
+      "CMD_Done": 498,
+      "total": 819
+    }
+  },
+  "customers": {
+    "total": 9275,
+    "end_of_2024": 4883,
+    "new_2025": 577,
+    "end_of_2025": 5460,
+    "new_2026_h1": 3815
+  },
+  "wilaya_h1_2026_cmd_done": {
+    "Alger": 153,
+    "Constantine": 26,
+    "Tizi Ouzou": 22,
+    "Blida": 21,
+    "Skikda": 16,
+    "Bouira": 16,
+    "Oran": 15,
+    "Jijel": 15,
+    "Djelfa": 14,
+    "Tlemcen": 14,
+    "S\u00e9tif": 11,
+    "Boumerd\u00e8s": 10,
+    "B\u00e9ja\u00efa": 10,
+    "Guelma": 9,
+    "Batna": 9,
+    "Mostaganem": 9,
+    "El Tarf": 8,
+    "Chlef": 7,
+    "Relizane": 7,
+    "Oum El Bouaghi": 7,
+    "M'Sila": 6,
+    "T\u00e9bessa": 6,
+    "Annaba": 6,
+    "A\u00efn Defla": 6,
+    "Tissemsilt": 6,
+    "Tipaza": 5,
+    "Biskra": 5,
+    "Mila": 5,
+    "Mascara": 4,
+    "Na\u00e2ma": 4
+  }
+}

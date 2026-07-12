@@ -59,3 +59,5 @@ webapp/fix_*.py
 webapp/patch_*.py
 webapp/final_fix.py
 webapp/convert_svg.py
+webapp/orders_page*.json
+webapp/magento-audit/
