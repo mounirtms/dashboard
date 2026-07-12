@@ -1,12 +1,4 @@
-<?php
-// Auth gate — injected because root .htaccess parses .html files as PHP
-$doc_root = dirname(dirname(__FILE__)); // /home/dashboard/public_html
-require_once $doc_root . '/api/session_helper.php';
-if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: https://dashboard.technostationery.com/#/login', true, 302);
-    exit;
-}
-?><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">

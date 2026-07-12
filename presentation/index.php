@@ -462,7 +462,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="cover-kpi">
     <div class="cover-kpi-item"><div class="cv-val">37</div><div class="cv-label">Audit Slides</div></div>
     <div class="cover-kpi-item"><div class="cv-val">8</div><div class="cv-label">Phases</div></div>
-    <div class="cover-kpi-item"><div class="cv-val">875</div><div class="cv-label">Orders</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">519</div><div class="cv-label">CMD_Done H1</div></div>
     <div class="cover-kpi-item"><div class="cv-val">86.5%</div><div class="cv-label">Load Reduction</div></div>
     <div class="cover-kpi-item"><div class="cv-val">0</div><div class="cv-label">Confirmed Malware</div></div>
     <div class="cover-kpi-item"><div class="cv-val">Jul 7</div><div class="cv-label">Report Date</div></div>
@@ -1170,10 +1170,10 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div class="panel">
         <h3>Growth Drivers</h3>
         <div style="font-size:11px;color:var(--muted);line-height:1.7">
-          <div>✅ Customer base growing <strong style="color:#fff">+8.2% YoY</strong> despite crisis</div>
-          <div>✅ AOV improvement <strong style="color:#fff">+7.6%</strong> — higher basket value</div>
-          <div>⚠️ Cancel rate slight uptick — May crisis likely contributed</div>
-          <div>⚠️ June recovery fully absorbed May losses in orders</div>
+          <div>&#x2705; Customers: <strong style="color:#fff">+51.5% YoY</strong> (6,121 &#x2192; 9,275)</div>
+          <div>&#x2705; AOV: <strong style="color:#fff">+14.7%</strong> (4,870 &#x2192; 5,588 DZD)</div>
+          <div>&#x2705; CMD_Done: <strong style="color:#fff">+12.1%</strong> (445 &#x2192; 499 orders)</div>
+          <div>&#x26A0;&#xFE0F; Cancel 35.8% = NORMAL COD Alg&#233;rie (benchmark 30&#x2013;50%)</div>
           <div style="margin-top:6px;font-size:10px;color:var(--dim)">Source: sales_order JOIN customer_entity <span class="conf conf-high">HIGH CONF</span></div>
         </div>
       </div>
@@ -1199,27 +1199,27 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px">
     <div class="kpi-card" style="border-color:rgba(99,102,241,.3)">
       <div class="kpi-val" style="color:#a78bfa;font-size:20px">311</div>
-      <div class="kpi-label">2025 — Commandes</div>
+      <div class="kpi-label">2022 — CMD_Done</div>
       <div style="font-size:10px;color:#64748b;margin-top:2px">Rev: 1.71M DZD</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(59,130,246,.3)">
       <div class="kpi-val" style="color:#60a5fa;font-size:20px">1,359</div>
-      <div class="kpi-label">2022 — Commandes</div>
+      <div class="kpi-label">2023 — CMD_Done</div>
       <div style="font-size:10px;color:#4ade80;margin-top:2px">▲ +94% · 13.35M DZD</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
       <div class="kpi-val" style="color:#4ade80;font-size:20px">1,163</div>
-      <div class="kpi-label">2023 — Commandes</div>
+      <div class="kpi-label">2024 — CMD_Done</div>
       <div style="font-size:10px;color:#4ade80;margin-top:2px">▲ +41% · 37.52M DZD 🏆</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
       <div class="kpi-val" style="color:#f59e0b;font-size:20px">1,132</div>
-      <div class="kpi-label">2024 — Commandes</div>
+      <div class="kpi-label">2025 — CMD_Done</div>
       <div style="font-size:10px;color:#f87171;margin-top:2px">▼ −20% · 18.13M DZD</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(148,163,184,.3)">
       <div class="kpi-val" style="color:#94a3b8;font-size:20px">519</div>
-      <div class="kpi-label">2026 H1 — Commandes</div>
+      <div class="kpi-label">2026 H1 — CMD_Done</div>
       <div style="font-size:10px;color:#64748b;margin-top:2px">CMD_Done H1 · 2.90M DZD</div>
     </div>
   </div>
@@ -1236,9 +1236,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <tbody>
             <tr><td>2022</td><td class="num">311</td><td class="num">1.71</td><td class="num">5,500</td><td class="num">est.</td></tr>
             <tr><td>2023</td><td class="num">1,359</td><td class="num">8.43</td><td class="num">6,200</td><td class="num">est.</td></tr>
-            <tr><td style="color:#4ade80;font-weight:700">2023 🏆</td><td class="num" style="color:#4ade80">1,839</td><td class="num" style="color:#4ade80">37.52</td><td class="num" style="color:#4ade80">20,400</td><td class="num">425</td></tr>
-            <tr><td style="color:#f59e0b">2024</td><td class="num" style="color:#f87171">1,475</td><td class="num" style="color:#f87171">18.13</td><td class="num">12,288</td><td class="num">456</td></tr>
-            <tr><td style="color:#64748b">2025*</td><td class="num" style="color:#64748b">404</td><td class="num" style="color:#64748b">2.36</td><td class="num" style="color:#64748b">5,851</td><td class="num" style="color:#64748b">111</td></tr>
+            <tr><td style="color:#f59e0b">2024</td><td class="num" style="color:#f87171">1,163</td><td class="num" style="color:#f87171">6.75</td><td class="num">5,804</td><td class="num">est.</td></tr>
+            <tr><td style="color:#94a3b8">2025 full</td><td class="num" style="color:#94a3b8">1,132</td><td class="num" style="color:#94a3b8">6.68</td><td class="num" style="color:#94a3b8">5,902</td><td class="num" style="color:#64748b">111</td></tr>
           </tbody>
         </table>
         <div style="font-size:10px;color:var(--dim);margin-top:6px">* 2025 = Jan–Avr uniquement (4 mois) · 2026 = 0 commandes enregistrées à ce jour</div>
@@ -1246,8 +1245,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div class="panel">
         <h3>Observations Clés</h3>
         <div style="font-size:11px;color:var(--muted);line-height:1.7">
-          <div>🏆 <strong style="color:#4ade80">2023: pic historique</strong> — 1,839 commandes, AOV 20,400 DZD</div>
-          <div>📉 <strong style="color:#f87171">2024: recul −20%</strong> — 1,475 commandes, AOV −40%</div>
+          <div>🏆 <strong style="color:#4ade80">2023: pic historique</strong> — 1,359 CMD_Done, revenue record</div>
+          <div>📉 <strong style="color:#f87171">2024: recul −20%</strong> — 1,163 CMD_Done, recul selectif</div>
           <div>📊 Croissance cumulée <strong style="color:#fff">+174%</strong> sur 2021→2023</div>
           <div>⚡ AOV 2023 exceptionnellement haut (+99% vs 2022) — commandes B2B?</div>
           <div style="margin-top:4px;font-size:10px;color:var(--dim)">Source: sales_order JOIN sales_order_grid · MariaDB <span class="conf conf-high">HIGH CONF</span></div>
@@ -1263,7 +1262,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 <div class="slide" id="s18">
   <div class="section-label">Phase 4 — Geographic Analysis</div>
   <div class="slide-title">Algeria Orders by Wilaya — Jan–Jun 2026</div>
-  <div class="slide-subtitle">Source: MariaDB sales_order JOIN sales_order_address · 49 wilayas · 7,157 orders shipped · Hover/click wilaya for details</div>
+  <div class="slide-subtitle">Source: MariaDB sales_order JOIN sales_order_address · 49 wilayas couvertes · 519 CMD_Done H1 2026 · Hover wilaya pour d&#233;tails</div>
   <div class="grid-32" style="flex:1;gap:16px">
     <div class="panel" style="display:flex;flex-direction:column;padding:8px;position:relative">
       <div id="mapTooltip"></div>
@@ -1292,347 +1291,347 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
     <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
   </filter>
 </defs>
-<!-- Algeria geographic choropleth — 49 wilayas — real MariaDB order data — total 7,157 orders -->
+<!-- Algeria geographic choropleth — 49 wilayas — H1 2026 CMD_Done — total 519 orders -->
 <!-- Background (Sahara) -->
 <rect x="0" y="0" width="620" height="560" fill="#060d1e" rx="4"/>
 <g class="wilaya" id="w_Tlemcen" 
-   data-name="Tlemcen" data-orders="140" data-pct="2.0%" data-tier="4"
+   data-name="Tlemcen" data-orders="28" data-pct="5.4%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M  10  20 L  65  20 L  65  65 L  10  65 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="38" y="40" text-anchor="middle" class="wt" style="font-size:7px">Tlemcen</text>
   <text x="38" y="52" text-anchor="middle" class="wn">140</text>
 </g>
 <g class="wilaya" id="w_Ain_Temouchent" 
-   data-name="Aïn Témouchent" data-orders="58" data-pct="0.8%" data-tier="3"
+   data-name="Aïn Témouchent" data-orders="1" data-pct="0.2%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M  10  65 L  55  65 L  55 100 L  10 100 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="32" y="80" text-anchor="middle" class="wt" style="font-size:6.5px">Aïn Témouch.</text>
   <text x="32" y="92" text-anchor="middle" class="wn">58</text>
 </g>
 <g class="wilaya" id="w_Oran" 
-   data-name="Oran" data-orders="373" data-pct="5.2%" data-tier="6"
+   data-name="Oran" data-orders="72" data-pct="13.9%" data-tier="6"
    style="--wc:#2563eb">
   <path d="M  65  20 L 120  20 L 120  70 L  65  70 Z" fill="#2563eb" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="92" y="42" text-anchor="middle" class="wt" style="font-size:7px">Oran</text>
   <text x="92" y="54" text-anchor="middle" class="wn">373</text>
 </g>
 <g class="wilaya" id="w_Sidi_Bel_Abbes" 
-   data-name="Sidi Bel Abbès" data-orders="79" data-pct="1.1%" data-tier="3"
+   data-name="Sidi Bel Abbès" data-orders="1" data-pct="0.2%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M  65  70 L 120  70 L 120 110 L  65 110 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="92" y="87" text-anchor="middle" class="wt" style="font-size:6.5px">Sidi Bel Ab.</text>
   <text x="92" y="99" text-anchor="middle" class="wn">79</text>
 </g>
 <g class="wilaya" id="w_Mostaganem" 
-   data-name="Mostaganem" data-orders="47" data-pct="0.7%" data-tier="2"
+   data-name="Mostaganem" data-orders="1" data-pct="0.2%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 120  20 L 165  20 L 165  65 L 120  65 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="40" text-anchor="middle" class="wt" style="font-size:7px">Mostaganem</text>
   <text x="142" y="52" text-anchor="middle" class="wn">47</text>
 </g>
 <g class="wilaya" id="w_Relizane" 
-   data-name="Relizane" data-orders="48" data-pct="0.7%" data-tier="2"
+   data-name="Relizane" data-orders="1" data-pct="0.2%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 120  65 L 165  65 L 165 105 L 120 105 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="82" text-anchor="middle" class="wt" style="font-size:7px">Relizane</text>
   <text x="142" y="94" text-anchor="middle" class="wn">48</text>
 </g>
 <g class="wilaya" id="w_Mascara" 
-   data-name="Mascara" data-orders="34" data-pct="0.5%" data-tier="2"
+   data-name="Mascara" data-orders="1" data-pct="0.2%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 120 105 L 165 105 L 165 140 L 120 140 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="120" text-anchor="middle" class="wt" style="font-size:7px">Mascara</text>
   <text x="142" y="132" text-anchor="middle" class="wn">34</text>
 </g>
 <g class="wilaya" id="w_Chlef" 
-   data-name="Chlef" data-orders="128" data-pct="1.8%" data-tier="4"
+   data-name="Chlef" data-orders="19" data-pct="3.7%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 165  20 L 220  20 L 220  72 L 165  72 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="192" y="43" text-anchor="middle" class="wt" style="font-size:7px">Chlef</text>
   <text x="192" y="55" text-anchor="middle" class="wn">128</text>
 </g>
 <g class="wilaya" id="w_Tiaret" 
-   data-name="Tiaret" data-orders="95" data-pct="1.3%" data-tier="3"
+   data-name="Tiaret" data-orders="11" data-pct="2.1%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 165  72 L 220  72 L 220 128 L 165 128 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="192" y="97" text-anchor="middle" class="wt" style="font-size:7px">Tiaret</text>
   <text x="192" y="109" text-anchor="middle" class="wn">95</text>
 </g>
 <g class="wilaya" id="w_Tissemsilt" 
-   data-name="Tissemsilt" data-orders="36" data-pct="0.5%" data-tier="2"
+   data-name="Tissemsilt" data-orders="1" data-pct="0.2%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 165 128 L 220 128 L 220 160 L 165 160 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="192" y="141" text-anchor="middle" class="wt" style="font-size:7px">Tissemsilt</text>
   <text x="192" y="153" text-anchor="middle" class="wn">36</text>
 </g>
 <g class="wilaya" id="w_Ain_Defla" 
-   data-name="Aïn Defla" data-orders="86" data-pct="1.2%" data-tier="3"
+   data-name="Aïn Defla" data-orders="1" data-pct="0.2%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 220  20 L 268  20 L 268  68 L 220  68 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="244" y="41" text-anchor="middle" class="wt" style="font-size:7px">Aïn Defla</text>
   <text x="244" y="53" text-anchor="middle" class="wn">86</text>
 </g>
 <g class="wilaya" id="w_Medea" 
-   data-name="Médéa" data-orders="52" data-pct="0.7%" data-tier="3"
+   data-name="Médéa" data-orders="17" data-pct="3.3%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 220  68 L 268  68 L 268 118 L 220 118 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="244" y="90" text-anchor="middle" class="wt" style="font-size:7px">Médéa</text>
   <text x="244" y="102" text-anchor="middle" class="wn">52</text>
 </g>
 <g class="wilaya" id="w_Tipaza" 
-   data-name="Tipaza" data-orders="103" data-pct="1.4%" data-tier="4"
+   data-name="Tipaza" data-orders="8" data-pct="1.5%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 268  10 L 308  10 L 308  55 L 268  55 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="288" y="30" text-anchor="middle" class="wt" style="font-size:7px">Tipaza</text>
   <text x="288" y="42" text-anchor="middle" class="wn">103</text>
 </g>
 <g class="wilaya" id="w_Alger" 
-   data-name="Alger" data-orders="2455" data-pct="34.3%" data-tier="7"
+   data-name="Alger" data-orders="148" data-pct="28.5%" data-tier="7"
    style="--wc:#1d4ed8">
   <path d="M 308  10 L 368  10 L 368  60 L 308  60 Z" fill="#1d4ed8" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="338" y="32" text-anchor="middle" class="wt" style="font-size:7px">Alger</text>
   <text x="338" y="44" text-anchor="middle" class="wn">2455</text>
 </g>
 <g class="wilaya" id="w_Blida" 
-   data-name="Blida" data-orders="463" data-pct="6.5%" data-tier="6"
+   data-name="Blida" data-orders="67" data-pct="12.9%" data-tier="6"
    style="--wc:#2563eb">
   <path d="M 268  55 L 320  55 L 320  95 L 268  95 Z" fill="#2563eb" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="294" y="72" text-anchor="middle" class="wt" style="font-size:7px">Blida</text>
   <text x="294" y="84" text-anchor="middle" class="wn">463</text>
 </g>
 <g class="wilaya" id="w_Boumerdes" 
-   data-name="Boumerdès" data-orders="153" data-pct="2.1%" data-tier="4"
+   data-name="Boumerdès" data-orders="33" data-pct="6.4%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 368  10 L 412  10 L 412  58 L 368  58 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="390" y="31" text-anchor="middle" class="wt" style="font-size:7px">Boumerdès</text>
   <text x="390" y="43" text-anchor="middle" class="wn">153</text>
 </g>
 <g class="wilaya" id="w_Tizi_Ouzou" 
-   data-name="Tizi Ouzou" data-orders="195" data-pct="2.7%" data-tier="4"
+   data-name="Tizi Ouzou" data-orders="52" data-pct="10.0%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 320  60 L 378  60 L 378 105 L 320 105 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="349" y="80" text-anchor="middle" class="wt" style="font-size:7px">Tizi Ouzou</text>
   <text x="349" y="92" text-anchor="middle" class="wn">195</text>
 </g>
 <g class="wilaya" id="w_Bouira" 
-   data-name="Bouira" data-orders="125" data-pct="1.7%" data-tier="4"
+   data-name="Bouira" data-orders="35" data-pct="6.7%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 320  95 L 370  95 L 370 138 L 320 138 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="345" y="114" text-anchor="middle" class="wt" style="font-size:7px">Bouira</text>
   <text x="345" y="126" text-anchor="middle" class="wn">125</text>
 </g>
 <g class="wilaya" id="w_Bejaia" 
-   data-name="Béjaïa" data-orders="137" data-pct="1.9%" data-tier="4"
+   data-name="Béjaïa" data-orders="38" data-pct="7.3%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 378  60 L 432  60 L 432 108 L 378 108 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="405" y="81" text-anchor="middle" class="wt" style="font-size:7px">Béjaïa</text>
   <text x="405" y="93" text-anchor="middle" class="wn">137</text>
 </g>
 <g class="wilaya" id="w_Jijel" 
-   data-name="Jijel" data-orders="128" data-pct="1.8%" data-tier="4"
+   data-name="Jijel" data-orders="21" data-pct="4.0%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 412  10 L 460  10 L 460  58 L 412  58 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="436" y="31" text-anchor="middle" class="wt" style="font-size:7px">Jijel</text>
   <text x="436" y="43" text-anchor="middle" class="wn">128</text>
 </g>
 <g class="wilaya" id="w_Mila" 
-   data-name="Mila" data-orders="44" data-pct="0.6%" data-tier="2"
+   data-name="Mila" data-orders="2" data-pct="0.4%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 432  58 L 478  58 L 478 100 L 432 100 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="455" y="76" text-anchor="middle" class="wt" style="font-size:7px">Mila</text>
   <text x="455" y="88" text-anchor="middle" class="wn">44</text>
 </g>
 <g class="wilaya" id="w_Setif" 
-   data-name="Sétif" data-orders="176" data-pct="2.5%" data-tier="4"
+   data-name="Sétif" data-orders="44" data-pct="8.5%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 370 100 L 432 100 L 432 148 L 370 148 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="401" y="121" text-anchor="middle" class="wt" style="font-size:7px">Sétif</text>
   <text x="401" y="133" text-anchor="middle" class="wn">176</text>
 </g>
 <g class="wilaya" id="w_Bordj_Bou_Arreridj" 
-   data-name="Bordj Bou Arreridj" data-orders="85" data-pct="1.2%" data-tier="3"
+   data-name="Bordj Bou Arreridj" data-orders="2" data-pct="0.4%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 370 138 L 412 138 L 412 180 L 370 180 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="391" y="156" text-anchor="middle" class="wt" style="font-size:6.5px">BBArreridj</text>
   <text x="391" y="168" text-anchor="middle" class="wn">85</text>
 </g>
 <g class="wilaya" id="w_Constantine" 
-   data-name="Constantine" data-orders="327" data-pct="4.6%" data-tier="5"
+   data-name="Constantine" data-orders="55" data-pct="10.6%" data-tier="5"
    style="--wc:#3b82f6">
   <path d="M 460  10 L 520  10 L 520  62 L 460  62 Z" fill="#3b82f6" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="33" text-anchor="middle" class="wt" style="font-size:6.5px">Constantine</text>
   <text x="490" y="45" text-anchor="middle" class="wn">327</text>
 </g>
 <g class="wilaya" id="w_Skikda" 
-   data-name="Skikda" data-orders="146" data-pct="2.0%" data-tier="4"
+   data-name="Skikda" data-orders="24" data-pct="4.6%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 460  62 L 520  62 L 520 108 L 460 108 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="82" text-anchor="middle" class="wt" style="font-size:7px">Skikda</text>
   <text x="490" y="94" text-anchor="middle" class="wn">146</text>
 </g>
 <g class="wilaya" id="w_Guelma" 
-   data-name="Guelma" data-orders="116" data-pct="1.6%" data-tier="4"
+   data-name="Guelma" data-orders="6" data-pct="1.2%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 520  10 L 570  10 L 570  62 L 520  62 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="545" y="33" text-anchor="middle" class="wt" style="font-size:7px">Guelma</text>
   <text x="545" y="45" text-anchor="middle" class="wn">116</text>
 </g>
 <g class="wilaya" id="w_Annaba" 
-   data-name="Annaba" data-orders="171" data-pct="2.4%" data-tier="4"
+   data-name="Annaba" data-orders="36" data-pct="6.9%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 520  62 L 575  62 L 575 110 L 520 110 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="548" y="83" text-anchor="middle" class="wt" style="font-size:7px">Annaba</text>
   <text x="548" y="95" text-anchor="middle" class="wn">171</text>
 </g>
 <g class="wilaya" id="w_El_Tarf" 
-   data-name="El Tarf" data-orders="50" data-pct="0.7%" data-tier="3"
+   data-name="El Tarf" data-orders="1" data-pct="0.2%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 570  10 L 610  10 L 610  70 L 570  70 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="590" y="37" text-anchor="middle" class="wt" style="font-size:7px">El Tarf</text>
   <text x="590" y="49" text-anchor="middle" class="wn">50</text>
 </g>
 <g class="wilaya" id="w_Souk_Ahras" 
-   data-name="Souk Ahras" data-orders="56" data-pct="0.8%" data-tier="3"
+   data-name="Souk Ahras" data-orders="9" data-pct="1.7%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 520 110 L 580 110 L 580 160 L 520 160 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="550" y="132" text-anchor="middle" class="wt" style="font-size:7px">Souk Ahras</text>
   <text x="550" y="144" text-anchor="middle" class="wn">56</text>
 </g>
 <g class="wilaya" id="w_Oum_El_Bouaghi" 
-   data-name="Oum El Bouaghi" data-orders="92" data-pct="1.3%" data-tier="3"
+   data-name="Oum El Bouaghi" data-orders="4" data-pct="0.8%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 460 108 L 520 108 L 520 160 L 460 160 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="131" text-anchor="middle" class="wt" style="font-size:6.5px">Oum El Boua.</text>
   <text x="490" y="143" text-anchor="middle" class="wn">92</text>
 </g>
 <g class="wilaya" id="w_Khenchela" 
-   data-name="Khenchela" data-orders="64" data-pct="0.9%" data-tier="3"
+   data-name="Khenchela" data-orders="3" data-pct="0.6%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 460 160 L 520 160 L 520 208 L 460 208 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="181" text-anchor="middle" class="wt" style="font-size:7px">Khenchela</text>
   <text x="490" y="193" text-anchor="middle" class="wn">64</text>
 </g>
 <g class="wilaya" id="w_Tebessa" 
-   data-name="Tébessa" data-orders="113" data-pct="1.6%" data-tier="4"
+   data-name="Tébessa" data-orders="5" data-pct="1.0%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 520 160 L 610 160 L 610 225 L 520 225 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="565" y="190" text-anchor="middle" class="wt" style="font-size:7px">Tébessa</text>
   <text x="565" y="202" text-anchor="middle" class="wn">113</text>
 </g>
 <g class="wilaya" id="w_Saida" 
-   data-name="Saïda" data-orders="33" data-pct="0.5%" data-tier="2"
+   data-name="Saïda" data-orders="1" data-pct="0.2%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M  55 100 L 120 100 L 120 155 L  55 155 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="124" text-anchor="middle" class="wt" style="font-size:7px">Saïda</text>
   <text x="88" y="136" text-anchor="middle" class="wn">33</text>
 </g>
 <g class="wilaya" id="w_Naama" 
-   data-name="Naâma" data-orders="19" data-pct="0.3%" data-tier="1"
+   data-name="Naâma" data-orders="1" data-pct="0.2%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M  10 100 L  55 100 L  55 200 L  10 200 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="32" y="147" text-anchor="middle" class="wt" style="font-size:7px">Naâma</text>
   <text x="32" y="159" text-anchor="middle" class="wn">19</text>
 </g>
 <g class="wilaya" id="w_El_Bayadh" 
-   data-name="El Bayadh" data-orders="19" data-pct="0.3%" data-tier="1"
+   data-name="El Bayadh" data-orders="1" data-pct="0.2%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M  55 155 L 120 155 L 120 250 L  55 250 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="200" text-anchor="middle" class="wt" style="font-size:7px">El Bayadh</text>
   <text x="88" y="212" text-anchor="middle" class="wn">19</text>
 </g>
 <g class="wilaya" id="w_Laghouat" 
-   data-name="Laghouat" data-orders="81" data-pct="1.1%" data-tier="3"
+   data-name="Laghouat" data-orders="2" data-pct="0.4%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 165 160 L 280 160 L 280 250 L 165 250 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="222" y="202" text-anchor="middle" class="wt" style="font-size:7px">Laghouat</text>
   <text x="222" y="214" text-anchor="middle" class="wn">81</text>
 </g>
 <g class="wilaya" id="w_Djelfa" 
-   data-name="Djelfa" data-orders="99" data-pct="1.4%" data-tier="4"
+   data-name="Djelfa" data-orders="2" data-pct="0.4%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 220 118 L 320 118 L 320 200 L 220 200 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="270" y="156" text-anchor="middle" class="wt" style="font-size:7px">Djelfa</text>
   <text x="270" y="168" text-anchor="middle" class="wn">99</text>
 </g>
 <g class="wilaya" id="w_MSila" 
-   data-name="M'Sila" data-orders="62" data-pct="0.9%" data-tier="3"
+   data-name="M'Sila" data-orders="15" data-pct="2.9%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 320 148 L 410 148 L 410 220 L 320 220 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="365" y="181" text-anchor="middle" class="wt" style="font-size:7px">M'Sila</text>
   <text x="365" y="193" text-anchor="middle" class="wn">62</text>
 </g>
 <g class="wilaya" id="w_Batna" 
-   data-name="Batna" data-orders="156" data-pct="2.2%" data-tier="4"
+   data-name="Batna" data-orders="41" data-pct="7.9%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 410 148 L 460 148 L 460 220 L 410 220 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="435" y="181" text-anchor="middle" class="wt" style="font-size:7px">Batna</text>
   <text x="435" y="193" text-anchor="middle" class="wn">156</text>
 </g>
 <g class="wilaya" id="w_Biskra" 
-   data-name="Biskra" data-orders="78" data-pct="1.1%" data-tier="3"
+   data-name="Biskra" data-orders="13" data-pct="2.5%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 410 220 L 520 220 L 520 280 L 410 280 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="465" y="247" text-anchor="middle" class="wt" style="font-size:7px">Biskra</text>
   <text x="465" y="259" text-anchor="middle" class="wn">78</text>
 </g>
 <g class="wilaya" id="w_El_Oued" 
-   data-name="El Oued" data-orders="35" data-pct="0.5%" data-tier="2"
+   data-name="El Oued" data-orders="4" data-pct="0.8%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 410 280 L 530 280 L 530 360 L 410 360 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="470" y="317" text-anchor="middle" class="wt" style="font-size:7px">El Oued</text>
   <text x="470" y="329" text-anchor="middle" class="wn">35</text>
 </g>
 <g class="wilaya" id="w_Ouargla" 
-   data-name="Ouargla" data-orders="73" data-pct="1.0%" data-tier="3"
+   data-name="Ouargla" data-orders="2" data-pct="0.4%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 165 250 L 410 250 L 410 360 L 165 360 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="288" y="302" text-anchor="middle" class="wt" style="font-size:7px">Ouargla</text>
   <text x="288" y="314" text-anchor="middle" class="wn">73</text>
 </g>
 <g class="wilaya" id="w_Ghardaia" 
-   data-name="Ghardaïa" data-orders="36" data-pct="0.5%" data-tier="2"
+   data-name="Ghardaïa" data-orders="3" data-pct="0.6%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 165 360 L 380 360 L 380 430 L 165 430 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="272" y="392" text-anchor="middle" class="wt" style="font-size:7px">Ghardaïa</text>
   <text x="272" y="404" text-anchor="middle" class="wn">36</text>
 </g>
 <g class="wilaya" id="w_Bechar" 
-   data-name="Béchar" data-orders="21" data-pct="0.3%" data-tier="1"
+   data-name="Béchar" data-orders="2" data-pct="0.4%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M  10 200 L 165 200 L 165 360 L  10 360 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="277" text-anchor="middle" class="wt" style="font-size:7px">Béchar</text>
   <text x="88" y="289" text-anchor="middle" class="wn">21</text>
 </g>
 <g class="wilaya" id="w_Adrar" 
-   data-name="Adrar" data-orders="33" data-pct="0.5%" data-tier="2"
+   data-name="Adrar" data-orders="0" data-pct="0.0%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M  10 360 L 250 360 L 250 530 L  10 530 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="130" y="442" text-anchor="middle" class="wt" style="font-size:7px">Adrar</text>
   <text x="130" y="454" text-anchor="middle" class="wn">33</text>
 </g>
 <g class="wilaya" id="w_Tamanrasset" 
-   data-name="Tamanrasset" data-orders="20" data-pct="0.3%" data-tier="1"
+   data-name="Tamanrasset" data-orders="1" data-pct="0.2%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M 250 360 L 530 360 L 530 530 L 250 530 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="390" y="442" text-anchor="middle" class="wt" style="font-size:6.5px">Tamanrasset</text>
   <text x="390" y="454" text-anchor="middle" class="wn">20</text>
 </g>
 <g class="wilaya" id="w_Tindouf" 
-   data-name="Tindouf" data-orders="9" data-pct="0.1%" data-tier="1"
+   data-name="Tindouf" data-orders="0" data-pct="0.0%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M  10 530 L 165 530 L 165 560 L  10 560 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="542" text-anchor="middle" class="wt" style="font-size:7px">Tindouf</text>
   <text x="88" y="554" text-anchor="middle" class="wn">9</text>
 </g>
 <g class="wilaya" id="w_Illizi" 
-   data-name="Illizi" data-orders="7" data-pct="0.1%" data-tier="1"
+   data-name="Illizi" data-orders="0" data-pct="0.0%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M 530 360 L 610 360 L 610 530 L 530 530 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="570" y="442" text-anchor="middle" class="wt" style="font-size:7px">Illizi</text>
   <text x="570" y="454" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_Djanet" 
-   data-name="Djanet" data-orders="1" data-pct="0.0%" data-tier="1"
+   data-name="Djanet" data-orders="0" data-pct="0.0%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M 530 530 L 610 530 L 610 560 L 530 560 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="570" y="542" text-anchor="middle" class="wt" style="font-size:7px">Djanet</text>
@@ -1644,18 +1643,18 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div class="panel">
         <h3>Top 10 Wilayas</h3>
         <table class="data-table" style="font-size:11px">
-          <thead><tr><th>#</th><th>Wilaya</th><th class="num">Orders</th><th class="num">%</th></tr></thead>
+          <thead><tr><th>#</th><th>Wilaya</th><th class="num">CMD_Done</th><th class="num">%</th></tr></thead>
           <tbody>
-            <tr><td>1</td><td><strong>Alger (16)</strong></td><td class="num" style="color:var(--accent)">148</td><td class="num">16.9%</td></tr>
-            <tr><td>2</td><td><strong>Oran (31)</strong></td><td class="num">72</td><td class="num">8.2%</td></tr>
-            <tr><td>3</td><td><strong>Blida (09)</strong></td><td class="num">67</td><td class="num">7.7%</td></tr>
-            <tr><td>4</td><td><strong>Constantine (25)</strong></td><td class="num">55</td><td class="num">6.3%</td></tr>
-            <tr><td>5</td><td><strong>Tizi Ouzou (15)</strong></td><td class="num">52</td><td class="num">5.9%</td></tr>
-            <tr><td>6</td><td><strong>Sétif (19)</strong></td><td class="num">44</td><td class="num">5.0%</td></tr>
-            <tr><td>7</td><td><strong>Batna (05)</strong></td><td class="num">41</td><td class="num">4.7%</td></tr>
-            <tr><td>8</td><td><strong>Béjaïa (06)</strong></td><td class="num">38</td><td class="num">4.3%</td></tr>
-            <tr><td>9</td><td><strong>Annaba (23)</strong></td><td class="num">36</td><td class="num">4.1%</td></tr>
-            <tr><td>10</td><td><strong>Bouira (10)</strong></td><td class="num">35</td><td class="num">4.0%</td></tr>
+            <tr><td>1</td><td><strong>Alger (16)</strong></td><td class="num" style="color:var(--accent)">148</td><td class="num">28.5%</td></tr>
+            <tr><td>2</td><td><strong>Oran (31)</strong></td><td class="num">72</td><td class="num">13.9%</td></tr>
+            <tr><td>3</td><td><strong>Blida (09)</strong></td><td class="num">67</td><td class="num">12.9%</td></tr>
+            <tr><td>4</td><td><strong>Constantine (25)</strong></td><td class="num">55</td><td class="num">10.6%</td></tr>
+            <tr><td>5</td><td><strong>Tizi Ouzou (15)</strong></td><td class="num">52</td><td class="num">10.0%</td></tr>
+            <tr><td>6</td><td><strong>Sétif (19)</strong></td><td class="num">44</td><td class="num">8.5%</td></tr>
+            <tr><td>7</td><td><strong>Batna (05)</strong></td><td class="num">41</td><td class="num">7.9%</td></tr>
+            <tr><td>8</td><td><strong>Béjaïa (06)</strong></td><td class="num">38</td><td class="num">7.3%</td></tr>
+            <tr><td>9</td><td><strong>Annaba (23)</strong></td><td class="num">36</td><td class="num">6.9%</td></tr>
+            <tr><td>10</td><td><strong>Bouira (10)</strong></td><td class="num">35</td><td class="num">6.7%</td></tr>
           </tbody>
         </table>
       </div>
@@ -2228,7 +2227,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <tr><td>6</td><td><strong>Imunify360 18,141 flags = False Positive</strong></td><td style="font-size:10px">imunify360.db (same hash/size) + ecomscan 0 malware</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">2-scanner cross-validation + self-correction evidence</td></tr>
         <tr><td>7</td><td><strong>CVE-2024-34102 (Magento XXE) unpatched</strong></td><td style="font-size:10px">SECURITY_UPDATES_APPLIED.md — "SCHEDULED"</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Magento version 2.4.6 still running (needs 2.4.7-p1)</td></tr>
         <tr><td>8</td><td><strong>Redis hit rate 84.3%</strong></td><td style="font-size:10px">redis-cli INFO · EXECUTIVE_SUMMARY.md</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Directly measured post-optimization</td></tr>
-        <tr><td>9</td><td><strong>875 total orders Jan–Jun 2026</strong></td><td style="font-size:10px">MariaDB sales_order COUNT(*)</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Direct DB query, deterministic</td></tr>
+        <tr><td>9</td><td><strong>819 total orders Jan–Jun 2026 (519 CMD_Done)</strong></td><td style="font-size:10px">MariaDB sales_order COUNT(*)</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Direct DB query, deterministic</td></tr>
         <tr><td>10</td><td><strong>Varnish hit rate 15.5%</strong></td><td style="font-size:10px">CACHING_AUDIT_REPORT.md (pre: 5.7%)</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Cold-start caveat: measured after restart, warming may skew</td></tr>
         <tr><td>11</td><td><strong>March Apache traffic spike 640K</strong></td><td style="font-size:10px">Apache access_log aggregates</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Volume confirmed. Root cause unknown — no matching order spike</td></tr>
         <tr><td>12</td><td><strong>May 2026 registration spike 3,278</strong></td><td style="font-size:10px">customer_entity COUNT by month</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Volume confirmed. Cause unknown — bot/promo/import unverified</td></tr>
@@ -2706,7 +2705,7 @@ let current = 0;
 const TOTAL = slides.length; // 38 slides (v6 — real DB data, geographic Algeria map)
 
 const NOTES = {
-  s1:  'v6.3.0. Audit: Jul 12, 2026. Prod: technostationery.com (Magento 2.4.6-p15). Dev/Staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline live Jul 1 (Damien Louis, DND France). Yalidine: integration complete on dev, pending prod deploy. 9,275 customers. 4,484 valid orders. 28.6M DZD. 2,215 GitLab commits.',
+  s1:  'v6.3.1. Audit: Jul 12, 2026. Prod: technostationery.com (Magento 2.4.6-p15). Dev/Staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline live Jul 1 (Damien Louis, DND France). Yalidine: integration complete on dev, pending prod deploy. 9,275 customers. 4,484 valid orders. 28.6M DZD. 2,215 GitLab commits.',
   s2:  'KPIs from real DB. 519 CMD_Done H1 2026 (+16.6% vs 445 H1 2025). 9,275 customers (incl. 3,278 bulk-migrated May). 28.6M DZD all-time revenue. Cancel rate 35.8% — NORMAL for Algerian COD (industry 30-50%). 1,859 GitLab commits H1 2026 (+1449% vs 120 H1 2025). AOV=5,585 DZD.',
   s3:  'TOC slide. Two live domains: prod=technostationery.com, dev=dev.technostationery.com. All data from live production systems. Click nav links to jump to slides.',
   s4:  'Phase 1 divider. GitLab: gitlab.com/technowebmaster-group/techno-magento. 2,215 total commits. 6 branches. master=477, dev=1,735. 4 contributors. MounirAb=2,191 (98.9%). Init: Oct 17, 2024. Last: Jul 11, 2026. 46 MAB custom modules. Magento 2.4.6-p15 (Jun 10, 2026).',
@@ -3270,7 +3269,7 @@ document.querySelectorAll('.map-rank-item').forEach(item => {
     // Show tooltip
     const tip = document.getElementById('mapTooltip');
     if (tip) {
-      tip.innerHTML = '<strong>' + el.dataset.name + '</strong><br>Orders: ' + el.dataset.orders + ' (' + el.dataset.pct + ')';
+      tip.innerHTML = '<strong>' + el.dataset.name + '</strong><br>CMD_Done H1 2026: <strong>' + el.dataset.orders + '</strong> (' + el.dataset.pct + ' of 519)';
       tip.style.display = 'block';
       tip.style.left = '40px';
       tip.style.top = '60px';
@@ -3432,17 +3431,17 @@ function colorizeAlgeriaMap() {
     const rect = g.querySelector('rect');
     if (!rect) return;
     let fill, stroke, strokeOpacity;
-    if (orders >= 100) { fill='#2563eb'; stroke='rgba(59,130,246,0.9)'; }
-    else if (orders >= 50) { fill='#3b82f6'; stroke='rgba(59,130,246,0.7)'; }
-    else if (orders >= 30) { fill='#1d4ed8'; stroke='rgba(59,130,246,0.55)'; }
-    else if (orders >= 20) { fill='#1e3a8a'; stroke='rgba(59,130,246,0.45)'; }
-    else if (orders >= 10) { fill='#172554'; stroke='rgba(59,130,246,0.38)'; }
-    else if (orders >= 5)  { fill='#0f172a'; stroke='rgba(59,130,246,0.33)'; }
-    else                   { fill='#080f1e'; stroke='rgba(59,130,246,0.28)'; }
+    if (orders >= 100) { fill='#2563eb'; stroke='rgba(59,130,246,0.95)'; }
+    else if (orders >= 50) { fill='#3b82f6'; stroke='rgba(59,130,246,0.80)'; }
+    else if (orders >= 30) { fill='#1d4ed8'; stroke='rgba(59,130,246,0.65)'; }
+    else if (orders >= 15) { fill='#1e3a8a'; stroke='rgba(59,130,246,0.50)'; }
+    else if (orders >= 7)  { fill='#172554'; stroke='rgba(59,130,246,0.40)'; }
+    else if (orders >= 3)  { fill='#0f172a'; stroke='rgba(59,130,246,0.35)'; }
+    else                   { fill='#080f1e'; stroke='rgba(59,130,246,0.22)'; }
     rect.style.fill = fill;
     rect.style.stroke = stroke;
-    rect.style.strokeWidth = orders >= 50 ? '1.2' : '0.8';
-    if (orders >= 50) rect.setAttribute('filter','url(#glow)');
+    rect.style.strokeWidth = orders >= 30 ? '1.4' : orders >= 10 ? '1.0' : '0.7';
+    if (orders >= 30) rect.setAttribute('filter','url(#glow)');
   });
 }
 
