@@ -368,11 +368,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 
 /* ── ALGERIA MAP ── */
 #algeria-map{width:100%;height:100%}
-#algeria-map .wilaya{cursor:pointer;transition:fill .2s}#algeria-map .wt { fill:#cbd5e1; font-size:7px; font-family:Inter,sans-serif; font-weight:600; pointer-events:none; }#algeria-map .wn { fill:#93c5fd; font-size:6.5px; font-family:Inter,sans-serif; pointer-events:none; font-weight:700; }#algeria-map .wilaya rect { cursor:pointer; transition:filter .15s, opacity .15s; }#algeria-map .wilaya:hover rect { filter:brightness(1.9) !important; }#algeria-map .wilaya.dimmed rect { opacity:.2; }#algeria-map .wilaya.highlighted rect { filter:brightness(2.2) drop-shadow(0 0 5px #3b82f6); }
-#algeria-map .wilaya rect{cursor:pointer;transition:filter .15s,opacity .15s}
-#algeria-map .wilaya:hover rect{filter:brightness(1.8)!important}
-#algeria-map .wilaya.dimmed rect{opacity:.2}
-#algeria-map .wilaya.highlighted rect{filter:brightness(2) drop-shadow(0 0 4px #3b82f6)}
+#algeria-map .wilaya{cursor:pointer;transition:fill .2s}#algeria-map .wt { fill:#cbd5e1; font-size:7px; font-family:Inter,sans-serif; font-weight:600; pointer-events:none; }#algeria-map .wn { fill:#fbbf24; font-size:7px; font-family:Inter,sans-serif; pointer-events:none; font-weight:700; }#algeria-map .wilaya path { cursor:pointer; transition:filter .15s, opacity .15s; }#algeria-map .wilaya:hover path { filter:brightness(1.9) !important; }#algeria-map .wilaya.dimmed path { opacity:.2; }#algeria-map .wilaya.highlighted path { filter:brightness(2.2) drop-shadow(0 0 5px #3b82f6); }
+/* old rect rules removed — using path selectors above */
 .map-filter-btn{
   padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;
   border:1px solid #1e2d45;background:#0d1625;color:#64748b;transition:all .2s;font-family:inherit;
@@ -449,28 +446,28 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   top: 18px;
   right: 28px;
   z-index: 10;
-  width: 90px;
-  height: 28px;
+  width: 110px;
+  height: 34px;
   background-image: var(--logo-img);
   background-repeat: no-repeat;
   background-size: contain;
   background-position: right center;
   filter: brightness(0) invert(1);
-  opacity: 0.5;
+  opacity: 0.85;
 }
 .div-logo-wm {
   position: absolute;
   top: 24px;
   right: 32px;
   z-index: 10;
-  width: 100px;
-  height: 32px;
+  width: 120px;
+  height: 36px;
   background-image: var(--logo-img);
   background-repeat: no-repeat;
   background-size: contain;
   background-position: right center;
   filter: brightness(0) invert(1);
-  opacity: 0.45;
+  opacity: 0.75;
 }
 </style>
 </head>
@@ -1344,343 +1341,343 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
    style="--wc:#60a5fa">
   <path d="M  10  20 L  65  20 L  65  65 L  10  65 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="38" y="40" text-anchor="middle" class="wt" style="font-size:7px">Tlemcen</text>
-  <text x="38" y="52" text-anchor="middle" class="wn">140</text>
+  <text x="38" y="52" text-anchor="middle" class="wn">14</text>
 </g>
 <g class="wilaya" id="w_Ain_Temouchent" 
    data-name="Aïn Témouchent" data-orders="1" data-pct="0.2%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M  10  65 L  55  65 L  55 100 L  10 100 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="32" y="80" text-anchor="middle" class="wt" style="font-size:6.5px">Aïn Témouch.</text>
-  <text x="32" y="92" text-anchor="middle" class="wn">58</text>
+  <text x="32" y="92" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Oran" 
    data-name="Oran" data-orders="15" data-pct="3.0%" data-tier="6"
    style="--wc:#2563eb">
   <path d="M  65  20 L 120  20 L 120  70 L  65  70 Z" fill="#2563eb" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="92" y="42" text-anchor="middle" class="wt" style="font-size:7px">Oran</text>
-  <text x="92" y="54" text-anchor="middle" class="wn">373</text>
+  <text x="92" y="54" text-anchor="middle" class="wn">15</text>
 </g>
 <g class="wilaya" id="w_Sidi_Bel_Abbes" 
    data-name="Sidi Bel Abbès" data-orders="1" data-pct="0.2%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M  65  70 L 120  70 L 120 110 L  65 110 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="92" y="87" text-anchor="middle" class="wt" style="font-size:6.5px">Sidi Bel Ab.</text>
-  <text x="92" y="99" text-anchor="middle" class="wn">79</text>
+  <text x="92" y="99" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Mostaganem" 
    data-name="Mostaganem" data-orders="9" data-pct="1.8%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 120  20 L 165  20 L 165  65 L 120  65 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="40" text-anchor="middle" class="wt" style="font-size:7px">Mostaganem</text>
-  <text x="142" y="52" text-anchor="middle" class="wn">47</text>
+  <text x="142" y="52" text-anchor="middle" class="wn">9</text>
 </g>
 <g class="wilaya" id="w_Relizane" 
    data-name="Relizane" data-orders="7" data-pct="1.4%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 120  65 L 165  65 L 165 105 L 120 105 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="82" text-anchor="middle" class="wt" style="font-size:7px">Relizane</text>
-  <text x="142" y="94" text-anchor="middle" class="wn">48</text>
+  <text x="142" y="94" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_Mascara" 
    data-name="Mascara" data-orders="1" data-pct="0.2%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 120 105 L 165 105 L 165 140 L 120 140 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="120" text-anchor="middle" class="wt" style="font-size:7px">Mascara</text>
-  <text x="142" y="132" text-anchor="middle" class="wn">34</text>
+  <text x="142" y="132" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Chlef" 
    data-name="Chlef" data-orders="7" data-pct="1.4%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 165  20 L 220  20 L 220  72 L 165  72 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="192" y="43" text-anchor="middle" class="wt" style="font-size:7px">Chlef</text>
-  <text x="192" y="55" text-anchor="middle" class="wn">128</text>
+  <text x="192" y="55" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_Tiaret" 
    data-name="Tiaret" data-orders="0" data-pct="0.0%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 165  72 L 220  72 L 220 128 L 165 128 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="192" y="97" text-anchor="middle" class="wt" style="font-size:7px">Tiaret</text>
-  <text x="192" y="109" text-anchor="middle" class="wn">95</text>
+  <text x="192" y="109" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Tissemsilt" 
    data-name="Tissemsilt" data-orders="6" data-pct="1.2%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 165 128 L 220 128 L 220 160 L 165 160 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="192" y="141" text-anchor="middle" class="wt" style="font-size:7px">Tissemsilt</text>
-  <text x="192" y="153" text-anchor="middle" class="wn">36</text>
+  <text x="192" y="153" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_Ain_Defla" 
    data-name="Aïn Defla" data-orders="6" data-pct="1.2%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 220  20 L 268  20 L 268  68 L 220  68 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="244" y="41" text-anchor="middle" class="wt" style="font-size:7px">Aïn Defla</text>
-  <text x="244" y="53" text-anchor="middle" class="wn">86</text>
+  <text x="244" y="53" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_Medea" 
    data-name="Médéa" data-orders="0" data-pct="0.0%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 220  68 L 268  68 L 268 118 L 220 118 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="244" y="90" text-anchor="middle" class="wt" style="font-size:7px">Médéa</text>
-  <text x="244" y="102" text-anchor="middle" class="wn">52</text>
+  <text x="244" y="102" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Tipaza" 
    data-name="Tipaza" data-orders="0" data-pct="0.0%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 268  10 L 308  10 L 308  55 L 268  55 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="288" y="30" text-anchor="middle" class="wt" style="font-size:7px">Tipaza</text>
-  <text x="288" y="42" text-anchor="middle" class="wn">103</text>
+  <text x="288" y="42" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Alger" 
    data-name="Alger" data-orders="153" data-pct="30.7%" data-tier="7"
    style="--wc:#1d4ed8">
   <path d="M 308  10 L 368  10 L 368  60 L 308  60 Z" fill="#1d4ed8" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="338" y="32" text-anchor="middle" class="wt" style="font-size:7px">Alger</text>
-  <text x="338" y="44" text-anchor="middle" class="wn">2455</text>
+  <text x="338" y="44" text-anchor="middle" class="wn">153</text>
 </g>
 <g class="wilaya" id="w_Blida" 
    data-name="Blida" data-orders="21" data-pct="4.2%" data-tier="6"
    style="--wc:#2563eb">
   <path d="M 268  55 L 320  55 L 320  95 L 268  95 Z" fill="#2563eb" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="294" y="72" text-anchor="middle" class="wt" style="font-size:7px">Blida</text>
-  <text x="294" y="84" text-anchor="middle" class="wn">463</text>
+  <text x="294" y="84" text-anchor="middle" class="wn">21</text>
 </g>
 <g class="wilaya" id="w_Boumerdes" 
    data-name="Boumerdès" data-orders="10" data-pct="2.0%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 368  10 L 412  10 L 412  58 L 368  58 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="390" y="31" text-anchor="middle" class="wt" style="font-size:7px">Boumerdès</text>
-  <text x="390" y="43" text-anchor="middle" class="wn">153</text>
+  <text x="390" y="43" text-anchor="middle" class="wn">10</text>
 </g>
 <g class="wilaya" id="w_Tizi_Ouzou" 
    data-name="Tizi Ouzou" data-orders="22" data-pct="4.4%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 320  60 L 378  60 L 378 105 L 320 105 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="349" y="80" text-anchor="middle" class="wt" style="font-size:7px">Tizi Ouzou</text>
-  <text x="349" y="92" text-anchor="middle" class="wn">195</text>
+  <text x="349" y="92" text-anchor="middle" class="wn">22</text>
 </g>
 <g class="wilaya" id="w_Bouira" 
    data-name="Bouira" data-orders="16" data-pct="3.2%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 320  95 L 370  95 L 370 138 L 320 138 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="345" y="114" text-anchor="middle" class="wt" style="font-size:7px">Bouira</text>
-  <text x="345" y="126" text-anchor="middle" class="wn">125</text>
+  <text x="345" y="126" text-anchor="middle" class="wn">16</text>
 </g>
 <g class="wilaya" id="w_Bejaia" 
    data-name="Béjaïa" data-orders="10" data-pct="2.0%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 378  60 L 432  60 L 432 108 L 378 108 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="405" y="81" text-anchor="middle" class="wt" style="font-size:7px">Béjaïa</text>
-  <text x="405" y="93" text-anchor="middle" class="wn">137</text>
+  <text x="405" y="93" text-anchor="middle" class="wn">10</text>
 </g>
 <g class="wilaya" id="w_Jijel" 
    data-name="Jijel" data-orders="15" data-pct="3.0%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 412  10 L 460  10 L 460  58 L 412  58 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="436" y="31" text-anchor="middle" class="wt" style="font-size:7px">Jijel</text>
-  <text x="436" y="43" text-anchor="middle" class="wn">128</text>
+  <text x="436" y="43" text-anchor="middle" class="wn">15</text>
 </g>
 <g class="wilaya" id="w_Mila" 
    data-name="Mila" data-orders="2" data-pct="0.4%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 432  58 L 478  58 L 478 100 L 432 100 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="455" y="76" text-anchor="middle" class="wt" style="font-size:7px">Mila</text>
-  <text x="455" y="88" text-anchor="middle" class="wn">44</text>
+  <text x="455" y="88" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Setif" 
    data-name="Sétif" data-orders="11" data-pct="2.2%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 370 100 L 432 100 L 432 148 L 370 148 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="401" y="121" text-anchor="middle" class="wt" style="font-size:7px">Sétif</text>
-  <text x="401" y="133" text-anchor="middle" class="wn">176</text>
+  <text x="401" y="133" text-anchor="middle" class="wn">11</text>
 </g>
 <g class="wilaya" id="w_Bordj_Bou_Arreridj" 
    data-name="Bordj Bou Arreridj" data-orders="2" data-pct="0.4%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 370 138 L 412 138 L 412 180 L 370 180 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="391" y="156" text-anchor="middle" class="wt" style="font-size:6.5px">BBArreridj</text>
-  <text x="391" y="168" text-anchor="middle" class="wn">85</text>
+  <text x="391" y="168" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Constantine" 
    data-name="Constantine" data-orders="26" data-pct="5.2%" data-tier="5"
    style="--wc:#3b82f6">
   <path d="M 460  10 L 520  10 L 520  62 L 460  62 Z" fill="#3b82f6" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="33" text-anchor="middle" class="wt" style="font-size:6.5px">Constantine</text>
-  <text x="490" y="45" text-anchor="middle" class="wn">327</text>
+  <text x="490" y="45" text-anchor="middle" class="wn">26</text>
 </g>
 <g class="wilaya" id="w_Skikda" 
    data-name="Skikda" data-orders="16" data-pct="3.2%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 460  62 L 520  62 L 520 108 L 460 108 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="82" text-anchor="middle" class="wt" style="font-size:7px">Skikda</text>
-  <text x="490" y="94" text-anchor="middle" class="wn">146</text>
+  <text x="490" y="94" text-anchor="middle" class="wn">16</text>
 </g>
 <g class="wilaya" id="w_Guelma" 
    data-name="Guelma" data-orders="9" data-pct="1.8%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 520  10 L 570  10 L 570  62 L 520  62 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="545" y="33" text-anchor="middle" class="wt" style="font-size:7px">Guelma</text>
-  <text x="545" y="45" text-anchor="middle" class="wn">116</text>
+  <text x="545" y="45" text-anchor="middle" class="wn">9</text>
 </g>
 <g class="wilaya" id="w_Annaba" 
    data-name="Annaba" data-orders="6" data-pct="1.2%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 520  62 L 575  62 L 575 110 L 520 110 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="548" y="83" text-anchor="middle" class="wt" style="font-size:7px">Annaba</text>
-  <text x="548" y="95" text-anchor="middle" class="wn">171</text>
+  <text x="548" y="95" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_El_Tarf" 
    data-name="El Tarf" data-orders="8" data-pct="1.6%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 570  10 L 610  10 L 610  70 L 570  70 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="590" y="37" text-anchor="middle" class="wt" style="font-size:7px">El Tarf</text>
-  <text x="590" y="49" text-anchor="middle" class="wn">50</text>
+  <text x="590" y="49" text-anchor="middle" class="wn">8</text>
 </g>
 <g class="wilaya" id="w_Souk_Ahras" 
    data-name="Souk Ahras" data-orders="0" data-pct="0.0%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 520 110 L 580 110 L 580 160 L 520 160 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="550" y="132" text-anchor="middle" class="wt" style="font-size:7px">Souk Ahras</text>
-  <text x="550" y="144" text-anchor="middle" class="wn">56</text>
+  <text x="550" y="144" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Oum_El_Bouaghi" 
    data-name="Oum El Bouaghi" data-orders="7" data-pct="1.4%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 460 108 L 520 108 L 520 160 L 460 160 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="131" text-anchor="middle" class="wt" style="font-size:6.5px">Oum El Boua.</text>
-  <text x="490" y="143" text-anchor="middle" class="wn">92</text>
+  <text x="490" y="143" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_Khenchela" 
    data-name="Khenchela" data-orders="0" data-pct="0.0%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 460 160 L 520 160 L 520 208 L 460 208 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="181" text-anchor="middle" class="wt" style="font-size:7px">Khenchela</text>
-  <text x="490" y="193" text-anchor="middle" class="wn">64</text>
+  <text x="490" y="193" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Tebessa" 
    data-name="Tébessa" data-orders="6" data-pct="1.2%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 520 160 L 610 160 L 610 225 L 520 225 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="565" y="190" text-anchor="middle" class="wt" style="font-size:7px">Tébessa</text>
-  <text x="565" y="202" text-anchor="middle" class="wn">113</text>
+  <text x="565" y="202" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_Saida" 
    data-name="Saïda" data-orders="1" data-pct="0.2%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M  55 100 L 120 100 L 120 155 L  55 155 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="124" text-anchor="middle" class="wt" style="font-size:7px">Saïda</text>
-  <text x="88" y="136" text-anchor="middle" class="wn">33</text>
+  <text x="88" y="136" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Naama" 
    data-name="Naâma" data-orders="1" data-pct="0.2%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M  10 100 L  55 100 L  55 200 L  10 200 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="32" y="147" text-anchor="middle" class="wt" style="font-size:7px">Naâma</text>
-  <text x="32" y="159" text-anchor="middle" class="wn">19</text>
+  <text x="32" y="159" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_El_Bayadh" 
    data-name="El Bayadh" data-orders="1" data-pct="0.2%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M  55 155 L 120 155 L 120 250 L  55 250 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="200" text-anchor="middle" class="wt" style="font-size:7px">El Bayadh</text>
-  <text x="88" y="212" text-anchor="middle" class="wn">19</text>
+  <text x="88" y="212" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Laghouat" 
    data-name="Laghouat" data-orders="2" data-pct="0.4%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 165 160 L 280 160 L 280 250 L 165 250 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="222" y="202" text-anchor="middle" class="wt" style="font-size:7px">Laghouat</text>
-  <text x="222" y="214" text-anchor="middle" class="wn">81</text>
+  <text x="222" y="214" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Djelfa" 
    data-name="Djelfa" data-orders="14" data-pct="2.8%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 220 118 L 320 118 L 320 200 L 220 200 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="270" y="156" text-anchor="middle" class="wt" style="font-size:7px">Djelfa</text>
-  <text x="270" y="168" text-anchor="middle" class="wn">99</text>
+  <text x="270" y="168" text-anchor="middle" class="wn">14</text>
 </g>
 <g class="wilaya" id="w_MSila" 
    data-name="M'Sila" data-orders="6" data-pct="1.2%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 320 148 L 410 148 L 410 220 L 320 220 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="365" y="181" text-anchor="middle" class="wt" style="font-size:7px">M'Sila</text>
-  <text x="365" y="193" text-anchor="middle" class="wn">62</text>
+  <text x="365" y="193" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_Batna" 
    data-name="Batna" data-orders="9" data-pct="1.8%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 410 148 L 460 148 L 460 220 L 410 220 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="435" y="181" text-anchor="middle" class="wt" style="font-size:7px">Batna</text>
-  <text x="435" y="193" text-anchor="middle" class="wn">156</text>
+  <text x="435" y="193" text-anchor="middle" class="wn">9</text>
 </g>
 <g class="wilaya" id="w_Biskra" 
    data-name="Biskra" data-orders="0" data-pct="0.0%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 410 220 L 520 220 L 520 280 L 410 280 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="465" y="247" text-anchor="middle" class="wt" style="font-size:7px">Biskra</text>
-  <text x="465" y="259" text-anchor="middle" class="wn">78</text>
+  <text x="465" y="259" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_El_Oued" 
    data-name="El Oued" data-orders="0" data-pct="0.0%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 410 280 L 530 280 L 530 360 L 410 360 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="470" y="317" text-anchor="middle" class="wt" style="font-size:7px">El Oued</text>
-  <text x="470" y="329" text-anchor="middle" class="wn">35</text>
+  <text x="470" y="329" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Ouargla" 
    data-name="Ouargla" data-orders="2" data-pct="0.4%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 165 250 L 410 250 L 410 360 L 165 360 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="288" y="302" text-anchor="middle" class="wt" style="font-size:7px">Ouargla</text>
-  <text x="288" y="314" text-anchor="middle" class="wn">73</text>
+  <text x="288" y="314" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Ghardaia" 
    data-name="Ghardaïa" data-orders="0" data-pct="0.0%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 165 360 L 380 360 L 380 430 L 165 430 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="272" y="392" text-anchor="middle" class="wt" style="font-size:7px">Ghardaïa</text>
-  <text x="272" y="404" text-anchor="middle" class="wn">36</text>
+  <text x="272" y="404" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Bechar" 
    data-name="Béchar" data-orders="2" data-pct="0.4%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M  10 200 L 165 200 L 165 360 L  10 360 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="277" text-anchor="middle" class="wt" style="font-size:7px">Béchar</text>
-  <text x="88" y="289" text-anchor="middle" class="wn">21</text>
+  <text x="88" y="289" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Adrar" 
    data-name="Adrar" data-orders="0" data-pct="0.0%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M  10 360 L 250 360 L 250 530 L  10 530 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="130" y="442" text-anchor="middle" class="wt" style="font-size:7px">Adrar</text>
-  <text x="130" y="454" text-anchor="middle" class="wn">33</text>
+  <text x="130" y="454" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Tamanrasset" 
    data-name="Tamanrasset" data-orders="1" data-pct="0.2%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M 250 360 L 530 360 L 530 530 L 250 530 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="390" y="442" text-anchor="middle" class="wt" style="font-size:6.5px">Tamanrasset</text>
-  <text x="390" y="454" text-anchor="middle" class="wn">20</text>
+  <text x="390" y="454" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Tindouf" 
    data-name="Tindouf" data-orders="0" data-pct="0.0%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M  10 530 L 165 530 L 165 560 L  10 560 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="542" text-anchor="middle" class="wt" style="font-size:7px">Tindouf</text>
-  <text x="88" y="554" text-anchor="middle" class="wn">9</text>
+  <text x="88" y="554" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Illizi" 
    data-name="Illizi" data-orders="0" data-pct="0.0%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M 530 360 L 610 360 L 610 530 L 530 530 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="570" y="442" text-anchor="middle" class="wt" style="font-size:7px">Illizi</text>
-  <text x="570" y="454" text-anchor="middle" class="wn">7</text>
+  <text x="570" y="454" text-anchor="middle" class="wn">0</text>
 </g>
 <g class="wilaya" id="w_Djanet" 
    data-name="Djanet" data-orders="0" data-pct="0.0%" data-tier="1"
    style="--wc:#dbeafe">
   <path d="M 530 530 L 610 530 L 610 560 L 530 560 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="570" y="542" text-anchor="middle" class="wt" style="font-size:7px">Djanet</text>
-  <text x="570" y="554" text-anchor="middle" class="wn">1</text>
+  <text x="570" y="554" text-anchor="middle" class="wn">0</text>
 </g>
 </svg>
     </div>
@@ -2825,7 +2822,7 @@ function showSlide(n) {
   const nc = document.getElementById('notes-content');
   nc.textContent = NOTES[sid] || '';
   initChartsForSlide(sid);
-  colorAlgeriaMap();
+  // colorAlgeriaMap() called via initChartsForSlide when sid=s18
 }
 
 // ── KEYBOARD NAVIGATION ──
@@ -2941,6 +2938,20 @@ function initChartsForSlide(sid) {
   if (sid === 's36') { _initS36Charts(); }
   // ── S37: Server Performance ──
   if (sid === 's37') { _initS37Charts(); }
+  // ── S10: Apache/SSH ──
+  if (sid === 's10') { _initS10Charts(); }
+  // ── S15: Top Products ──
+  if (sid === 's15') { _initS15Charts(); }
+  // ── S20: Security Dashboard ──
+  if (sid === 's20') { _initS20Charts(); }
+  // ── S21: Forensic Timeline ──
+  if (sid === 's21') { _initS21Charts(); }
+  // ── S23: CVE Matrix ──
+  if (sid === 's23') { _initS23Charts(); }
+  // ── S25: Hardening ──
+  if (sid === 's25') { _initS25Charts(); }
+  // ── S30: Evidence Matrix ──
+  if (sid === 's30') { _initS30Charts(); }
   // ── S9: Redis Gauge ──
   if (sid === 's9') {
     _getOrCreateChart('chartRedisGauge', {
@@ -3064,10 +3075,6 @@ function initChartsForSlide(sid) {
       }
     });
   }
-
-  // ── S17: YoY ──
-  if (sid === 's17') { _initS17Charts(); }
-  
 
 
   // ── S22: SSH Attacks ──
@@ -3235,72 +3242,87 @@ function initChartsForSlide(sid) {
   }
 }
 
-// ── ALGERIA MAP COLORING ──
+// ── ALGERIA MAP COLORING — uses actual SVG IDs from HTML (w_Alger, w_Oran, etc.) ──
 function colorAlgeriaMap() {
+  // Map: SVG element ID → { color, orders } — matches data-orders in the HTML
   const wilayaColors = {
-    w16: '#60a5fa', // Alger 148
-    w31: '#3b82f6', // Oran 72
-    w09: '#3b82f6', // Blida 67
-    w25: '#2563a8', // Constantine 55
-    w15: '#2563a8', // Tizi Ouzou 52
-    w19: '#2563a8', // Sétif 44
-    w35: '#2563a8', // Boumerdès 42
-    w05: '#1e4080', // Batna 41
-    w06: '#1e4080', // Béjaïa 38
-    w23: '#1e4080', // Annaba 36
-    w42: '#1e4080', // Tipaza 33
-    w02: '#1e3a6a', // Chlef 32
-    w28: '#1e3a6a', // M'Sila 31
-    w07: '#1e3a6a', // Biskra 29
-    w26: '#1e3a6a', // Médéa 29
-    w21: '#1a2a4a', // Skikda 28
-    w13: '#1a2a4a', // Tlemcen 27
-    w17: '#1a2a4a', // Djelfa 26
-    w34: '#1a2a4a', // Bordj Bou Arréridj 23
-    w04: '#1a2a4a', // Oum El Bouaghi 24
-    w43: '#1a2a4a', // Mila 22
-    w14: '#1a2a4a', // Tiaret 22
-    w18: '#1a2a4a', // Jijel 21
-    w24: '#1a2a4a', // Guelma 20
-    w12: '#1a2a4a', // Tébessa 19
-    w44: '#1a2a4a', // Aïn Defla 19
-    w03: '#1a2040', // Laghouat 18
-    w22: '#1a2040', // Sidi Bel Abbès 18
-    w39: '#1a2040', // El Oued 17
-    w48: '#1a2040', // Relizane 17
-    w27: '#1a2040', // Mostaganem 16
-    w40: '#1a2040', // Khenchela 16
-    w36: '#1a2040', // El Tarf 15
-    w29: '#1a1a38', // Mascara 13
-    w47: '#1a1a38', // Ghardaïa 14
-    w41: '#1a1a38', // Souk Ahras 14
-    w20: '#1a1a38', // Saïda 14
-    w46: '#1a1a38', // Aïn Témouchent 12
-    w30: '#1a1a38', // Ouargla 12
-    w32: '#111828', // El Bayadh 9
-    w01: '#111828', // Adrar 8
-    w51: '#111828', // Ouled Djellal 8
-    w57: '#111828', // El M'Ghair 9
-    w45: '#111828', // Naâma 7
-    w58: '#111828', // El Meniaa 6
-    w49: '#111828', // Timimoun 5
-    w54: '#0a0e1a', // In Guezzam 1
-    w56: '#0a0e1a', // Djanet 2
-    w33: '#0a0e1a', // Illizi 2
-    w50: '#0a0e1a', // Bordj Badji Mokhtar 2
-    w53: '#0a0e1a', // In Salah 3
-    w37: '#0a0e1a', // Tindouf 3
-    w11: '#0a0e1a', // Tamanrasset 4
-    w52: '#0a0e1a', // Béni Abbès 4
-    w55: '#111828', // Touggourt 10
-    w38: '#111828', // Tissemsilt 10
-    w08: '#1a1a38', // Béchar 11
+    'w_Alger':              { color: '#1d4ed8', orders: 153 },
+    'w_Oran':               { color: '#2563eb', orders: 15  },
+    'w_Blida':              { color: '#3b82f6', orders: 21  },
+    'w_Constantine':        { color: '#2563eb', orders: 26  },
+    'w_Tizi_Ouzou':         { color: '#3b82f6', orders: 22  },
+    'w_Setif':              { color: '#1d4ed8', orders: 11  },
+    'w_Boumerdes':          { color: '#2563eb', orders: 10  },
+    'w_Batna':              { color: '#1e3a8a', orders: 9   },
+    'w_Bejaia':             { color: '#1e3a8a', orders: 10  },
+    'w_Annaba':             { color: '#1d4ed8', orders: 6   },
+    'w_Tipaza':             { color: '#1d4ed8', orders: 0   },
+    'w_Chlef':              { color: '#1e3a8a', orders: 7   },
+    'w_MSila':              { color: '#1e3a8a', orders: 6   },
+    'w_Biskra':             { color: '#172554', orders: 0   },
+    'w_Medea':              { color: '#172554', orders: 0   },
+    'w_Skikda':             { color: '#1e3a8a', orders: 16  },
+    'w_Tlemcen':            { color: '#1e3a8a', orders: 14  },
+    'w_Djelfa':             { color: '#1e3a8a', orders: 14  },
+    'w_Bordj_Bou_Arreridj': { color: '#172554', orders: 2   },
+    'w_Oum_El_Bouaghi':     { color: '#1e3a8a', orders: 7   },
+    'w_Mila':               { color: '#172554', orders: 2   },
+    'w_Tiaret':             { color: '#172554', orders: 0   },
+    'w_Jijel':              { color: '#1e3a8a', orders: 15  },
+    'w_Guelma':             { color: '#1e3a8a', orders: 9   },
+    'w_Tebessa':            { color: '#1e3a8a', orders: 6   },
+    'w_Ain_Defla':          { color: '#1e3a8a', orders: 6   },
+    'w_Laghouat':           { color: '#172554', orders: 2   },
+    'w_Sidi_Bel_Abbes':     { color: '#172554', orders: 1   },
+    'w_El_Oued':            { color: '#172554', orders: 0   },
+    'w_Relizane':           { color: '#172554', orders: 7   },
+    'w_Mostaganem':         { color: '#172554', orders: 9   },
+    'w_Khenchela':          { color: '#172554', orders: 0   },
+    'w_El_Tarf':            { color: '#1e3a8a', orders: 8   },
+    'w_Mascara':            { color: '#172554', orders: 1   },
+    'w_Ghardaia':           { color: '#172554', orders: 0   },
+    'w_Souk_Ahras':         { color: '#172554', orders: 0   },
+    'w_Saida':              { color: '#172554', orders: 1   },
+    'w_Ain_Temouchent':     { color: '#172554', orders: 1   },
+    'w_Ouargla':            { color: '#172554', orders: 2   },
+    'w_El_Bayadh':          { color: '#0f172a', orders: 1   },
+    'w_Adrar':              { color: '#0f172a', orders: 0   },
+    'w_Naama':              { color: '#0f172a', orders: 1   },
+    'w_Bechar':             { color: '#0f172a', orders: 2   },
+    'w_Tamanrasset':        { color: '#0f172a', orders: 1   },
+    'w_Tindouf':            { color: '#0f172a', orders: 0   },
+    'w_Illizi':             { color: '#0f172a', orders: 0   },
+    'w_Djanet':             { color: '#0f172a', orders: 0   },
+    'w_Bouira':             { color: '#1e3a8a', orders: 16  },
+    'w_Tissemsilt':         { color: '#172554', orders: 6   },
   };
-  Object.entries(wilayaColors).forEach(([id, color]) => {
+  // First update all wn text labels to show order counts
+  Object.entries(wilayaColors).forEach(([id, cfg]) => {
     const el = document.getElementById(id);
-    if (el) {
-      el.querySelectorAll('path').forEach(p => p.style.fill = color);
-    }
+    if (!el) return;
+    // Update wn label to show order count
+    const wnText = el.querySelector('.wn');
+    if (wnText) wnText.textContent = cfg.orders > 0 ? cfg.orders : '';
+  });
+  Object.entries(wilayaColors).forEach(([id, cfg]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // Color by order volume tier
+    let fill;
+    const o = cfg.orders;
+    if (o >= 100) fill = '#1d4ed8';
+    else if (o >= 30) fill = '#2563eb';
+    else if (o >= 15) fill = '#3b82f6';
+    else if (o >= 7)  fill = '#1e3a8a';
+    else if (o >= 3)  fill = '#172554';
+    else if (o >= 1)  fill = '#0f172a';
+    else              fill = '#060d1e';
+    el.querySelectorAll('path').forEach(p => {
+      p.style.fill = fill;
+      p.style.stroke = o >= 15 ? 'rgba(59,130,246,0.6)' : o >= 5 ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.15)';
+      p.style.strokeWidth = o >= 15 ? '1.2' : '0.7';
+      if (o >= 50) p.setAttribute('filter', 'url(#glow)');
+    });
   });
 }
 
@@ -3310,13 +3332,12 @@ function filterMap(btn, minOrders, maxOrders) {
   btn.classList.add('active');
   document.querySelectorAll('#algeria-map .wilaya').forEach(g => {
     const orders = parseInt(g.dataset.orders) || 0;
-    if (orders >= minOrders && orders <= maxOrders) {
+    if (minOrders === 0 && maxOrders === 9999) {
+      g.classList.remove('dimmed','highlighted');
+    } else if (orders >= minOrders && orders <= maxOrders) {
       g.classList.remove('dimmed'); g.classList.add('highlighted');
     } else {
       g.classList.add('dimmed'); g.classList.remove('highlighted');
-    }
-    if (minOrders === 0 && maxOrders === 9999) {
-      g.classList.remove('dimmed','highlighted');
     }
   });
 }
@@ -3483,29 +3504,42 @@ function _initS37Charts() {
   });
 }
 
+
+// ── Stub functions for slides without canvas (tables/CSS only) ──
+function _initS10Charts() { /* s10: Apache/SSH — table-based, no Chart.js */ }
+function _initS15Charts() { /* s15: Top Products — table/CSS bars, no Chart.js */ }
+function _initS20Charts() { /* s20: Security Dashboard — KPI cards, no Chart.js */ }
+function _initS21Charts() { /* s21: Forensic Timeline — timeline items, no Chart.js */ }
+function _initS23Charts() { /* s23: CVE Matrix — table-based, no Chart.js */ }
+function _initS25Charts() { /* s25: Hardening — table-based, no Chart.js */ }
+function _initS30Charts() { /* s30: Evidence Matrix — table-based, no Chart.js */ }
+
 showSlide(0);
 
 // ── colorize Algeria map ──
 
 // Colorize Algeria map by order volume
 function colorizeAlgeriaMap() {
+  // Colorize Algeria map — targets path elements (not rect)
   const wilayas = document.querySelectorAll('#algeria-map .wilaya');
   wilayas.forEach(g => {
     const orders = parseInt(g.dataset.orders || 0);
-    const rect = g.querySelector('rect');
-    if (!rect) return;
-    let fill, stroke, strokeOpacity;
-    if (orders >= 100) { fill='#2563eb'; stroke='rgba(59,130,246,0.95)'; }
-    else if (orders >= 50) { fill='#3b82f6'; stroke='rgba(59,130,246,0.80)'; }
-    else if (orders >= 30) { fill='#1d4ed8'; stroke='rgba(59,130,246,0.65)'; }
+    const paths = g.querySelectorAll('path');
+    if (!paths.length) return;
+    let fill, stroke;
+    if (orders >= 100) { fill='#1d4ed8'; stroke='rgba(59,130,246,0.95)'; }
+    else if (orders >= 50) { fill='#2563eb'; stroke='rgba(59,130,246,0.80)'; }
+    else if (orders >= 30) { fill='#3b82f6'; stroke='rgba(59,130,246,0.65)'; }
     else if (orders >= 15) { fill='#1e3a8a'; stroke='rgba(59,130,246,0.50)'; }
     else if (orders >= 7)  { fill='#172554'; stroke='rgba(59,130,246,0.40)'; }
     else if (orders >= 3)  { fill='#0f172a'; stroke='rgba(59,130,246,0.35)'; }
-    else                   { fill='#080f1e'; stroke='rgba(59,130,246,0.22)'; }
-    rect.style.fill = fill;
-    rect.style.stroke = stroke;
-    rect.style.strokeWidth = orders >= 30 ? '1.4' : orders >= 10 ? '1.0' : '0.7';
-    if (orders >= 30) rect.setAttribute('filter','url(#glow)');
+    else                   { fill='#060d1e'; stroke='rgba(59,130,246,0.20)'; }
+    paths.forEach(p => {
+      p.style.fill = fill;
+      p.style.stroke = stroke;
+      p.style.strokeWidth = orders >= 30 ? '1.4' : orders >= 10 ? '1.0' : '0.7';
+      if (orders >= 30) p.setAttribute('filter','url(#glow)');
+    });
   });
 }
 
