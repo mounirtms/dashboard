@@ -482,7 +482,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="cover-title">Executive Audit<br><span>January – July 2026</span></div>
   <div class="cover-sub">Infrastructure · Security · Performance · Business Intelligence<br>8-Phase Forensic Methodology · Evidence-First · Cross-Validated</div>
   <div class="cover-kpi">
-    <div class="cover-kpi-item"><div class="cv-val">37</div><div class="cv-label">Audit Slides</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">38</div><div class="cv-label">Audit Slides</div></div>
     <div class="cover-kpi-item"><div class="cv-val">8</div><div class="cv-label">Phases</div></div>
     <div class="cover-kpi-item"><div class="cv-val">498</div><div class="cv-label">CMD_Done H1</div></div>
     <div class="cover-kpi-item"><div class="cv-val">86.5%</div><div class="cv-label">Load Reduction</div></div>
@@ -578,6 +578,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <div><a href="#" onclick="showSlide(30);return false" style="color:var(--accent3);text-decoration:none">S31 — Risk Assessment Matrix</a></div>
           <div><a href="#" onclick="showSlide(32);return false" style="color:var(--accent3);text-decoration:none">S33 — H2 Strategic Roadmap</a></div>
           <div><a href="#" onclick="showSlide(33);return false" style="color:var(--accent3);text-decoration:none">S34 — Key Recommendations</a></div>
+          <div><a href="#" onclick="showSlide(35);return false" style="color:var(--accent3);text-decoration:none">S36 — H1 2025 vs H1 2026 Comparison</a></div>
+          <div><a href="#" onclick="showSlide(36);return false" style="color:var(--accent3);text-decoration:none">S37 — Server Performance Tunings</a></div>
         </div>
       </div>
     </div>
@@ -2793,6 +2795,8 @@ const NOTES = {
   s32: 'Phase 8 divider. 13 action items. Immediate Jul: 3 security. Q3 Aug-Sep: Yalidine prod deploy + 4 security/upgrade. Q4: performance. Business: back-to-school Sep.',
   s33: '13 action items. Immediate Jul: 1. phpinfo delete (10min). 2. chmod 971 world-writable files. 3. .git Apache block. Q3 Aug-Sep: 4. Magento 2.4.7-p3 upgrade (CVE-2024-34102 CVSS 9.8). 5. Amasty module upgrades. 6. tsdnd remediation. 7. suspicious JS review. 8. SSH key-only auth. Business: Yalidine prod deploy (carriers/yalidine/active=1) via CI/CD — 36.7% orders on dev. Sep back-to-school target.',
   s34: 'Executive summary: Immediate ~2h. Q3 before Sep back-to-school peak. Key: Yalidine prod deploy will formalize delivery tracking for 35.3% of current orders. CI/CD pipeline (DND France) enables safe, repeatable deployments. Magento 2.4.7-p3 CVE patch = critical security.',
+  s36: 'H1 2025 vs H1 2026 deep-dive comparison. CMD_Done: 445→498 (+11.9%). Revenue: 2.76M→2.78M DZD (+0.9%). AOV: 6,199→5,591 DZD (−9.8%). Cancel rate: 13.1%→36.6% (COD normalization). Commits: 120→1,859 (+1,449%). 9,275 total customers (incl. 3,278 bulk-migrated May 2026). Data: MariaDB prod + GitLab audit Jul 12, 2026.',
+  s37: 'Server performance engineering summary. Load avg reduced 86.5%: 15.37→2.04. Redis hit rate 84.3%, Varnish 15.5%. Cloudflare CDN active. MariaDB query cache tuned. PHP-FPM optimized. Magento opcache 512MB. All tunings applied May 5–Jun 2026 crisis window. Source: SERVER_FIX_COMPLETE_REPORT.md.',
   s35: 'Thank you. Prod: technostationery.com. Dev: dev.technostationery.com. Beta REMOVED. PIM REMOVED. 9,275 customers · 4,484 CMD_Done all-time · 28.6M DZD · H1 2026: 498 CMD_Done, 2.78M DZD, 36.6% cancel rate (COD normal). 2,215 commits · 46 MAB modules. Yalidine on dev → Q3 prod. CI/CD live (DND France). AlmaLinux 8.10 · Magento 2.4.6-p15. 8 phases complete.'
 };
 
