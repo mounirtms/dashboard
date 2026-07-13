@@ -569,23 +569,23 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div class="panel">
         <h3>🔒 Phase 5: Security Incident Module</h3>
         <div style="font-size:12px;line-height:2;color:var(--muted)">
-          <div><a href="#" onclick="showSlide(19);return false" style="color:var(--danger);text-decoration:none">S20 — Security Executive Dashboard</a></div>
-          <div><a href="#" onclick="showSlide(20);return false" style="color:var(--danger);text-decoration:none">S21 — May 2026 Forensic Timeline</a></div>
-          <div><a href="#" onclick="showSlide(21);return false" style="color:var(--danger);text-decoration:none">S22 — SSH Brute-Force Analysis</a></div>
-          <div><a href="#" onclick="showSlide(22);return false" style="color:var(--danger);text-decoration:none">S23 — CVE &amp; Vulnerability Matrix</a></div>
-          <div><a href="#" onclick="showSlide(23);return false" style="color:var(--danger);text-decoration:none">S24 — Malware &amp; Ecomscan Analysis</a></div>
-          <div><a href="#" onclick="showSlide(24);return false" style="color:var(--danger);text-decoration:none">S25 — Server Hardening Before/After</a></div>
+          <div><a href="#" onclick="showSlide(20);return false" style="color:var(--danger);text-decoration:none">S20 — Security Executive Dashboard</a></div>
+          <div><a href="#" onclick="showSlide(21);return false" style="color:var(--danger);text-decoration:none">S21 — May 2026 Forensic Timeline</a></div>
+          <div><a href="#" onclick="showSlide(22);return false" style="color:var(--danger);text-decoration:none">S22 — SSH Brute-Force Analysis</a></div>
+          <div><a href="#" onclick="showSlide(23);return false" style="color:var(--danger);text-decoration:none">S23 — CVE &amp; Vulnerability Matrix</a></div>
+          <div><a href="#" onclick="showSlide(24);return false" style="color:var(--danger);text-decoration:none">S24 — Malware &amp; Ecomscan Analysis</a></div>
+          <div><a href="#" onclick="showSlide(25);return false" style="color:var(--danger);text-decoration:none">S25 — Server Hardening Before/After</a></div>
         </div>
       </div>
       <div class="panel">
         <h3>⚡ Phase 6–8: Performance, Evidence &amp; Roadmap</h3>
         <div style="font-size:12px;line-height:2;color:var(--muted)">
-          <div><a href="#" onclick="showSlide(26);return false" style="color:var(--accent3);text-decoration:none">S27 — Crisis Performance</a></div>
-          <div><a href="#" onclick="showSlide(27);return false" style="color:var(--accent3);text-decoration:none">S28 — Cache Deep Dive</a></div>
-          <div><a href="#" onclick="showSlide(29);return false" style="color:var(--accent3);text-decoration:none">S30 — Evidence Confidence Matrix</a></div>
-          <div><a href="#" onclick="showSlide(30);return false" style="color:var(--accent3);text-decoration:none">S31 — Risk Assessment Matrix</a></div>
-          <div><a href="#" onclick="showSlide(32);return false" style="color:var(--accent3);text-decoration:none">S33 — H2 Strategic Roadmap</a></div>
-          <div><a href="#" onclick="showSlide(33);return false" style="color:var(--accent3);text-decoration:none">S34 — Key Recommendations</a></div>
+          <div><a href="#" onclick="showSlide(27);return false" style="color:var(--accent3);text-decoration:none">S27 — Crisis Performance</a></div>
+          <div><a href="#" onclick="showSlide(28);return false" style="color:var(--accent3);text-decoration:none">S28 — Cache Deep Dive</a></div>
+          <div><a href="#" onclick="showSlide(30);return false" style="color:var(--accent3);text-decoration:none">S30 — Evidence Confidence Matrix</a></div>
+          <div><a href="#" onclick="showSlide(31);return false" style="color:var(--accent3);text-decoration:none">S31 — Risk Assessment Matrix</a></div>
+          <div><a href="#" onclick="showSlide(33);return false" style="color:var(--accent3);text-decoration:none">S33 — H2 Strategic Roadmap</a></div>
+          <div><a href="#" onclick="showSlide(34);return false" style="color:var(--accent3);text-decoration:none">S34 — Key Recommendations</a></div>
         </div>
       </div>
     </div>
