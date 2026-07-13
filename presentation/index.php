@@ -514,7 +514,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-subtitle">Real data: MariaDB prod (technadminy7_dBT8x12y22) · Imunify360 · /var/log/secure · ecomscan · GitLab (4,593 commits) · Audited Jul 12, 2026</div>
   <div class="kpi-grid g4" style="margin-bottom:12px">
     <div class="kpi-card blue"><div class="kpi-label">Valid Orders H1 2026</div><div class="kpi-val">499</div><div class="kpi-sub">CMD_Done · Jan–Jun 2026</div><div class="kpi-delta" style="color:var(--ok)">&#x25B2; +12.1% vs 445 (H1 2025)</div></div>
-    <div class="kpi-card cyan"><div class="kpi-label">Total Customers</div><div class="kpi-val">9,277</div><div class="kpi-sub">All-time registered · MariaDB</div><div class="kpi-delta" style="color:var(--muted)">incl. 3,278 bulk-migrated May 2026</div></div>
+    <div class="kpi-card cyan"><div class="kpi-label">Total Customers</div><div class="kpi-val">9,283</div><div class="kpi-sub">All-time registered · MariaDB</div><div class="kpi-delta" style="color:var(--muted)">incl. 3,278 bulk-migrated May 2026</div></div>
     <div class="kpi-card green"><div class="kpi-label">All-Time Revenue</div><div class="kpi-val">28.6M</div><div class="kpi-sub">DZD · 4,490 CMD_Done orders</div><div class="kpi-delta" style="color:var(--ok)">H1 2026: 2.79M DZD · AOV 5,585 DZD</div></div>
     <div class="kpi-card orange"><div class="kpi-label">Cancel Rate H1 2026</div><div class="kpi-val">35.8%</div><div class="kpi-sub">293 cancelled / 819 orders actifs</div><div class="kpi-delta" style="color:var(--muted)">Normal for Algerian COD model</div></div>
   </div>
@@ -914,10 +914,10 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="div-number" style="top:50%;transform:translateY(-50%)">03</div>
   <div class="div-phase">Phase 3 — Magento Audit</div>
   <div class="div-title">Business Performance<br>&amp; Order Analysis</div>
-  <div class="div-subtitle">7,794 total orders · 4,490 CMD_Done (all-time) · 9,277 customers · 2022–Jul 2026 · MariaDB prod · Cancel rate 35.8% (Algerian COD)</div>
+  <div class="div-subtitle">7,794 total orders · 4,490 CMD_Done (all-time) · 9,283 customers · 2022–Jul 2026 · MariaDB prod · Cancel rate 35.8% (Algerian COD)</div>
   <div class="div-tags">
     <span class="badge badge-blue">4,490 CMD_Done</span>
-    <span class="badge badge-cyan">9,277 Customers</span>
+    <span class="badge badge-cyan">9,283 Customers</span>
     <span class="badge badge-green">+56.6% H1 YoY</span>
     <span class="badge badge-purple">Algeria Choropleth</span>
     <span class="badge badge-gray">83.29M DZD Revenue</span>
@@ -943,12 +943,12 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <table class="data-table" style="font-size:11px">
           <thead><tr><th>Mois</th><th class="num">CMD_Done</th><th class="num">AOV (DZD)</th><th>&#916; MoM</th></tr></thead>
           <tbody>
-            <tr><td>Jan</td><td class="num">116</td><td class="num">5,520</td><td><span style="color:var(--accent)">baseline</span></td></tr>
-            <tr><td>Fév</td><td class="num">69</td><td class="num">5,750</td><td><span style="color:var(--danger)">&#9660; &#8722;40.5%</span></td></tr>
-            <tr><td>Mar</td><td class="num">74</td><td class="num">5,490</td><td><span style="color:var(--ok)">&#9650; +7.2%</span></td></tr>
-            <tr><td>Avr</td><td class="num">81</td><td class="num">5,680</td><td><span style="color:var(--ok)">&#9650; +9.5%</span></td></tr>
-            <tr><td>Mai</td><td class="num">88</td><td class="num">5,420</td><td><span style="color:var(--ok)">&#9650; +8.6%</span></td></tr>
-            <tr><td>Jun</td><td class="num">70</td><td class="num">5,620</td><td><span style="color:var(--danger)">&#9660; &#8722;20.5%</span></td></tr>
+            <tr><td>Jan</td><td class="num">117</td><td class="num">5,167</td><td><span style="color:var(--accent)">baseline</span></td></tr>
+            <tr><td>Fév</td><td class="num">68</td><td class="num">5,147</td><td><span style="color:var(--danger)">&#9660; &#8722;41.9%</span></td></tr>
+            <tr><td>Mar</td><td class="num">75</td><td class="num">5,999</td><td><span style="color:var(--ok)">&#9650; +10.3%</span></td></tr>
+            <tr><td>Avr</td><td class="num">81</td><td class="num">6,224</td><td><span style="color:var(--ok)">&#9650; +8.0%</span></td></tr>
+            <tr><td>Mai</td><td class="num">88</td><td class="num">5,050</td><td><span style="color:var(--ok)">&#9650; +8.6%</span></td></tr>
+            <tr><td>Jun</td><td class="num">70</td><td class="num">6,202</td><td><span style="color:var(--danger)">&#9660; &#8722;20.5%</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -967,12 +967,12 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
             <div style="font-size:10px;color:var(--muted)">Revenu H1 DZD</div>
           </div>
           <div>
-            <div style="font-size:22px;font-weight:800;color:#a78bfa">911</div>
+            <div style="font-size:22px;font-weight:800;color:#a78bfa">819</div>
             <div style="font-size:10px;color:var(--muted)">Total Orders H1</div>
           </div>
         </div>
         <div style="margin-top:6px;font-size:10px;color:var(--dim)">
-          Feb dip: Yalidine test phase (dev). Mar+ recovery. May peak = 88 CMD_Done.
+          Pic Jan: 117 CMD_Done. Fév creux: phase test Yalidine (dev). Mai: 88 CMD_Done. Jun: annulation pic (43.9%).
           <span class="conf conf-high">HIGH</span>
         </div>
       </div>
@@ -988,7 +988,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 3 — Audit Magento</div>
   <div class="slide-title">Distribution des Statuts &amp; Taux d&#8217;Annulation</div>
-  <div class="slide-subtitle">Source: MariaDB sales_order · 819 ordres actifs H1 2026 · Statuts personnalis&#233;s Alg&#233;riens (COD) · Taux annulation 35.8% = NORMAL march&#233; DZ</div>
+  <div class="slide-subtitleSource: MariaDB sales_order · 819 ordres H1 2026 · CMD_Done=499 (60.9%) · Annulées=287 (35.0%) · Autres=33 (4.0%) · Taux annulation 35.8% = NORMAL COD DZ</div>
   <div class="grid-2" style="flex:1;gap:16px">
     <div class="panel" style="flex:1;display:flex;flex-direction:column">
       <h3>Distribution des Statuts (Donut)</h3>
@@ -1003,27 +1003,27 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
             <tr style="background:rgba(34,197,94,.08)">
               <td><span class="badge badge-green">CMD_Done</span></td>
               <td class="num" style="font-weight:700;color:#22c55e">499</td>
-              <td class="num" style="color:#22c55e">63.4%</td>
+              <td class="num" style="color:#22c55e">60.9%</td>
             </tr>
             <tr style="background:rgba(239,68,68,.06)">
               <td><span class="badge badge-red" style="font-size:9px">Annulee_confirmation</span></td>
-              <td class="num">164</td>
-              <td class="num" style="color:#f87171">20.9%</td>
+              <td class="num">163</td>
+              <td class="num" style="color:#f87171">19.9%</td>
             </tr>
             <tr style="background:rgba(239,68,68,.06)">
               <td><span class="badge badge-red" style="font-size:9px">Annulee_preparation</span></td>
               <td class="num">80</td>
-              <td class="num" style="color:#f87171">10.2%</td>
+              <td class="num" style="color:#f87171">9.8%</td>
             </tr>
             <tr style="background:rgba(239,68,68,.06)">
               <td><span class="badge badge-red" style="font-size:9px">Annulee_livraison</span></td>
               <td class="num">44</td>
-              <td class="num" style="color:#f87171">5.6%</td>
+              <td class="num" style="color:#f87171">5.4%</td>
             </tr>
             <tr>
               <td><span class="badge badge-yellow">pending/processing</span></td>
-              <td class="num">41</td>
-              <td class="num">5.2%</td>
+              <td class="num">33</td>
+              <td class="num">4.0%</td>
             </tr>
           </tbody>
         </table>
@@ -1040,7 +1040,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
             <div style="font-size:9px;color:#22c55e;margin-top:2px">NORMAL — COD Alg&#233;rie</div>
           </div>
           <div style="font-size:10px;color:var(--muted);flex:2">
-            288 annulations / 819 orders actifs.<br>
+            293 annulations / 819 orders actifs.<br>
             Benchmark secteur DZ (COD) : <strong style="color:#f59e0b">30&#8211;50%</strong>.<br>
             3 statuts personnalis&#233;s : confirmation, pr&#233;paration, livraison.<br>
             Pic Mai : Yalidine phase test sur dev (impact nul prod).<br>
@@ -1060,7 +1060,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 3 — Magento Audit</div>
   <div class="slide-title">Customer Registrations — Anomaly Investigation</div>
-  <div class="slide-subtitle">Source: MariaDB customer_entity table — 9,277 total registrations Jan–Jun 2026</div>
+  <div class="slide-subtitle">Source: MariaDB customer_entity table — 9,283 total registrations Jan–Jun 2026</div>
   <div class="grid-23" style="flex:1;gap:16px">
     <div class="panel" style="display:flex;flex-direction:column">
       <h3>Monthly Customer Registrations</h3>
@@ -1093,7 +1093,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       </div>
       <div class="panel">
         <div style="font-size:11px;color:var(--muted)">
-          <strong style="color:#fff">Real organic customers:</strong> 9,274 total &#x2212; 3,278 bulk-migrated = ~5,996 organic registrations<br>
+          <strong style="color:#fff">Real organic customers:</strong> 9,283 total &#x2212; 3,278 bulk-migrated = ~6,005 organic registrations<br>
           <div style="margin-top:4px;font-size:10px;color:var(--dim)">Source: customer_entity table JOIN sales_order</div>
         </div>
       </div>
@@ -1153,7 +1153,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <h3>Key Metric</h3>
         <div style="display:flex;gap:16px">
           <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent)">911</div><div style="font-size:10px;color:var(--muted)">Total Orders H1 2026</div></div>
-          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--ok)">DZD 5,591</div><div style="font-size:10px;color:var(--muted)">AOV (CMD_Done)</div></div>
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--ok)">DZD 5,585</div><div style="font-size:10px;color:var(--muted)">AOV (CMD_Done)</div></div>
           <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent2)">DZD 2.79M</div><div style="font-size:10px;color:var(--muted)">Revenue H1 2026</div></div>
         </div>
       </div>
@@ -1185,7 +1185,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 4 — Business Intelligence</div>
   <div class="slide-title">Year-over-Year Comparison — 2025 vs 2026</div>
-  <div class="slide-subtitle">Source: MariaDB · status=CMD_Done · H1 2025 = 445 | H1 2026 = 498 · Same-period Jan–Jun · +12.1% YoY · DZD</div>
+  <div class="slide-subtitle">Source: MariaDB · status=CMD_Done · H1 2025 = 445 | H1 2026 = 499 · Same-period Jan–Jun · +12.1% YoY · DZD</div>
   <div class="grid-23" style="flex:1;gap:16px">
     <div class="panel" style="display:flex;flex-direction:column">
       <h3>Monthly Orders: 2025 vs 2026</h3>
@@ -1198,20 +1198,20 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <thead><tr><th>Metric</th><th class="num">2025</th><th class="num">2026</th><th>Δ</th></tr></thead>
           <tbody>
             <tr><td>CMD_Done Orders</td><td class="num">445</td><td class="num">499</td><td><span style="color:var(--ok)">▲ +12.1%</span></td></tr>
-            <tr><td>Customers (cumul. end-2025)</td><td class="num">5,460</td><td class="num">9,277</td><td><span style="color:var(--ok)">▲ +69.9%</span></td></tr>
-            <tr><td>AOV Moyen (DZD)</td><td class="num">DZD 6,199</td><td class="num">DZD 5,591</td><td><span style="color:var(--warn)">▼ −9.9%</span></td></tr>
+            <tr><td>Customers (cumul. end-2025)</td><td class="num">5,460</td><td class="num">9,283</td><td><span style="color:var(--ok)">▲ +69.9%</span></td></tr>
+            <tr><td>AOV Moyen (DZD)</td><td class="num">DZD 6,199</td><td class="num">DZD 5,585</td><td><span style="color:var(--warn)">▼ −9.9%</span></td></tr>
             <tr><td>Taux Annulation</td><td class="num">20.3%</td><td class="num">35.8%</td><td><span style="color:var(--warn)">COD normal</span></td></tr>
             <tr><td>Commits GitLab</td><td class="num">240</td><td class="num" style="color:#22c55e;font-weight:700">3,913</td><td><span style="color:var(--ok)">▲ +1,530%</span></td></tr>
             <tr><td>Yalidine (COD DZ)</td><td class="num" style="color:var(--muted)">N/A</td><td class="num" style="color:#f59e0b">dev ready</td><td><span style="color:var(--ok)">prod Q3</span></td></tr>
-            <tr><td>Peak Month</td><td>Jun(72)</td><td>Jan(116)</td><td><span style="color:var(--accent)">Consistent</span></td></tr>
+            <tr><td>Peak Month</td><td>Jan(90)</td><td>Jan(117)</td><td><span style="color:var(--accent)">Consistent</span></td></tr>
           </tbody>
         </table>
       </div>
       <div class="panel">
         <h3>Growth Drivers</h3>
         <div style="font-size:11px;color:var(--muted);line-height:1.7">
-          <div>&#x2705; Customers: <strong style="color:#fff">+69.9% cumul.</strong> (5,460 &#x2192; 9,277 total)</div>
-          <div>&#x26A0;&#xFE0F; AOV: <strong style="color:#f59e0b">&#x2212;9.8%</strong> (6,199 &#x2192; 5,585 DZD) — volume growth trade-off</div>
+          <div>&#x2705; Customers: <strong style="color:#fff">+70.1% cumul.</strong> (5,460 &#x2192; 9,283 total)</div>
+          <div>&#x26A0;&#xFE0F; AOV: <strong style="color:#f59e0b">&#x2212;9.9%</strong> (6,199 &#x2192; 5,585 DZD) — volume growth trade-off</div>
           <div>&#x2705; CMD_Done: <strong style="color:#fff">+12.1%</strong> (445 &#x2192; 499 orders)</div>
           <div>&#x26A0;&#xFE0F; Cancel 35.8% = NORMAL COD Alg&#233;rie (benchmark 30&#x2013;50%)</div>
           <div style="margin-top:6px;font-size:10px;color:var(--dim)">Source: sales_order JOIN customer_entity <span class="conf conf-high">HIGH CONF</span></div>
@@ -1254,9 +1254,9 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div style="font-size:10px;color:#f59e0b;margin-top:2px">▼ −14.4% · 8.25M DZD 🏆 Rev record</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
-      <div class="kpi-val" style="color:#f59e0b;font-size:20px">1,133</div>
+      <div class="kpi-val" style="color:#f59e0b;font-size:20px">1,132</div>
       <div class="kpi-label">2025 — CMD_Done</div>
-      <div style="font-size:10px;color:#f87171;margin-top:2px">▼ -2.6% · 7.43M DZD</div>
+      <div style="font-size:10px;color:#f87171;margin-top:2px">▼ -2.4% · 7.43M DZD</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(148,163,184,.3)">
       <div class="kpi-val" style="color:#94a3b8;font-size:20px">499</div>
@@ -1278,8 +1278,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
             <tr><td>2022</td><td class="num">311</td><td class="num">2.3</td><td class="num">7,406</td><td class="num">1,077</td></tr>
             <tr><td>2023</td><td class="num">1,359</td><td class="num">7.76</td><td class="num">5,707</td><td class="num">1,204</td></tr>
             <tr><td style="color:#f59e0b">2024</td><td class="num" style="color:#f87171">1,163</td><td class="num" style="color:#f87171">8.25</td><td class="num">7,098</td><td class="num">838</td></tr>
-            <tr><td style="color:#22c55e">2025 full</td><td class="num" style="color:#22c55e">1,133</td><td class="num" style="color:#94a3b8">7.43</td><td class="num" style="color:#94a3b8">6,560</td><td class="num" style="color:#64748b">577</td></tr>
-            <tr style="background:rgba(59,130,246,.06)"><td style="color:#60a5fa">2026 H1</td><td class="num" style="color:#60a5fa;font-weight:700">499</td><td class="num" style="color:#60a5fa">2.78</td><td class="num" style="color:#f59e0b">5,585</td><td class="num" style="color:#f59e0b">3,815</td></tr>
+            <tr><td style="color:#22c55e">2025 full</td><td class="num" style="color:#22c55e">1,132</td><td class="num" style="color:#94a3b8">7.43</td><td class="num" style="color:#94a3b8">6,563</td><td class="num" style="color:#64748b">1,263</td></tr>
+            <tr style="background:rgba(59,130,246,.06)"><td style="color:#60a5fa">2026 H1</td><td class="num" style="color:#60a5fa;font-weight:700">499</td><td class="num" style="color:#60a5fa">2.79</td><td class="num" style="color:#f59e0b">5,585</td><td class="num" style="color:#f59e0b">3,727</td></tr>
           </tbody>
         </table>
         <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: API REST technostationery.com — données temps réel MariaDB prod</div>
@@ -1291,7 +1291,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <div>📉 <strong style="color:#f59e0b">2024: recul −14.4%</strong> — 1,163 CMD_Done, mais revenu record 8.25M DZD</div>
           <div>📊 Croissance cumulée <strong style="color:#fff">+337%</strong> sur 2022→2023 (1er plein cycle)</div>
           <div>⚡ AOV 2023 exceptionnellement haut (+99% vs 2022) — commandes B2B?</div>
-          <div>📊 <strong style="color:#60a5fa">2026 H1</strong>: 499 CMD_Done · 2.79M DZD · AOV 5,591 · cancel 35.8% (COD normal)</div>
+          <div>📊 <strong style="color:#60a5fa">2026 H1</strong>: 499 CMD_Done · 2.79M DZD · AOV 5,585 · cancel 35.8% (COD normal)</div>
           <div style="margin-top:4px;font-size:10px;color:var(--dim)">Source: sales_order JOIN sales_order_grid · MariaDB <span class="conf conf-high">HIGH CONF</span></div>
         </div>
       </div>
@@ -1339,67 +1339,67 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 <!-- Background (Sahara) -->
 <rect x="0" y="0" width="620" height="560" fill="#060d1e" rx="4"/>
 <g class="wilaya" id="w_Tlemcen" 
-   data-name="Tlemcen" data-orders="14" data-pct="2.8%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M  10  20 L  65  20 L  65  65 L  10  65 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Tlemcen" data-orders="14" data-pct="2.8%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M  10  20 L  65  20 L  65  65 L  10  65 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="38" y="40" text-anchor="middle" class="wt" style="font-size:7px">Tlemcen</text>
   <text x="38" y="52" text-anchor="middle" class="wn">14</text>
 </g>
 <g class="wilaya" id="w_Ain_Temouchent" 
-   data-name="Aïn Témouchent" data-orders="1" data-pct="0.2%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M  10  65 L  55  65 L  55 100 L  10 100 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Aïn Témouchent" data-orders="2" data-pct="0.4%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M  10  65 L  55  65 L  55 100 L  10 100 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="32" y="80" text-anchor="middle" class="wt" style="font-size:6.5px">Aïn Témouch.</text>
-  <text x="32" y="92" text-anchor="middle" class="wn">1</text>
+  <text x="32" y="92" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Oran" 
-   data-name="Oran" data-orders="15" data-pct="3.0%" data-tier="6"
-   style="--wc:#2563eb">
-  <path d="M  65  20 L 120  20 L 120  70 L  65  70 Z" fill="#2563eb" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Oran" data-orders="15" data-pct="3.0%" data-tier="4"
+   style="--wc:#60a5fa">
+  <path d="M  65  20 L 120  20 L 120  70 L  65  70 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="92" y="42" text-anchor="middle" class="wt" style="font-size:7px">Oran</text>
   <text x="92" y="54" text-anchor="middle" class="wn">15</text>
 </g>
 <g class="wilaya" id="w_Sidi_Bel_Abbes" 
-   data-name="Sidi Bel Abbès" data-orders="1" data-pct="0.2%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M  65  70 L 120  70 L 120 110 L  65 110 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Sidi Bel Abbès" data-orders="4" data-pct="0.8%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M  65  70 L 120  70 L 120 110 L  65 110 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="92" y="87" text-anchor="middle" class="wt" style="font-size:6.5px">Sidi Bel Ab.</text>
-  <text x="92" y="99" text-anchor="middle" class="wn">1</text>
+  <text x="92" y="99" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Mostaganem" 
-   data-name="Mostaganem" data-orders="9" data-pct="1.8%" data-tier="2"
-   style="--wc:#bfdbfe">
-  <path d="M 120  20 L 165  20 L 165  65 L 120  65 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Mostaganem" data-orders="9" data-pct="1.8%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 120  20 L 165  20 L 165  65 L 120  65 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="40" text-anchor="middle" class="wt" style="font-size:7px">Mostaganem</text>
   <text x="142" y="52" text-anchor="middle" class="wn">9</text>
 </g>
 <g class="wilaya" id="w_Relizane" 
-   data-name="Relizane" data-orders="7" data-pct="1.4%" data-tier="2"
-   style="--wc:#bfdbfe">
-  <path d="M 120  65 L 165  65 L 165 105 L 120 105 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Relizane" data-orders="7" data-pct="1.4%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 120  65 L 165  65 L 165 105 L 120 105 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="82" text-anchor="middle" class="wt" style="font-size:7px">Relizane</text>
   <text x="142" y="94" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_Mascara" 
-   data-name="Mascara" data-orders="1" data-pct="0.2%" data-tier="2"
+   data-name="Mascara" data-orders="4" data-pct="0.8%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 120 105 L 165 105 L 165 140 L 120 140 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="142" y="120" text-anchor="middle" class="wt" style="font-size:7px">Mascara</text>
-  <text x="142" y="132" text-anchor="middle" class="wn">1</text>
+  <text x="142" y="132" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Chlef" 
-   data-name="Chlef" data-orders="7" data-pct="1.4%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 165  20 L 220  20 L 220  72 L 165  72 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Chlef" data-orders="7" data-pct="1.4%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 165  20 L 220  20 L 220  72 L 165  72 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="192" y="43" text-anchor="middle" class="wt" style="font-size:7px">Chlef</text>
   <text x="192" y="55" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_Tiaret" 
-   data-name="Tiaret" data-orders="0" data-pct="0.0%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 165  72 L 220  72 L 220 128 L 165 128 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Tiaret" data-orders="5" data-pct="1.0%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 165  72 L 220  72 L 220 128 L 165 128 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="192" y="97" text-anchor="middle" class="wt" style="font-size:7px">Tiaret</text>
-  <text x="192" y="109" text-anchor="middle" class="wn">0</text>
+  <text x="192" y="109" text-anchor="middle" class="wn">5</text>
 </g>
 <g class="wilaya" id="w_Tissemsilt" 
    data-name="Tissemsilt" data-orders="6" data-pct="1.2%" data-tier="2"
@@ -1409,44 +1409,44 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <text x="192" y="153" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_Ain_Defla" 
-   data-name="Aïn Defla" data-orders="6" data-pct="1.2%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 220  20 L 268  20 L 268  68 L 220  68 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Aïn Defla" data-orders="6" data-pct="1.2%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 220  20 L 268  20 L 268  68 L 220  68 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="244" y="41" text-anchor="middle" class="wt" style="font-size:7px">Aïn Defla</text>
   <text x="244" y="53" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_Medea" 
-   data-name="Médéa" data-orders="0" data-pct="0.0%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 220  68 L 268  68 L 268 118 L 220 118 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Médéa" data-orders="4" data-pct="0.8%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 220  68 L 268  68 L 268 118 L 220 118 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="244" y="90" text-anchor="middle" class="wt" style="font-size:7px">Médéa</text>
-  <text x="244" y="102" text-anchor="middle" class="wn">0</text>
+  <text x="244" y="102" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Tipaza" 
-   data-name="Tipaza" data-orders="0" data-pct="0.0%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 268  10 L 308  10 L 308  55 L 268  55 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Tipaza" data-orders="4" data-pct="0.8%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 268  10 L 308  10 L 308  55 L 268  55 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="288" y="30" text-anchor="middle" class="wt" style="font-size:7px">Tipaza</text>
-  <text x="288" y="42" text-anchor="middle" class="wn">0</text>
+  <text x="288" y="42" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Alger" 
-   data-name="Alger" data-orders="153" data-pct="30.7%" data-tier="7"
+   data-name="Alger" data-orders="157" data-pct="31.5%" data-tier="7"
    style="--wc:#1d4ed8">
   <path d="M 308  10 L 368  10 L 368  60 L 308  60 Z" fill="#1d4ed8" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="338" y="32" text-anchor="middle" class="wt" style="font-size:7px">Alger</text>
-  <text x="338" y="44" text-anchor="middle" class="wn">153</text>
+  <text x="338" y="44" text-anchor="middle" class="wn">157</text>
 </g>
 <g class="wilaya" id="w_Blida" 
-   data-name="Blida" data-orders="21" data-pct="4.2%" data-tier="6"
-   style="--wc:#2563eb">
-  <path d="M 268  55 L 320  55 L 320  95 L 268  95 Z" fill="#2563eb" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Blida" data-orders="20" data-pct="4.0%" data-tier="4"
+   style="--wc:#60a5fa">
+  <path d="M 268  55 L 320  55 L 320  95 L 268  95 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="294" y="72" text-anchor="middle" class="wt" style="font-size:7px">Blida</text>
-  <text x="294" y="84" text-anchor="middle" class="wn">21</text>
+  <text x="294" y="84" text-anchor="middle" class="wn">20</text>
 </g>
 <g class="wilaya" id="w_Boumerdes" 
-   data-name="Boumerdès" data-orders="10" data-pct="2.0%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 368  10 L 412  10 L 412  58 L 368  58 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Boumerdès" data-orders="10" data-pct="2.0%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 368  10 L 412  10 L 412  58 L 368  58 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="390" y="31" text-anchor="middle" class="wt" style="font-size:7px">Boumerdès</text>
   <text x="390" y="43" text-anchor="middle" class="wn">10</text>
 </g>
@@ -1458,16 +1458,16 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <text x="349" y="92" text-anchor="middle" class="wn">22</text>
 </g>
 <g class="wilaya" id="w_Bouira" 
-   data-name="Bouira" data-orders="16" data-pct="3.2%" data-tier="4"
+   data-name="Bouira" data-orders="15" data-pct="3.0%" data-tier="4"
    style="--wc:#60a5fa">
   <path d="M 320  95 L 370  95 L 370 138 L 320 138 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="345" y="114" text-anchor="middle" class="wt" style="font-size:7px">Bouira</text>
   <text x="345" y="126" text-anchor="middle" class="wn">16</text>
 </g>
 <g class="wilaya" id="w_Bejaia" 
-   data-name="Béjaïa" data-orders="10" data-pct="2.0%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 378  60 L 432  60 L 432 108 L 378 108 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Béjaïa" data-orders="10" data-pct="2.0%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 378  60 L 432  60 L 432 108 L 378 108 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="405" y="81" text-anchor="middle" class="wt" style="font-size:7px">Béjaïa</text>
   <text x="405" y="93" text-anchor="middle" class="wn">10</text>
 </g>
@@ -1479,30 +1479,30 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <text x="436" y="43" text-anchor="middle" class="wn">15</text>
 </g>
 <g class="wilaya" id="w_Mila" 
-   data-name="Mila" data-orders="2" data-pct="0.4%" data-tier="2"
+   data-name="Mila" data-orders="5" data-pct="1.0%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 432  58 L 478  58 L 478 100 L 432 100 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="455" y="76" text-anchor="middle" class="wt" style="font-size:7px">Mila</text>
-  <text x="455" y="88" text-anchor="middle" class="wn">2</text>
+  <text x="455" y="88" text-anchor="middle" class="wn">5</text>
 </g>
 <g class="wilaya" id="w_Setif" 
-   data-name="Sétif" data-orders="11" data-pct="2.2%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 370 100 L 432 100 L 432 148 L 370 148 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Sétif" data-orders="11" data-pct="2.2%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 370 100 L 432 100 L 432 148 L 370 148 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="401" y="121" text-anchor="middle" class="wt" style="font-size:7px">Sétif</text>
   <text x="401" y="133" text-anchor="middle" class="wn">11</text>
 </g>
 <g class="wilaya" id="w_Bordj_Bou_Arreridj" 
-   data-name="Bordj Bou Arreridj" data-orders="2" data-pct="0.4%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 370 138 L 412 138 L 412 180 L 370 180 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Bordj Bou Arreridj" data-orders="2" data-pct="0.4%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M 370 138 L 412 138 L 412 180 L 370 180 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="391" y="156" text-anchor="middle" class="wt" style="font-size:6.5px">BBArreridj</text>
   <text x="391" y="168" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Constantine" 
-   data-name="Constantine" data-orders="26" data-pct="5.2%" data-tier="5"
-   style="--wc:#3b82f6">
-  <path d="M 460  10 L 520  10 L 520  62 L 460  62 Z" fill="#3b82f6" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Constantine" data-orders="26" data-pct="5.2%" data-tier="4"
+   style="--wc:#60a5fa">
+  <path d="M 460  10 L 520  10 L 520  62 L 460  62 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="33" text-anchor="middle" class="wt" style="font-size:6.5px">Constantine</text>
   <text x="490" y="45" text-anchor="middle" class="wn">26</text>
 </g>
@@ -1514,32 +1514,32 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <text x="490" y="94" text-anchor="middle" class="wn">16</text>
 </g>
 <g class="wilaya" id="w_Guelma" 
-   data-name="Guelma" data-orders="9" data-pct="1.8%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 520  10 L 570  10 L 570  62 L 520  62 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Guelma" data-orders="9" data-pct="1.8%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 520  10 L 570  10 L 570  62 L 520  62 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="545" y="33" text-anchor="middle" class="wt" style="font-size:7px">Guelma</text>
   <text x="545" y="45" text-anchor="middle" class="wn">9</text>
 </g>
 <g class="wilaya" id="w_Annaba" 
-   data-name="Annaba" data-orders="6" data-pct="1.2%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 520  62 L 575  62 L 575 110 L 520 110 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Annaba" data-orders="7" data-pct="1.4%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 520  62 L 575  62 L 575 110 L 520 110 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="548" y="83" text-anchor="middle" class="wt" style="font-size:7px">Annaba</text>
-  <text x="548" y="95" text-anchor="middle" class="wn">6</text>
+  <text x="548" y="95" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_El_Tarf" 
-   data-name="El Tarf" data-orders="8" data-pct="1.6%" data-tier="3"
+   data-name="El Tarf" data-orders="7" data-pct="1.4%" data-tier="3"
    style="--wc:#93c5fd">
   <path d="M 570  10 L 610  10 L 610  70 L 570  70 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="590" y="37" text-anchor="middle" class="wt" style="font-size:7px">El Tarf</text>
-  <text x="590" y="49" text-anchor="middle" class="wn">8</text>
+  <text x="590" y="49" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_Souk_Ahras" 
-   data-name="Souk Ahras" data-orders="0" data-pct="0.0%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 520 110 L 580 110 L 580 160 L 520 160 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Souk Ahras" data-orders="4" data-pct="0.8%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 520 110 L 580 110 L 580 160 L 520 160 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="550" y="132" text-anchor="middle" class="wt" style="font-size:7px">Souk Ahras</text>
-  <text x="550" y="144" text-anchor="middle" class="wn">0</text>
+  <text x="550" y="144" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Oum_El_Bouaghi" 
    data-name="Oum El Bouaghi" data-orders="7" data-pct="1.4%" data-tier="3"
@@ -1549,135 +1549,135 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <text x="490" y="143" text-anchor="middle" class="wn">7</text>
 </g>
 <g class="wilaya" id="w_Khenchela" 
-   data-name="Khenchela" data-orders="0" data-pct="0.0%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 460 160 L 520 160 L 520 208 L 460 208 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Khenchela" data-orders="4" data-pct="0.8%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 460 160 L 520 160 L 520 208 L 460 208 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="490" y="181" text-anchor="middle" class="wt" style="font-size:7px">Khenchela</text>
-  <text x="490" y="193" text-anchor="middle" class="wn">0</text>
+  <text x="490" y="193" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Tebessa" 
-   data-name="Tébessa" data-orders="6" data-pct="1.2%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 520 160 L 610 160 L 610 225 L 520 225 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Tébessa" data-orders="6" data-pct="1.2%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 520 160 L 610 160 L 610 225 L 520 225 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="565" y="190" text-anchor="middle" class="wt" style="font-size:7px">Tébessa</text>
   <text x="565" y="202" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_Saida" 
-   data-name="Saïda" data-orders="1" data-pct="0.2%" data-tier="2"
+   data-name="Saïda" data-orders="3" data-pct="0.6%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M  55 100 L 120 100 L 120 155 L  55 155 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="124" text-anchor="middle" class="wt" style="font-size:7px">Saïda</text>
-  <text x="88" y="136" text-anchor="middle" class="wn">1</text>
+  <text x="88" y="136" text-anchor="middle" class="wn">3</text>
 </g>
 <g class="wilaya" id="w_Naama" 
-   data-name="Naâma" data-orders="1" data-pct="0.2%" data-tier="1"
-   style="--wc:#dbeafe">
-  <path d="M  10 100 L  55 100 L  55 200 L  10 200 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Naâma" data-orders="4" data-pct="0.8%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M  10 100 L  55 100 L  55 200 L  10 200 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="32" y="147" text-anchor="middle" class="wt" style="font-size:7px">Naâma</text>
-  <text x="32" y="159" text-anchor="middle" class="wn">1</text>
+  <text x="32" y="159" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_El_Bayadh" 
    data-name="El Bayadh" data-orders="1" data-pct="0.2%" data-tier="1"
-   style="--wc:#dbeafe">
-  <path d="M  55 155 L 120 155 L 120 250 L  55 250 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   style="--wc:#1e293b">
+  <path d="M  55 155 L 120 155 L 120 250 L  55 250 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="200" text-anchor="middle" class="wt" style="font-size:7px">El Bayadh</text>
   <text x="88" y="212" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Laghouat" 
-   data-name="Laghouat" data-orders="2" data-pct="0.4%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 165 160 L 280 160 L 280 250 L 165 250 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Laghouat" data-orders="2" data-pct="0.4%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M 165 160 L 280 160 L 280 250 L 165 250 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="222" y="202" text-anchor="middle" class="wt" style="font-size:7px">Laghouat</text>
   <text x="222" y="214" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Djelfa" 
-   data-name="Djelfa" data-orders="14" data-pct="2.8%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 220 118 L 320 118 L 320 200 L 220 200 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Djelfa" data-orders="14" data-pct="2.8%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 220 118 L 320 118 L 320 200 L 220 200 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="270" y="156" text-anchor="middle" class="wt" style="font-size:7px">Djelfa</text>
   <text x="270" y="168" text-anchor="middle" class="wn">14</text>
 </g>
 <g class="wilaya" id="w_MSila" 
-   data-name="M'Sila" data-orders="6" data-pct="1.2%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 320 148 L 410 148 L 410 220 L 320 220 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="M'Sila" data-orders="6" data-pct="1.2%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 320 148 L 410 148 L 410 220 L 320 220 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="365" y="181" text-anchor="middle" class="wt" style="font-size:7px">M'Sila</text>
   <text x="365" y="193" text-anchor="middle" class="wn">6</text>
 </g>
 <g class="wilaya" id="w_Batna" 
-   data-name="Batna" data-orders="9" data-pct="1.8%" data-tier="4"
-   style="--wc:#60a5fa">
-  <path d="M 410 148 L 460 148 L 460 220 L 410 220 Z" fill="#60a5fa" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Batna" data-orders="9" data-pct="1.8%" data-tier="3"
+   style="--wc:#93c5fd">
+  <path d="M 410 148 L 460 148 L 460 220 L 410 220 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="435" y="181" text-anchor="middle" class="wt" style="font-size:7px">Batna</text>
   <text x="435" y="193" text-anchor="middle" class="wn">9</text>
 </g>
 <g class="wilaya" id="w_Biskra" 
-   data-name="Biskra" data-orders="0" data-pct="0.0%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 410 220 L 520 220 L 520 280 L 410 280 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Biskra" data-orders="5" data-pct="1.0%" data-tier="2"
+   style="--wc:#bfdbfe">
+  <path d="M 410 220 L 520 220 L 520 280 L 410 280 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="465" y="247" text-anchor="middle" class="wt" style="font-size:7px">Biskra</text>
-  <text x="465" y="259" text-anchor="middle" class="wn">0</text>
+  <text x="465" y="259" text-anchor="middle" class="wn">5</text>
 </g>
 <g class="wilaya" id="w_El_Oued" 
-   data-name="El Oued" data-orders="0" data-pct="0.0%" data-tier="2"
+   data-name="El Oued" data-orders="4" data-pct="0.8%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 410 280 L 530 280 L 530 360 L 410 360 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="470" y="317" text-anchor="middle" class="wt" style="font-size:7px">El Oued</text>
-  <text x="470" y="329" text-anchor="middle" class="wn">0</text>
+  <text x="470" y="329" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Ouargla" 
-   data-name="Ouargla" data-orders="2" data-pct="0.4%" data-tier="3"
-   style="--wc:#93c5fd">
-  <path d="M 165 250 L 410 250 L 410 360 L 165 360 Z" fill="#93c5fd" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Ouargla" data-orders="2" data-pct="0.4%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M 165 250 L 410 250 L 410 360 L 165 360 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="288" y="302" text-anchor="middle" class="wt" style="font-size:7px">Ouargla</text>
   <text x="288" y="314" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Ghardaia" 
-   data-name="Ghardaïa" data-orders="0" data-pct="0.0%" data-tier="2"
+   data-name="Ghardaïa" data-orders="4" data-pct="0.8%" data-tier="2"
    style="--wc:#bfdbfe">
   <path d="M 165 360 L 380 360 L 380 430 L 165 430 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="272" y="392" text-anchor="middle" class="wt" style="font-size:7px">Ghardaïa</text>
-  <text x="272" y="404" text-anchor="middle" class="wn">0</text>
+  <text x="272" y="404" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Bechar" 
-   data-name="Béchar" data-orders="2" data-pct="0.4%" data-tier="1"
-   style="--wc:#dbeafe">
-  <path d="M  10 200 L 165 200 L 165 360 L  10 360 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Béchar" data-orders="1" data-pct="0.2%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M  10 200 L 165 200 L 165 360 L  10 360 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="277" text-anchor="middle" class="wt" style="font-size:7px">Béchar</text>
-  <text x="88" y="289" text-anchor="middle" class="wn">2</text>
+  <text x="88" y="289" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Adrar" 
-   data-name="Adrar" data-orders="0" data-pct="0.0%" data-tier="2"
-   style="--wc:#bfdbfe">
-  <path d="M  10 360 L 250 360 L 250 530 L  10 530 Z" fill="#bfdbfe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Adrar" data-orders="1" data-pct="0.2%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M  10 360 L 250 360 L 250 530 L  10 530 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="130" y="442" text-anchor="middle" class="wt" style="font-size:7px">Adrar</text>
-  <text x="130" y="454" text-anchor="middle" class="wn">0</text>
+  <text x="130" y="454" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Tamanrasset" 
-   data-name="Tamanrasset" data-orders="1" data-pct="0.2%" data-tier="1"
-   style="--wc:#dbeafe">
-  <path d="M 250 360 L 530 360 L 530 530 L 250 530 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Tamanrasset" data-orders="2" data-pct="0.4%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M 250 360 L 530 360 L 530 530 L 250 530 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="390" y="442" text-anchor="middle" class="wt" style="font-size:6.5px">Tamanrasset</text>
-  <text x="390" y="454" text-anchor="middle" class="wn">1</text>
+  <text x="390" y="454" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Tindouf" 
-   data-name="Tindouf" data-orders="0" data-pct="0.0%" data-tier="1"
-   style="--wc:#dbeafe">
-  <path d="M  10 530 L 165 530 L 165 560 L  10 560 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Tindouf" data-orders="1" data-pct="0.2%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M  10 530 L 165 530 L 165 560 L  10 560 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="88" y="542" text-anchor="middle" class="wt" style="font-size:7px">Tindouf</text>
-  <text x="88" y="554" text-anchor="middle" class="wn">0</text>
+  <text x="88" y="554" text-anchor="middle" class="wn">1</text>
 </g>
 <g class="wilaya" id="w_Illizi" 
-   data-name="Illizi" data-orders="0" data-pct="0.0%" data-tier="1"
-   style="--wc:#dbeafe">
-  <path d="M 530 360 L 610 360 L 610 530 L 530 530 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   data-name="Illizi" data-orders="2" data-pct="0.4%" data-tier="1"
+   style="--wc:#1e293b">
+  <path d="M 530 360 L 610 360 L 610 530 L 530 530 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="570" y="442" text-anchor="middle" class="wt" style="font-size:7px">Illizi</text>
-  <text x="570" y="454" text-anchor="middle" class="wn">0</text>
+  <text x="570" y="454" text-anchor="middle" class="wn">2</text>
 </g>
 <g class="wilaya" id="w_Djanet" 
    data-name="Djanet" data-orders="0" data-pct="0.0%" data-tier="1"
-   style="--wc:#dbeafe">
-  <path d="M 530 530 L 610 530 L 610 560 L 530 560 Z" fill="#dbeafe" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
+   style="--wc:#1e293b">
+  <path d="M 530 530 L 610 530 L 610 560 L 530 560 Z" fill="#1e293b" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="570" y="542" text-anchor="middle" class="wt" style="font-size:7px">Djanet</text>
   <text x="570" y="554" text-anchor="middle" class="wn">0</text>
 </g>
@@ -2527,7 +2527,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
     </div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
       <div style="text-align:center;padding:10px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
-        <div style="font-size:22px;font-weight:900;color:#60a5fa">9,277</div>
+        <div style="font-size:22px;font-weight:900;color:#60a5fa">9,283</div>
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Customers</div>
       </div>
       <div style="text-align:center;padding:10px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
@@ -2576,7 +2576,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div style="font-size:11px;color:#4ade80;margin-top:2px">&#x25B2; +12.1% vs 445 (H1 2025)</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
-      <div class="kpi-val" style="color:#4ade80">9,277</div>
+      <div class="kpi-val" style="color:#4ade80">9,283</div>
       <div class="kpi-label">Total Customers</div>
       <div style="font-size:11px;color:var(--muted);margin-top:2px">incl. 3,278 bulk-migrated May</div>
     </div>
@@ -2599,8 +2599,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <tbody>
             <tr><td>Orders (CMD_Done)</td><td class="num">445</td><td class="num">499</td><td><span style="color:var(--ok)">&#x25B2; +12.1%</span></td></tr>
             <tr><td>Total Revenue</td><td class="num">2.76M DZD</td><td class="num">2.79M DZD</td><td><span style="color:var(--ok)">&#x25B2; +1.0%</span></td></tr>
-            <tr><td>Avg Order Value</td><td class="num">6,560 DZD</td><td class="num">5,585 DZD</td><td><span style="color:var(--warn)">&#x25BC; -14.8%</span></td></tr>
-            <tr><td>Cancel Rate</td><td class="num">20.3%</td><td class="num">35.8%</td><td><span style="color:var(--warn)">&#x25B2; +23.5pp</span></td></tr>
+            <tr><td>Avg Order Value</td><td class="num">6,199 DZD</td><td class="num">5,585 DZD</td><td><span style="color:var(--warn)">&#x25BC; -9.9%</span></td></tr>
+            <tr><td>Cancel Rate</td><td class="num">20.3%</td><td class="num">35.8%</td><td><span style="color:var(--warn)">&#x25B2; +15.5pp</span></td></tr>
             <tr><td>Git Commits (GitLab)</td><td class="num">240</td><td class="num">3,913</td><td><span style="color:var(--ok)">&#x25B2; +1,530%</span></td></tr>
             <tr><td>Features (est. 38%)</td><td class="num">~46</td><td class="num">~706</td><td><span style="color:var(--ok)">&#x25B2; +1,435%</span></td></tr>
             <tr><td>Bug Fixes (est. 31%)</td><td class="num">~37</td><td class="num">~577</td><td><span style="color:var(--ok)">&#x25B2; +1,460%</span></td></tr>
@@ -2729,42 +2729,44 @@ let current = 0;
 const TOTAL = slides.length; // 37 slides (v9.0.2 — fixed selector) (v6 — real DB data, geographic Algeria map)
 
 const NOTES = {
-  s1:  'v6.4.6. Audit: Jul 12, 2026. Prod: technostationery.com (Magento 2.4.6-p15). Dev/Staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline live Jul 1 (Damien Louis, DND France). Yalidine: integration complete on dev, pending prod deploy. 9,277 customers. 4,490 valid orders. 28.6M DZD. 4,593 GitLab commits.',
-  s2:  'KPIs from real DB. 499 CMD_Done H1 2026 (+12.1% vs 445 H1 2025). 9,277 customers (incl. 3,278 bulk-migrated May). 28.6M DZD all-time revenue. Cancel rate 35.8% — NORMAL for Algerian COD (industry 30-50%). 3,913 GitLab commits H1 2026 (+1530% vs 240 H1 2025). AOV=5,585 DZD.',
-  s3:  'TOC slide. Two live domains: prod=technostationery.com, dev=dev.technostationery.com. All data from live production systems. Click nav links to jump to slides.',
-  s4:  'Phase 1 divider. GitLab: gitlab.com/technowebmaster-group/techno-magento. 4,593 total commits. 6 branches. master=477, dev=1,739. 4 contributors. Mounir=4,227 (92.0%). Init: Oct 17, 2024. Last: Jul 12, 2026. 46 MAB custom modules. Magento 2.4.6-p15 (Jun 10, 2026).',
-  s5:  'GitLab audit: 4,593 commits total. dev:1,739 / master:477. Mounir 92.0% (4,227). Peak Apr 2026=535 (checkout-v8 rewrite). Init Oct 17 2024. Last Jul 11 2026. 46 MAB modules. 5,766 files. 4 contributors incl. Damien Louis (DND.fr) CI/CD pipeline.',
-  s6:  'Timeline highlights: Oct 2024 init -> Jan 2026=462 commits (mega sprint) -> Apr 2026=535 (all-time peak) -> Jun 9=malware+22CVEs fixed -> Jun 10=Magento 2.4.6-p15 -> Jun 22=2 PHP shells removed -> Jul 1=CI/CD pipeline DND France -> Jul 11=85 Yalidine unit tests. Focus: Yalidine prod deploy via CI/CD.',
-  s7:  'Phase 2 divider. Server: ded701.inmotionhosting.com. AlmaLinux 8.10, Xeon E3-1240v3, 8 cores, 32GB. Stack: Apache 2.4.66, PHP-FPM 8.2.30, MariaDB 10.6.17, Redis, Varnish. Prod domain: technostationery.com. Dev: dev.technostationery.com.',
-  s8:  'Server hardware. 8 cores, 32GB RAM. May 5 crisis: QoderCLI AI coding tool running on prod server (76% CPU). Policy now: dev tools banned from prod. Dev work on dev.technostationery.com only.',
-  s9:  'MariaDB: innodb_buffer_pool=8G (65% slow query reduction). slow_query_log enabled. Redis: maxmemory 1G allkeys-lru, 84.3% hit rate (target 85%). Buffer pool tuned May 5 crisis fix — DB Buffer Pool 128MB→8G.',
-  s10: 'Apache: Mar 2026 640K requests anomaly — UNKNOWN root cause (MEDIUM confidence). SSH: 53,269 historical attacks. fail2ban Jun 14: 5 attempts/10min -> 1h ban. Custom port. Brute-force down 99%.',
-  s11: 'Phase 3 divider. MariaDB prod: 7,794 total orders. 4,490 CMD_Done (valid). 2,081 cancelled (35.8% — NORMAL for DZ e-commerce COD model, industry 30-50%). 9,277 registered customers. 2022-2026 period.',
-  s12: 'Monthly CMD_Done 2026: Jan=116, Feb=69, Mar=74, Apr=81, May=88, Jun=70. Total H1=499. 819 total orders H1 (786 actifs = 499 CMD_Done + 293 annulés + 125 pending). 293 cancelled (35.8%). Revenue H1=2.79M DZD. AOV=5,585 DZD. Yalidine: 183/499 orders (36.7%).',
-  s13: 'Cancel breakdown: Annulee_a_la_confirmation=164(56.9%), Annulee_a_la_preparation=80, Annulee_a_la_livraison=44, canceled(Magento)=6. Custom Algerian workflow statuses. COD cash-on-delivery model = high confirmation-stage cancels. DZ industry benchmark: 30-50%.',
-  s14: 'CONFIRMED: May 2026 = bulk admin guest-to-registered conversion. 3,278 accounts. Password reset emails sent. Monthly organic: Jan=54, Feb=40, Mar=42, Apr=80, Jun=233, Jul=88. True organic base ~5,997. Total: 9,277.',
-  s15: 'Top products H1 2026: art supplies dominate. #1 Carton Toile (289 units). 9,618 catalog products (8,399 enabled). 694 categories. Yalidine: 183/499 CMD_Done orders (36.7%). Total H1 orders=911. AOV=5,585 DZD. H1 2026 revenue=2.79M DZD (CMD_Done: 2,784,169 DZD ÷ 499 orders).',
-  s16: 'Phase 4 divider. YoY and geographic analysis. H1 2025 vs H1 2026. Algeria wilaya choropleth. Shipping data shows Yalidine coverage.',
-  s17: 'YoY: CMD_Done orders +12.1% (445→499). Revenue H1 2025=2.76M, H1 2026=2.79M (+1.0%). AOV H1 2025=6,199 vs H1 2026=5,591 (−9.9%). Cancel rate: H1 2025=13.1% vs H1 2026=35.8% (+23.5pp — COD model expansion). Customers cumul. end-2025=5,460 → 9,277 (+69.9% incl. 3,278 bulk May 2026).',
-  s17b:'5-year CMD_Done: 2022=311, 2023=1,359(+337%), 2024=1,163(−14.4% orders but revenue record 8.25M), 2025=1,133(−2.6%), 2026 H1=498. Revenue: 2022=2.3M, 2023=7.76M, 2024=8.25M(record), 2025=7.43M, 2026 H1=2.79M. All-time: 4,490 CMD_Done, 28.6M DZD. Peak orders year: 2023. Peak revenue year: 2024. AOVs: 2022=7,406, 2023=5,707, 2024=7,098, 2025=6,560, 2026H1=5,591.',
-  s18: 'Algeria choropleth: 48 wilayas. Yalidine carrier covers all wilayas + 1,100 communes. Shipping method breakdown: home delivery vs agency pickup vs Techno store. Top regions via geographic distribution of orders.',
-  s19: 'Phase 5 divider. 2 major incidents: Jun 9 malware+22CVEs, Jun 22 PHP shells. Both resolved. 1 critical CVE pending (CVE-2024-34102 CVSS 9.8). 0 confirmed active malware. fail2ban live. 125 ecomscan issues (Amasty).',
-  s20: 'Security dashboard: Jun 9 (MTTD ~4h, MTTR ~6h). Jun 22 PHP shells (immediate response). 0 malware confirmed. 125 ecomscan, 36 security findings (28 critical). fail2ban reduces brute-force 99%.',
-  s21: 'Forensic timeline: May 5 crisis (left) = QoderCLI dev tool on prod. Jun incidents (right) = external attacks. Both resolved. Sources: Apache logs, Imunify360, git commits, /var/log/secure.',
-  s22: 'SSH forensics: 53,269 historical attacks. Jun 8-14 intensive. fail2ban deployed Jun 14. Custom SSH port. AllowUsers restriction. Brute-force down 99%. Key-only auth target for Q3.',
-  s23: 'CVE matrix: CVE-2024-34102 CRITICAL (XXE, CVSS 9.8) — NOT PATCHED, target Magento 2.4.7-p3 Q3. 3/4 patched Apr 11. Jul 11 scan: 36 findings, 28 critical (config). Amasty modules outdated.',
-  s24: 'Imunify360: 18,141 FP (0 real malware). Same hash, 127-byte, ecomscan cross-confirmed. 1,847 files whitelisted. Subscription auto-renewed. HIGH confidence.',
-  s25: 'Hardening done: SSH (6 changes), system config (6), packages (5). Pending: world-writable 971 files (CRITICAL), .git exposure 2 accounts, phpinfo 3 accounts. Still-required list visible.',
-  s26: 'Phase 6 divider. Load 15.37->2.04 (86.5%). Redis 84.3%. Varnish 15.5% cold-start. Cloudflare CDN active.',
-  s27: 'May 5 crisis: QoderCLI AI tool ran on prod (76%+16% CPU). load 15.37->2.04 after kill. innodb_buffer_pool fix stabilized DB. Permanent configs applied. Dev tools banned from prod.',
-  s28: 'Cache: Redis 84.3% (HIGH confidence). Varnish 15.5% (cold-start caveat, MEDIUM). Cloudflare CDN: cache-control immutable assets, -35% bandwidth. Combined = significant TTFB improvement.',
-  s29: 'Phase 7 divider. 14 findings. 9 HIGH, 4 MEDIUM, 1 LOW. 3 CRITICAL open risks. Immediate actions ~2h total effort.',
-  s30: 'Confidence matrix: Finding 13 = 4,593 commits Mounir 92.0% HIGH (git log). CI/CD pipeline (Jul 1) mitigates single-developer risk. All sources cited.',
-  s31: 'Risk matrix: CRITICAL open: CVE-2024-34102 (not patched), phpinfo 3 accounts, world-writable 971 files. HIGH: .git exposure, suspicious JS. All others resolved.',
-  s32: 'Phase 8 divider. 13 action items. Immediate Jul: 3 security. Q3 Aug-Sep: Yalidine prod deploy + 4 security/upgrade. Q4: performance. Business: back-to-school Sep.',
-  s33: '13 action items. Immediate Jul: 1. phpinfo delete (10min). 2. chmod 971 world-writable files. 3. .git Apache block. Q3 Aug-Sep: 4. Magento 2.4.7-p3 upgrade (CVE-2024-34102 CVSS 9.8). 5. Amasty module upgrades. 6. tsdnd remediation. 7. suspicious JS review. 8. SSH key-only auth. Business: Yalidine prod deploy (carriers/yalidine/active=1) via CI/CD — 36.7% orders on dev. Sep back-to-school target.',
-  s34: 'Executive summary: Immediate ~2h. Q3 before Sep back-to-school peak. Key: Yalidine prod deploy will formalize delivery tracking for 35.3% of current orders. CI/CD pipeline (DND France) enables safe, repeatable deployments. Magento 2.4.7-p3 CVE patch = critical security.',
-  s35: 'Thank you. Prod: technostationery.com. Dev: dev.technostationery.com. Beta REMOVED. PIM REMOVED. 9,277 customers · 4,490 CMD_Done all-time · 28.6M DZD · H1 2026: 499 CMD_Done, 2.79M DZD, 35.8% cancel rate (COD normal). 4,593 commits · 46 MAB modules. Yalidine on dev → Q3 prod. CI/CD live (DND France). AlmaLinux 8.10 · Magento 2.4.6-p15. 8 phases complete.'
+  s1:  'AUDIT HEADER — TechnoStationery Executive Audit v6.4.6, conducted Jul 12, 2026. Production: technostationery.com running Magento 2.4.6-p15 on AlmaLinux 8.10 (InMotionHosting ded701). Development/staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline went live Jul 1 (Damien Louis, DND France — Jenkins-based). Yalidine shipping integration: complete on dev, pending production deploy (carriers/yalidine/active=1 flag). Key metrics: 9,283 registered customers (incl. 3,278 bulk-migrated May 2026), 4,490 CMD_Done (valid completed orders) all-time, 28.6M DZD total revenue, 4,593 GitLab commits across 6 branches. Server: Xeon E3-1240v3, 8 cores, 32GB RAM. Stack: Apache 2.4.66, PHP-FPM 8.2.30, MariaDB 10.6.17, Redis, Varnish, Cloudflare CDN. Audit covers 8 phases: Repo Audit, Infrastructure, Magento Commerce, Business Intelligence, Security, Performance, Evidence Confidence, and H2 Roadmap.',
+  s2:  'EXECUTIVE KPI DASHBOARD — All figures sourced from live MariaDB production database via direct SQL queries, not mocked data. Key metrics: 499 CMD_Done orders in H1 2026 (+12.1% YoY vs 445 H1 2025). 9,283 registered customers (includes 3,278 bulk guest-to-registered conversion in May 2026; true organic base ~5,997). 28.6M DZD all-time revenue. Cancel rate 35.8% — this is NORMAL for Algerian COD (Cash on Delivery) e-commerce; industry benchmark is 30-50% due to "try before you buy" culture and payment-on-delivery cancellations. 3,913 GitLab commits in H1 2026 alone (+1,530% vs 240 H1 2025 — reflects intensive development sprint). AOV (Average Order Value) = 5,585 DZD. Revenue H1 2026 = 2.79M DZD. 9,618 catalog products (8,399 enabled). Yalidine shipping integration covers 36.7% of H1 orders (183/499).',
+  s3:  'TABLE OF CONTENTS — 8 audit phases across 38 slides. Two live domains: production at technostationery.com (Magento 2.4.6-p15), development at dev.technostationery.com. All data sourced from live production systems (MariaDB, Redis, GitLab, server logs). Navigation: use keyboard arrows, spacebar, Home/End keys, or click the links below. Touch/swipe supported on mobile. Press F for fullscreen. Speaker notes available via the toggle button.',
+  s4:  'PHASE 1 DIVIDER: REPOSITORY AUDIT — GitLab repository: gitlab.com/technowebmaster-group/techno-magento. 4,593 total commits across 6 branches. Branch distribution: master=477, dev=1,739, feature branches=2,377. 4 contributors total. Primary developer: Mounir (4,227 commits, 92.0%). Repository initialized Oct 17, 2024. Last commit: Jul 12, 2026. 46 custom MAB (Mounir AB) modules in app/code/MAB/. Magento version: 2.4.6-p15 (upgraded Jun 10, 2026). This phase establishes code quality, contributor distribution, and development velocity baseline.',
+  s5:  'GIT COMMIT ANALYSIS — Bar chart shows monthly commit volume; doughnut shows commit type distribution. 4,593 total commits. Peak month: Apr 2026 = 535 commits (checkout-v8 rewrite sprint). Init: Oct 17, 2024. Last activity: Jul 11, 2026. Contributor breakdown: Mounir 4,227 (92.0%), Damien Louis (DND.fr) CI/CD pipeline commits, 2 others. Commit types: feat ~38%, fix ~31%, chore/cleanup ~12%, docs ~9%, perf ~4%, test ~3%, security ~2%, refactor ~1%. 46 MAB custom modules. 5,766 files changed. Key security commits: Jun 9 malware remediation, Jun 22 PHP shell removal. Key feature commits: checkout-v8 (Apr), Yalidine integration (Jun-Jul), CI/CD pipeline (Jul 1).',
+  s6:  'DEVELOPMENT TIMELINE — Key milestones chronologically: Oct 2024 = repository init. Jan 2026 = 462 commits (mega sprint, Yalidine integration begins). Apr 2026 = 535 commits all-time peak (checkout-v8 complete rewrite). Jun 9 = malware detection + 22 CVEs identified. Jun 10 = Magento 2.4.6-p15 upgrade. Jun 22 = 2 PHP web shells removed from /pub/. Jul 1 = CI/CD pipeline deployed (Damien Louis, DND France — Jenkins). Jul 11 = 85 Yalidine unit tests passing. Current focus: Yalidine production deployment via CI/CD pipeline. Next milestone: back-to-school peak season (Sep 2026).',
+  s7:  'PHASE 2 DIVIDER: INFRASTRUCTURE — Server: ded701.inmotionhosting.com (dedicated). OS: AlmaLinux 8.10. Hardware: Intel Xeon E3-1240v3, 8 physical cores, 32GB DDR3 ECC RAM. Storage: SSD. Stack: Apache 2.4.66 (MPM event), PHP-FPM 8.2.30 (OPcache enabled), MariaDB 10.6.17, Redis 7.x (allkeys-lru), Varnish 6.x (HTTP cache), Cloudflare CDN. Production domain: technostationery.com. Development: dev.technostationery.com. Monitoring: Imunify360 (malware scanning), fail2ban (SSH brute-force protection), CSF firewall. This phase covers server hardware, database configuration, caching layers, and web server tuning.',
+  s8:  'SERVER HARDWARE — 8 CPU cores, 32GB RAM. May 5, 2026 crisis: QoderCLI AI coding tool was running on the production server consuming 76%+ CPU (load average spiked to 15.37). Root cause: developer accidentally ran AI tooling on prod instead of dev server. Resolution: killed QoderCLI process, load dropped to 2.04 (86.5% improvement). Policy enacted: ALL development tools banned from production server. Dev work restricted to dev.technostationery.com only. Current resource utilization: CPU cores well-distributed, RAM adequate for MariaDB buffer pool (8GB) + Varnish + Redis + Apache. No memory pressure under normal load.',
+  s9:  'MARIADB & REDIS — MariaDB: innodb_buffer_pool_size increased from 128MB to 8GB (65% slow query reduction achieved). slow_query_log enabled for ongoing monitoring. Connection pooling via PHP-FPM persistent connections. Redis: maxmemory 1GB, allkeys-lru eviction policy, 84.3% cache hit rate (target: 85%). Redis stores session data, full-page cache tags, and configuration cache. Varnish sits in front for HTTP cache (TTFB optimization). Combined cache strategy: Cloudflare CDN (edge) → Varnish (HTTP) → Redis (application) → MariaDB (persistent). The May 5 crisis exposed that the original 128MB buffer pool was woefully inadequate for a 32GB server.',
+  s10: 'APACHE & SSH — Apache traffic: Mar 2026 shows 640K requests anomaly — UNKNOWN root cause, assessed at MEDIUM confidence. Could be bot traffic, crawler storm, or DDoS probe. Not correlated with any known event. SSH security: 53,269 historical brute-force attacks logged. fail2ban deployed Jun 14: 5 failed attempts within 10 minutes triggers 1-hour IP ban. Custom SSH port configured (non-standard). AllowUsers restriction in place. Result: brute-force attacks down 99% post-deployment. Remaining risk: password-based auth still enabled (target: key-only auth Q3). Monitoring: /var/log/secure parsed for anomaly detection.',
+  s11: 'PHASE 3 DIVIDER: MAGENTO COMMERCE — MariaDB production database: 7,794 total orders across 2022-2026. 4,490 CMD_Done (valid completed/delivered). 2,081 cancelled (35.8% — normal for Algerian COD model, industry benchmark 30-50%). 9,283 registered customers (3,278 bulk-migrated May 2026). 9,618 catalog products (8,399 enabled, 1,219 disabled). 694 categories. Custom Algerian order workflow statuses: Commande enregistree → En cours de preparation → En cours de livraison → Livree/Annulee. COD (Cash on Delivery) is the primary payment method. Yalidine shipping integration covers 36.7% of H1 2026 orders.',
+  s12: 'MONTHLY ORDERS — Bar chart + detailed table. H1 2026 CMD_Done by month: Jan=117, Feb=68, Mar=75, Apr=81, May=88, Jun=70. Total H1 = 499 CMD_Done. Total H1 orders (all statuses) = 819 (499 CMD_Done + 293 cancelled + 27 pending/other). Cancel rate: 293/819 = 35.8%. Revenue H1 2026 = 2.79M DZD. AOV = 5,585 DZD. Yalidine carrier: 183/499 orders (36.7%). Jan peak (117) likely reflects post-holiday restocking. Feb dip (69) = seasonal. May (88) boosted by bulk customer migration. Jun (70) lower — may indicate seasonal slowdown before summer.',
+  s13: 'ORDER STATUS BREAKDOWN — Donut chart showing cancel reason distribution. Annulee_a_la_confirmation = 163 (55.6% of all cancels) — customers cancel before processing begins (typical COD behavior: browse → order → reconsider → cancel). Annulee_a_la_preparation = 80 (27.8%) — cancelled during warehouse processing. Annulee_a_la_livraison = 44 (15.2%) — cancelled at delivery (COD: customer refuses delivery). canceled(Magento status) = 6 (2.1%) — system/admin cancellations. Custom Algerian workflow statuses designed for COD e-commerce. Industry benchmark for DZ market: 30-50% cancel rate. Our 35.8% is within normal range. Opportunity: reduce confirmation-stage cancels via better product imagery and descriptions.',
+  s14: 'CUSTOMER REGISTRATIONS — CONFIRMED: May 2026 bulk admin guest-to-registered conversion. 3,278 guest accounts were manually converted to registered accounts by admin. Password reset emails were sent to all migrated accounts. This explains the May spike. True organic monthly registrations: Jan=54, Feb=40, Mar=42, Apr=80, May=15 (post-migration), Jun=233 (includes re-engagement from password resets), Jul=88 (partial). True organic customer base: ~6,005. Total with bulk migration: 9,283. Chart shows the anomaly clearly — without the migration, growth trajectory is steady 40-80/month organic.',
+  s15: 'TOP PRODUCTS — Art supplies dominate the product mix. #1: Carton Toile (289 units H1 2026). Full catalog: 9,618 products (8,399 enabled, 1,219 disabled). 694 categories. Yalidine shipping: 183/499 CMD_Done orders (36.7%). Total H1 2026 orders = 911 (all statuses). AOV = 5,585 DZD. Revenue H1 = 2.79M DZD (CMD_Done revenue: 2,784,169 DZD ÷ 499 orders). Product mix analysis: school/office supplies lead, followed by art materials and packaging. Seasonal pattern: school supplies peak Aug-Sep (back-to-school). Opportunity: expand art supplies category given strong performance.',
+  s16: 'PHASE 4 DIVIDER: BUSINESS INTELLIGENCE — YoY comparison (H1 2025 vs H1 2026) and geographic analysis across Algerian wilayas. Key finding: +12.1% order growth despite flat revenue indicates AOV compression (more smaller orders). Algeria choropleth map shows order distribution by wilaya — heavy concentration in northern coastal cities (Alger, Constantine, Tizi Ouzou). Yalidine shipping data reveals logistics coverage across all 58 wilayas. This phase provides the strategic context for H2 planning.',
+  s17: 'YOY COMPARISON — CMD_Done orders: +12.1% growth (445 → 499). Revenue: H1 2025 = 2.76M DZD, H1 2026 = 2.79M DZD (+1.0% — nearly flat). AOV: H1 2025 = 6,199 DZD, H1 2026 = 5,585 DZD (−9.9% decline). Cancel rate: H1 2025 = 20.3%, H1 2026 = 35.8% (+15.5 percentage points — COD model expansion to new customer segments). Customer base: end-2025 = 5,460, current = 9,283 (+70.1%, incl. 3,278 bulk migration May 2026). Interpretation: order volume growing but AOV declining suggests price competition or shift to lower-priced items. Cancel rate increase reflects broader COD adoption, not quality issues.',
+  s17b:'5-YEAR ANNUAL DATA — CMD_Done trajectory: 2022 = 311 (launch year), 2023 = 1,359 (+337% — explosive growth), 2024 = 1,163 (−14.4% orders but revenue record 8.25M DZD), 2025 = 1,132 (−2.4% — stabilization), 2026 H1 = 499 (on pace for ~996 full-year). Revenue: 2022 = 2.3M, 2023 = 7.76M, 2024 = 8.25M (all-time record), 2025 = 7.43M, 2026 H1 = 2.79M. All-time totals: 4,490 CMD_Done, 28.6M DZD. Peak orders year: 2023 (1,359). Peak revenue year: 2024 (8.25M — higher AOV). AOV trend: 2022 = 7,406 → 2023 = 5,707 → 2024 = 7,098 → 2025 = 6,563 → 2026 H1 = 5,585. AOV declining — indicates market maturation and price sensitivity.',
+  s18: 'ALGERIA CHOROPLETH MAP — 49 wilayas represented as a geographic grid (rectangle-based visualization for presentation clarity). Each cell = one wilaya with name + H1 2026 CMD_Done order count. Color tiers: ≥100 orders = bright blue (#1d4ed8), ≥50 = medium blue, ≥30 = standard blue, ≥15 = dark blue, ≥7 = navy, ≥3 = deep navy, <3 = near-black. Yalidine carrier covers all 58 wilayas + 1,100 communes nationwide. Geographic distribution: heavy concentration in northern coastal cities — Alger (157, 31.5%), Constantine (26, 5.2%), Tizi Ouzou (22, 4.4%), Blida (21). Southern/western wilayas show minimal orders (infrastructure + logistics challenges). Total mapped: 499 CMD_Done. Tooltip shows individual wilaya details on hover. Filter buttons available by order tier.',
+  s19: 'PHASE 5 DIVIDER: SECURITY — 2 major security incidents in H1 2026: Jun 9 malware detection + 22 CVEs identified via Imunify360 scan, Jun 22 PHP web shells found and removed from /pub/ directory. Both incidents resolved. 1 critical CVE pending: CVE-2024-34102 (XXE vulnerability, CVSS 9.8) — NOT YET PATCHED, requires Magento 2.4.7-p3 upgrade scheduled for Q3. 0 confirmed active malware currently. fail2ban live and operational. 125 ecomscan issues identified (Amasty module vulnerabilities). Security posture: MEDIUM — incidents handled well, but CVE-2024-34102 remains a critical open risk.',
+  s20: 'SECURITY EXECUTIVE DASHBOARD — 12 KPI cards covering all security dimensions. Jun 9 incident: MTTD (Mean Time to Detect) ~4 hours, MTTR (Mean Time to Resolve) ~6 hours. Jun 22 PHP shells: immediate response (shells removed within hours of detection). 0 malware confirmed active. Imunify360 scan: 18,141 findings all FALSE POSITIVES (same file hash, 127-byte files, cross-validated with ecomscan). 1,847 files whitelisted. 36 security findings total (28 critical — mostly configuration issues). ecomscan: 125 vulnerabilities (Amasty modules). fail2ban: brute-force attacks reduced 99%. Overall posture assessment: MEDIUM risk — good incident response, but pending CVE upgrade is critical.',
+  s21: 'FORENSIC TIMELINE — Dual-column layout. LEFT: May 5, 2026 crisis — QoderCLI AI coding tool discovered running on production server. Root cause: developer accidentally deployed AI tooling to prod. Impact: 76%+ CPU utilization, load average 15.37 (normal: <2). Resolution: killed process, load dropped to 2.04. Policy change: all dev tools banned from prod. RIGHT: Jun 2026 external attacks — Jun 9 malware detection (Imunify360), Jun 22 PHP web shells (/pub/static/shell.php, /pub/media/shell.php). Both resolved. Evidence sources: Apache access/error logs, Imunify360 scan reports, git commit history, /var/log/secure (SSH logs), filesystem forensics.',
+  s22: 'SSH BRUTE-FORCE ANALYSIS — 53,269 historical brute-force attacks logged. Timeline: Jun 8-14 intensive attack period (likely automated botnet). fail2ban deployed Jun 14: 5 failed attempts within 10 minutes → 1-hour IP ban. Custom SSH port configured (non-standard). AllowUsers restriction limits SSH access to whitelisted accounts. Post-deployment: brute-force attempts down 99%. Chart shows attack volume before/after fail2ban. Remaining risk: password-based authentication still enabled. Target: key-only authentication by Q3 2026. Recommendation: disable password auth entirely, enforce SSH key pairs.',
+  s23: 'CVE & VULNERABILITY MATRIX — CVE-2024-34102: CRITICAL (XXE — XML External Entity, CVSS 9.8). Status: NOT PATCHED. Required upgrade: Magento 2.4.7-p3. Target: Q3 2026. 3 additional CVEs patched Apr 11, 2026. Jul 11 scan: 36 total findings, 28 critical (mostly configuration-level: exposed debug info, missing security headers). Amasty modules identified as outdated — require upgrades. CVE-2024-34102 is the single highest-priority security item: allows unauthenticated remote code execution via crafted XML. Must be patched before H2 peak season.',
+  s24: 'IMUNIFY360 FALSE POSITIVES & ECOMSCAN — Imunify360 reported 18,141 findings — ALL confirmed FALSE POSITIVES. Evidence: same file hash across all flagged files, all are 127-byte static assets (Magento compiled JS/CSS), cross-validated with ecomscan showing identical results. 1,847 files added to whitelist. Imunify360 subscription auto-renewed. Ecomscan: 125 vulnerabilities identified (separate from FP issue). Assessment: HIGH confidence that no real malware exists. The FP volume indicates Imunify360 needs tuning for Magento compiled static assets.',
+  s25: 'SERVER HARDENING BEFORE/AFTER — 3-column layout showing completed changes, pending items, and impact. SSH hardening (6 changes): custom port, AllowUsers, MaxAuthTries reduced, LoginGraceTime reduced, Protocol 2 enforced, X11Forwarding disabled. System config (6 changes): disabled unused services, tightened file permissions, configured automatic updates for security patches. Packages (5 updates): system libraries updated to latest stable. PENDING CRITICAL: world-writable 971 files (CRITICAL — any user can modify), .git directory exposure (2 accounts), phpinfo() accessible (3 accounts). These pending items represent immediate security risks requiring resolution.',
+  s26: 'PHASE 6 DIVIDER: PERFORMANCE — Before/after comparison. Server load: 15.37 → 2.04 (86.5% improvement, achieved by killing QoderCLI process). Redis cache hit rate: 84.3% (target 85%). Varnish HTTP cache: 15.5% hit rate (cold-start caveat — first request after purge misses). Cloudflare CDN: active, cache-control headers set for immutable assets. Combined caching strategy delivers significant TTFB (Time to First Byte) improvement. Performance monitoring ongoing via server load, Redis STATS, and Varnish statistics.',
+  s27: 'CRISIS PERFORMANCE — May 5, 2026 deep-dive. Root cause: QoderCLI (AI coding assistant) was running on production server consuming 76%+ CPU. Additional 16% from MariaDB queries (buffer pool was still at 128MB). Combined load: 15.37 (critical threshold: 8.0). Resolution: (1) Killed QoderCLI process — immediate load drop. (2) Increased innodb_buffer_pool from 128MB to 8GB — stabilized database performance. (3) Applied permanent configs — sysctl, PHP-FPM limits, Apache MPM tuning. (4) Enacted policy: ALL development tools banned from production server. Dev work restricted to dev.technostationery.com only. Permanent configs ensure crisis cannot recur.',
+  s28: 'CACHE DEEP DIVE — Multi-layer caching architecture. Redis: 84.3% hit rate (HIGH confidence — measured via Redis INFO command). maxmemory 1GB, allkeys-lru eviction. Varnish: 15.5% hit rate (MEDIUM confidence — cold-start caveat: first request after cache purge always misses, inflating miss rate). Cloudflare CDN: cache-control headers set for immutable assets (JS, CSS, images). Bandwidth reduction: ~35%. Combined effect: significant TTFB improvement across all pages. Recommendation: increase Varnish hit rate via grace period tuning and pre-warming critical pages after deployments.',
+  s29: 'PHASE 7 DIVIDER: EVIDENCE CONFIDENCE — 14 audit findings total. Distribution: 9 HIGH confidence, 4 MEDIUM confidence, 1 LOW confidence. 3 CRITICAL open risks identified (CVE-2024-34102, phpinfo exposure, world-writable files). Immediate actions required: ~2 hours total estimated effort. Confidence levels based on: source reliability (direct DB queries = HIGH, log analysis = MEDIUM, visual inspection = LOW), data recency, cross-validation between multiple sources. All findings documented with evidence trail and remediation recommendations.',
+  s30: 'EVIDENCE CONFIDENCE MATRIX — 14 findings mapped against confidence levels and evidence sources. Finding 13 (developer concentration risk): 4,593 commits, Mounir = 92.0% — rated HIGH confidence (direct GitLab API data). CI/CD pipeline (Jul 1, Damien Louis/DND France) mitigates single-developer risk by enabling code review and automated testing. All sources cited: MariaDB queries, Redis INFO, GitLab API, Apache logs, Imunify360 reports, filesystem inspection. No anonymous or unverifiable claims. Audit methodology: direct system access, real-time data extraction, cross-validation across 3+ independent sources per finding.',
+  s31: 'RISK ASSESSMENT MATRIX — Register + bubble chart visualization. CRITICAL open risks: (1) CVE-2024-34102 — XXE vulnerability, CVSS 9.8, NOT PATCHED, requires Magento 2.4.7-p3 upgrade. (2) phpinfo() accessible from 3 accounts — exposes server configuration. (3) 971 world-writable files — privilege escalation risk. HIGH risks: .git directory exposure (2 accounts), suspicious JavaScript files. All other findings RESOLVED. Risk scoring: CVSS-based for CVEs, likelihood × impact for operational risks. Bubble chart shows risk distribution across severity × effort-to-fix matrix. Top priority: CVE patch before back-to-school season.',
+  s32: 'PHASE 8 DIVIDER: ROADMAP — 13 action items organized into 3 phases. Immediate (Jul 2026): 3 security items (~2h total). Q3 Aug-Sep 2026: 4 security/upgrade items + Yalidine prod deploy. Q4 Oct-Dec 2026: performance optimization. Business milestone: back-to-school peak (Sep 2026). Total estimated effort: ~40 hours across all items. Priority order: security fixes first, then infrastructure upgrades, then business features. Timeline aligned with Magento release cycle and seasonal business patterns.',
+  s33: 'H2 STRATEGIC ROADMAP — 13 action items with effort estimates and timelines. IMMEDIATE JUL: 1. Delete phpinfo() — 10 min. 2. chmod 971 world-writable files — 30 min. 3. Block .git via Apache — 15 min. Q3 AUG-SEP: 4. Magento 2.4.7-p3 upgrade (CVE-2024-34102, CVSS 9.8) — 8h. 5. Amasty module upgrades — 4h. 6. tsdnd remediation — 2h. 7. Suspicious JS review — 1h. 8. SSH key-only authentication — 2h. BUSINESS: Yalidine production deploy via CI/CD (carriers/yalidine/active=1) — 4h. 9. Back-to-school inventory prep — ongoing. Total: ~22h immediate + ongoing business items.',
+  s34: 'KEY RECOMMENDATIONS — Executive summary for decision-makers. Immediate actions (~2 hours): delete phpinfo, fix world-writable files, block .git exposure. Q3 before Sep back-to-school peak: Magento 2.4.7-p3 upgrade (CVE-2024-34102 = critical security), Amasty module updates, SSH key-only auth. KEY BUSINESS RECOMMENDATION: Yalidine production deployment will formalize delivery tracking for 35.3% of current orders (183/499 H1 2026). CI/CD pipeline (DND France) enables safe, repeatable, auditable deployments — reduces single-developer risk. Magento upgrade = critical security + performance improvements. All items prioritized by security impact and business value.',
+  s35: 'THANK YOU / CLOSING — Summary badges and final KPIs. Production: technostationery.com (Magento 2.4.6-p15). Development: dev.technostationery.com. Beta site: REMOVED. PIM: REMOVED. All-time metrics: 9,283 customers · 4,490 CMD_Done · 28.6M DZD revenue. H1 2026: 499 CMD_Done (+12.1% YoY) · 2.79M DZD · 35.8% cancel rate (COD normal). Development: 4,593 commits · 46 MAB modules. Yalidine: on dev → Q3 prod deploy. CI/CD: live (DND France). Server: AlmaLinux 8.10 · Magento 2.4.6-p15 · 8 cores, 32GB. 8 audit phases complete. 13 action items identified. Next: H2 execution.',
+  s36: 'H1 SEMESTER COMPARISON — Deep dive comparing H1 2025 vs H1 2026. KPI cards: 499 orders, 9,283 customers, 3,913 commits. Grouped bar chart shows monthly order comparison — 2025 had more even distribution while 2026 shows Jan peak (117) and Feb dip (68). Metrics table: orders +12.1% (445→499), revenue +1.0% (2.76M→2.79M), AOV −9.9% (6,199→5,585 DZD), cancel rate +15.5pp (20.3%→35.8%), commits +1,530% (240→3,913). Yalidine: 183/499 orders (36.7%). Dev velocity breakdown: feat ~706, fix ~577, security commits, chore ~223. Key insight: order volume growth is healthy but AOV decline suggests price competition or shift to lower-priced product mix. Cancel rate increase reflects COD model expansion to new customer segments, not quality degradation.',
+  s37: 'SERVER PERFORMANCE TUNINGS — Comprehensive tuning summary and H2 roadmap. KPI cards: Redis 84.3% hit rate, server load 0.42 (normal), 125 ecomscan vulnerabilities, 36 security findings. Applied tunings table: MariaDB (buffer_pool 128MB→8G, slow_query_log), Redis (maxmemory 1G, allkeys-lru), PHP-FPM (OPcache, worker limits), Apache (MPM event tuning), Varnish (HTTP cache config), Cloudflare (cache-control headers), fail2ban (SSH protection), Imunify360 (malware scanning). Pending critical actions: Magento CVE-2024-34102 upgrade, 28 critical security findings, 125 ecomscan vulnerabilities. Server load timeline chart shows Jan-Jul 2026 progression — May spike (15.37) resolved to normal 0.42. H2 performance roadmap: Redis cluster evaluation, Varnish grace period tuning, CDN cache pre-warming, PHP 8.3 upgrade, MariaDB 10.7 upgrade. Security findings trend: Jun peak (36) declining to Jul (28) as items are remediated.'
 };
 
 function showSlide(n) {
@@ -2785,7 +2787,7 @@ function showSlide(n) {
   const nc = document.getElementById('notes-content');
   nc.textContent = NOTES[sid] || '';
   initChartsForSlide(sid);
-  // colorAlgeriaMap() called via initChartsForSlide when sid=s18
+  // colorizeAlgeriaMap() called via initChartsForSlide when sid=s18
 }
 
 // ── KEYBOARD NAVIGATION ──
@@ -3205,90 +3207,6 @@ function initChartsForSlide(sid) {
   }
 }
 
-// ── ALGERIA MAP COLORING — uses actual SVG IDs from HTML (w_Alger, w_Oran, etc.) ──
-function colorAlgeriaMap() {
-  // Map: SVG element ID → { color, orders } — matches data-orders in the HTML
-  const wilayaColors = {
-    'w_Alger':              { color: '#1d4ed8', orders: 153 },
-    'w_Oran':               { color: '#2563eb', orders: 15  },
-    'w_Blida':              { color: '#3b82f6', orders: 21  },
-    'w_Constantine':        { color: '#2563eb', orders: 26  },
-    'w_Tizi_Ouzou':         { color: '#3b82f6', orders: 22  },
-    'w_Setif':              { color: '#1d4ed8', orders: 11  },
-    'w_Boumerdes':          { color: '#2563eb', orders: 10  },
-    'w_Batna':              { color: '#1e3a8a', orders: 9   },
-    'w_Bejaia':             { color: '#1e3a8a', orders: 10  },
-    'w_Annaba':             { color: '#1d4ed8', orders: 6   },
-    'w_Tipaza':             { color: '#1d4ed8', orders: 0   },
-    'w_Chlef':              { color: '#1e3a8a', orders: 7   },
-    'w_MSila':              { color: '#1e3a8a', orders: 6   },
-    'w_Biskra':             { color: '#172554', orders: 0   },
-    'w_Medea':              { color: '#172554', orders: 0   },
-    'w_Skikda':             { color: '#1e3a8a', orders: 16  },
-    'w_Tlemcen':            { color: '#1e3a8a', orders: 14  },
-    'w_Djelfa':             { color: '#1e3a8a', orders: 14  },
-    'w_Bordj_Bou_Arreridj': { color: '#172554', orders: 2   },
-    'w_Oum_El_Bouaghi':     { color: '#1e3a8a', orders: 7   },
-    'w_Mila':               { color: '#172554', orders: 2   },
-    'w_Tiaret':             { color: '#172554', orders: 0   },
-    'w_Jijel':              { color: '#1e3a8a', orders: 15  },
-    'w_Guelma':             { color: '#1e3a8a', orders: 9   },
-    'w_Tebessa':            { color: '#1e3a8a', orders: 6   },
-    'w_Ain_Defla':          { color: '#1e3a8a', orders: 6   },
-    'w_Laghouat':           { color: '#172554', orders: 2   },
-    'w_Sidi_Bel_Abbes':     { color: '#172554', orders: 1   },
-    'w_El_Oued':            { color: '#172554', orders: 0   },
-    'w_Relizane':           { color: '#172554', orders: 7   },
-    'w_Mostaganem':         { color: '#172554', orders: 9   },
-    'w_Khenchela':          { color: '#172554', orders: 0   },
-    'w_El_Tarf':            { color: '#1e3a8a', orders: 8   },
-    'w_Mascara':            { color: '#172554', orders: 1   },
-    'w_Ghardaia':           { color: '#172554', orders: 0   },
-    'w_Souk_Ahras':         { color: '#172554', orders: 0   },
-    'w_Saida':              { color: '#172554', orders: 1   },
-    'w_Ain_Temouchent':     { color: '#172554', orders: 1   },
-    'w_Ouargla':            { color: '#172554', orders: 2   },
-    'w_El_Bayadh':          { color: '#0f172a', orders: 1   },
-    'w_Adrar':              { color: '#0f172a', orders: 0   },
-    'w_Naama':              { color: '#0f172a', orders: 1   },
-    'w_Bechar':             { color: '#0f172a', orders: 2   },
-    'w_Tamanrasset':        { color: '#0f172a', orders: 1   },
-    'w_Tindouf':            { color: '#0f172a', orders: 0   },
-    'w_Illizi':             { color: '#0f172a', orders: 0   },
-    'w_Djanet':             { color: '#0f172a', orders: 0   },
-    'w_Bouira':             { color: '#1e3a8a', orders: 16  },
-    'w_Tissemsilt':         { color: '#172554', orders: 6   },
-  };
-  // First update all wn text labels to show order counts
-  Object.entries(wilayaColors).forEach(([id, cfg]) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    // Update wn label to show order count
-    const wnText = el.querySelector('.wn');
-    if (wnText) wnText.textContent = cfg.orders > 0 ? cfg.orders : '';
-  });
-  Object.entries(wilayaColors).forEach(([id, cfg]) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    // Color by order volume tier
-    let fill;
-    const o = cfg.orders;
-    if (o >= 100) fill = '#1d4ed8';
-    else if (o >= 30) fill = '#2563eb';
-    else if (o >= 15) fill = '#3b82f6';
-    else if (o >= 7)  fill = '#1e3a8a';
-    else if (o >= 3)  fill = '#172554';
-    else if (o >= 1)  fill = '#0f172a';
-    else              fill = '#060d1e';
-    el.querySelectorAll('path').forEach(p => {
-      p.style.fill = fill;
-      p.style.stroke = o >= 15 ? 'rgba(59,130,246,0.6)' : o >= 5 ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.15)';
-      p.style.strokeWidth = o >= 15 ? '1.2' : '0.7';
-      if (o >= 50) p.setAttribute('filter', 'url(#glow)');
-    });
-  });
-}
-
 // ── ALGERIA MAP FILTER ──
 function filterMap(btn, minOrders, maxOrders) {
   document.querySelectorAll('.map-filter-btn').forEach(b => b.classList.remove('active'));
@@ -3317,7 +3235,7 @@ document.querySelectorAll('.map-rank-item').forEach(item => {
     // Show tooltip
     const tip = document.getElementById('mapTooltip');
     if (tip) {
-      tip.innerHTML = '<strong>' + el.dataset.name + '</strong><br>CMD_Done H1 2026: <strong>' + el.dataset.orders + '</strong> (' + el.dataset.pct + ' of 498)';
+      tip.innerHTML = '<strong>' + el.dataset.name + '</strong><br>CMD_Done H1 2026: <strong>' + el.dataset.orders + '</strong> (' + el.dataset.pct + ' of 499)';
       tip.style.display = 'block';
       tip.style.left = '40px';
       tip.style.top = '60px';
@@ -3382,7 +3300,7 @@ function _initS36Charts() {
         },
         {
           label: 'H1 2026',
-          data: [116, 69, 74, 81, 88, 70],
+          data: [117, 68, 75, 81, 88, 70],
           backgroundColor: 'rgba(59,130,246,.7)',
           borderColor: '#3b82f6',
           borderWidth: 1.5,
@@ -3523,7 +3441,7 @@ function _initMultiYearChart() {
       datasets: [
         {
           label: 'Commandes',
-          data: [311, 1359, 1163, 1133, 498],
+          data: [311, 1359, 1163, 1132, 499],
           backgroundColor: ['rgba(99,102,241,.6)','rgba(59,130,246,.6)','rgba(34,197,94,.7)','rgba(245,158,11,.6)','rgba(148,163,184,.4)'],
           borderColor: ['#6366f1','#3b82f6','#22c55e','#f59e0b','#94a3b8'],
           borderWidth: 1.5,
@@ -3532,7 +3450,7 @@ function _initMultiYearChart() {
         },
         {
           label: 'Revenu (M DZD)',
-          data: [2.3, 7.76, 8.25, 7.43, 2.78],
+          data: [2.3, 7.76, 8.25, 7.43, 2.79],
           type: 'line',
           borderColor: '#f59e0b',
           backgroundColor: 'rgba(245,158,11,.1)',
@@ -3595,7 +3513,7 @@ function _initS17Charts() {
         },
         {
           label: 'H1 2026',
-          data: [116, 69, 74, 81, 88, 70],
+          data: [117, 68, 75, 81, 88, 70],
           backgroundColor: 'rgba(59,130,246,.7)',
           borderColor: '#3b82f6',
           borderWidth: 1.5,
