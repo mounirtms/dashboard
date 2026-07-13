@@ -1,0 +1,2 @@
+SELECT MONTH(created_at) as m, COUNT(*) as c FROM sales_order WHERE created_at >= '2026-01-01' AND created_at <= '2026-06-30 23:59:59' AND status IN ('canceled', 'Annulee_a_la_confirmation', 'Annulee_a_la_livraison', 'Annulee_a_la_preparation') GROUP BY m;
+SELECT MONTH(created_at) as m, COUNT(*) as c FROM sales_order WHERE created_at >= '2026-01-01' AND created_at <= '2026-06-30 23:59:59' GROUP BY m;
