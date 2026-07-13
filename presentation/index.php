@@ -2761,9 +2761,9 @@ function _getOrCreateChart(canvasId, config) {
 }
 
 // ── SLIDE ENGINE ──
-const slides = document.querySelectorAll('.slide');
+const slides = document.querySelectorAll('.slide[id^="s"]');  // Only main slides (s1-s37)
 let current = 0;
-const TOTAL = slides.length; // 38 slides (v6 — real DB data, geographic Algeria map)
+const TOTAL = slides.length; // 37 slides (v9.0.2 — fixed selector) (v6 — real DB data, geographic Algeria map)
 
 const NOTES = {
   s1:  'v6.4.6. Audit: Jul 12, 2026. Prod: technostationery.com (Magento 2.4.6-p15). Dev/Staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline live Jul 1 (Damien Louis, DND France). Yalidine: integration complete on dev, pending prod deploy. 9,277 customers. 4,490 valid orders. 28.6M DZD. 4,593 GitLab commits.',
