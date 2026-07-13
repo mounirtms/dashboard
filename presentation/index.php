@@ -3477,7 +3477,13 @@ function _initS23Charts() { /* s23: CVE Matrix — table-based, no Chart.js */ }
 function _initS25Charts() { /* s25: Hardening — table-based, no Chart.js */ }
 function _initS30Charts() { /* s30: Evidence Matrix — table-based, no Chart.js */ }
 
-showSlide(0);
+// ── Initial slide + DOM-ready guard ──
+// showSlide(0) must run AFTER the full DOM is parsed so that
+// getElementById('nav-counter') and getElementById('progress-bar')
+// (which live in the <nav> block below the script) are not null.
+document.addEventListener('DOMContentLoaded', function() {
+  showSlide(0);
+});
 
 // ── colorize Algeria map ──
 

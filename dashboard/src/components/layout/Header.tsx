@@ -1,7 +1,7 @@
 import { Box, Typography, Button, IconButton, Chip, useTheme, Menu, MenuItem, Tooltip, ListItemIcon, ListItemText } from '@mui/material';
 import { Menu as MenuIcon, ExitToApp, CloudDone, Warning, Speed, Memory, Storage, Cached, LightMode, DarkMode, Settings, Language, Check, Storage as StorageIcon, SlideshowOutlined } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth.tsx';
-import { useSystemOverview } from '../../hooks/useSystemData.ts';
+import { useSystemOverviewContext } from '../../contexts/SystemOverviewContext.tsx';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePermissions } from '../../hooks/usePermissions.ts';
@@ -13,7 +13,7 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   const { logout, user } = useAuth();
   const { isAdmin } = usePermissions();
-  const { data } = useSystemOverview(30000);
+  const { data } = useSystemOverviewContext();
   const theme = useTheme();
   const navigate = useNavigate();
 

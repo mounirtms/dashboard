@@ -1,6 +1,6 @@
 import { Grid, Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Divider, Alert, useTheme } from '@mui/material';
 import { Memory, Storage, Speed, Timer, CheckCircle, Warning, TipsAndUpdates, Refresh, CleaningServices, LocalFireDepartment } from '@mui/icons-material';
-import { useSystemOverview } from '../hooks/useSystemData';
+import { useSystemOverviewContext } from '../contexts/SystemOverviewContext.tsx';
 import StatCard from '../components/common/StatCard';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
@@ -8,7 +8,7 @@ import { runEmergencyCleanup } from '../api/system';
 import { useState } from 'react';
 
 export default function SystemOverviewPage() {
-  const { data, loading, error, refetch } = useSystemOverview();
+  const { data, loading, error, refetch } = useSystemOverviewContext();
   const theme = useTheme();
   const [cleaning, setCleaning] = useState(false);
 

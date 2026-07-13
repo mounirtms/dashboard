@@ -1,6 +1,6 @@
 import { Box, Typography, Divider, Tooltip, Link } from '@mui/material';
 import { useState, useEffect, useRef } from 'react';
-import { useSystemOverview } from '../../hooks/useSystemData';
+import { useSystemOverviewContext } from '../../contexts/SystemOverviewContext.tsx';
 import { Speed, Memory, Storage } from '@mui/icons-material';
 import mounirSignature from '../../assets/mounir-signature.svg';
 
@@ -8,7 +8,7 @@ const APP_VERSION = '4.3.0';
 
 export default function Footer() {
   const [time, setTime] = useState(new Date());
-  const { data } = useSystemOverview(30000);
+  const { data } = useSystemOverviewContext();
   const [latency, setLatency] = useState<number | null>(null);
   const pingRef = useRef(0);
 

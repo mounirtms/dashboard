@@ -7,9 +7,6 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 /**
  * Auth endpoints that must NOT trigger the 401 → redirect loop.
@@ -44,16 +41,11 @@ apiClient.interceptors.response.use(
     if (!config) return Promise.reject(error);
 
     const status = error.response?.status;
-    const retryCount = config.__retryCount ?? 0;
-
-    // Retry requests on 429 (rate limited) with exponential backoff — max 3 retries
-    // Backoff: 2s, 4s, 8s — or use server's Retry-After header
-    if (status === 429 && retryCount < 3) {
-      config.__retryCount = retryCount + 1;
-      const retryAfter = parseInt(error.response?.headers?.['retry-after'] ?? '0', 10);
-      const waitMs = retryAfter > 0 ? retryAfter * 1000 : (2000 * Math.pow(2, retryCount));
-      await delay(waitMs);
-      return apiClient(config);
+    // 429 — do NOT retry. The SystemOverviewContext uses a single shared polling
+    // interval (60s) so cascading retries are no longer possible.
+    // Just reject immediately and let the UI show a graceful fallback.
+    if (status === 429) {
+      return Promise.reject(error);
     }
 
     // Retry GET requests once on transient network errors (not auth/cancel)

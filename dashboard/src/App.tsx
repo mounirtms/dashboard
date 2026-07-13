@@ -6,6 +6,7 @@ import AppLayout from './components/layout/AppLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import { AuthProvider } from './hooks/useAuth.tsx';
+import { SystemOverviewProvider } from './contexts/SystemOverviewContext.tsx';
 import OverviewPage from './pages/OverviewPage.tsx';
 import SystemOverviewPage from './pages/SystemOverviewPage.tsx';
 import SitesPage from './pages/SitesPage.tsx';
@@ -57,6 +58,7 @@ export default function App() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <AuthProvider>
+        <SystemOverviewProvider>
         <HashRouter>
           <Routes>
             {/* Public routes */}
@@ -137,6 +139,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </HashRouter>
+        </SystemOverviewProvider>
       </AuthProvider>
     </ThemeProvider>
   );
