@@ -92,7 +92,7 @@ export default function SshSessionsPage() {
   useEffect(() => {
     loadData();
     loadSshUsers();
-    const interval = setInterval(loadData, 15000);
+    const interval = setInterval(loadData, 30000); // 30s — was 15s, reduces 429 storms
     return () => clearInterval(interval);
   }, [loadData, loadSshUsers]);
 

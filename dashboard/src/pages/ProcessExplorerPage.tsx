@@ -33,7 +33,7 @@ export default function ProcessExplorerPage() {
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (autoRefresh) {
-      timerRef.current = setInterval(loadData, 10000);
+      timerRef.current = setInterval(loadData, 30000); // 30s — was 10s, reduces 429 storms
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);

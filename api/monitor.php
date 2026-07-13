@@ -30,12 +30,12 @@ $cache = new CacheManager(
 );
 $monitorApi = new MonitorApi($cache);
 
-// Rate limiting
-$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 2000, 60);
+// Rate limiting — 6000 req/min per user (100/sec headroom for multi-tab + aggressive polling)
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 6000, 60);
 $userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
 if (!$rateLimiter->checkOrReject($userIdentifier)) {
     http_response_code(429);
-    echo json_encode(['error' => 'Rate limit exceeded']);
+    echo json_encode(['error' => 'Rate limit exceeded', 'retry_after' => 5]);
     exit;
 }
 

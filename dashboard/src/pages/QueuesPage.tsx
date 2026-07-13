@@ -29,7 +29,7 @@ export default function QueuesPage() {
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (autoRefresh) {
-      timerRef.current = setInterval(loadData, 15000);
+      timerRef.current = setInterval(loadData, 30000); // 30s — was 15s, reduces 429 storms
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [autoRefresh, loadData]);

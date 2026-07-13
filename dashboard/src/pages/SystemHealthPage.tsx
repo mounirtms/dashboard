@@ -19,7 +19,7 @@ import {
   SshData, ServicesData, NetworkData, CsfFirewallData
 } from '../api/system';
 
-const REFRESH_INTERVAL = 10000;
+const REFRESH_INTERVAL = 30000; // 30s — was 10s, reduced to prevent 429 rate limit storms
 
 export default function SystemHealthPage() {
   const [tab, setTab] = useState(0);

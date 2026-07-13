@@ -204,10 +204,11 @@ export default function LogViewerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, site, lines, logDate, bashUser]);
 
-  // Auto-refresh interval - 5s for normal logs, 2s only for site-specific (Magento) logs
+  // Auto-refresh interval - 15s for normal logs, 10s for site-specific (Magento) logs
+  // Reduced from 3s/5s to prevent 429 rate limit storms on the API
   useEffect(() => {
     if (!autoRefresh) return;
-    const interval = site ? 3000 : 5000;
+    const interval = site ? 10000 : 15000;
     const timer = setInterval(fetchLogs, interval);
     return () => clearInterval(timer);
   }, [autoRefresh, fetchLogs, site]);
