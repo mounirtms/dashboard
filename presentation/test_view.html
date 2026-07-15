@@ -6,6 +6,12 @@ if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: https://dashboard.technostationery.com/#/login', true, 302);
     exit;
 }
+// Aggressive cache-busting — prevent stale presentation from being served
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, private');
+header('Pragma: no-cache');
+header('Expires: 0');
+header('X-Content-Type-Options: nosniff');
+header('Vary: Accept-Encoding');
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -492,7 +498,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="cover-kpi">
     <div class="cover-kpi-item"><div class="cv-val">38</div><div class="cv-label">Audit Slides</div></div>
     <div class="cover-kpi-item"><div class="cv-val">8</div><div class="cv-label">Phases</div></div>
-    <div class="cover-kpi-item"><div class="cv-val">499</div><div class="cv-label">CMD_Done H1</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">500</div><div class="cv-label">CMD_Done H1</div></div>
     <div class="cover-kpi-item"><div class="cv-val">86.5%</div><div class="cv-label">Load Reduction</div></div>
     <div class="cover-kpi-item"><div class="cv-val">0</div><div class="cv-label">Confirmed Malware</div></div>
     <div class="cover-kpi-item"><div class="cv-val">Jul 13</div><div class="cv-label">Report Date</div></div>
@@ -513,10 +519,10 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-title">Key Performance Indicators — H1 2026</div>
   <div class="slide-subtitle">Real data: MariaDB prod (technadminy7_dBT8x12y22) · Imunify360 · /var/log/secure · ecomscan · GitLab (4,593 commits) · Audited Jul 12, 2026</div>
   <div class="kpi-grid g4" style="margin-bottom:12px">
-    <div class="kpi-card blue"><div class="kpi-label">Valid Orders H1 2026</div><div class="kpi-val">499</div><div class="kpi-sub">CMD_Done · Jan–Jun 2026</div><div class="kpi-delta" style="color:var(--ok)">&#x25B2; +12.1% vs 445 (H1 2025)</div></div>
-    <div class="kpi-card cyan"><div class="kpi-label">Total Customers</div><div class="kpi-val">9,283</div><div class="kpi-sub">All-time registered · MariaDB</div><div class="kpi-delta" style="color:var(--muted)">incl. 3,278 bulk-migrated May 2026</div></div>
-    <div class="kpi-card green"><div class="kpi-label">All-Time Revenue</div><div class="kpi-val">28.6M</div><div class="kpi-sub">DZD · 4,490 CMD_Done orders</div><div class="kpi-delta" style="color:var(--ok)">H1 2026: 2.79M DZD · AOV 5,585 DZD</div></div>
-    <div class="kpi-card orange"><div class="kpi-label">Cancel Rate H1 2026</div><div class="kpi-val">35.8%</div><div class="kpi-sub">293 cancelled / 819 orders actifs</div><div class="kpi-delta" style="color:var(--muted)">Normal for Algerian COD model</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Valid Orders H1 2026</div><div class="kpi-val">500</div><div class="kpi-sub">CMD_Done · Jan–Jun 2026</div><div class="kpi-delta" style="color:var(--ok)">&#x25B2; +12.4% vs 445 (H1 2025)</div></div>
+    <div class="kpi-card cyan"><div class="kpi-label">Total Customers</div><div class="kpi-val">9,289</div><div class="kpi-sub">All-time registered · MariaDB</div><div class="kpi-delta" style="color:var(--muted)">incl. 3,278 bulk-migrated May 2026</div></div>
+    <div class="kpi-card green"><div class="kpi-label">All-Time Revenue</div><div class="kpi-val">28.6M</div><div class="kpi-sub">DZD · 4,490 CMD_Done orders</div><div class="kpi-delta" style="color:var(--ok)">H1 2026: 2.80M DZD · AOV 5,600 DZD</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">Cancel Rate H1 2026</div><div class="kpi-val">35.9%</div><div class="kpi-sub">294 cancelled / 819 orders actifs</div><div class="kpi-delta" style="color:var(--muted)">Normal for Algerian COD model</div></div>
   </div>
   <div class="kpi-grid g4" style="margin-bottom:12px">
     <div class="kpi-card purple"><div class="kpi-label">Redis Hit Rate</div><div class="kpi-val">84.3%</div><div class="kpi-sub">Post-optimization · target 85%</div><div class="kpi-delta" style="color:var(--ok)">&#x25B2; from 5.7% (cold start)</div></div>
@@ -914,10 +920,10 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="div-number" style="top:50%;transform:translateY(-50%)">03</div>
   <div class="div-phase">Phase 3 — Magento Audit</div>
   <div class="div-title">Business Performance<br>&amp; Order Analysis</div>
-  <div class="div-subtitle">7,794 total orders · 4,490 CMD_Done (all-time) · 9,283 customers · 2022–Jul 2026 · MariaDB prod · Cancel rate 35.8% (Algerian COD)</div>
+  <div class="div-subtitle">7,794 total orders · 4,490 CMD_Done (all-time) · 9,289 customers · 2022–Jul 2026 · MariaDB prod · Cancel rate 35.9% (Algerian COD)</div>
   <div class="div-tags">
     <span class="badge badge-blue">4,490 CMD_Done</span>
-    <span class="badge badge-cyan">9,283 Customers</span>
+    <span class="badge badge-cyan">9,289 Customers</span>
     <span class="badge badge-green">+56.6% H1 YoY</span>
     <span class="badge badge-purple">Algeria Choropleth</span>
     <span class="badge badge-gray">83.29M DZD Revenue</span>
@@ -931,7 +937,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 3 — Audit Magento</div>
   <div class="slide-title">Commandes Mensuelles &amp; Revenus — Jan–Jun 2026</div>
-  <div class="slide-subtitle">Source: MariaDB · sales_order WHERE status='CMD_Done' · 499 CMD_Done H1 2026 · 819 ordres actifs H1 2026 · DZD</div>
+  <div class="slide-subtitle">Source: MariaDB · sales_order WHERE status='CMD_Done' · 500 CMD_Done H1 2026 · 819 ordres actifs H1 2026 · DZD</div>
   <div class="grid-23" style="flex:1;gap:16px">
     <div class="panel" style="flex:1;display:flex;flex-direction:column">
       <h3>Commandes CMD_Done / Mois + Valeur Moyenne (AOV)</h3>
@@ -948,22 +954,22 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
             <tr><td>Mar</td><td class="num">75</td><td class="num">5,999</td><td><span style="color:var(--ok)">&#9650; +10.3%</span></td></tr>
             <tr><td>Avr</td><td class="num">81</td><td class="num">6,224</td><td><span style="color:var(--ok)">&#9650; +8.0%</span></td></tr>
             <tr><td>Mai</td><td class="num">88</td><td class="num">5,050</td><td><span style="color:var(--ok)">&#9650; +8.6%</span></td></tr>
-            <tr><td>Jun</td><td class="num">70</td><td class="num">6,202</td><td><span style="color:var(--danger)">&#9660; &#8722;20.5%</span></td></tr>
+            <tr><td>Jun</td><td class="num">71</td><td class="num">6,295</td><td><span style="color:var(--danger)">&#9660; &#8722;19.3%</span></td></tr>
           </tbody>
         </table>
       </div>
       <div class="panel" style="margin-top:8px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center">
           <div>
-            <div style="font-size:22px;font-weight:800;color:var(--accent)">499</div>
+            <div style="font-size:22px;font-weight:800;color:var(--accent)">500</div>
             <div style="font-size:10px;color:var(--muted)">CMD_Done H1 2026</div>
           </div>
           <div>
-            <div style="font-size:22px;font-weight:800;color:#22c55e">5,585</div>
+            <div style="font-size:22px;font-weight:800;color:#22c55e">5,600</div>
             <div style="font-size:10px;color:var(--muted)">AOV Moyen DZD</div>
           </div>
           <div>
-            <div style="font-size:22px;font-weight:800;color:#f59e0b">2.79M</div>
+            <div style="font-size:22px;font-weight:800;color:#f59e0b">2.80M</div>
             <div style="font-size:10px;color:var(--muted)">Revenu H1 DZD</div>
           </div>
           <div>
@@ -972,7 +978,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           </div>
         </div>
         <div style="margin-top:6px;font-size:10px;color:var(--dim)">
-          Pic Jan: 117 CMD_Done. Fév creux: phase test Yalidine (dev). Mai: 88 CMD_Done. Jun: annulation pic (43.9%).
+          Pic Jan: 117 CMD_Done. Fév creux: phase test Yalidine (dev). Mai: 88 CMD_Done. Jun: annulation pic (44.5%).
           <span class="conf conf-high">HIGH</span>
         </div>
       </div>
@@ -988,7 +994,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 3 — Audit Magento</div>
   <div class="slide-title">Distribution des Statuts &amp; Taux d&#8217;Annulation</div>
-  <div class="slide-subtitleSource: MariaDB sales_order · 819 ordres H1 2026 · CMD_Done=499 (60.9%) · Annulées=287 (35.0%) · Autres=33 (4.0%) · Taux annulation 35.8% = NORMAL COD DZ</div>
+  <div class="slide-subtitle">Source: MariaDB sales_order · 819 ordres H1 2026 · CMD_Done=500 (61.1%) · Annulées=294 (35.9%) · Autres=25 (3.0%) · Taux annulation 35.9% = NORMAL COD DZ</div>
   <div class="grid-2" style="flex:1;gap:16px">
     <div class="panel" style="flex:1;display:flex;flex-direction:column">
       <h3>Distribution des Statuts (Donut)</h3>
@@ -1002,8 +1008,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <tbody>
             <tr style="background:rgba(34,197,94,.08)">
               <td><span class="badge badge-green">CMD_Done</span></td>
-              <td class="num" style="font-weight:700;color:#22c55e">499</td>
-              <td class="num" style="color:#22c55e">60.9%</td>
+              <td class="num" style="font-weight:700;color:#22c55e">500</td>
+              <td class="num" style="color:#22c55e">61.1%</td>
             </tr>
             <tr style="background:rgba(239,68,68,.06)">
               <td><span class="badge badge-red" style="font-size:9px">Annulee_confirmation</span></td>
@@ -1012,8 +1018,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
             </tr>
             <tr style="background:rgba(239,68,68,.06)">
               <td><span class="badge badge-red" style="font-size:9px">Annulee_preparation</span></td>
-              <td class="num">80</td>
-              <td class="num" style="color:#f87171">9.8%</td>
+              <td class="num">81</td>
+              <td class="num" style="color:#f87171">9.9%</td>
             </tr>
             <tr style="background:rgba(239,68,68,.06)">
               <td><span class="badge badge-red" style="font-size:9px">Annulee_livraison</span></td>
@@ -1022,8 +1028,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
             </tr>
             <tr>
               <td><span class="badge badge-yellow">pending/processing</span></td>
-              <td class="num">33</td>
-              <td class="num">4.0%</td>
+              <td class="num">25</td>
+              <td class="num">3.1%</td>
             </tr>
           </tbody>
         </table>
@@ -1035,12 +1041,12 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div class="panel" style="margin-top:8px">
         <div style="display:flex;gap:12px;align-items:center">
           <div style="text-align:center;flex:1">
-            <div style="font-size:30px;font-weight:800;color:#f59e0b">35.8%</div>
+            <div style="font-size:30px;font-weight:800;color:#f59e0b">35.9%</div>
             <div style="font-size:10px;color:var(--muted)">Taux Annulation H1 2026</div>
             <div style="font-size:9px;color:#22c55e;margin-top:2px">NORMAL — COD Alg&#233;rie</div>
           </div>
           <div style="font-size:10px;color:var(--muted);flex:2">
-            293 annulations / 819 orders actifs.<br>
+            294 annulations / 819 orders actifs.<br>
             Benchmark secteur DZ (COD) : <strong style="color:#f59e0b">30&#8211;50%</strong>.<br>
             3 statuts personnalis&#233;s : confirmation, pr&#233;paration, livraison.<br>
             Pic Mai : Yalidine phase test sur dev (impact nul prod).<br>
@@ -1060,7 +1066,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 3 — Magento Audit</div>
   <div class="slide-title">Customer Registrations — Anomaly Investigation</div>
-  <div class="slide-subtitle">Source: MariaDB customer_entity table — 9,283 total registrations Jan–Jun 2026</div>
+  <div class="slide-subtitle">Source: MariaDB customer_entity table — 9,289 total registrations Jan–Jun 2026</div>
   <div class="grid-23" style="flex:1;gap:16px">
     <div class="panel" style="display:flex;flex-direction:column">
       <h3>Monthly Customer Registrations</h3>
@@ -1093,7 +1099,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       </div>
       <div class="panel">
         <div style="font-size:11px;color:var(--muted)">
-          <strong style="color:#fff">Real organic customers:</strong> 9,283 total &#x2212; 3,278 bulk-migrated = ~6,005 organic registrations<br>
+          <strong style="color:#fff">Real organic customers:</strong> 9,289 total &#x2212; 3,278 bulk-migrated = ~6,011 organic registrations<br>
           <div style="margin-top:4px;font-size:10px;color:var(--dim)">Source: customer_entity table JOIN sales_order</div>
         </div>
       </div>
@@ -1153,8 +1159,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <h3>Key Metric</h3>
         <div style="display:flex;gap:16px">
           <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent)">911</div><div style="font-size:10px;color:var(--muted)">Total Orders H1 2026</div></div>
-          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--ok)">DZD 5,585</div><div style="font-size:10px;color:var(--muted)">AOV (CMD_Done)</div></div>
-          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent2)">DZD 2.79M</div><div style="font-size:10px;color:var(--muted)">Revenue H1 2026</div></div>
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--ok)">DZD 5,600</div><div style="font-size:10px;color:var(--muted)">AOV (CMD_Done)</div></div>
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:var(--accent2)">DZD 2.80M</div><div style="font-size:10px;color:var(--muted)">Revenue H1 2026</div></div>
         </div>
       </div>
     </div>
@@ -1171,8 +1177,8 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="div-title">YoY Comparison<br>&amp; Geographic Analysis</div>
   <div class="div-subtitle">2025 vs 2026 · Algeria Choropleth Map · 58 Wilayas · Orders by Region</div>
   <div class="div-tags">
-    <span class="badge badge-green">+12.1% YoY Orders</span>
-    <span class="badge badge-cyan">+559% YoY Customers</span>
+    <span class="badge badge-green">+12.4% YoY Orders</span>
+    <span class="badge badge-cyan">+1,611% YoY Customers</span>
     <span class="badge badge-blue">58 Wilayas Mapped</span>
     <span class="badge badge-orange">Jan–Jun Comparison</span>
   </div>
@@ -1185,7 +1191,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 4 — Business Intelligence</div>
   <div class="slide-title">Year-over-Year Comparison — 2025 vs 2026</div>
-  <div class="slide-subtitle">Source: MariaDB · status=CMD_Done · H1 2025 = 445 | H1 2026 = 499 · Same-period Jan–Jun · +12.1% YoY · DZD</div>
+  <div class="slide-subtitle">Source: MariaDB · status=CMD_Done · H1 2025 = 445 | H1 2026 = 500 · Same-period Jan–Jun · +12.4% YoY · DZD</div>
   <div class="grid-23" style="flex:1;gap:16px">
     <div class="panel" style="display:flex;flex-direction:column">
       <h3>Monthly Orders: 2025 vs 2026</h3>
@@ -1197,10 +1203,10 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <table class="data-table" style="font-size:12px">
           <thead><tr><th>Metric</th><th class="num">2025</th><th class="num">2026</th><th>Δ</th></tr></thead>
           <tbody>
-            <tr><td>CMD_Done Orders</td><td class="num">445</td><td class="num">499</td><td><span style="color:var(--ok)">▲ +12.1%</span></td></tr>
-            <tr><td>Customers (cumul. end-2025)</td><td class="num">5,460</td><td class="num">9,283</td><td><span style="color:var(--ok)">▲ +69.9%</span></td></tr>
-            <tr><td>AOV Moyen (DZD)</td><td class="num">DZD 6,199</td><td class="num">DZD 5,585</td><td><span style="color:var(--warn)">▼ −9.9%</span></td></tr>
-            <tr><td>Taux Annulation</td><td class="num">20.3%</td><td class="num">35.8%</td><td><span style="color:var(--warn)">COD normal</span></td></tr>
+            <tr><td>CMD_Done Orders</td><td class="num">445</td><td class="num">500</td><td><span style="color:var(--ok)">▲ +12.4%</span></td></tr>
+            <tr><td>Customers (cumul. end-2025)</td><td class="num">5,460</td><td class="num">9,289</td><td><span style="color:var(--ok)">▲ +70.0%</span></td></tr>
+            <tr><td>AOV Moyen (DZD)</td><td class="num">DZD 6,199</td><td class="num">DZD 5,600</td><td><span style="color:var(--warn)">▼ −9.7%</span></td></tr>
+            <tr><td>Taux Annulation</td><td class="num">20.3%</td><td class="num">35.9%</td><td><span style="color:var(--warn)">COD normal</span></td></tr>
             <tr><td>Commits GitLab</td><td class="num">240</td><td class="num" style="color:#22c55e;font-weight:700">3,913</td><td><span style="color:var(--ok)">▲ +1,530%</span></td></tr>
             <tr><td>Yalidine (COD DZ)</td><td class="num" style="color:var(--muted)">N/A</td><td class="num" style="color:#f59e0b">dev ready</td><td><span style="color:var(--ok)">prod Q3</span></td></tr>
             <tr><td>Peak Month</td><td>Jan(90)</td><td>Jan(117)</td><td><span style="color:var(--accent)">Consistent</span></td></tr>
@@ -1210,10 +1216,10 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div class="panel">
         <h3>Growth Drivers</h3>
         <div style="font-size:11px;color:var(--muted);line-height:1.7">
-          <div>&#x2705; Customers: <strong style="color:#fff">+70.1% cumul.</strong> (5,460 &#x2192; 9,283 total)</div>
-          <div>&#x26A0;&#xFE0F; AOV: <strong style="color:#f59e0b">&#x2212;9.9%</strong> (6,199 &#x2192; 5,585 DZD) — volume growth trade-off</div>
-          <div>&#x2705; CMD_Done: <strong style="color:#fff">+12.1%</strong> (445 &#x2192; 499 orders)</div>
-          <div>&#x26A0;&#xFE0F; Cancel 35.8% = NORMAL COD Alg&#233;rie (benchmark 30&#x2013;50%)</div>
+          <div>&#x2705; Customers: <strong style="color:#fff">+70.0% cumul.</strong> (5,460 &#x2192; 9,289 total)</div>
+          <div>&#x26A0;&#xFE0F; AOV: <strong style="color:#f59e0b">&#x2212;9.7%</strong> (6,199 &#x2192; 5,600 DZD) — volume growth trade-off</div>
+          <div>&#x2705; CMD_Done: <strong style="color:#fff">+12.4%</strong> (445 &#x2192; 500 orders)</div>
+          <div>&#x26A0;&#xFE0F; Cancel 35.9% = NORMAL COD Alg&#233;rie (benchmark 30&#x2013;50%)</div>
           <div style="margin-top:6px;font-size:10px;color:var(--dim)">Source: sales_order JOIN customer_entity <span class="conf conf-high">HIGH CONF</span></div>
         </div>
       </div>
@@ -1259,9 +1265,9 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div style="font-size:10px;color:#f87171;margin-top:2px">▼ -2.4% · 7.43M DZD</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(148,163,184,.3)">
-      <div class="kpi-val" style="color:#94a3b8;font-size:20px">499</div>
+      <div class="kpi-val" style="color:#94a3b8;font-size:20px">500</div>
       <div class="kpi-label">2026 H1 — CMD_Done</div>
-      <div style="font-size:10px;color:#64748b;margin-top:2px">H1 · 2.79M DZD · cancel 35.8%</div>
+      <div style="font-size:10px;color:#64748b;margin-top:2px">H1 · 2.80M DZD · cancel 35.9%</div>
     </div>
   </div>
   <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:10px;flex:1">
@@ -1279,7 +1285,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
             <tr><td>2023</td><td class="num">1,359</td><td class="num">7.76</td><td class="num">5,707</td><td class="num">1,204</td></tr>
             <tr><td style="color:#f59e0b">2024</td><td class="num" style="color:#f87171">1,163</td><td class="num" style="color:#f87171">8.25</td><td class="num">7,098</td><td class="num">838</td></tr>
             <tr><td style="color:#22c55e">2025 full</td><td class="num" style="color:#22c55e">1,132</td><td class="num" style="color:#94a3b8">7.43</td><td class="num" style="color:#94a3b8">6,563</td><td class="num" style="color:#64748b">1,263</td></tr>
-            <tr style="background:rgba(59,130,246,.06)"><td style="color:#60a5fa">2026 H1</td><td class="num" style="color:#60a5fa;font-weight:700">499</td><td class="num" style="color:#60a5fa">2.79</td><td class="num" style="color:#f59e0b">5,585</td><td class="num" style="color:#f59e0b">3,727</td></tr>
+            <tr style="background:rgba(59,130,246,.06)"><td style="color:#60a5fa">2026 H1</td><td class="num" style="color:#60a5fa;font-weight:700">500</td><td class="num" style="color:#60a5fa">2.80</td><td class="num" style="color:#f59e0b">5,600</td><td class="num" style="color:#f59e0b">3,727</td></tr>
           </tbody>
         </table>
         <div style="font-size:10px;color:var(--dim);margin-top:6px">Source: API REST technostationery.com — données temps réel MariaDB prod</div>
@@ -1291,7 +1297,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <div>📉 <strong style="color:#f59e0b">2024: recul −14.4%</strong> — 1,163 CMD_Done, mais revenu record 8.25M DZD</div>
           <div>📊 Croissance cumulée <strong style="color:#fff">+337%</strong> sur 2022→2023 (1er plein cycle)</div>
           <div>⚡ AOV 2023 exceptionnellement haut (+99% vs 2022) — commandes B2B?</div>
-          <div>📊 <strong style="color:#60a5fa">2026 H1</strong>: 499 CMD_Done · 2.79M DZD · AOV 5,585 · cancel 35.8% (COD normal)</div>
+          <div>📊 <strong style="color:#60a5fa">2026 H1</strong>: 500 CMD_Done · 2.80M DZD · AOV 5,600 · cancel 35.9% (COD normal)</div>
           <div style="margin-top:4px;font-size:10px;color:var(--dim)">Source: sales_order JOIN sales_order_grid · MariaDB <span class="conf conf-high">HIGH CONF</span></div>
         </div>
       </div>
@@ -1306,7 +1312,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 4 — Geographic Analysis</div>
   <div class="slide-title">Algeria Orders by Wilaya — Jan–Jun 2026</div>
-  <div class="slide-subtitle">Source: MariaDB sales_order JOIN sales_order_address · 49 wilayas couvertes · 499 CMD_Done H1 2026 · Hover wilaya pour d&#233;tails</div>
+  <div class="slide-subtitle">Source: MariaDB sales_order JOIN sales_order_address · 49 wilayas couvertes · 500 CMD_Done H1 2026 · Hover wilaya pour d&#233;tails</div>
   <div class="grid-32" style="flex:1;gap:16px">
     <div class="panel" style="display:flex;flex-direction:column;padding:8px;position:relative">
       <div id="mapTooltip"></div>
@@ -1335,7 +1341,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
     <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
   </filter>
 </defs>
-<!-- Algeria geographic choropleth — 49 wilayas — H1 2026 CMD_Done — total 499 orders -->
+<!-- Algeria geographic choropleth — 49 wilayas — H1 2026 CMD_Done — total 500 orders -->
 <!-- Background (Sahara) -->
 <rect x="0" y="0" width="620" height="560" fill="#060d1e" rx="4"/>
 <g class="wilaya" id="w_Tlemcen" 
@@ -1430,7 +1436,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <text x="288" y="42" text-anchor="middle" class="wn">4</text>
 </g>
 <g class="wilaya" id="w_Alger" 
-   data-name="Alger" data-orders="157" data-pct="31.5%" data-tier="7"
+   data-name="Alger" data-orders="157" data-pct="31.4%" data-tier="7"
    style="--wc:#1d4ed8">
   <path d="M 308  10 L 368  10 L 368  60 L 308  60 Z" fill="#1d4ed8" stroke="#0a0f1e" stroke-width="0.8" rx="2"/>
   <text x="338" y="32" text-anchor="middle" class="wt" style="font-size:7px">Alger</text>
@@ -1689,12 +1695,12 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <table class="data-table" style="font-size:11px">
           <thead><tr><th>#</th><th>Wilaya</th><th class="num">CMD_Done</th><th class="num">%</th></tr></thead>
           <tbody>
-            <tr><td>1</td><td><strong>Alger (16)</strong></td><td class="num" style="color:var(--accent)">153</td><td class="num">30.7%</td></tr>
+            <tr><td>1</td><td><strong>Alger (16)</strong></td><td class="num" style="color:var(--accent)">157</td><td class="num">31.4%</td></tr>
             <tr><td>2</td><td><strong>Constantine (25)</strong></td><td class="num">26</td><td class="num">5.2%</td></tr>
             <tr><td>3</td><td><strong>Tizi Ouzou (15)</strong></td><td class="num">22</td><td class="num">4.4%</td></tr>
-            <tr><td>4</td><td><strong>Blida (09)</strong></td><td class="num">21</td><td class="num">4.2%</td></tr>
+            <tr><td>4</td><td><strong>Blida (09)</strong></td><td class="num">20</td><td class="num">4.0%</td></tr>
             <tr><td>5</td><td><strong>Skikda (21)</strong></td><td class="num">16</td><td class="num">3.2%</td></tr>
-            <tr><td>5</td><td><strong>Bouira (10)</strong></td><td class="num">16</td><td class="num">3.2%</td></tr>
+            <tr><td>5</td><td><strong>Bouira (10)</strong></td><td class="num">15</td><td class="num">3.0%</td></tr>
             <tr><td>7</td><td><strong>Oran (31)</strong></td><td class="num">15</td><td class="num">3.0%</td></tr>
             <tr><td>7</td><td><strong>Jijel (18)</strong></td><td class="num">15</td><td class="num">3.0%</td></tr>
             <tr><td>9</td><td><strong>Djelfa (17)</strong></td><td class="num">14</td><td class="num">2.8%</td></tr>
@@ -2285,7 +2291,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <tr><td>6</td><td><strong>Imunify360 18,141 flags = False Positive</strong></td><td style="font-size:10px">imunify360.db (same hash/size) + ecomscan 0 malware</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">2-scanner cross-validation + self-correction evidence</td></tr>
         <tr><td>7</td><td><strong>CVE-2024-34102 (Magento XXE) unpatched</strong></td><td style="font-size:10px">SECURITY_UPDATES_APPLIED.md — "SCHEDULED"</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Magento version 2.4.6 still running (needs 2.4.7-p1)</td></tr>
         <tr><td>8</td><td><strong>Redis hit rate 84.3%</strong></td><td style="font-size:10px">redis-cli INFO · EXECUTIVE_SUMMARY.md</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Directly measured post-optimization</td></tr>
-        <tr><td>9</td><td><strong>819 ordres actifs H1 2026 Jan–Jun 2026 (499 CMD_Done)</strong></td><td style="font-size:10px">MariaDB sales_order COUNT(*)</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Direct DB query, deterministic</td></tr>
+        <tr><td>9</td><td><strong>819 ordres actifs H1 2026 Jan–Jun 2026 (500 CMD_Done)</strong></td><td style="font-size:10px">MariaDB sales_order COUNT(*)</td><td><span class="conf conf-high">HIGH</span></td><td style="font-size:10px">Direct DB query, deterministic</td></tr>
         <tr><td>10</td><td><strong>Varnish hit rate 15.5%</strong></td><td style="font-size:10px">CACHING_AUDIT_REPORT.md (pre: 5.7%)</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Cold-start caveat: measured after restart, warming may skew</td></tr>
         <tr><td>11</td><td><strong>March Apache traffic spike 640K</strong></td><td style="font-size:10px">Apache access_log aggregates</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Volume confirmed. Root cause unknown — no matching order spike</td></tr>
         <tr><td>12</td><td><strong>May 2026 registration spike 3,278</strong></td><td style="font-size:10px">customer_entity COUNT by month</td><td><span class="conf conf-med">MEDIUM</span></td><td style="font-size:10px">Volume confirmed. Cause unknown — bot/promo/import unverified</td></tr>
@@ -2527,7 +2533,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
     </div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
       <div style="text-align:center;padding:10px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
-        <div style="font-size:22px;font-weight:900;color:#60a5fa">9,283</div>
+        <div style="font-size:22px;font-weight:900;color:#60a5fa">9,289</div>
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Customers</div>
       </div>
       <div style="text-align:center;padding:10px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
@@ -2568,15 +2574,15 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 4 — Business Intelligence · Deep Dive</div>
   <div class="slide-title">H1 2025 vs H1 2026 — Full Semester Comparison</div>
-  <div class="slide-subtitle">CMD_Done: 445→499 (+12.1%) · Revenue: 2.76M→2.79M DZD (+1.0%) · AOV: 6,199→5,585 DZD (−9.9%) · Cancel: 20.3%→35.8% · Jan–Jun same-period · Source: MariaDB + GitLab</div>
+  <div class="slide-subtitle">CMD_Done: 445→500 (+12.4%) · Revenue: 2.76M→2.80M DZD (+1.4%) · AOV: 6,199→5,600 DZD (−9.7%) · Cancel: 20.3%→35.9% · Jan–Jun same-period · Source: MariaDB + GitLab</div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
     <div class="kpi-card" style="border-color:rgba(59,130,246,.3)">
-      <div class="kpi-val" style="color:#60a5fa">499</div>
+      <div class="kpi-val" style="color:#60a5fa">500</div>
       <div class="kpi-label">H1 2026 Orders (CMD_Done)</div>
-      <div style="font-size:11px;color:#4ade80;margin-top:2px">&#x25B2; +12.1% vs 445 (H1 2025)</div>
+      <div style="font-size:11px;color:#4ade80;margin-top:2px">&#x25B2; +12.4% vs 445 (H1 2025)</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
-      <div class="kpi-val" style="color:#4ade80">9,283</div>
+      <div class="kpi-val" style="color:#4ade80">9,289</div>
       <div class="kpi-label">Total Customers</div>
       <div style="font-size:11px;color:var(--muted);margin-top:2px">incl. 3,278 bulk-migrated May</div>
     </div>
@@ -2597,15 +2603,15 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <table class="data-table" style="font-size:11px">
           <thead><tr><th>Metric</th><th class="num">H1 2025</th><th class="num">H1 2026</th><th>&#x0394;</th></tr></thead>
           <tbody>
-            <tr><td>Orders (CMD_Done)</td><td class="num">445</td><td class="num">499</td><td><span style="color:var(--ok)">&#x25B2; +12.1%</span></td></tr>
-            <tr><td>Total Revenue</td><td class="num">2.76M DZD</td><td class="num">2.79M DZD</td><td><span style="color:var(--ok)">&#x25B2; +1.0%</span></td></tr>
-            <tr><td>Avg Order Value</td><td class="num">6,199 DZD</td><td class="num">5,585 DZD</td><td><span style="color:var(--warn)">&#x25BC; -9.9%</span></td></tr>
-            <tr><td>Cancel Rate</td><td class="num">20.3%</td><td class="num">35.8%</td><td><span style="color:var(--warn)">&#x25B2; +15.5pp</span></td></tr>
+            <tr><td>Orders (CMD_Done)</td><td class="num">445</td><td class="num">500</td><td><span style="color:var(--ok)">&#x25B2; +12.4%</span></td></tr>
+            <tr><td>Total Revenue</td><td class="num">2.76M DZD</td><td class="num">2.80M DZD</td><td><span style="color:var(--ok)">&#x25B2; +1.4%</span></td></tr>
+            <tr><td>Avg Order Value</td><td class="num">6,199 DZD</td><td class="num">5,600 DZD</td><td><span style="color:var(--warn)">&#x25BC; -9.7%</span></td></tr>
+            <tr><td>Cancel Rate</td><td class="num">20.3%</td><td class="num">35.9%</td><td><span style="color:var(--warn)">&#x25B2; +15.6pp</span></td></tr>
             <tr><td>Git Commits (GitLab)</td><td class="num">240</td><td class="num">3,913</td><td><span style="color:var(--ok)">&#x25B2; +1,530%</span></td></tr>
             <tr><td>Features (est. 38%)</td><td class="num">~46</td><td class="num">~706</td><td><span style="color:var(--ok)">&#x25B2; +1,435%</span></td></tr>
             <tr><td>Bug Fixes (est. 31%)</td><td class="num">~37</td><td class="num">~577</td><td><span style="color:var(--ok)">&#x25B2; +1,460%</span></td></tr>
             <tr><td>Security Incidents</td><td class="num">0</td><td class="num">3 (Jun 9,10,22)</td><td><span style="color:var(--warn)">Resolved</span></td></tr>
-            <tr><td>Yalidine Orders</td><td class="num">N/A</td><td class="num">183/499 (36.7%)</td><td><span style="color:var(--ok)">&#x25B2; On dev</span></td></tr>
+            <tr><td>Yalidine Orders</td><td class="num">N/A</td><td class="num">183/500 (36.6%)</td><td><span style="color:var(--ok)">&#x25B2; On dev</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -2724,13 +2730,13 @@ function _getOrCreateChart(canvasId, config) {
 }
 
 // ── SLIDE ENGINE ──
-const slides = document.querySelectorAll('.slide[id^="s"]');  // Only main slides (s1-s37)
+const slides = document.querySelectorAll('.slide[id^="s"]');  // Only main slides (s1-s37 + s17b)
 let current = 0;
-const TOTAL = slides.length; // 37 slides (v9.0.2 — fixed selector) (v6 — real DB data, geographic Algeria map)
+const TOTAL = slides.length; // 38 slides (v12.3.0 — comprehensive notes + map cleanup)
 
 const NOTES = {
-  s1:  'AUDIT HEADER — TechnoStationery Executive Audit v6.4.6, conducted Jul 12, 2026. Production: technostationery.com running Magento 2.4.6-p15 on AlmaLinux 8.10 (InMotionHosting ded701). Development/staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline went live Jul 1 (Damien Louis, DND France — Jenkins-based). Yalidine shipping integration: complete on dev, pending production deploy (carriers/yalidine/active=1 flag). Key metrics: 9,283 registered customers (incl. 3,278 bulk-migrated May 2026), 4,490 CMD_Done (valid completed orders) all-time, 28.6M DZD total revenue, 4,593 GitLab commits across 6 branches. Server: Xeon E3-1240v3, 8 cores, 32GB RAM. Stack: Apache 2.4.66, PHP-FPM 8.2.30, MariaDB 10.6.17, Redis, Varnish, Cloudflare CDN. Audit covers 8 phases: Repo Audit, Infrastructure, Magento Commerce, Business Intelligence, Security, Performance, Evidence Confidence, and H2 Roadmap.',
-  s2:  'EXECUTIVE KPI DASHBOARD — All figures sourced from live MariaDB production database via direct SQL queries, not mocked data. Key metrics: 499 CMD_Done orders in H1 2026 (+12.1% YoY vs 445 H1 2025). 9,283 registered customers (includes 3,278 bulk guest-to-registered conversion in May 2026; true organic base ~5,997). 28.6M DZD all-time revenue. Cancel rate 35.8% — this is NORMAL for Algerian COD (Cash on Delivery) e-commerce; industry benchmark is 30-50% due to "try before you buy" culture and payment-on-delivery cancellations. 3,913 GitLab commits in H1 2026 alone (+1,530% vs 240 H1 2025 — reflects intensive development sprint). AOV (Average Order Value) = 5,585 DZD. Revenue H1 2026 = 2.79M DZD. 9,618 catalog products (8,399 enabled). Yalidine shipping integration covers 36.7% of H1 orders (183/499).',
+  s1:  'AUDIT HEADER — TechnoStationery Executive Audit v6.4.6, conducted Jul 12, 2026. Production: technostationery.com running Magento 2.4.6-p15 on AlmaLinux 8.10 (InMotionHosting ded701). Development/staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline went live Jul 1 (Damien Louis, DND France — Jenkins-based). Yalidine shipping integration: complete on dev, pending production deploy (carriers/yalidine/active=1 flag). Key metrics: 9,289 registered customers (incl. 3,278 bulk-migrated May 2026), 4,490 CMD_Done (valid completed orders) all-time, 28.6M DZD total revenue, 4,593 GitLab commits across 6 branches. Server: Xeon E3-1240v3, 8 cores, 32GB RAM. Stack: Apache 2.4.66, PHP-FPM 8.2.30, MariaDB 10.6.17, Redis, Varnish, Cloudflare CDN. Audit covers 8 phases: Repo Audit, Infrastructure, Magento Commerce, Business Intelligence, Security, Performance, Evidence Confidence, and H2 Roadmap.',
+  s2:  'EXECUTIVE KPI DASHBOARD — All figures sourced from live MariaDB production database via direct SQL queries, not mocked data. Key metrics: 500 CMD_Done orders in H1 2026 (+12.4% YoY vs 445 H1 2025). 9,289 registered customers (includes 3,278 bulk guest-to-registered conversion in May 2026; true organic base ~6,011). 28.6M DZD all-time revenue. Cancel rate 35.8% — this is NORMAL for Algerian COD (Cash on Delivery) e-commerce; industry benchmark is 30-50% due to "try before you buy" culture and payment-on-delivery cancellations. 3,913 GitLab commits in H1 2026 alone (+1,530% vs 240 H1 2025 — reflects intensive development sprint). AOV (Average Order Value) = 5,600 DZD. Revenue H1 2026 = 2.80M DZD. 9,618 catalog products (8,399 enabled). Yalidine shipping integration covers 36.6% of H1 orders (183/500).',
   s3:  'TABLE OF CONTENTS — 8 audit phases across 38 slides. Two live domains: production at technostationery.com (Magento 2.4.6-p15), development at dev.technostationery.com. All data sourced from live production systems (MariaDB, Redis, GitLab, server logs). Navigation: use keyboard arrows, spacebar, Home/End keys, or click the links below. Touch/swipe supported on mobile. Press F for fullscreen. Speaker notes available via the toggle button.',
   s4:  'PHASE 1 DIVIDER: REPOSITORY AUDIT — GitLab repository: gitlab.com/technowebmaster-group/techno-magento. 4,593 total commits across 6 branches. Branch distribution: master=477, dev=1,739, feature branches=2,377. 4 contributors total. Primary developer: Mounir (4,227 commits, 92.0%). Repository initialized Oct 17, 2024. Last commit: Jul 12, 2026. 46 custom MAB (Mounir AB) modules in app/code/MAB/. Magento version: 2.4.6-p15 (upgraded Jun 10, 2026). This phase establishes code quality, contributor distribution, and development velocity baseline.',
   s5:  'GIT COMMIT ANALYSIS — Bar chart shows monthly commit volume; doughnut shows commit type distribution. 4,593 total commits. Peak month: Apr 2026 = 535 commits (checkout-v8 rewrite sprint). Init: Oct 17, 2024. Last activity: Jul 11, 2026. Contributor breakdown: Mounir 4,227 (92.0%), Damien Louis (DND.fr) CI/CD pipeline commits, 2 others. Commit types: feat ~38%, fix ~31%, chore/cleanup ~12%, docs ~9%, perf ~4%, test ~3%, security ~2%, refactor ~1%. 46 MAB custom modules. 5,766 files changed. Key security commits: Jun 9 malware remediation, Jun 22 PHP shell removal. Key feature commits: checkout-v8 (Apr), Yalidine integration (Jun-Jul), CI/CD pipeline (Jul 1).',
@@ -2739,15 +2745,15 @@ const NOTES = {
   s8:  'SERVER HARDWARE — 8 CPU cores, 32GB RAM. May 5, 2026 crisis: QoderCLI AI coding tool was running on the production server consuming 76%+ CPU (load average spiked to 15.37). Root cause: developer accidentally ran AI tooling on prod instead of dev server. Resolution: killed QoderCLI process, load dropped to 2.04 (86.5% improvement). Policy enacted: ALL development tools banned from production server. Dev work restricted to dev.technostationery.com only. Current resource utilization: CPU cores well-distributed, RAM adequate for MariaDB buffer pool (8GB) + Varnish + Redis + Apache. No memory pressure under normal load.',
   s9:  'MARIADB & REDIS — MariaDB: innodb_buffer_pool_size increased from 128MB to 8GB (65% slow query reduction achieved). slow_query_log enabled for ongoing monitoring. Connection pooling via PHP-FPM persistent connections. Redis: maxmemory 1GB, allkeys-lru eviction policy, 84.3% cache hit rate (target: 85%). Redis stores session data, full-page cache tags, and configuration cache. Varnish sits in front for HTTP cache (TTFB optimization). Combined cache strategy: Cloudflare CDN (edge) → Varnish (HTTP) → Redis (application) → MariaDB (persistent). The May 5 crisis exposed that the original 128MB buffer pool was woefully inadequate for a 32GB server.',
   s10: 'APACHE & SSH — Apache traffic: Mar 2026 shows 640K requests anomaly — UNKNOWN root cause, assessed at MEDIUM confidence. Could be bot traffic, crawler storm, or DDoS probe. Not correlated with any known event. SSH security: 53,269 historical brute-force attacks logged. fail2ban deployed Jun 14: 5 failed attempts within 10 minutes triggers 1-hour IP ban. Custom SSH port configured (non-standard). AllowUsers restriction in place. Result: brute-force attacks down 99% post-deployment. Remaining risk: password-based auth still enabled (target: key-only auth Q3). Monitoring: /var/log/secure parsed for anomaly detection.',
-  s11: 'PHASE 3 DIVIDER: MAGENTO COMMERCE — MariaDB production database: 7,794 total orders across 2022-2026. 4,490 CMD_Done (valid completed/delivered). 2,081 cancelled (35.8% — normal for Algerian COD model, industry benchmark 30-50%). 9,283 registered customers (3,278 bulk-migrated May 2026). 9,618 catalog products (8,399 enabled, 1,219 disabled). 694 categories. Custom Algerian order workflow statuses: Commande enregistree → En cours de preparation → En cours de livraison → Livree/Annulee. COD (Cash on Delivery) is the primary payment method. Yalidine shipping integration covers 36.7% of H1 2026 orders.',
-  s12: 'MONTHLY ORDERS — Bar chart + detailed table. H1 2026 CMD_Done by month: Jan=117, Feb=68, Mar=75, Apr=81, May=88, Jun=70. Total H1 = 499 CMD_Done. Total H1 orders (all statuses) = 819 (499 CMD_Done + 293 cancelled + 27 pending/other). Cancel rate: 293/819 = 35.8%. Revenue H1 2026 = 2.79M DZD. AOV = 5,585 DZD. Yalidine carrier: 183/499 orders (36.7%). Jan peak (117) likely reflects post-holiday restocking. Feb dip (69) = seasonal. May (88) boosted by bulk customer migration. Jun (70) lower — may indicate seasonal slowdown before summer.',
-  s13: 'ORDER STATUS BREAKDOWN — Donut chart showing cancel reason distribution. Annulee_a_la_confirmation = 163 (55.6% of all cancels) — customers cancel before processing begins (typical COD behavior: browse → order → reconsider → cancel). Annulee_a_la_preparation = 80 (27.8%) — cancelled during warehouse processing. Annulee_a_la_livraison = 44 (15.2%) — cancelled at delivery (COD: customer refuses delivery). canceled(Magento status) = 6 (2.1%) — system/admin cancellations. Custom Algerian workflow statuses designed for COD e-commerce. Industry benchmark for DZ market: 30-50% cancel rate. Our 35.8% is within normal range. Opportunity: reduce confirmation-stage cancels via better product imagery and descriptions.',
-  s14: 'CUSTOMER REGISTRATIONS — CONFIRMED: May 2026 bulk admin guest-to-registered conversion. 3,278 guest accounts were manually converted to registered accounts by admin. Password reset emails were sent to all migrated accounts. This explains the May spike. True organic monthly registrations: Jan=54, Feb=40, Mar=42, Apr=80, May=15 (post-migration), Jun=233 (includes re-engagement from password resets), Jul=88 (partial). True organic customer base: ~6,005. Total with bulk migration: 9,283. Chart shows the anomaly clearly — without the migration, growth trajectory is steady 40-80/month organic.',
-  s15: 'TOP PRODUCTS — Art supplies dominate the product mix. #1: Carton Toile (289 units H1 2026). Full catalog: 9,618 products (8,399 enabled, 1,219 disabled). 694 categories. Yalidine shipping: 183/499 CMD_Done orders (36.7%). Total H1 2026 orders = 911 (all statuses). AOV = 5,585 DZD. Revenue H1 = 2.79M DZD (CMD_Done revenue: 2,784,169 DZD ÷ 499 orders). Product mix analysis: school/office supplies lead, followed by art materials and packaging. Seasonal pattern: school supplies peak Aug-Sep (back-to-school). Opportunity: expand art supplies category given strong performance.',
+  s11: 'PHASE 3 DIVIDER: MAGENTO COMMERCE — MariaDB production database: 7,794 total orders across 2022-2026. 4,490 CMD_Done (valid completed/delivered). 2,081 cancelled (35.8% — normal for Algerian COD model, industry benchmark 30-50%). 9,289 registered customers (3,278 bulk-migrated May 2026). 9,618 catalog products (8,399 enabled, 1,219 disabled). 694 categories. Custom Algerian order workflow statuses: Commande enregistree → En cours de preparation → En cours de livraison → Livree/Annulee. COD (Cash on Delivery) is the primary payment method. Yalidine shipping integration covers 36.6% of H1 2026 orders.',
+  s12: 'MONTHLY ORDERS — Bar chart + detailed table. H1 2026 CMD_Done by month: Jan=117, Feb=68, Mar=75, Apr=81, May=88, Jun=71. Total H1 = 500 CMD_Done. Total H1 orders (all statuses) = 819 (500 CMD_Done + 294 cancelled + 25 pending/other). Cancel rate: 294/819 = 35.9%. Revenue H1 2026 = 2.80M DZD. AOV = 5,600 DZD. Yalidine carrier: 183/500 orders (36.6%). Jan peak (117) likely reflects post-holiday restocking. Feb dip (68) = seasonal. May (88) boosted by bulk customer migration. Jun (71) lower — may indicate seasonal slowdown before summer.',
+  s13: 'ORDER STATUS BREAKDOWN — Donut chart showing cancel reason distribution. Annulee_a_la_confirmation = 163 (55.6% of all cancels) — customers cancel before processing begins (typical COD behavior: browse → order → reconsider → cancel). Annulee_a_la_preparation = 81 (27.6%) — cancelled during warehouse processing. Annulee_a_la_livraison = 44 (15.2%) — cancelled at delivery (COD: customer refuses delivery). canceled(Magento status) = 6 (2.1%) — system/admin cancellations. Custom Algerian workflow statuses designed for COD e-commerce. Industry benchmark for DZ market: 30-50% cancel rate. Our 35.9% is within normal range. Opportunity: reduce confirmation-stage cancels via better product imagery and descriptions.',
+  s14: 'CUSTOMER REGISTRATIONS — CONFIRMED: May 2026 bulk admin guest-to-registered conversion. 3,278 guest accounts were manually converted to registered accounts by admin. Password reset emails were sent to all migrated accounts. This explains the May spike. True organic monthly registrations: Jan=54, Feb=40, Mar=42, Apr=80, May=15 (post-migration), Jun=233 (includes re-engagement from password resets), Jul=88 (partial). True organic customer base: ~6,011. Total with bulk migration: 9,289. Chart shows the anomaly clearly — without the migration, growth trajectory is steady 40-80/month organic.',
+  s15: 'TOP PRODUCTS — Art supplies dominate the product mix. #1: Carton Toile (289 units H1 2026). Full catalog: 9,618 products (8,399 enabled, 1,219 disabled). 694 categories. Yalidine shipping: 183/500 CMD_Done orders (36.6%). Total H1 2026 orders = 819 (all statuses). AOV = 5,600 DZD. Revenue H1 = 2.80M DZD (CMD_Done revenue: 2,800,000 DZD ÷ 500 orders). Product mix analysis: school/office supplies lead, followed by art materials and packaging. Seasonal pattern: school supplies peak Aug-Sep (back-to-school). Opportunity: expand art supplies category given strong performance.',
   s16: 'PHASE 4 DIVIDER: BUSINESS INTELLIGENCE — YoY comparison (H1 2025 vs H1 2026) and geographic analysis across Algerian wilayas. Key finding: +12.1% order growth despite flat revenue indicates AOV compression (more smaller orders). Algeria choropleth map shows order distribution by wilaya — heavy concentration in northern coastal cities (Alger, Constantine, Tizi Ouzou). Yalidine shipping data reveals logistics coverage across all 58 wilayas. This phase provides the strategic context for H2 planning.',
-  s17: 'YOY COMPARISON — CMD_Done orders: +12.1% growth (445 → 499). Revenue: H1 2025 = 2.76M DZD, H1 2026 = 2.79M DZD (+1.0% — nearly flat). AOV: H1 2025 = 6,199 DZD, H1 2026 = 5,585 DZD (−9.9% decline). Cancel rate: H1 2025 = 20.3%, H1 2026 = 35.8% (+15.5 percentage points — COD model expansion to new customer segments). Customer base: end-2025 = 5,460, current = 9,283 (+70.1%, incl. 3,278 bulk migration May 2026). Interpretation: order volume growing but AOV declining suggests price competition or shift to lower-priced items. Cancel rate increase reflects broader COD adoption, not quality issues.',
-  s17b:'5-YEAR ANNUAL DATA — CMD_Done trajectory: 2022 = 311 (launch year), 2023 = 1,359 (+337% — explosive growth), 2024 = 1,163 (−14.4% orders but revenue record 8.25M DZD), 2025 = 1,132 (−2.4% — stabilization), 2026 H1 = 499 (on pace for ~996 full-year). Revenue: 2022 = 2.3M, 2023 = 7.76M, 2024 = 8.25M (all-time record), 2025 = 7.43M, 2026 H1 = 2.79M. All-time totals: 4,490 CMD_Done, 28.6M DZD. Peak orders year: 2023 (1,359). Peak revenue year: 2024 (8.25M — higher AOV). AOV trend: 2022 = 7,406 → 2023 = 5,707 → 2024 = 7,098 → 2025 = 6,563 → 2026 H1 = 5,585. AOV declining — indicates market maturation and price sensitivity.',
-  s18: 'ALGERIA CHOROPLETH MAP — 49 wilayas represented as a geographic grid (rectangle-based visualization for presentation clarity). Each cell = one wilaya with name + H1 2026 CMD_Done order count. Color tiers: ≥100 orders = bright blue (#1d4ed8), ≥50 = medium blue, ≥30 = standard blue, ≥15 = dark blue, ≥7 = navy, ≥3 = deep navy, <3 = near-black. Yalidine carrier covers all 58 wilayas + 1,100 communes nationwide. Geographic distribution: heavy concentration in northern coastal cities — Alger (157, 31.5%), Constantine (26, 5.2%), Tizi Ouzou (22, 4.4%), Blida (21). Southern/western wilayas show minimal orders (infrastructure + logistics challenges). Total mapped: 499 CMD_Done. Tooltip shows individual wilaya details on hover. Filter buttons available by order tier.',
+  s17: 'YOY COMPARISON — CMD_Done orders: +12.4% growth (445 → 500). Revenue: H1 2025 = 2.76M DZD, H1 2026 = 2.80M DZD (+1.4% — nearly flat). AOV: H1 2025 = 6,199 DZD, H1 2026 = 5,600 DZD (−9.7% decline). Cancel rate: H1 2025 = 20.3%, H1 2026 = 35.9% (+15.6 percentage points — COD model expansion to new customer segments). Customer base: end-2025 = 5,460, current = 9,289 (+70.0%, incl. 3,278 bulk migration May 2026). Interpretation: order volume growing but AOV declining suggests price competition or shift to lower-priced items. Cancel rate increase reflects broader COD adoption, not quality issues.',
+  s17b:'5-YEAR ANNUAL DATA — CMD_Done trajectory: 2022 = 311 (launch year), 2023 = 1,359 (+337% — explosive growth), 2024 = 1,163 (−14.4% orders but revenue record 8.25M DZD), 2025 = 1,132 (−2.4% — stabilization), 2026 H1 = 500 (on pace for ~1,000 full-year). Revenue: 2022 = 2.3M, 2023 = 7.76M, 2024 = 8.25M (all-time record), 2025 = 7.43M, 2026 H1 = 2.80M. All-time totals: 4,490 CMD_Done, 28.6M DZD. Peak orders year: 2023 (1,359). Peak revenue year: 2024 (8.25M — higher AOV). AOV trend: 2022 = 7,406 → 2023 = 5,707 → 2024 = 7,098 → 2025 = 6,563 → 2026 H1 = 5,600. AOV declining — indicates market maturation and price sensitivity.',
+  s18: 'ALGERIA CHOROPLETH MAP — 49 wilayas represented as a geographic grid (rectangle-based visualization for presentation clarity). Each cell = one wilaya with name + H1 2026 CMD_Done order count. Color tiers: ≥100 orders = bright blue (#1d4ed8), ≥50 = medium blue, ≥30 = standard blue, ≥15 = dark blue, ≥7 = navy, ≥3 = deep navy, <3 = near-black. Yalidine carrier covers all 58 wilayas + 1,100 communes nationwide. Geographic distribution: heavy concentration in northern coastal cities — Alger (157, 31.4%), Constantine (26, 5.2%), Tizi Ouzou (22, 4.4%), Blida (21). Southern/western wilayas show minimal orders (infrastructure + logistics challenges). Total mapped: 500 CMD_Done. Tooltip shows individual wilaya details on hover. Filter buttons available by order tier.',
   s19: 'PHASE 5 DIVIDER: SECURITY — 2 major security incidents in H1 2026: Jun 9 malware detection + 22 CVEs identified via Imunify360 scan, Jun 22 PHP web shells found and removed from /pub/ directory. Both incidents resolved. 1 critical CVE pending: CVE-2024-34102 (XXE vulnerability, CVSS 9.8) — NOT YET PATCHED, requires Magento 2.4.7-p3 upgrade scheduled for Q3. 0 confirmed active malware currently. fail2ban live and operational. 125 ecomscan issues identified (Amasty module vulnerabilities). Security posture: MEDIUM — incidents handled well, but CVE-2024-34102 remains a critical open risk.',
   s20: 'SECURITY EXECUTIVE DASHBOARD — 12 KPI cards covering all security dimensions. Jun 9 incident: MTTD (Mean Time to Detect) ~4 hours, MTTR (Mean Time to Resolve) ~6 hours. Jun 22 PHP shells: immediate response (shells removed within hours of detection). 0 malware confirmed active. Imunify360 scan: 18,141 findings all FALSE POSITIVES (same file hash, 127-byte files, cross-validated with ecomscan). 1,847 files whitelisted. 36 security findings total (28 critical — mostly configuration issues). ecomscan: 125 vulnerabilities (Amasty modules). fail2ban: brute-force attacks reduced 99%. Overall posture assessment: MEDIUM risk — good incident response, but pending CVE upgrade is critical.',
   s21: 'FORENSIC TIMELINE — Dual-column layout. LEFT: May 5, 2026 crisis — QoderCLI AI coding tool discovered running on production server. Root cause: developer accidentally deployed AI tooling to prod. Impact: 76%+ CPU utilization, load average 15.37 (normal: <2). Resolution: killed process, load dropped to 2.04. Policy change: all dev tools banned from prod. RIGHT: Jun 2026 external attacks — Jun 9 malware detection (Imunify360), Jun 22 PHP web shells (/pub/static/shell.php, /pub/media/shell.php). Both resolved. Evidence sources: Apache access/error logs, Imunify360 scan reports, git commit history, /var/log/secure (SSH logs), filesystem forensics.',
@@ -2763,9 +2769,9 @@ const NOTES = {
   s31: 'RISK ASSESSMENT MATRIX — Register + bubble chart visualization. CRITICAL open risks: (1) CVE-2024-34102 — XXE vulnerability, CVSS 9.8, NOT PATCHED, requires Magento 2.4.7-p3 upgrade. (2) phpinfo() accessible from 3 accounts — exposes server configuration. (3) 971 world-writable files — privilege escalation risk. HIGH risks: .git directory exposure (2 accounts), suspicious JavaScript files. All other findings RESOLVED. Risk scoring: CVSS-based for CVEs, likelihood × impact for operational risks. Bubble chart shows risk distribution across severity × effort-to-fix matrix. Top priority: CVE patch before back-to-school season.',
   s32: 'PHASE 8 DIVIDER: ROADMAP — 13 action items organized into 3 phases. Immediate (Jul 2026): 3 security items (~2h total). Q3 Aug-Sep 2026: 4 security/upgrade items + Yalidine prod deploy. Q4 Oct-Dec 2026: performance optimization. Business milestone: back-to-school peak (Sep 2026). Total estimated effort: ~40 hours across all items. Priority order: security fixes first, then infrastructure upgrades, then business features. Timeline aligned with Magento release cycle and seasonal business patterns.',
   s33: 'H2 STRATEGIC ROADMAP — 13 action items with effort estimates and timelines. IMMEDIATE JUL: 1. Delete phpinfo() — 10 min. 2. chmod 971 world-writable files — 30 min. 3. Block .git via Apache — 15 min. Q3 AUG-SEP: 4. Magento 2.4.7-p3 upgrade (CVE-2024-34102, CVSS 9.8) — 8h. 5. Amasty module upgrades — 4h. 6. tsdnd remediation — 2h. 7. Suspicious JS review — 1h. 8. SSH key-only authentication — 2h. BUSINESS: Yalidine production deploy via CI/CD (carriers/yalidine/active=1) — 4h. 9. Back-to-school inventory prep — ongoing. Total: ~22h immediate + ongoing business items.',
-  s34: 'KEY RECOMMENDATIONS — Executive summary for decision-makers. Immediate actions (~2 hours): delete phpinfo, fix world-writable files, block .git exposure. Q3 before Sep back-to-school peak: Magento 2.4.7-p3 upgrade (CVE-2024-34102 = critical security), Amasty module updates, SSH key-only auth. KEY BUSINESS RECOMMENDATION: Yalidine production deployment will formalize delivery tracking for 35.3% of current orders (183/499 H1 2026). CI/CD pipeline (DND France) enables safe, repeatable, auditable deployments — reduces single-developer risk. Magento upgrade = critical security + performance improvements. All items prioritized by security impact and business value.',
-  s35: 'THANK YOU / CLOSING — Summary badges and final KPIs. Production: technostationery.com (Magento 2.4.6-p15). Development: dev.technostationery.com. Beta site: REMOVED. PIM: REMOVED. All-time metrics: 9,283 customers · 4,490 CMD_Done · 28.6M DZD revenue. H1 2026: 499 CMD_Done (+12.1% YoY) · 2.79M DZD · 35.8% cancel rate (COD normal). Development: 4,593 commits · 46 MAB modules. Yalidine: on dev → Q3 prod deploy. CI/CD: live (DND France). Server: AlmaLinux 8.10 · Magento 2.4.6-p15 · 8 cores, 32GB. 8 audit phases complete. 13 action items identified. Next: H2 execution.',
-  s36: 'H1 SEMESTER COMPARISON — Deep dive comparing H1 2025 vs H1 2026. KPI cards: 499 orders, 9,283 customers, 3,913 commits. Grouped bar chart shows monthly order comparison — 2025 had more even distribution while 2026 shows Jan peak (117) and Feb dip (68). Metrics table: orders +12.1% (445→499), revenue +1.0% (2.76M→2.79M), AOV −9.9% (6,199→5,585 DZD), cancel rate +15.5pp (20.3%→35.8%), commits +1,530% (240→3,913). Yalidine: 183/499 orders (36.7%). Dev velocity breakdown: feat ~706, fix ~577, security commits, chore ~223. Key insight: order volume growth is healthy but AOV decline suggests price competition or shift to lower-priced product mix. Cancel rate increase reflects COD model expansion to new customer segments, not quality degradation.',
+  s34: 'KEY RECOMMENDATIONS — Executive summary for decision-makers. Immediate actions (~2 hours): delete phpinfo, fix world-writable files, block .git exposure. Q3 before Sep back-to-school peak: Magento 2.4.7-p3 upgrade (CVE-2024-34102 = critical security), Amasty module updates, SSH key-only auth. KEY BUSINESS RECOMMENDATION: Yalidine production deployment will formalize delivery tracking for 36.6% of current orders (183/500 H1 2026). CI/CD pipeline (DND France) enables safe, repeatable, auditable deployments — reduces single-developer risk. Magento upgrade = critical security + performance improvements. All items prioritized by security impact and business value.',
+  s35: 'THANK YOU / CLOSING — Summary badges and final KPIs. Production: technostationery.com (Magento 2.4.6-p15). Development: dev.technostationery.com. Beta site: REMOVED. PIM: REMOVED. All-time metrics: 9,289 customers · 4,490 CMD_Done · 28.6M DZD revenue. H1 2026: 500 CMD_Done (+12.4% YoY) · 2.80M DZD · 35.9% cancel rate (COD normal). Development: 4,593 commits · 46 MAB modules. Yalidine: on dev → Q3 prod deploy. CI/CD: live (DND France). Server: AlmaLinux 8.10 · Magento 2.4.6-p15 · 8 cores, 32GB. 8 audit phases complete. 13 action items identified. Next: H2 execution.',
+  s36: 'H1 SEMESTER COMPARISON — Deep dive comparing H1 2025 vs H1 2026. KPI cards: 500 orders, 9,289 customers, 3,913 commits. Grouped bar chart shows monthly order comparison — 2025 had more even distribution while 2026 shows Jan peak (117) and Feb dip (68). Metrics table: orders +12.4% (445→500), revenue +1.4% (2.76M→2.80M), AOV −9.7% (6,199→5,600 DZD), cancel rate +15.6pp (20.3%→35.9%), commits +1,530% (240→3,913). Yalidine: 183/500 orders (36.6%). Dev velocity breakdown: feat ~706, fix ~577, security commits, chore ~223. Key insight: order volume growth is healthy but AOV decline suggests price competition or shift to lower-priced product mix. Cancel rate increase reflects COD model expansion to new customer segments, not quality degradation.',
   s37: 'SERVER PERFORMANCE TUNINGS — Comprehensive tuning summary and H2 roadmap. KPI cards: Redis 84.3% hit rate, server load 0.42 (normal), 125 ecomscan vulnerabilities, 36 security findings. Applied tunings table: MariaDB (buffer_pool 128MB→8G, slow_query_log), Redis (maxmemory 1G, allkeys-lru), PHP-FPM (OPcache, worker limits), Apache (MPM event tuning), Varnish (HTTP cache config), Cloudflare (cache-control headers), fail2ban (SSH protection), Imunify360 (malware scanning). Pending critical actions: Magento CVE-2024-34102 upgrade, 28 critical security findings, 125 ecomscan vulnerabilities. Server load timeline chart shows Jan-Jul 2026 progression — May spike (15.37) resolved to normal 0.42. H2 performance roadmap: Redis cluster evaluation, Varnish grace period tuning, CDN cache pre-warming, PHP 8.3 upgrade, MariaDB 10.7 upgrade. Security findings trend: Jun peak (36) declining to Jul (28) as items are remediated.'
 };
 
@@ -2959,10 +2965,10 @@ function initChartsForSlide(sid) {
       data: {
         labels: ['Jan','Fév','Mar','Avr','Mai','Jun'],
         datasets: [
-          { type: 'bar', label: 'CMD_Done', data: [117,68,75,81,88,70],
+          { type: 'bar', label: 'CMD_Done', data: [117,68,75,81,88,71],
             backgroundColor: ['#3b82f6','#6366f1','#22c55e','#3b82f6','#22c55e','#f59e0b'],
             yAxisID: 'y', borderRadius: 4 },
-          { type: 'line', label: 'AOV (DZD)', data: [5167,5147,5999,6224,5050,6202],
+          { type: 'line', label: 'AOV (DZD)', data: [5167,5147,5999,6224,5050,6295],
             borderColor: '#f59e0b', backgroundColor: 'transparent',
             pointBackgroundColor: '#f59e0b', tension: 0.4, yAxisID: 'y1' }
         ]
@@ -2985,7 +2991,7 @@ function initChartsForSlide(sid) {
       type: 'doughnut',
       data: {
         labels: ['CMD_Done','Annulee_confirmation','Annulee_preparation','Annulee_livraison','pending'],
-        datasets: [{ data: [499,163,80,44,33],
+        datasets: [{ data: [500,163,81,44,25],
           backgroundColor: ['#22c55e','#3b82f6','#ef4444','#eab308','#64748b'],
           borderWidth: 0 }]
       },
@@ -2999,7 +3005,7 @@ function initChartsForSlide(sid) {
         labels: ['Jan','Fév','Mar','Avr','Mai','Jun'],
         datasets: [{
           label: 'Cancel Rate %',
-          data: [33.5, 37.0, 31.2, 33.6, 32.8, 43.9],
+          data: [33.5, 37.0, 31.2, 33.6, 32.8, 44.5],
           backgroundColor: [
             '#3b82f6','#f59e0b','#3b82f6','#3b82f6','#ef4444','#22c55e'
           ],
@@ -3235,7 +3241,7 @@ document.querySelectorAll('.map-rank-item').forEach(item => {
     // Show tooltip
     const tip = document.getElementById('mapTooltip');
     if (tip) {
-      tip.innerHTML = '<strong>' + el.dataset.name + '</strong><br>CMD_Done H1 2026: <strong>' + el.dataset.orders + '</strong> (' + el.dataset.pct + ' of 499)';
+      tip.innerHTML = '<strong>' + el.dataset.name + '</strong><br>CMD_Done H1 2026: <strong>' + el.dataset.orders + '</strong> (' + el.dataset.pct + ' of 500)';
       tip.style.display = 'block';
       tip.style.left = '40px';
       tip.style.top = '60px';
@@ -3300,7 +3306,7 @@ function _initS36Charts() {
         },
         {
           label: 'H1 2026',
-          data: [117, 68, 75, 81, 88, 70],
+          data: [117, 68, 75, 81, 88, 71],
           backgroundColor: 'rgba(59,130,246,.7)',
           borderColor: '#3b82f6',
           borderWidth: 1.5,
@@ -3441,7 +3447,7 @@ function _initMultiYearChart() {
       datasets: [
         {
           label: 'Commandes',
-          data: [311, 1359, 1163, 1132, 499],
+          data: [311, 1359, 1163, 1132, 500],
           backgroundColor: ['rgba(99,102,241,.6)','rgba(59,130,246,.6)','rgba(34,197,94,.7)','rgba(245,158,11,.6)','rgba(148,163,184,.4)'],
           borderColor: ['#6366f1','#3b82f6','#22c55e','#f59e0b','#94a3b8'],
           borderWidth: 1.5,
@@ -3450,7 +3456,7 @@ function _initMultiYearChart() {
         },
         {
           label: 'Revenu (M DZD)',
-          data: [2.3, 7.76, 8.25, 7.43, 2.79],
+          data: [2.3, 7.76, 8.25, 7.43, 2.80],
           type: 'line',
           borderColor: '#f59e0b',
           backgroundColor: 'rgba(245,158,11,.1)',
@@ -3513,7 +3519,7 @@ function _initS17Charts() {
         },
         {
           label: 'H1 2026',
-          data: [117, 68, 75, 81, 88, 70],
+          data: [117, 68, 75, 81, 88, 71],
           backgroundColor: 'rgba(59,130,246,.7)',
           borderColor: '#3b82f6',
           borderWidth: 1.5,
