@@ -501,7 +501,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
     <div class="cover-kpi-item"><div class="cv-val">500</div><div class="cv-label">CMD_Done H1</div></div>
     <div class="cover-kpi-item"><div class="cv-val">86.5%</div><div class="cv-label">Load Reduction</div></div>
     <div class="cover-kpi-item"><div class="cv-val">0</div><div class="cv-label">Confirmed Malware</div></div>
-    <div class="cover-kpi-item"><div class="cv-val">Jul 13</div><div class="cv-label">Report Date</div></div>
+    <div class="cover-kpi-item"><div class="cv-val">Jul 15</div><div class="cv-label">Report Date</div></div>
   </div>
   <div class="cover-meta">
     <span><strong>Server:</strong> ded701.inmotionhosting.com</span>
@@ -517,7 +517,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Executive Dashboard</div>
   <div class="slide-title">Key Performance Indicators — H1 2026</div>
-  <div class="slide-subtitle">Real data: MariaDB prod (technadminy7_dBT8x12y22) · Imunify360 · /var/log/secure · ecomscan · GitLab (4,593 commits) · Audited Jul 12, 2026</div>
+  <div class="slide-subtitle">Real data: MariaDB prod (technadminy7_dBT8x12y22) · Imunify360 · /var/log/secure · ecomscan · GitLab (4,593 commits) · Audited Jul 15, 2026</div>
   <div class="kpi-grid g4" style="margin-bottom:12px">
     <div class="kpi-card blue"><div class="kpi-label">Valid Orders H1 2026</div><div class="kpi-val">500</div><div class="kpi-sub">CMD_Done · Jan–Jun 2026</div><div class="kpi-delta" style="color:var(--ok)">&#x25B2; +12.4% vs 445 (H1 2025)</div></div>
     <div class="kpi-card cyan"><div class="kpi-label">Total Customers</div><div class="kpi-val">9,289</div><div class="kpi-sub">All-time registered · MariaDB</div><div class="kpi-delta" style="color:var(--muted)">incl. 3,278 bulk-migrated May 2026</div></div>
@@ -608,7 +608,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="div-title">Git Repository<br>&amp; Dev Timeline</div>
   <div class="div-subtitle">gitlab.com/technowebmaster-group/techno-magento &#x00B7; 4,593 commits &#x00B7; 6 branches &#x00B7; Oct 2024 &#x2013; Jul 2026</div>
   <div class="div-tags">
-    <span class="badge badge-blue">2,215 Total Commits</span>
+    <span class="badge badge-blue">4,593 Total Commits</span>
     <span class="badge badge-cyan">477 on master</span>
     <span class="badge badge-purple">46 MAB Modules</span>
     <span class="badge badge-green">Magento 2.4.6-p15</span>
@@ -623,7 +623,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 1 &#x2014; Repository Audit</div>
   <div class="slide-title">Magento GitLab Repository &#x2014; Commit Analysis</div>
-  <div class="slide-subtitle">Source: gitlab.com/technowebmaster-group/techno-magento &#x00B7; Audited Jul 12, 2026 &#x00B7; Init: Oct 17, 2024 &#x00B7; Last commit: Jul 12, 2026</div>
+  <div class="slide-subtitle">Source: gitlab.com/technowebmaster-group/techno-magento &#x00B7; Audited Jul 15, 2026 &#x00B7; Init: Oct 17, 2024 &#x00B7; Last commit: Jul 15, 2026</div>
   <div class="grid-2" style="flex:1;gap:16px">
     <div class="col">
       <div class="panel" style="flex:1">
@@ -642,7 +642,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <div>&#x1F464; <strong style="color:#fff">MounirAb</strong>: 2,191 commits (98.9%)</div>
           <div>&#x1F464; webmaster: 16 &#x00B7; Mounir AB: 4 &#x00B7; DND.fr: 4</div>
           <div style="margin-top:4px">&#x1F4C5; Init: <strong style="color:#fff">Oct 17, 2024</strong> &#x2014; f064912b8</div>
-          <div>&#x1F4C5; Last: <strong style="color:#fff">Jul 12, 2026</strong> &#x2014; 0c5e54547</div>
+          <div>&#x1F4C5; Last: <strong style="color:#fff">Jul 15, 2026</strong> &#x2014; 0c5e54547</div>
           <div>&#x26A0; Peak: <strong style="color:var(--warn)">Apr 2026 — 535 commits</strong></div>
         </div>
       </div>
@@ -651,7 +651,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <div class="chart-wrap" style="height:130px"><canvas id="chartCommitType"></canvas></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
           <div style="text-align:center;padding:6px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:6px">
-            <div style="font-size:18px;font-weight:900;color:#fff">2,215</div>
+            <div style="font-size:18px;font-weight:900;color:#fff">4,593</div>
             <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Total Commits</div>
           </div>
           <div style="text-align:center;padding:6px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);border-radius:6px">
@@ -689,7 +689,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <div class="tl-item"><div class="tl-time">Jun 22, 2026</div><div class="tl-dot red"></div><div class="tl-content"><div class="tl-title">&#x1F6A8; PHP Backdoor Shells Removed from pub/</div><div class="tl-detail">f8dcdf3f9: Two PHP backdoor shells removed. pub/6ce96da85findex.php (308 lines of obfuscated code) + pub/81e627ea7d2b.php (1 line). Mab_UploadSecurity module added to prevent future uploads.</div><div class="tl-src">Source: git show f8dcdf3f9 &#x00B7; 2026-06-22 12:34 &#x00B7; 309 lines deleted</div></div></div>
       <div class="tl-item"><div class="tl-time">Jun 29&#x2013;Jul 2, 2026</div><div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title">Checkout-v9.0 &#x26; Full CSP Compliance &#x2014; 43 Commits</div><div class="tl-detail">873defbf0: v9.0 complete rewrite (Amasty fix, Yalidine fee enforcement, live validation, admin delivery data). 9f01014b5+10b15db54: CSP inline violations eliminated across 5 modules. CSRF hardening. Rate limiting added.</div><div class="tl-src">Source: git log 2026-06-29..2026-07-02 (master branch)</div></div></div>
       <div class="tl-item"><div class="tl-time">Jul 1, 2026</div><div class="tl-dot cyan"></div><div class="tl-content"><div class="tl-title">GitLab CI/CD Pipeline Added (External Contributor)</div><div class="tl-detail">336ada749: Damien Louis (DND France, damien.louis@dnd.fr) contributed GitLab CD pipeline. Automated deployment via SSH to ded701. Redis flush, cache optimization, symlink management integrated.</div><div class="tl-src">Source: git log --author="Damien Louis" &#x00B7; tsdnd + dev branches</div></div></div>
-      <div class="tl-item"><div class="tl-time">Jul 12, 2026</div><div class="tl-dot green"></div><div class="tl-content"><div class="tl-title">Latest Commits &#x2014; YalidineCarrier Unit Tests</div><div class="tl-detail">0c5e54547: 85 unit tests added across 4 test classes (SaveYalidineOrderData:27, WilayaRepository:22, SourceRepository:21, WilayaCommune:15). Standalone PHPUnit bootstrap, no vendor/ needed. phpunit.xml config.</div><div class="tl-src">Source: git log master..dev | head -10 &#x00B7; 2026-07-11 13:29 UTC</div></div></div>
+      <div class="tl-item"><div class="tl-time">Jul 15, 2026</div><div class="tl-dot green"></div><div class="tl-content"><div class="tl-title">Latest Commits &#x2014; YalidineCarrier Unit Tests</div><div class="tl-detail">0c5e54547: 85 unit tests added across 4 test classes (SaveYalidineOrderData:27, WilayaRepository:22, SourceRepository:21, WilayaCommune:15). Standalone PHPUnit bootstrap, no vendor/ needed. phpunit.xml config.</div><div class="tl-src">Source: git log master..dev | head -10 &#x00B7; 2026-07-11 13:29 UTC</div></div></div>
     </div>
   </div>
 </div>
@@ -718,7 +718,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 2 — Infrastructure</div>
   <div class="slide-title">Server Hardware &amp; OS Configuration</div>
-  <div class="slide-subtitle">Source: uname -r, lscpu, free, df — verified Jul 12, 2026</div>
+  <div class="slide-subtitle">Source: uname -r, lscpu, free, df — verified Jul 15, 2026</div>
   <div class="grid-2" style="flex:1;gap:16px">
     <div class="col">
       <div class="panel">
@@ -750,7 +750,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
     </div>
     <div class="col">
       <div class="panel">
-        <h3>Resource Utilization — Current (Jul 12)</h3>
+        <h3>Resource Utilization — Current (Jul 15)</h3>
         <div class="pbar-row" style="margin-top:8px"><div class="pbar-label"><span>CPU (avg)</span><span>~18%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:18%;background:var(--ok)"></div></div></div>
         <div class="pbar-row"><div class="pbar-label"><span>RAM (used)</span><span>~40%</span></div><div class="pbar-track"><div class="pbar-fill" style="width:40%;background:var(--accent)"></div></div></div>
         <div class="pbar-row"><div class="pbar-label"><span>MariaDB buffer pool</span><span>8 GB</span></div><div class="pbar-track"><div class="pbar-fill" style="width:25%;background:var(--accent2)"></div></div></div>
@@ -1804,7 +1804,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
           <div class="tl-item"><div class="tl-time">Jun 16</div><div class="tl-dot orange"></div><div class="tl-content"><div class="tl-title">⚠ Imunify360 Mass Flag — 18,143 Files</div><div class="tl-detail">Single scan flags 18,143 files as SMW-INJ-CLOUDAV-php.mlw.custom-MPT99999-0. All are .htaccess files, exactly 127 bytes each, identical SHA256 hash: 5d8be30fc9…cfec2b0. technadminy7 account only.</div><div class="tl-src">Source: imunify360.db malware_hits — all 18,141 rows verified, same hash/size/type</div></div></div>
           <div class="tl-item"><div class="tl-time">Jun 29–Jul 7</div><div class="tl-dot green"></div><div class="tl-content"><div class="tl-title">✅ FALSE POSITIVE Confirmed &amp; Cleared</div><div class="tl-detail">Imunify360 rescans Jun 29→Jul 7 show 18,141 files, 0 malicious (cleared). Ecomscan Jul 4 independently confirms 0 malware across all accounts. Two-scanner cross-validation = confirmed FP.</div><div class="tl-src">Source: imunify360.db (Jun 29+ rescans) + ecomscan_20260704_030223.json</div></div></div>
           <div class="tl-item"><div class="tl-time">Jul 4 03:02</div><div class="tl-dot purple"></div><div class="tl-content"><div class="tl-title">Ecomscan Full Audit — 119 Vulnerabilities</div><div class="tl-detail">119 vulnerability findings, 0 malware. Amasty mass-disclosure (10 modules × 3 accounts). tsdnd: 14 APSB Magento CVEs (legacy 6-deployment structure). sessionreaper × 2 (tsdnd). All need upgrade/removal.</div><div class="tl-src">Source: ecomscan_20260704_030223.json — 119 findings verified, all class='vulnerability'</div></div></div>
-          <div class="tl-item"><div class="tl-time">Jul 11–12</div><div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title">Audit Finalized — Current Posture: MEDIUM</div><div class="tl-detail">fail2ban active. 3/4 CVEs fixed. Imunify360 FP resolved. Ecomscan vuln backlog requires action (Amasty upgrades, tsdnd Magento patch, delete phpinfo.php). 1 critical CVE unpatched.</div><div class="tl-src">Source: This audit report — Jul 12, 2026 · ecomscan Jul 11 · 125 findings</div></div></div>
+          <div class="tl-item"><div class="tl-time">Jul 11–12</div><div class="tl-dot blue"></div><div class="tl-content"><div class="tl-title">Audit Finalized — Current Posture: MEDIUM</div><div class="tl-detail">fail2ban active. 3/4 CVEs fixed. Imunify360 FP resolved. Ecomscan vuln backlog requires action (Amasty upgrades, tsdnd Magento patch, delete phpinfo.php). 1 critical CVE unpatched.</div><div class="tl-src">Source: This audit report — Jul 15, 2026 · ecomscan Jul 11 · 125 findings</div></div></div>
         </div>
       </div>
     </div>
@@ -2512,7 +2512,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
 <div class="slide section-divider" id="s35">
   <div class="div-logo-wm"></div>
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;z-index:0;pointer-events:none">
-    <img src="" data-logo="1" class="logo-img-ref" alt="" style="height:320px">
+    <div style="height:320px;width:320px;background-image:var(--logo-img);background-size:contain;background-repeat:no-repeat;background-position:center"></div>
   </div>
   <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:18px;text-align:center">
     <div style="display:flex;align-items:center;gap:14px">
@@ -2537,7 +2537,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Customers</div>
       </div>
       <div style="text-align:center;padding:10px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
-        <div style="font-size:22px;font-weight:900;color:#4ade80">4,490</div>
+        <div style="font-size:22px;font-weight:900;color:#4ade80">4,495</div>
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Valid Orders</div>
       </div>
       <div style="text-align:center;padding:10px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
@@ -2545,7 +2545,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">All-time Revenue</div>
       </div>
       <div style="text-align:center;padding:10px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
-        <div style="font-size:22px;font-weight:900;color:#f59e0b">2,215</div>
+        <div style="font-size:22px;font-weight:900;color:#f59e0b">4,593</div>
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">GitLab Commits</div>
       </div>
       <div style="text-align:center;padding:10px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
@@ -2561,7 +2561,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
       <span class="badge badge-red" style="font-size:11px;padding:5px 12px">&#x26A0; CVE-2024-34102 pending patch</span>
     </div>
     <div style="font-size:11px;color:var(--dim)">
-      Executive Technical Audit &#x00B7; Jul 12, 2026 &#x00B7; MounirAb &#x2014; Lead Developer &#x00B7; 8 Phases &#x00B7; 38 Slides
+      Executive Technical Audit &#x00B7; Jul 15, 2026 &#x00B7; MounirAb &#x2014; Lead Developer &#x00B7; 8 Phases &#x00B7; 38 Slides
     </div>
   </div>
 </div>
@@ -2635,7 +2635,7 @@ h4{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-tran
   <div class="slide-header-logo"></div>
   <div class="section-label">Phase 6 — Performance Engineering</div>
   <div class="slide-title">Server Performance Tunings &amp; Applied Adjustments</div>
-  <div class="slide-subtitle">Apache · PHP-FPM · MariaDB · Redis · Varnish · Cloudflare — Real-time monitoring · Jul 12, 2026</div>
+  <div class="slide-subtitle">Apache · PHP-FPM · MariaDB · Redis · Varnish · Cloudflare — Real-time monitoring · Jul 15, 2026</div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
     <div class="kpi-card" style="border-color:rgba(34,197,94,.3)">
       <div class="kpi-val" style="color:#4ade80;font-size:22px">84.3%</div>
@@ -2735,10 +2735,10 @@ let current = 0;
 const TOTAL = slides.length; // 38 slides (v12.3.0 — comprehensive notes + map cleanup)
 
 const NOTES = {
-  s1:  'AUDIT HEADER — TechnoStationery Executive Audit v6.4.6, conducted Jul 12, 2026. Production: technostationery.com running Magento 2.4.6-p15 on AlmaLinux 8.10 (InMotionHosting ded701). Development/staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline went live Jul 1 (Damien Louis, DND France — Jenkins-based). Yalidine shipping integration: complete on dev, pending production deploy (carriers/yalidine/active=1 flag). Key metrics: 9,289 registered customers (incl. 3,278 bulk-migrated May 2026), 4,495 CMD_Done (valid completed orders) all-time, 28.6M DZD total revenue, 4,593 GitLab commits across 6 branches. Server: Xeon E3-1240v3, 8 cores, 32GB RAM. Stack: Apache 2.4.66, PHP-FPM 8.2.30, MariaDB 10.6.17, Redis, Varnish, Cloudflare CDN. Audit covers 8 phases: Repo Audit, Infrastructure, Magento Commerce, Business Intelligence, Security, Performance, Evidence Confidence, and H2 Roadmap.',
+  s1:  'AUDIT HEADER — TechnoStationery Executive Audit v6.4.6, conducted Jul 15, 2026. Production: technostationery.com running Magento 2.4.6-p15 on AlmaLinux 8.10 (InMotionHosting ded701). Development/staging: dev.technostationery.com. Beta site REMOVED. PIM REMOVED. CI/CD pipeline went live Jul 1 (Damien Louis, DND France — Jenkins-based). Yalidine shipping integration: complete on dev, pending production deploy (carriers/yalidine/active=1 flag). Key metrics: 9,289 registered customers (incl. 3,278 bulk-migrated May 2026), 4,495 CMD_Done (valid completed orders) all-time, 28.72M DZD total revenue, 4,593 GitLab commits across 6 branches. Server: Xeon E3-1240v3, 8 cores, 32GB RAM. Stack: Apache 2.4.66, PHP-FPM 8.2.30, MariaDB 10.6.17, Redis, Varnish, Cloudflare CDN. Audit covers 8 phases: Repo Audit, Infrastructure, Magento Commerce, Business Intelligence, Security, Performance, Evidence Confidence, and H2 Roadmap.',
   s2:  'EXECUTIVE KPI DASHBOARD — All figures sourced from live MariaDB production database via direct SQL queries, not mocked data. Key metrics: 500 CMD_Done orders in H1 2026 (+12.4% YoY vs 445 H1 2025). 9,289 registered customers (includes 3,278 bulk guest-to-registered conversion in May 2026; true organic base ~6,011). 28.7M DZD all-time revenue. Cancel rate 35.9% H1 2026 — this is NORMAL for Algerian COD (Cash on Delivery) e-commerce; industry benchmark is 30-50% due to "try before you buy" culture and payment-on-delivery cancellations. 3,913 GitLab commits in H1 2026 alone (+1,530% vs 240 H1 2025 — reflects intensive development sprint). AOV (Average Order Value) = 5,600 DZD. Revenue H1 2026 = 2.80M DZD. 9,618 catalog products (8,399 enabled). Yalidine shipping integration covers 36.6% of H1 orders (183/500).',
   s3:  'TABLE OF CONTENTS — 8 audit phases across 38 slides. Two live domains: production at technostationery.com (Magento 2.4.6-p15), development at dev.technostationery.com. All data sourced from live production systems (MariaDB, Redis, GitLab, server logs). Navigation: use keyboard arrows, spacebar, Home/End keys, or click the links below. Touch/swipe supported on mobile. Press F for fullscreen. Speaker notes available via the toggle button.',
-  s4:  'PHASE 1 DIVIDER: REPOSITORY AUDIT — GitLab repository: gitlab.com/technowebmaster-group/techno-magento. 4,593 total commits across 6 branches. Branch distribution: master=477, dev=1,739, feature branches=2,377. 4 contributors total. Primary developer: Mounir (4,227 commits, 92.0%). Repository initialized Oct 17, 2024. Last commit: Jul 12, 2026. 46 custom MAB (Mounir AB) modules in app/code/MAB/. Magento version: 2.4.6-p15 (upgraded Jun 10, 2026). This phase establishes code quality, contributor distribution, and development velocity baseline.',
+  s4:  'PHASE 1 DIVIDER: REPOSITORY AUDIT — GitLab repository: gitlab.com/technowebmaster-group/techno-magento. 4,593 total commits across 6 branches. Branch distribution: master=477, dev=1,739, feature branches=2,377. 4 contributors total. Primary developer: Mounir (4,227 commits, 92.0%). Repository initialized Oct 17, 2024. Last commit: Jul 15, 2026. 46 custom MAB (Mounir AB) modules in app/code/MAB/. Magento version: 2.4.6-p15 (upgraded Jun 10, 2026). This phase establishes code quality, contributor distribution, and development velocity baseline.',
   s5:  'GIT COMMIT ANALYSIS — Bar chart shows monthly commit volume; doughnut shows commit type distribution. 4,593 total commits. Peak month: Apr 2026 = 535 commits (checkout-v8 rewrite sprint). Init: Oct 17, 2024. Last activity: Jul 11, 2026. Contributor breakdown: Mounir 4,227 (92.0%), Damien Louis (DND.fr) CI/CD pipeline commits, 2 others. Commit types: feat ~38%, fix ~31%, chore/cleanup ~12%, docs ~9%, perf ~4%, test ~3%, security ~2%, refactor ~1%. 46 MAB custom modules. 5,766 files changed. Key security commits: Jun 9 malware remediation, Jun 22 PHP shell removal. Key feature commits: checkout-v8 (Apr), Yalidine integration (Jun-Jul), CI/CD pipeline (Jul 1).',
   s6:  'DEVELOPMENT TIMELINE — Key milestones chronologically: Oct 2024 = repository init. Jan 2026 = 462 commits (mega sprint, Yalidine integration begins). Apr 2026 = 535 commits all-time peak (checkout-v8 complete rewrite). Jun 9 = malware detection + 22 CVEs identified. Jun 10 = Magento 2.4.6-p15 upgrade. Jun 22 = 2 PHP web shells removed from /pub/. Jul 1 = CI/CD pipeline deployed (Damien Louis, DND France — Jenkins). Jul 11 = 85 Yalidine unit tests passing. Current focus: Yalidine production deployment via CI/CD pipeline. Next milestone: back-to-school peak season (Sep 2026).',
   s7:  'PHASE 2 DIVIDER: INFRASTRUCTURE — Server: ded701.inmotionhosting.com (dedicated). OS: AlmaLinux 8.10. Hardware: Intel Xeon E3-1240v3, 8 physical cores, 32GB DDR3 ECC RAM. Storage: SSD. Stack: Apache 2.4.66 (MPM event), PHP-FPM 8.2.30 (OPcache enabled), MariaDB 10.6.17, Redis 7.x (allkeys-lru), Varnish 6.x (HTTP cache), Cloudflare CDN. Production domain: technostationery.com. Development: dev.technostationery.com. Monitoring: Imunify360 (malware scanning), fail2ban (SSH brute-force protection), CSF firewall. This phase covers server hardware, database configuration, caching layers, and web server tuning.',
@@ -2904,7 +2904,7 @@ function initChartsForSlide(sid) {
   // ── S17b: 5-Year Annual Data ──
   if (sid === 's17b') { _initMultiYearChart(); }
   // ── S18: Algeria Map ──
-  if (sid === 's18') { colorizeAlgeriaMap(); }
+  if (sid === 's18') { colorizeAlgeriaMap(); /* tooltip events via delegation on #algeria-map — no rebind needed */ }
   // ── S36: H1 Semester Comparison ──
   if (sid === 's36') { _initS36Charts(); }
   // ── S37: Server Performance ──
@@ -3249,23 +3249,33 @@ document.querySelectorAll('.map-rank-item').forEach(item => {
     }
   });
 });
-// ── ALGERIA MAP TOOLTIPS ──
-document.querySelectorAll('#algeria-map .wilaya').forEach(g => {
-  g.addEventListener('mouseenter', function(e) {
-    const tip = document.getElementById('mapTooltip');
-    tip.innerHTML = `<strong>${this.dataset.name}</strong><br>Orders: ${this.dataset.orders} (${this.dataset.pct})`;
+// ── ALGERIA MAP TOOLTIPS — event delegation (rebinds on every visit) ──
+(function() {
+  var mapEl = document.getElementById('algeria-map');
+  if (!mapEl) return;
+  mapEl.addEventListener('mouseover', function(e) {
+    var g = e.target.closest('.wilaya');
+    if (!g) return;
+    var tip = document.getElementById('mapTooltip');
+    tip.innerHTML = '<strong>' + (g.dataset.name||'') + '</strong><br>CMD_Done H1 2026: <strong>' + (g.dataset.orders||'0') + '</strong> (' + (g.dataset.pct||'0%') + ' of 500)';
     tip.style.display = 'block';
   });
-  g.addEventListener('mousemove', function(e) {
-    const tip = document.getElementById('mapTooltip');
-    const rect = document.getElementById('s18').getBoundingClientRect();
-    tip.style.left = (e.clientX - rect.left + 12) + 'px';
-    tip.style.top  = (e.clientY - rect.top - 30) + 'px';
+  mapEl.addEventListener('mousemove', function(e) {
+    var g = e.target.closest('.wilaya');
+    if (!g) return;
+    var tip = document.getElementById('mapTooltip');
+    var rect = mapEl.getBoundingClientRect();
+    tip.style.left = (e.clientX - rect.left + 14) + 'px';
+    tip.style.top  = (e.clientY - rect.top  - 36) + 'px';
   });
-  g.addEventListener('mouseleave', function() {
+  mapEl.addEventListener('mouseout', function(e) {
+    var g = e.target.closest('.wilaya');
+    if (!g) return;
+    var related = e.relatedTarget;
+    if (related && related.closest && related.closest('.wilaya') === g) return;
     document.getElementById('mapTooltip').style.display = 'none';
   });
-});
+})();
 
 // ── KEYBOARD HINT ── (shown once on first load, auto-dismiss after 3s)
 (function() {
