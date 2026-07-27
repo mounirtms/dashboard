@@ -153,7 +153,7 @@ export default function DbHealthPage() {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TuneOutlined sx={{ fontSize: 16, color: '#06b6d4' }} />
-              <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8' }}>Audit Tuning Applied — Jul 10, 2026</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8' }}>Audit Tuning Applied — Jul 2026</Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {[

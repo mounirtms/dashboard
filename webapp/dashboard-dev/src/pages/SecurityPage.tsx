@@ -562,8 +562,7 @@ function AuthTab() {
   useEffect(() => {
     fetch('/api/auth-status.php?action=status')
       .then(r => r.json())
-      .then(setData)
-      .catch(console.error)
+      .then(setData).catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

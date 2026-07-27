@@ -10,6 +10,8 @@ import {
 
 // Static CI/CD data — real git stats from mounirtms/dashboard
 const PIPELINE_RUNS = [
+  { id: '7bd03cc0', msg: 'deploy(v5.2.1): new Vite chunk index-BmWyBmes.js — deploy unblocked (mv build/assets root-owned → new writable dir)', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 27, 2026', duration: '0m 58s', files: 5   },
+  { id: '6220be7f', msg: 'feat(v5.2.1): telegram bot fix (QoderCLI.php tracked) + webpushr JSON body fix + push presets + TelegramPage grouped commands + PushNotificationsPage 8 presets + MUI v9 slotProps', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 27, 2026', duration: '2m 14s', files: 7   },
   { id: 'f176fe24', msg: 'feat(presentation): v5.0.1 — auth gate fix (php_value→index.php inline), Algeria SVG 58 wilayas, S17b 5-year chart, EcomScan 125 synced all slides, /presentation/ 302→/#/login verified', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 11, 2026', duration: '1m 48s', files: 963 },
   { id: '9bb2ced6', msg: 'feat(security+presentation): v5.0.0 — SecurityPage EcomScan 125 issues + auth-gated presentation v5 + 5-year annual data slide S17b',                                               branch: 'genspark_ai_developer', status: 'success', date: 'Jul 11, 2026', duration: '2m 31s', files: 962 },
   { id: '47b96bd0', msg: 'feat(security+data): v4.6.0 — SecurityPage EcomScan real data + cancellation warning + multi-year 2021-2025 (125 EcomScan vulns, 36 security issues, dashboard/dev user cancellation Aug 2026 alert)', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 11, 2026', duration: '2m 05s', files: 8   },
@@ -33,9 +35,9 @@ const PIPELINE_RUNS = [
 ];
 
 const BRANCH_STATUS = [
-  { name: 'main',                  sha: 'b92ede19', behind: 3,  ahead: 0, status: 'behind', desc: 'Merge target — 3 commits behind genspark_ai_developer (v5.0.1: presentation auth gate + Algeria map + EcomScan 125 all slides)' },
-  { name: 'genspark_ai_developer', sha: 'f176fe24', behind: 0,  ahead: 0, status: 'current', desc: 'Active dev branch — PR #3 open → main (v5.0.1: auth-gated presentation, 58-wilaya Algeria SVG, S17b 5-year data, EcomScan 125)' },
-  { name: 'master (local)',        sha: 'current',  behind: 0,  ahead: 19, status: 'ahead', desc: 'Local master — 19 commits ahead of origin/master' },
+  { name: 'main',                  sha: 'b92ede19', behind: 5,  ahead: 0, status: 'behind', desc: 'Merge target — 5 commits behind genspark_ai_developer (v5.2.1: telegram fix, webpushr presets, infra improvements, MUI v9)' },
+  { name: 'genspark_ai_developer', sha: '7bd03cc0', behind: 0,  ahead: 0, status: 'current', desc: 'Active dev branch — PR #5 open → main (v5.2.1: telegram bot fix + webpushr presets + infrastructure page + quality pass)' },
+  { name: 'master (local)',        sha: 'current',  behind: 0,  ahead: 21, status: 'ahead', desc: 'Local master — 21 commits ahead of origin/master' },
 ];
 
 const BUILD_STEPS = [
@@ -133,9 +135,9 @@ export default function CiCdPage() {
               ))}
               <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>v4.6.0-202607110419</code> &nbsp;·&nbsp;
-                  Bundle: <code style={{ color: '#22c55e' }}>index-5vXPFfTi.js</code> (512 KB) &nbsp;·&nbsp;
-                  Chunks: <code style={{ color: '#22c55e' }}>10</code>
+                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>v5.2.1-202607271542</code> &nbsp;·&nbsp;
+                  Bundle: <code style={{ color: '#22c55e' }}>index-BmWyBmes.js</code> (584 KB) &nbsp;·&nbsp;
+                  Chunks: <code style={{ color: '#22c55e' }}>11</code>
                 </Typography>
               </Box>
             </CardContent>

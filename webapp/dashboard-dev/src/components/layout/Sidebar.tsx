@@ -35,6 +35,8 @@ import {
   ExpandMore,
   ShoppingCart as CommerceIcon,
   Inventory,
+  BarChart as SalesIcon,
+  ListAlt as OrdersIcon,
   Terminal as ScriptsIcon,
   Sync as CicdIcon,
   Storage as DbIcon,
@@ -43,7 +45,6 @@ import {
   Telegram as TelegramIconSidebar,
   NotificationsActive as PushIconSidebar,
   Hub as HubIcon,
-  Tune as TuneIcon,
   TerminalOutlined as ActionsIcon,
   DataObject as EtlIcon,
   Cloud as CloudIcon,
@@ -94,10 +95,10 @@ const navItems: NavItem[] = [
     label: 'Commerce',
     icon: <CommerceIcon />,
     children: [
-      { path: '/commerce/sales', label: 'Sales Overview', icon: <CommerceIcon /> },
+      { path: '/commerce/sales', label: 'Sales Overview', icon: <SalesIcon /> },
       { path: '/commerce/products', label: 'Products', icon: <Inventory /> },
       { path: '/commerce/customers', label: 'Customers', icon: <Person /> },
-      { path: '/commerce/orders', label: 'Orders', icon: <CommerceIcon /> },
+      { path: '/commerce/orders', label: 'Orders', icon: <OrdersIcon /> },
       { path: '/commerce/inventory', label: 'Inventory', icon: <Inventory /> },
       { path: '/commerce/cms', label: 'CMS & Content', icon: <DocsIcon /> },
       { path: '/commerce/indexers', label: 'Indexers', icon: <Refresh /> },
@@ -534,7 +535,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
           />
           <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
         </Box>
-        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v5.1.2 · technostationery.com</Typography>
+        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v5.2.1 · technostationery.com</Typography>
       </Box>
     </Box>
   );

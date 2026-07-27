@@ -75,7 +75,6 @@ export default function SshSessionsPage() {
     apiClient.get('/api/monitor.php?action=ssh')
       .then(({ data }) => setData(data))
       .catch((e) => {
-        console.error(e);
         setSnackbar({ open: true, message: 'Failed to fetch SSH sessions', severity: 'error' });
       })
       .finally(() => setLoading(false));

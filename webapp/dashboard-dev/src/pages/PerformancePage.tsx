@@ -14,7 +14,7 @@ import StatCard from '../components/common/StatCard';
 import { formatNumber, formatBytes } from '../utils/formatters';
 
 // Describe each Cloudflare setting with friendly label + "good" value
-// Real zone settings (technostationery.com): verified Jul 10, 2026
+// Real zone settings (technostationery.com): verified Jul 2026
 const CF_SETTINGS_META: { key: string; label: string; good: string | string[] }[] = [
   { key: 'ssl',                       label: 'SSL/TLS Mode',         good: ['strict', 'full'] },
   { key: 'always_use_https',          label: 'Always HTTPS',         good: 'on' },
@@ -195,7 +195,7 @@ export default function PerformancePage() {
         <CardContent>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Storage sx={{ fontSize: 16, color: '#06b6d4' }} /> Server Tuning Status — Audit Jul 10, 2026
+              <Storage sx={{ fontSize: 16, color: '#06b6d4' }} /> Server Tuning Status — Audit Jul 2026
             </Typography>
             <Chip label="APPLIED" size="small" color="success" sx={{ fontWeight: 800 }} />
           </Box>

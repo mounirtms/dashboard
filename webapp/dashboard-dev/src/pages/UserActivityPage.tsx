@@ -195,7 +195,6 @@ export default function UserActivityPage() {
     fetchUserActivity()
       .then((d) => { setData(d); })
       .catch((e) => {
-        console.error('Failed to fetch user activity', e);
         setError(e.message || 'Failed to load user activity');
       })
       .finally(() => setLoading(false));

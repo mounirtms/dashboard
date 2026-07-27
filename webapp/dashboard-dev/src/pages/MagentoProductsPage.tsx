@@ -3,7 +3,6 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Add, Delete, Edit, CloudUpload, FileDownload, Search, Refresh, Close, Save, Image as ImageIcon, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchMagentoProducts, saveMagentoProduct, deleteMagentoProduct, uploadProductMedia, type MagentoProduct } from '../api/magento';
-import LoadingState from '../components/common/LoadingState';
 import PermissionGate from '../components/common/PermissionGate';
 
 const ENVS = [
@@ -165,7 +164,13 @@ export default function MagentoProductsPage() {
     )},
   ];
 
-  if (error && !products.length) return <LoadingState message={`Error: ${error}`} />;
+  if (error && !products.length) return (
+    <Box sx={{ p: 3 }}>
+      <Alert severity="error" action={<Button color="inherit" size="small" onClick={loadProducts}>Retry</Button>}>
+        {error}
+      </Alert>
+    </Box>
+  );
 
   return (
     <Box>

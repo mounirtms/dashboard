@@ -119,7 +119,7 @@ export default function EtlLogsPage() {
             MDM/CEGID → Magento data pipeline — price sync, inventory sync, scheduler events
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
-            v5.2.0 &nbsp;·&nbsp; Last refreshed: {lastRefresh.toLocaleTimeString()}
+            v5.3.0 &nbsp;·&nbsp; Last refreshed: {lastRefresh.toLocaleTimeString()}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>

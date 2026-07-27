@@ -149,7 +149,7 @@ export default function CacheControlPage() {
       )}
       {tab === 0 && overallHitRate >= 20 && overallHitRate < 60 && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Varnish hit rate {overallHitRate.toFixed(1)}% — improving from 5.7% baseline (Jul 10 audit). Cloudflare edge cache hit: 52.3%.
+          Varnish hit rate {overallHitRate.toFixed(1)}% — improving from 5.7% baseline (Jul 2026 audit). Cloudflare edge cache hit: 52.3%.
           Target: <strong>60%+</strong>. Continue warmup runs and monitor Pragma header conflicts.
         </Alert>
       )}

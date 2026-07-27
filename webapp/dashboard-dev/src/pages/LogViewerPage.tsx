@@ -141,7 +141,6 @@ export default function LogViewerPage() {
           }
         })
         .catch((e) => {
-          console.error(e);
           setError('Failed to fetch bash history');
           setSnackbar({ open: true, message: 'Failed to fetch bash history', severity: 'error' });
         })
@@ -164,7 +163,6 @@ export default function LogViewerPage() {
           setLogData({ lines: structuredLogs, structured: true, source: 'notification' });
         })
         .catch((e) => {
-          console.error(e);
           setError('Failed to fetch notification logs');
           setSnackbar({ open: true, message: 'Failed to fetch notification logs', severity: 'error' });
         })
@@ -191,7 +189,6 @@ export default function LogViewerPage() {
         }
       })
       .catch((e) => {
-        console.error(e);
         setError('Failed to fetch logs');
         setSnackbar({ open: true, message: 'Failed to fetch logs', severity: 'error' });
       })

@@ -26,7 +26,6 @@ export default function ServerCommandHistoryPage() {
     apiClient.get(`/api/monitor.php?action=bash_history&username=${user}&lines=${limit}`)
       .then(({ data }) => setHistory(data.history || []))
       .catch((e) => {
-        console.error(e);
         setError(e.response?.data?.message || e.message || 'Failed to fetch command history');
       })
       .finally(() => setLoading(false));

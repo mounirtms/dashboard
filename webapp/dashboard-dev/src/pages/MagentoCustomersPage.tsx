@@ -3,7 +3,6 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Add, Delete, Edit, Search, Refresh, Close, Save, Email, Person } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchMagentoCustomers, saveMagentoCustomer, deleteMagentoCustomer, type MagentoCustomer } from '../api/magento';
-import LoadingState from '../components/common/LoadingState';
 import PermissionGate from '../components/common/PermissionGate';
 
 const ENVS = [
@@ -111,7 +110,13 @@ export default function MagentoCustomersPage() {
     )},
   ];
 
-  if (error && !customers.length) return <LoadingState message={`Error: ${error}`} />;
+  if (error && !customers.length) return (
+    <Box sx={{ p: 3 }}>
+      <Alert severity="error" action={<Button color="inherit" size="small" onClick={loadCustomers}>Retry</Button>}>
+        {error}
+      </Alert>
+    </Box>
+  );
 
   return (
     <Box>

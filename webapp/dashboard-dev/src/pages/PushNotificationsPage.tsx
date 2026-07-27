@@ -260,7 +260,6 @@ export default function PushNotificationsPage() {
         setAlertLog(data.logs);
       }
     } catch (err) {
-      console.error('Failed to load alert log:', err);
     } finally {
       setAlertLogLoading(false);
     }

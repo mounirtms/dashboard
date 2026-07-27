@@ -35,7 +35,7 @@ export default function UsersPage() {
     setLoading(true);
     fetchUsers()
       .then(setUsers)
-      .catch((e) => console.error(e))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

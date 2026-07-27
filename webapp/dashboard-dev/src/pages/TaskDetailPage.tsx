@@ -153,7 +153,7 @@ export default function TaskDetailPage() {
       setNoteText('');
       setNoteCategory('general');
       loadData();
-    } catch (e: any) { console.error(e); }
+    } catch { }
     finally { setNoteSubmitting(false); }
   };
 
@@ -164,7 +164,7 @@ export default function TaskDetailPage() {
       setReplyText('');
       setReplyingTo(null);
       loadData();
-    } catch (e: any) { console.error(e); }
+    } catch { }
   };
 
   const startEditNote = (note: TaskNote) => {
@@ -179,7 +179,7 @@ export default function TaskDetailPage() {
       setEditingNoteId(null);
       setEditNoteText('');
       loadData();
-    } catch (e: any) { console.error(e); }
+    } catch { }
   };
 
   const handlePinNote = async (noteId: number, isPinned: boolean) => {
@@ -187,7 +187,7 @@ export default function TaskDetailPage() {
       await pinNote(noteId, isPinned);
       setNoteMenuAnchor(null);
       loadData();
-    } catch (e: any) { console.error(e); }
+    } catch { }
   };
 
   const openNoteMenu = (event: React.MouseEvent<HTMLElement>, note: TaskNote) => {
@@ -203,7 +203,6 @@ export default function TaskDetailPage() {
       await uploadScreenshot(task.id, file);
       loadData();
     } catch (err: any) {
-      console.error('Screenshot upload failed:', err);
     } finally {
       setScreenshotUploading(false);
       if (screenshotInputRef.current) screenshotInputRef.current.value = '';
@@ -215,7 +214,6 @@ export default function TaskDetailPage() {
       await deleteScreenshot(screenshotId);
       setScreenshots(prev => prev.filter(s => s.id !== screenshotId));
     } catch (err: any) {
-      console.error('Screenshot delete failed:', err);
     }
   };
   
@@ -228,7 +226,6 @@ export default function TaskDetailPage() {
       setForwardTargetTaskId('');
       loadData();
     } catch (err: any) {
-      console.error('Forward note failed:', err);
     }
   };
   
@@ -237,13 +234,12 @@ export default function TaskDetailPage() {
       await setNoteStatus(noteId, status);
       loadData();
     } catch (err: any) {
-      console.error('Set note status failed:', err);
     }
   };
 
   const loadAllTasks = useCallback(() => {
     if (allTasks.length === 0) {
-      fetchTasks().then(result => setAllTasks(result.tasks)).catch(console.error);
+      fetchTasks().then(result => setAllTasks(result.tasks)).catch(() => {});
     }
   }, [allTasks.length]);
 
@@ -252,7 +248,7 @@ export default function TaskDetailPage() {
     setLoading(true);
     Promise.all([fetchTask(+id), fetchTaskNotes(+id), fetchTaskActivity(+id), fetchUsers(), fetchScreenshots(+id), getTaskLinks(+id)])
       .then(([t, n, a, u, s, links]) => { setTask(t); setNotes(n); setActivity(a); setUsers(u); setScreenshots(s); setTaskLinks(links); setEditData({ title: t.title, description: t.description || '', priority: t.priority, status: t.status, assigned_to: t.assigned_to, due_date: t.due_date || '', category: t.category }); })
-      .catch((e) => console.error(e))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -298,11 +294,11 @@ export default function TaskDetailPage() {
       await updateTask({ id: task.id, ...editData });
       setEditing(false);
       loadData();
-    } catch (e: any) { console.error(e); }
+    } catch { }
   }, [task, editData]);
 
   const handleDeleteNote = async (noteId: number) => {
-    try { await deleteNote(noteId); loadData(); } catch (e: any) { console.error(e); }
+    try { await deleteNote(noteId); loadData(); } catch { }
   };
 
   const handleStatusToggle = async () => {
@@ -313,7 +309,7 @@ export default function TaskDetailPage() {
       const nextStatus = task.status === 'completed' ? 'pending' : cycle[(currentIndex + 1) % cycle.length];
       await updateTask({ id: task.id, status: nextStatus });
       loadData();
-    } catch (e: any) { console.error(e); }
+    } catch { }
   };
 
   const handleLinkTask = async () => {
@@ -324,7 +320,6 @@ export default function TaskDetailPage() {
       setLinkTargetTaskId('');
       loadData();
     } catch (err: any) {
-      console.error('Link task failed:', err);
     }
   };
 
@@ -333,7 +328,6 @@ export default function TaskDetailPage() {
       await unlinkTask(linkId);
       loadData();
     } catch (err: any) {
-      console.error('Unlink task failed:', err);
     }
   };
 

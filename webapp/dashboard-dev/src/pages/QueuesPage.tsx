@@ -49,8 +49,15 @@ export default function QueuesPage() {
   };
 
   if (loading && !data) return <LoadingState message="Loading queue data..." />;
-  if (error) return <LoadingState message={`Error: ${error}`} />;
-  if (!data) return null;
+  if (!data) return (
+    <Box sx={{ p: 3 }}>
+      <Alert severity={error ? 'error' : 'info'} action={
+        <Button color="inherit" size="small" onClick={loadData}>Retry</Button>
+      }>
+        {error ?? 'No queue data available'}
+      </Alert>
+    </Box>
+  );
 
   const totalPending = Object.values(data.queue_counts).reduce((a, b) => a + b, 0);
 

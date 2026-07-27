@@ -154,7 +154,7 @@ export default function TerminalAiPage() {
               placeholder="Ask anything (e.g. 'How is Varnish performing?' or 'Check Magento errors')"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               sx={{ '& .MuiInputBase-root': { borderRadius: 2 } }}
             />
             <IconButton color="primary" onClick={handleSend} disabled={loading || !input.trim()}>

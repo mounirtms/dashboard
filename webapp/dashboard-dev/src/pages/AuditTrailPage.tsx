@@ -29,7 +29,6 @@ export default function AuditTrailPage() {
     apiClient.get('/api/monitor.php?action=audit')
       .then(({ data }) => setEntries(data.entries || []))
       .catch(e => {
-        console.error(e);
         setError(e.response?.data?.message || e.message || 'Failed to load audit trail');
       })
       .finally(() => setLoading(false));

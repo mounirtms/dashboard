@@ -94,7 +94,6 @@ export default function SettingsPage() {
           setEmailSettings(email);
         }
       } catch (err) {
-        console.error('Failed to load email settings:', err);
       }
     };
     
@@ -111,7 +110,6 @@ export default function SettingsPage() {
         const subs = await fetchPushSubscriptions('dashboard');
         if (!cancelled) setSubscriptions(subs.filter((s: PushSubscription) => s.is_active === 1));
       } catch (err) {
-        console.error('Failed to load push subscriptions:', err);
       }
     };
     if (general.notifications_enabled) loadSubs();
@@ -124,7 +122,6 @@ export default function SettingsPage() {
       await saveSettings({ personal, appearance, general });
       setLastSaved(new Date().toLocaleTimeString());
     } catch (err: any) {
-      console.error('Failed to save settings:', err);
     } finally {
       setSaving(false);
     }
@@ -162,7 +159,6 @@ export default function SettingsPage() {
       await unsubscribeDevice(subscriptionId);
       setSubscriptions(prev => prev.filter(s => s.id !== subscriptionId));
     } catch (err: any) {
-      console.error('Failed to unsubscribe device:', err);
     }
   };
 
@@ -206,7 +202,6 @@ export default function SettingsPage() {
       setEmailLogs(logsRes.logs || []);
       setEmailLogStats(statsRes);
     } catch (err) {
-      console.error('Failed to load email logs:', err);
     } finally {
       setEmailLogsLoading(false);
     }
@@ -230,7 +225,6 @@ export default function SettingsPage() {
       setEmailLogs([]);
       setEmailLogStats(null);
     } catch (err) {
-      console.error('Failed to clear email logs:', err);
     }
   };
 
@@ -794,9 +788,9 @@ export default function SettingsPage() {
                   <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>Techno Monitor</Typography>
                   <Typography variant="body2" sx={{ mb: 2 }}>The comprehensive infrastructure management platform for TechnoStationery e-commerce systems.</Typography>
                   <Box sx={{ display: 'grid', gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v4.4.1-TSM</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>v4.4.1</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>July 11, 2026</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.2.1</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>v5.2.1-202607271542</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>July 27, 2026</strong></Typography>
                   </Box>
                 </Box>
               </Grid>

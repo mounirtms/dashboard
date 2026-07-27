@@ -3,7 +3,6 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Search, Refresh, Close, LocalShipping, Receipt, Cancel, Pause, PlayArrow, Visibility, Send } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchMagentoOrders, performOrderAction } from '../api/magento';
-import LoadingState from '../components/common/LoadingState';
 import PermissionGate from '../components/common/PermissionGate';
 
 const ENVS = [
@@ -111,7 +110,13 @@ export default function MagentoOrdersPage() {
     )},
   ];
 
-  if (error && !orders.length) return <LoadingState message={`Error: ${error}`} />;
+  if (error && !orders.length) return (
+    <Box sx={{ p: 3 }}>
+      <Alert severity="error" action={<Button color="inherit" size="small" onClick={loadOrders}>Retry</Button>}>
+        {error}
+      </Alert>
+    </Box>
+  );
 
   return (
     <Box>
