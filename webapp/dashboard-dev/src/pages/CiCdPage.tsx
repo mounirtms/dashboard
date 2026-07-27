@@ -142,6 +142,67 @@ export default function CiCdPage() {
           </Card>
         </Grid>
 
+      {/* GitLab API Trigger */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <RocketLaunch sx={{ fontSize: 16, color: '#f59e0b' }} /> Trigger Magento Deployment (GitLab API)
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={() => {
+                fetch('/api/gitlab_deploy.php', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'trigger', env: 'dev', branch: 'dev' })
+                })
+                .then(r => r.json())
+                .then(data => alert(data.message || data.error))
+                .catch(e => alert(e.message));
+              }}
+            >
+              Deploy to Dev
+            </Button>
+            <Button 
+              variant="contained" 
+              color="secondary" 
+              onClick={() => {
+                fetch('/api/gitlab_deploy.php', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'trigger', env: 'tsdnd', branch: 'tsdnd' })
+                })
+                .then(r => r.json())
+                .then(data => alert(data.message || data.error))
+                .catch(e => alert(e.message));
+              }}
+            >
+              Deploy to TSDND
+            </Button>
+            <Button 
+              variant="contained" 
+              color="error" 
+              onClick={() => {
+                if (window.confirm("Are you sure you want to deploy to PRODUCTION?")) {
+                  fetch('/api/gitlab_deploy.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'trigger', env: 'prod', branch: 'production' })
+                  })
+                  .then(r => r.json())
+                  .then(data => alert(data.message || data.error))
+                  .catch(e => alert(e.message));
+                }
+              }}
+            >
+              Deploy to Prod
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
         {/* Branch Status */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ height: '100%' }}>
@@ -172,6 +233,7 @@ export default function CiCdPage() {
             </CardContent>
           </Card>
         </Grid>
+
       </Grid>
 
       {/* Deploy History */}

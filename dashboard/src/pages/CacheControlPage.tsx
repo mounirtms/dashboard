@@ -1,6 +1,6 @@
 import { Box, Typography, Grid, Card, CardContent, Button, Divider, Alert, CircularProgress, Chip, LinearProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tabs, Tab } from '@mui/material';
 import { Cached, CleaningServices, LocalFireDepartment, Hub, Bolt, Storage, Speed, Memory, Refresh, PlayArrow, Stop, CheckCircle, Warning, TrendingUp, Devices, Web, Phone, Tablet, Info, HealthAndSafety } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import apiClient from '../api/client';
 import { fetchVarnishStats, fetchRedisStats } from '../api/system';
 import ConsoleOutput from '../components/common/ConsoleOutput';
@@ -21,8 +21,11 @@ export default function CacheControlPage() {
   const [multiDeviceTest, setMultiDeviceTest] = useState<any>(null);
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(true);
+  const inFlightRef = useRef(false);
 
   const fetchAll = async () => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setLoading(true);
     try {
       const [v, r, stats, warmup] = await Promise.all([
@@ -37,12 +40,13 @@ export default function CacheControlPage() {
       setWarmupStatus(warmup);
     } finally {
       setLoading(false);
+      inFlightRef.current = false;
     }
   };
 
   useEffect(() => {
     fetchAll();
-    const interval = setInterval(fetchAll, 30000);
+    const interval = setInterval(fetchAll, 60000);
     return () => clearInterval(interval);
   }, []);
 

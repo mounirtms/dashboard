@@ -28,6 +28,8 @@ class PermissionChecker {
         'can_access_plans',
         'can_access_cicd',
         'can_access_script_runner',
+        'can_access_task_queue',
+        'can_access_etl',
         'can_create_tasks',
         'can_update_own_tasks',
         'can_update_any_task',

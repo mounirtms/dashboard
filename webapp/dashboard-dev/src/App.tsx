@@ -50,6 +50,10 @@ import MagentoOrdersPage from './pages/MagentoOrdersPage.tsx';
 import MagentoCmsPage from './pages/MagentoCmsPage.tsx';
 import MagentoSettingsPage from './pages/MagentoSettingsPage.tsx';
 import CiCdPage from './pages/CiCdPage.tsx';
+import TaskQueuePage from './pages/TaskQueuePage.tsx';
+import ScriptRunnerPage from './pages/ScriptRunnerPage.tsx';
+import EmailNotificationsPage from './pages/EmailNotificationsPage.tsx';
+import NotificationsHubPage from './pages/NotificationsHubPage.tsx';
 
 export default function App() {
   return (
@@ -83,6 +87,8 @@ export default function App() {
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="tools/actions" element={<ActionsPage />} />
                 <Route path="tools/permissions" element={<PermissionsPage />} />
+                <Route path="tools/script-runner" element={<ScriptRunnerPage />} />
+                <Route path="tools/task-queue" element={<TaskQueuePage />} />
 
                 {/* Permission-matrix-gated pages */}
                 <Route path="cache-control" element={<CacheControlPage />} />
@@ -109,6 +115,8 @@ export default function App() {
                 <Route path="queues" element={<QueuesPage />} />
 
                 {/* Notifications */}
+                <Route path="notifications/hub" element={<NotificationsHubPage />} />
+                <Route path="notifications/email" element={<EmailNotificationsPage />} />
                 <Route path="notifications/telegram" element={<TelegramPage />} />
                 <Route path="notifications/push" element={<PushNotificationsPage />} />
 

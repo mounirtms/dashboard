@@ -29,6 +29,8 @@ export const PERMISSION_PATHS: Record<string, PermissionKey> = {
   '/plans':                  'can_access_plans',
   '/cicd':                   'can_access_cicd',
   '/scripts':                'can_access_script_runner',
+  '/tools/script-runner':    'can_access_script_runner',
+  '/tools/task-queue':       'can_access_task_queue',
   '/commerce/settings':      'can_access_magento_settings',
   '/cloudflare':             'can_access_cloudflare',
   '/traffic':                'can_access_cloudflare',

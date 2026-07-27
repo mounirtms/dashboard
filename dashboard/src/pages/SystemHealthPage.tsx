@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box, Typography, Tabs, Tab, Grid, Card, CardContent, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Button, Alert, Chip,
@@ -19,7 +19,7 @@ import {
   SshData, ServicesData, NetworkData, CsfFirewallData
 } from '../api/system';
 
-const REFRESH_INTERVAL = 30000; // 30s — was 10s, reduced to prevent 429 rate limit storms
+const REFRESH_INTERVAL = 60000;
 
 export default function SystemHealthPage() {
   const [tab, setTab] = useState(0);
@@ -34,8 +34,11 @@ export default function SystemHealthPage() {
   const [dialogConfig, setDialogConfig] = useState<{ title: string; message: string; action: () => void } | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ open: false, message: '', severity: 'info' });
   const [ipInput, setIpInput] = useState('');
+  const inFlightRef = useRef(false);
 
   const loadData = useCallback(async () => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     try {
       setLoading(true);
       setError(null);
@@ -53,6 +56,7 @@ export default function SystemHealthPage() {
       setError(e.message || 'Failed to fetch system health data');
     } finally {
       setLoading(false);
+      inFlightRef.current = false;
     }
   }, []);
 

@@ -50,17 +50,24 @@ class RateLimiter {
         if ($this->redis) {
             $key = 'rate_limit:' . $this->getCacheKey($identifier);
             $current = $this->redis->get($key);
-            
+
             if ($current === false) {
                 $this->redis->setex($key, $this->windowSeconds, 1);
                 $current = 1;
             } else {
                 $current = $this->redis->incr($key);
+                // Defensive: ensure TTL is always set after incr.
+                // Without this, a race condition (get→expire→incr) creates
+                // a key with no TTL, permanently locking the user out.
+                if ($this->redis->ttl($key) == -1) {
+                    $this->redis->expire($key, $this->windowSeconds);
+                }
             }
-            
+
             $remaining = max(0, $this->maxRequests - $current);
-            $reset = time() + $this->redis->ttl($key);
-            
+            $ttl = $this->redis->ttl($key);
+            $reset = time() + ($ttl > 0 ? $ttl : $this->windowSeconds);
+
             return [
                 'allowed' => $current <= $this->maxRequests,
                 'remaining' => $remaining,

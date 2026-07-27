@@ -10,7 +10,7 @@ import {
   NetworkCheck, Dangerous, PersonAdd, PersonRemove, Shield, Lock,
   CheckCircle, Warning, AdminPanelSettings
 } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 
@@ -69,16 +69,21 @@ export default function SshSessionsPage() {
   const [killDialog, setKillDialog] = useState<{ open: boolean; sessionId?: string; killAll?: boolean; restartSshd?: boolean }>({ open: false });
   const [newUsername, setNewUsername] = useState('');
   const [saving, setSaving] = useState(false);
+  const inFlightRef = useRef(false);
 
   const loadData = useCallback(() => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setLoading(true);
     apiClient.get('/api/monitor.php?action=ssh')
       .then(({ data }) => setData(data))
       .catch((e) => {
-        console.error(e);
-        setSnackbar({ open: true, message: 'Failed to fetch SSH sessions', severity: 'error' });
+        if (e?.response?.status !== 429) {
+          console.error(e);
+          setSnackbar({ open: true, message: 'Failed to fetch SSH sessions', severity: 'error' });
+        }
       })
-      .finally(() => setLoading(false));
+      .finally(() => { setLoading(false); inFlightRef.current = false; });
   }, []);
 
   const loadSshUsers = useCallback(() => {
@@ -92,7 +97,7 @@ export default function SshSessionsPage() {
   useEffect(() => {
     loadData();
     loadSshUsers();
-    const interval = setInterval(loadData, 30000); // 30s — was 15s, reduces 429 storms
+    const interval = setInterval(loadData, 60000);
     return () => clearInterval(interval);
   }, [loadData, loadSshUsers]);
 

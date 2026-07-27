@@ -11,7 +11,7 @@
  *   POST /api/telegram-users.php?action=remove             - Remove user (chat_id)
  *   GET  /api/telegram-users.php?action=logs&limit=50      - Get interaction logs
  */
-session_start();
+require_once __DIR__ . '/session_helper.php';
 
 if (empty($_SESSION['logged_in'])) {
     header('Content-Type: application/json');

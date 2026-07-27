@@ -1,5 +1,4 @@
 # Presentation directory — auth-gated via PHP
-# index.php is the canonical entry point with inline auth gate
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
@@ -7,8 +6,8 @@
   # Serve index.php for directory requests
   DirectoryIndex index.php
 
-  # Redirect index.html → index.php (relative redirect)
-  RewriteRule ^index\.html$ /presentation/index.php [R=301,L]
+  # Rewrite index.html → index.php (internal, no 301 to avoid browser cache)
+  RewriteRule ^index\.html$ /presentation/index.php [L]
 </IfModule>
 
 # Block direct access to backup files

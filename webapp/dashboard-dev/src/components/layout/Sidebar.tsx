@@ -39,6 +39,11 @@ import {
   Sync as CicdIcon,
   Storage as DbIcon,
   Notifications as AlertsIcon,
+  Email as EmailIcon,
+  Telegram as TelegramIconSidebar,
+  NotificationsActive as PushIconSidebar,
+  Hub as HubIcon,
+  Tune as TuneIcon,
   TerminalOutlined as ActionsIcon,
   DataObject as EtlIcon,
   Cloud as CloudIcon,
@@ -104,7 +109,7 @@ const navItems: NavItem[] = [
     icon: <CicdIcon />,
     children: [
       { path: '/cicd', label: 'Pipeline', icon: <CicdIcon /> },
-      { path: '/tools/actions', label: 'Script Runner', icon: <ScriptsIcon /> },
+      { path: '/tools/script-runner', label: 'Script Runner', icon: <ScriptsIcon /> },
     ]
   },
   {
@@ -119,8 +124,10 @@ const navItems: NavItem[] = [
     label: 'Notifications',
     icon: <AlertsIcon />,
     children: [
-      { path: '/notifications/telegram', label: 'Telegram Bot', icon: <AlertsIcon /> },
-      { path: '/notifications/push', label: 'Push (Webpushr)', icon: <ActionsIcon /> },
+      { path: '/notifications/hub',      label: 'Hub / Overview',     icon: <HubIcon /> },
+      { path: '/notifications/email',    label: 'Email',               icon: <EmailIcon /> },
+      { path: '/notifications/telegram', label: 'Telegram Bot',        icon: <TelegramIconSidebar /> },
+      { path: '/notifications/push',     label: 'Push (Webpushr)',     icon: <PushIconSidebar /> },
     ]
   },
   {
@@ -129,6 +136,7 @@ const navItems: NavItem[] = [
     children: [
       { path: '/plans', label: 'Plans & Roadmap', icon: <TrendingUp /> },
       { path: '/tasks', label: 'Tasks', icon: <Task /> },
+      { path: '/tools/task-queue', label: 'Task Queue (Ops)', icon: <Task /> },
       { path: '/tools/audit', label: 'Audit Trail', icon: <HistoryIcon /> },
     ]
   },
@@ -526,7 +534,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
           />
           <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
         </Box>
-        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v4.4.0-TSM · technostationery.com</Typography>
+        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v5.1.2 · technostationery.com</Typography>
       </Box>
     </Box>
   );

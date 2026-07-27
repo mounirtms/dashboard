@@ -61,3 +61,15 @@ webapp/final_fix.py
 webapp/convert_svg.py
 webapp/orders_page*.json
 webapp/magento-audit/
+# Root-owned build backup dir (permission workaround)
+build/assets.root_backup/
+# Playwright browsers
+webapp/pw-browsers/
+# Presentation test/debug files
+presentation/test_*.php
+presentation/screenshots/
+presentation/checkout-flow-v8.svg
+presentation/logo.png
+
+# Stale intermediate build chunks
+build/assets/index-D2hPmIA3.js

@@ -24,7 +24,7 @@
   <script>
     (function() {
       // Build stamp injected by post-build.sh — bump forces stale SW eviction
-      var BUILD_STAMP = '1783952482';
+      var BUILD_STAMP = 'v5.2.0-202607271302';
       var STAMP_KEY   = '_tsm_build';
       var prev = localStorage.getItem(STAMP_KEY);
       if (prev !== BUILD_STAMP) {
@@ -50,15 +50,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/build/assets/index-hghTccx2.js"></script>
-  <link rel="modulepreload" crossorigin href="/build/assets/rolldown-runtime-S-ySWqyJ.js">
-  <link rel="modulepreload" crossorigin href="/build/assets/vendor-misc-B4rObe1B.js">
-  <link rel="modulepreload" crossorigin href="/build/assets/vendor-react-DIOXj1i6.js">
-  <link rel="modulepreload" crossorigin href="/build/assets/vendor-mui-DE14VqdF.js">
-  <link rel="modulepreload" crossorigin href="/build/assets/vendor-mui-icons-AvuluTzt.js">
-  <link rel="modulepreload" crossorigin href="/build/assets/vendor-mui-datagrid-EKdpEg4m.js">
-  <link rel="modulepreload" crossorigin href="/build/assets/vendor-axios-DYuxaIP3.js">
-  <link rel="modulepreload" crossorigin href="/build/assets/vendor-recharts-Fz9uXw0u.js">
+  <!-- BUILD_STAMP: v5.1.1-202607271233 -->
+  <script type="module" crossorigin src="/build/assets/index-DbSlwf9Q.js"></script>
+  <link rel="modulepreload" crossorigin href="/build/assets/rolldown-runtime-QTnfLwEv.js">
+  <link rel="modulepreload" crossorigin href="/build/assets/vendor-misc-DgUipCOo.js">
+  <link rel="modulepreload" crossorigin href="/build/assets/vendor-react-0ZH1jpm5.js">
+  <link rel="modulepreload" crossorigin href="/build/assets/vendor-mui-Bzv9vyXk.js">
+  <link rel="modulepreload" crossorigin href="/build/assets/vendor-mui-icons-CMO7N5-o.js">
+  <link rel="modulepreload" crossorigin href="/build/assets/vendor-axios-BGmZl9Qd.js">
+  <link rel="modulepreload" crossorigin href="/build/assets/vendor-recharts-DfL1q_-h.js">
+  <link rel="modulepreload" crossorigin href="/build/assets/vendor-mui-datagrid-BbxG4iDs.js">
 </head>
 <body>
   <div id="root"></div>
@@ -80,25 +81,32 @@
   </script>
   <!-- end webpushr tracking code -->
   <script>
-    // Trigger subscription prompt once — debounced, only fires when SDK is fully ready
+    // Trigger subscription prompt once — safe SDK-ready detection.
+    // The 'apply' TypeError happens when webpushr() is called while the queue
+    // wrapper is still active (webpushr.q exists) OR before internal init.
+    // Fix: use webpushr('sw', callback) as SDK-ready signal; fall back to polling
+    // that checks webpushr.sw is defined (set after SDK fully inits).
     (function() {
       if (sessionStorage.getItem('webpushr_prompted')) return;
+      function doSubscribe() {
+        if (sessionStorage.getItem('webpushr_prompted')) return;
+        try {
+          window.webpushr('subscribe');
+          sessionStorage.setItem('webpushr_prompted', '1');
+        } catch(e) {
+          console.warn('[TSM] webpushr subscribe skipped:', e.message);
+        }
+      }
+      // Poll for SDK full init: webpushr.sw property is only set once SDK replaces
+      // the queue stub with the real implementation.
       var attempts = 0;
       var t = setInterval(function() {
         attempts++;
-        // webpushr must be a function (SDK loaded) AND have processed its queue
-        if (typeof webpushr === 'function' && (!webpushr.q || webpushr.q.length === 0)) {
+        if (typeof window.webpushr === 'function' && window.webpushr.sw) {
           clearInterval(t);
-          setTimeout(function() {
-            try {
-              webpushr('subscribe');
-              sessionStorage.setItem('webpushr_prompted', '1');
-            } catch(e) {
-              console.warn('[TSM] webpushr subscribe error:', e);
-            }
-          }, 3000);
+          setTimeout(doSubscribe, 3500); // extra delay for service worker registration
         }
-        if (attempts > 50) clearInterval(t); // give up after 10s
+        if (attempts > 60) { clearInterval(t); } // 12s timeout
       }, 200);
     })();
   </script>

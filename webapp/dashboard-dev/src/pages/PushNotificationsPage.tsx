@@ -1,11 +1,32 @@
-import { Box, Typography, Grid, Card, CardContent, Button, TextField, MenuItem, Select, FormControl, InputLabel, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, ListItemIcon, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, LinearProgress } from '@mui/material';
-import { Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh, Segment, Code, CloudUpload, BarChart, TrendingUp, History, Warning, Error as ErrorIcon, Info as InfoIcon, Language, Public, Devices, Web, Dns, Person, Visibility } from '@mui/icons-material';
+import {
+  Box, Typography, Grid, Card, CardContent, Button, TextField, MenuItem,
+  Select, FormControl, InputLabel, Chip, Divider, Dialog, DialogTitle,
+  DialogContent, DialogActions, Snackbar, Alert, CircularProgress, List,
+  ListItem, ListItemText, ListItemIcon, Tabs, Tab, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, Paper, LinearProgress,
+  Tooltip, IconButton,
+} from '@mui/material';
+import {
+  Campaign, Send, Schedule, Groups, Speed, CheckCircle, Sync, Refresh,
+  Segment, Code, CloudUpload, BarChart, TrendingUp, History, Warning,
+  Error as ErrorIcon, Info as InfoIcon, Language, Public, Devices, Web,
+  Dns, Person, FlashOn, NotificationsActive, Build, ShoppingCart,
+  LocalOffer, Security as SecurityIcon, BugReport, Bolt,
+} from '@mui/icons-material';
 import { useState, useEffect } from 'react';
-import { fetchPushStats, sendPushNotification, syncSubscribers, fetchSegments, fetchDeliveryStats, fetchSubscriberAnalytics, fetchSubscribers, fetchGeoAnalytics, fetchDeviceAnalytics, fetchBrowserAnalytics, fetchOsAnalytics, uploadPushImage, PushStats, Segment as SegmentType } from '../api/notifications';
+import {
+  fetchPushStats, sendPushNotification, syncSubscribers, fetchSegments,
+  fetchDeliveryStats, fetchSubscriberAnalytics, fetchSubscribers,
+  fetchGeoAnalytics, fetchDeviceAnalytics, fetchBrowserAnalytics,
+  fetchOsAnalytics, uploadPushImage,
+  PushStats, Segment as SegmentType,
+} from '../api/notifications';
+import apiClient from '../api/client';
 import { usePermissions } from '../hooks/usePermissions';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
 
+// ── Types ──────────────────────────────────────────────────────────────────────
 interface AlertLogEntry {
   timestamp: string;
   severity: 'info' | 'warning' | 'critical';
@@ -21,6 +42,17 @@ interface TabPanelProps {
   value: number;
 }
 
+interface PresetNotification {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+  title: string;
+  message: string;
+  url: string;
+  tag: string;
+}
+
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
   return (
@@ -30,12 +62,98 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+// ── Preset Notifications ───────────────────────────────────────────────────────
+const PRESET_NOTIFICATIONS: PresetNotification[] = [
+  {
+    key: 'flash_sale',
+    label: 'Flash Sale',
+    icon: <FlashOn sx={{ fontSize: 18 }} />,
+    color: '#ef4444',
+    title: '🔥 Flash Sale — 24h Only!',
+    message: 'Up to 40% off on select products. Limited stock available — grab yours now!',
+    url: 'https://technostationery.com/sale',
+    tag: 'flash-sale',
+  },
+  {
+    key: 'new_arrivals',
+    label: 'New Arrivals',
+    icon: <ShoppingCart sx={{ fontSize: 18 }} />,
+    color: '#3b82f6',
+    title: '✨ New Products Just In!',
+    message: 'Fresh stationery and office supplies have landed. Shop the latest collection.',
+    url: 'https://technostationery.com/new',
+    tag: 'new-arrivals',
+  },
+  {
+    key: 'promotion',
+    label: 'Promotion',
+    icon: <LocalOffer sx={{ fontSize: 18 }} />,
+    color: '#10b981',
+    title: '🎁 Special Offer for You',
+    message: 'Use code TSAVE15 for 15% off your next order. Valid this week only.',
+    url: 'https://technostationery.com',
+    tag: 'promotion',
+  },
+  {
+    key: 'server_alert',
+    label: 'Server Alert',
+    icon: <SecurityIcon sx={{ fontSize: 18 }} />,
+    color: '#f59e0b',
+    title: '⚠️ Server Alert — Action Required',
+    message: 'A server issue has been detected and is being investigated. Some services may be affected.',
+    url: 'https://dashboard.technostationery.com',
+    tag: 'server-alert',
+  },
+  {
+    key: 'maintenance',
+    label: 'Maintenance',
+    icon: <Build sx={{ fontSize: 18 }} />,
+    color: '#8b5cf6',
+    title: '🔧 Scheduled Maintenance',
+    message: 'Planned maintenance will occur tonight 11PM–2AM. Services will be unavailable during this window.',
+    url: 'https://technostationery.com',
+    tag: 'maintenance',
+  },
+  {
+    key: 'back_online',
+    label: 'Back Online',
+    icon: <CheckCircle sx={{ fontSize: 18 }} />,
+    color: '#10b981',
+    title: '✅ Services Restored',
+    message: 'All systems are back online and operating normally. Thank you for your patience.',
+    url: 'https://technostationery.com',
+    tag: 'status-update',
+  },
+  {
+    key: 'order_update',
+    label: 'Order Update',
+    icon: <NotificationsActive sx={{ fontSize: 18 }} />,
+    color: '#06b6d4',
+    title: '📦 Your Order Has Shipped!',
+    message: 'Your recent order is on its way. Track your shipment in My Account.',
+    url: 'https://technostationery.com/account/orders',
+    tag: 'order-update',
+  },
+  {
+    key: 'test',
+    label: 'Test Push',
+    icon: <BugReport sx={{ fontSize: 18 }} />,
+    color: '#64748b',
+    title: '🧪 Test Notification',
+    message: 'This is a test push notification from the TechnoStationery dashboard. Everything working correctly.',
+    url: 'https://dashboard.technostationery.com',
+    tag: 'test',
+  },
+];
+
+// ── Component ──────────────────────────────────────────────────────────────────
 export default function PushNotificationsPage() {
   const { hasPermission, isAdmin } = usePermissions();
   const [activeTab, setActiveTab] = useState(0);
   const [stats, setStats] = useState<PushStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [testSending, setTestSending] = useState(false);
   // Valid envs that match webpushr.php config keys: dashboard, production, beta, dev
   const VALID_ENVS = ['dashboard', 'production', 'beta', 'dev'];
   const [selectedEnv, setSelectedEnv] = useState('production');
@@ -45,9 +163,9 @@ export default function PushNotificationsPage() {
     message: '',
     url: '',
     env: 'production',
-    segment_id: ''
+    segment_id: '',
   });
-  
+
   // Alert history
   const [alertLog, setAlertLog] = useState<AlertLogEntry[]>([]);
   const [alertLogLoading, setAlertLogLoading] = useState(false);
@@ -75,9 +193,8 @@ export default function PushNotificationsPage() {
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [geoLoading, setGeoLoading] = useState(false);
 
-  // Segment detail dialog
-  const [segmentDialogOpen, setSegmentDialogOpen] = useState(false);
-  const [selectedSegment, setSelectedSegment] = useState<any>(null);
+  // Preset dialog
+  const [presetDialogOpen, setPresetDialogOpen] = useState(false);
 
   // Schedule dialog
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -86,10 +203,8 @@ export default function PushNotificationsPage() {
   const [scheduling, setScheduling] = useState(false);
 
   // Snackbar
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success'
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({
+    open: false, message: '', severity: 'success',
   });
 
   // Re-sync
@@ -98,13 +213,16 @@ export default function PushNotificationsPage() {
   // Permission check
   const canAccess = isAdmin || hasPermission('can_access_push_notifications');
 
+  const showSnackbar = (message: string, severity: typeof snackbar.severity = 'success') =>
+    setSnackbar({ open: true, message, severity });
+
   const loadStats = (env: string) => {
     fetchPushStats(env)
       .then((data) => {
         setStats(data);
         setSegments(data.segments ?? []);
       })
-      .catch(() => setSnackbar({ open: true, message: 'Failed to load Webpushr stats', severity: 'error' }))
+      .catch(() => showSnackbar('Failed to load Webpushr stats', 'error'))
       .finally(() => setLoading(false));
   };
 
@@ -158,7 +276,6 @@ export default function PushNotificationsPage() {
   }, [activeTab]);
 
   const handleEnvChange = (env: string) => {
-    // useEffect on selectedEnv will trigger loadStats + loadAnalytics automatically
     setSelectedEnv(env);
     setPayload({ ...payload, env, segment_id: '' });
   };
@@ -168,15 +285,13 @@ export default function PushNotificationsPage() {
     if (!file) return;
     setIconFile(file);
     setIconPreview(URL.createObjectURL(file));
-    
     setUploading(true);
     try {
       const result = await uploadPushImage(file, 'icon');
       setIconUrl(result.url);
     } catch (err: any) {
-      setSnackbar({ open: true, message: 'Icon upload failed: ' + (err.message || 'Unknown error'), severity: 'error' });
-      setIconFile(null);
-      setIconPreview('');
+      showSnackbar('Icon upload failed: ' + (err.message || 'Unknown error'), 'error');
+      setIconFile(null); setIconPreview('');
     } finally {
       setUploading(false);
     }
@@ -187,23 +302,34 @@ export default function PushNotificationsPage() {
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
-    
     setUploading(true);
     try {
       const result = await uploadPushImage(file, 'image');
       setImageUrl(result.url);
     } catch (err: any) {
-      setSnackbar({ open: true, message: 'Image upload failed: ' + (err.message || 'Unknown error'), severity: 'error' });
-      setImageFile(null);
-      setImagePreview('');
+      showSnackbar('Image upload failed: ' + (err.message || 'Unknown error'), 'error');
+      setImageFile(null); setImagePreview('');
     } finally {
       setUploading(false);
     }
   };
 
+  // Apply a preset to the form
+  const applyPreset = (preset: PresetNotification) => {
+    setPayload(p => ({
+      ...p,
+      title: preset.title,
+      message: preset.message,
+      url: preset.url,
+    }));
+    setTag(preset.tag);
+    setPresetDialogOpen(false);
+    showSnackbar(`Preset "${preset.label}" applied`, 'info');
+  };
+
   const handleSend = async () => {
     if (!payload.title || !payload.message) {
-      setSnackbar({ open: true, message: 'Title and Message are required', severity: 'error' });
+      showSnackbar('Title and Message are required', 'error');
       return;
     }
     setSending(true);
@@ -215,50 +341,69 @@ export default function PushNotificationsPage() {
         image: imageUrl || undefined,
         tag: tag || undefined,
       });
-      setSnackbar({ open: true, message: 'Notification sent successfully!', severity: 'success' });
+      showSnackbar('✅ Notification sent successfully!', 'success');
       setPayload({ ...payload, title: '', message: '' });
       setIconFile(null); setIconPreview(''); setIconUrl('');
       setImageFile(null); setImagePreview(''); setImageUrl('');
       setTag('');
-      // Refresh analytics
       loadAnalytics(selectedEnv);
     } catch (e: any) {
-      setSnackbar({ open: true, message: 'Error: ' + (e.response?.data?.message || e.message), severity: 'error' });
+      showSnackbar('Error: ' + (e.response?.data?.message || e.message), 'error');
     } finally {
       setSending(false);
     }
   };
 
+  // Send test to ALL subscribers in current env
+  const handleSendTest = async () => {
+    setTestSending(true);
+    try {
+      const { data } = await apiClient.post('/api/webpushr.php?action=send_test', {
+        env: selectedEnv,
+        title: '🧪 Dashboard Test Notification',
+        message: `Test push from dashboard (${selectedEnv} env) — ${new Date().toLocaleTimeString()}`,
+      });
+      if (data.success) {
+        showSnackbar(`✅ Test sent to all ${selectedEnv} subscribers!`, 'success');
+      } else {
+        showSnackbar('Test failed: ' + (data.message || data.error || 'Unknown error'), 'error');
+      }
+    } catch (e: any) {
+      showSnackbar('Test failed: ' + (e.response?.data?.error || e.message), 'error');
+    } finally {
+      setTestSending(false);
+    }
+  };
+
   const handleSchedule = async () => {
     if (!scheduleDate || !scheduleTime) {
-      setSnackbar({ open: true, message: 'Please select date and time', severity: 'error' });
+      showSnackbar('Please select date and time', 'error');
       return;
     }
     if (!payload.title || !payload.message) {
-      setSnackbar({ open: true, message: 'Title and Message are required', severity: 'error' });
+      showSnackbar('Title and Message are required', 'error');
       return;
     }
     setScheduling(true);
     try {
       const scheduledAt = `${scheduleDate}T${scheduleTime}`;
-      await sendPushNotification({ 
-        ...payload, 
+      await sendPushNotification({
+        ...payload,
         env: selectedEnv,
         scheduled_at: scheduledAt,
         icon: iconUrl || undefined,
         image: imageUrl || undefined,
         tag: tag || undefined,
       });
-      setSnackbar({ open: true, message: `Notification scheduled for ${scheduledAt}`, severity: 'success' });
+      showSnackbar(`✅ Scheduled for ${scheduleDate} ${scheduleTime}`, 'success');
       setPayload({ ...payload, title: '', message: '' });
       setScheduleOpen(false);
-      setScheduleDate('');
-      setScheduleTime('');
+      setScheduleDate(''); setScheduleTime('');
       setIconFile(null); setIconPreview(''); setIconUrl('');
       setImageFile(null); setImagePreview(''); setImageUrl('');
       setTag('');
     } catch (e: any) {
-      setSnackbar({ open: true, message: 'Error: ' + (e.response?.data?.message || e.message), severity: 'error' });
+      showSnackbar('Error: ' + (e.response?.data?.message || e.message), 'error');
     } finally {
       setScheduling(false);
     }
@@ -268,11 +413,11 @@ export default function PushNotificationsPage() {
     setSyncing(true);
     try {
       await syncSubscribers();
-      setSnackbar({ open: true, message: 'Subscribers re-synced successfully!', severity: 'success' });
+      showSnackbar('Subscribers re-synced successfully!', 'success');
       const freshStats = await fetchPushStats(selectedEnv);
       setStats(freshStats);
     } catch (e: any) {
-      setSnackbar({ open: true, message: 'Re-sync failed: ' + (e.response?.data?.message || e.message), severity: 'error' });
+      showSnackbar('Re-sync failed: ' + (e.response?.data?.message || e.message), 'error');
     } finally {
       setSyncing(false);
     }
@@ -295,6 +440,7 @@ export default function PushNotificationsPage() {
 
   return (
     <Box>
+      {/* ─── Header ─── */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>
@@ -304,7 +450,7 @@ export default function PushNotificationsPage() {
             Webpushr integration for real-time browser alerts and marketing campaigns.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
           {VALID_ENVS.map((env) => (
             <Chip
               key={env}
@@ -317,6 +463,21 @@ export default function PushNotificationsPage() {
               size="small"
             />
           ))}
+          <Tooltip title="Send test push to all subscribers">
+            <span>
+              <Button
+                size="small"
+                variant="outlined"
+                color="warning"
+                startIcon={testSending ? <CircularProgress size={14} color="inherit" /> : <BugReport />}
+                onClick={handleSendTest}
+                disabled={testSending}
+                sx={{ ml: 1 }}
+              >
+                Send Test Push
+              </Button>
+            </span>
+          </Tooltip>
         </Box>
       </Box>
 
@@ -332,335 +493,283 @@ export default function PushNotificationsPage() {
         </Box>
       </Card>
 
-      {/* Stats Cards */}
+      {/* ─── TAB 0: Broadcast ─── */}
       <TabPanel value={activeTab} index={0}>
+        {/* Stats Cards */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <StatCard
-              label="Total Subscribers"
-              value={stats?.subscribers ?? '...'}
-              color="primary"
-              icon={<Groups />}
-            />
+            <StatCard label="Total Subscribers" value={stats?.subscribers ?? '...'} color="primary" icon={<Groups />} />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <StatCard
-              label="Active Environment"
-              value={stats?.current_env ?? selectedEnv}
-              color="info"
-              icon={<Speed />}
-            />
+            <StatCard label="Active Environment" value={stats?.current_env ?? selectedEnv} color="info" icon={<Speed />} />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <StatCard
-              label="Segments"
-              value={segments.length}
-              color="success"
-              icon={<Segment />}
-            />
+            <StatCard label="Segments" value={segments.length} color="success" icon={<Segment />} />
           </Grid>
         </Grid>
 
-      {/* Analytics Cards */}
-      {analyticsLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
-      ) : subscriberAnalytics ? (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BarChart sx={{ color: 'info.main' }} /> Subscriber Analytics
-                </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.main' }}>
-                  {subscriberAnalytics.total_subscribers?.toLocaleString() ?? 0}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>Total subscribers across all segments</Typography>
-                {subscriberAnalytics.segments?.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>Top Segments:</Typography>
-                    {subscriberAnalytics.segments.slice(0, 3).map((seg: any) => (
-                      <Chip key={seg.id} label={`${seg.title}: ${seg.subscribers}`} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
-                    ))}
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <TrendingUp sx={{ color: 'success.main' }} /> Delivery Reports
-                </Typography>
-                {deliveryStats.length > 0 ? (
-                  <Box>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      {deliveryStats.length} recent notifications tracked
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    No delivery data available yet
+        {/* Analytics summary (if available) */}
+        {!analyticsLoading && subscriberAnalytics && (
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <BarChart sx={{ color: 'info.main' }} /> Subscriber Analytics
                   </Typography>
+                  <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                    {subscriberAnalytics.total_subscribers?.toLocaleString() ?? 0}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>Total subscribers across all segments</Typography>
+                  {subscriberAnalytics.segments?.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>Top Segments:</Typography>
+                      {subscriberAnalytics.segments.slice(0, 3).map((seg: any) => (
+                        <Chip key={seg.id} label={`${seg.title}: ${seg.subscribers}`} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
+                      ))}
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TrendingUp sx={{ color: 'success.main' }} /> Delivery Reports
+                  </Typography>
+                  {deliveryStats.length > 0 ? (
+                    <Box>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {deliveryStats.length} recent notifications tracked
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      No delivery data available yet
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        <Grid container spacing={2}>
+          {/* Broadcast form */}
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Send sx={{ color: 'success.main' }} /> Quick Broadcast
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<Bolt />}
+                    onClick={() => setPresetDialogOpen(true)}
+                    sx={{ fontSize: '0.72rem' }}
+                  >
+                    Use Preset
+                  </Button>
+                </Box>
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <TextField
+                    fullWidth label="Notification Title" size="small"
+                    value={payload.title}
+                    onChange={(e) => setPayload({ ...payload, title: e.target.value })}
+                    placeholder="e.g. Flash Sale Live!"
+                    slotProps={{ htmlInput: { maxLength: 80 } }}
+                    helperText={`${payload.title.length}/80`}
+                  />
+                  <TextField
+                    fullWidth multiline rows={3} label="Message Body"
+                    value={payload.message}
+                    onChange={(e) => setPayload({ ...payload, message: e.target.value })}
+                    placeholder="Enter the alert content..."
+                    slotProps={{ htmlInput: { maxLength: 240 } }}
+                    helperText={`${payload.message.length}/240`}
+                  />
+                  <TextField
+                    fullWidth label="Target URL" size="small"
+                    value={payload.url}
+                    onChange={(e) => setPayload({ ...payload, url: e.target.value })}
+                    placeholder={`https://${selectedEnv === 'production' ? '' : selectedEnv + '.'}technostationery.com`}
+                  />
+
+                  {/* Icon and Image Upload */}
+                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    <Box sx={{ flex: 1, minWidth: 140 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
+                        Icon (192×192, ≤512KB)
+                      </Typography>
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={handleIconUpload} style={{ display: 'none' }} id="icon-upload-input" />
+                      <label htmlFor="icon-upload-input">
+                        <Button variant="outlined" component="span" size="small"
+                          startIcon={<CloudUpload sx={{ fontSize: 16 }} />} disabled={uploading}>
+                          {uploading && !iconUrl ? <CircularProgress size={16} /> : iconUrl ? 'Change Icon' : 'Upload Icon'}
+                        </Button>
+                      </label>
+                      {iconPreview && (
+                        <Box sx={{ mt: 1, width: 48, height: 48, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                          <img src={iconPreview} alt="Icon" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 140 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
+                        Large Image (1200×628, ≤2MB)
+                      </Typography>
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={handleImageUpload} style={{ display: 'none' }} id="image-upload-input" />
+                      <label htmlFor="image-upload-input">
+                        <Button variant="outlined" component="span" size="small"
+                          startIcon={<CloudUpload sx={{ fontSize: 16 }} />} disabled={uploading}>
+                          {uploading && !imageUrl ? <CircularProgress size={16} /> : imageUrl ? 'Change Image' : 'Upload Image'}
+                        </Button>
+                      </label>
+                      {imagePreview && (
+                        <Box sx={{ mt: 1, width: 120, height: 80, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                          <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+
+                  {/* Tag field */}
+                  <TextField
+                    fullWidth label="Notification Tag" size="small"
+                    value={tag}
+                    onChange={(e) => setTag(e.target.value)}
+                    placeholder="e.g. sale, promotion, alert"
+                    helperText="Groups notifications with the same tag (replaces older ones)"
+                  />
+
+                  {/* Segment + actions */}
+                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                      <InputLabel>Segment</InputLabel>
+                      <Select
+                        value={payload.segment_id} label="Segment"
+                        onChange={(e) => setPayload({ ...payload, segment_id: e.target.value })}
+                      >
+                        <MenuItem value="">All Subscribers</MenuItem>
+                        {segments.filter(s => s.type !== 'Default' || s.id !== segments[0]?.id).map((seg) => (
+                          <MenuItem key={seg.id} value={seg.id}>
+                            {seg.title} ({seg.subscribers})
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <Button
+                      variant="contained" color="success"
+                      startIcon={<Send />}
+                      onClick={handleSend}
+                      disabled={sending || !payload.title || !payload.message}
+                    >
+                      {sending ? <CircularProgress size={20} color="inherit" /> : 'Send Now'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Schedule />}
+                      onClick={() => setScheduleOpen(true)}
+                      disabled={!payload.title || !payload.message}
+                    >
+                      Schedule
+                    </Button>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Segments & Status */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Segments ({segments.length})</Typography>
+                {segments.length > 0 ? (
+                  <List dense sx={{ maxHeight: 250, overflow: 'auto' }}>
+                    {segments.map((seg) => (
+                      <ListItem key={seg.id} sx={{ px: 0 }}>
+                        <ListItemIcon sx={{ minWidth: 32 }}>
+                          <Segment sx={{ fontSize: 18, color: seg.type === 'Default' ? 'primary.main' : 'text.secondary' }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{seg.title}</Typography>}
+                          secondary={`${seg.subscribers} subscribers · ${seg.type}`}
+                        />
+                        <Chip label={seg.id} size="small" sx={{ fontSize: '0.6rem', height: 18 }} />
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography variant="body2" sx={{ color: 'text.secondary', py: 2 }}>No segments found</Typography>
                 )}
+
+                <Divider sx={{ my: 2 }} />
+
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Service Status</Typography>
+                <Box sx={{ display: 'grid', gap: 1 }}>
+                  {Object.entries(stats?.env_status || {}).map(([env, status]) => (
+                    <Box key={env} sx={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      p: 1, borderRadius: 1, backgroundColor: 'background.default',
+                      border: '1px solid', borderColor: 'divider',
+                    }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{env}</Typography>
+                      <Chip
+                        label={status}
+                        size="small"
+                        color={(status as string) === 'OK' ? 'success' : 'error'}
+                        icon={<CheckCircle sx={{ fontSize: 14 }} />}
+                        sx={{ fontWeight: 700, fontSize: '0.65rem', height: 20 }}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+
+                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                  <Button
+                    size="small" variant="outlined"
+                    startIcon={<Sync />}
+                    onClick={handleSync}
+                    disabled={syncing}
+                    sx={{ flex: 1 }}
+                  >
+                    {syncing ? <CircularProgress size={16} /> : 'Re-Sync'}
+                  </Button>
+                  <Button
+                    size="small" variant="outlined"
+                    startIcon={loading ? <CircularProgress size={14} /> : <Refresh />}
+                    onClick={() => { setLoading(true); loadStats(selectedEnv); loadAnalytics(selectedEnv); }}
+                    disabled={loading}
+                    sx={{ flex: 1 }}
+                  >
+                    Refresh
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
         </Grid>
-      ) : null}
-
-      <Grid container spacing={2}>
-        {/* Quick Broadcast Card */}
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Send sx={{ color: 'success.main' }} /> Quick Broadcast
-              </Typography>
-              <Box sx={{ display: 'grid', gap: 2 }}>
-                <TextField 
-                  fullWidth 
-                  label="Notification Title" 
-                  size="small" 
-                  value={payload.title}
-                  onChange={(e) => setPayload({...payload, title: e.target.value})}
-                  placeholder="e.g. Flash Sale Live!" 
-                />
-                <TextField 
-                  fullWidth 
-                  multiline 
-                  rows={3} 
-                  label="Message Body" 
-                  value={payload.message}
-                  onChange={(e) => setPayload({...payload, message: e.target.value})}
-                  placeholder="Enter the alert content..." 
-                />
-                <TextField 
-                  fullWidth 
-                  label="Target URL" 
-                  size="small" 
-                  value={payload.url}
-                  onChange={(e) => setPayload({...payload, url: e.target.value})}
-                  placeholder={`https://${selectedEnv}.technostationery.com`} 
-                />
-                
-                {/* Icon and Image Upload */}
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                  {/* Icon Upload */}
-                  <Box sx={{ flex: 1, minWidth: 140 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
-                      Icon (max 192x192, 512KB)
-                    </Typography>
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={handleIconUpload}
-                      style={{ display: 'none' }}
-                      id="icon-upload-input"
-                    />
-                    <label htmlFor="icon-upload-input">
-                      <Button 
-                        variant="outlined" 
-                        component="span" 
-                        size="small"
-                        startIcon={<CloudUpload sx={{ fontSize: 16 }} />}
-                        disabled={uploading}
-                      >
-                        {uploading && !iconUrl ? <CircularProgress size={16} /> : iconUrl ? 'Change Icon' : 'Upload Icon'}
-                      </Button>
-                    </label>
-                    {iconPreview && (
-                      <Box sx={{ mt: 1, width: 48, height: 48, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider', backgroundColor: 'background.default' }}>
-                        <img src={iconPreview} alt="Icon preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </Box>
-                    )}
-                  </Box>
-                  
-                  {/* Image Upload */}
-                  <Box sx={{ flex: 1, minWidth: 140 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
-                      Large Image (max 1200x1200, 2MB)
-                    </Typography>
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={handleImageUpload}
-                      style={{ display: 'none' }}
-                      id="image-upload-input"
-                    />
-                    <label htmlFor="image-upload-input">
-                      <Button 
-                        variant="outlined" 
-                        component="span" 
-                        size="small"
-                        startIcon={<CloudUpload sx={{ fontSize: 16 }} />}
-                        disabled={uploading}
-                      >
-                        {uploading && !imageUrl ? <CircularProgress size={16} /> : imageUrl ? 'Change Image' : 'Upload Image'}
-                      </Button>
-                    </label>
-                    {imagePreview && (
-                      <Box sx={{ mt: 1, width: 120, height: 80, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider', backgroundColor: 'background.default' }}>
-                        <img src={imagePreview} alt="Image preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </Box>
-                    )}
-                  </Box>
-                </Box>
-
-                {/* Tag field */}
-                <TextField 
-                  fullWidth 
-                  label="Notification Tag" 
-                  size="small" 
-                  value={tag}
-                  onChange={(e) => setTag(e.target.value)}
-                  placeholder="e.g. sale, promotion, alert"
-                  helperText="Groups notifications with the same tag"
-                />
-
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <FormControl size="small" sx={{ minWidth: 180 }}>
-                    <InputLabel>Segment</InputLabel>
-                    <Select 
-                      value={payload.segment_id} 
-                      label="Segment"
-                      onChange={(e) => setPayload({...payload, segment_id: e.target.value})}
-                    >
-                      <MenuItem value="">All Users (Default)</MenuItem>
-                      {segments.filter(s => s.type !== 'Default' || s.id !== segments[0]?.id).map((seg) => (
-                        <MenuItem key={seg.id} value={seg.id}>
-                          {seg.title} ({seg.subscribers})
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <Button 
-                    variant="contained" 
-                    color="success" 
-                    startIcon={<Send />}
-                    onClick={handleSend}
-                    disabled={sending}
-                  >
-                    {sending ? <CircularProgress size={20} color="inherit" /> : 'Send Now'}
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    startIcon={<Schedule />}
-                    onClick={() => setScheduleOpen(true)}
-                  >
-                    Schedule
-                  </Button>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Segments and Status Card */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Segments ({segments.length})</Typography>
-              {segments.length > 0 ? (
-                <List dense sx={{ maxHeight: 250, overflow: 'auto' }}>
-                  {segments.map((seg) => (
-                    <ListItem key={seg.id} sx={{ px: 0 }}>
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <Segment sx={{ fontSize: 18, color: seg.type === 'Default' ? 'primary.main' : 'text.secondary' }} />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{seg.title}</Typography>}
-                        secondary={`${seg.subscribers} subscribers · ${seg.type}`}
-                      />
-                      <Chip label={seg.id} size="small" sx={{ fontSize: '0.6rem', height: 18 }} />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="body2" sx={{ color: 'text.secondary', py: 2 }}>No segments found</Typography>
-              )}
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Service Status</Typography>
-              <Box sx={{ display: 'grid', gap: 1 }}>
-                {Object.entries(stats?.env_status || {}).map(([env, status]) => (
-                  <Box key={env} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1, borderRadius: 1, backgroundColor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{env}</Typography>
-                    <Chip 
-                      label={status} 
-                      size="small" 
-                      color={(status as string) === 'OK' ? 'success' : 'error'}
-                      icon={<CheckCircle sx={{ fontSize: 14 }} />} 
-                      sx={{ fontWeight: 700, fontSize: '0.65rem', height: 20 }} 
-                    />
-                  </Box>
-                ))}
-              </Box>
-              <Button 
-                fullWidth 
-                size="small" 
-                variant="outlined" 
-                startIcon={<Sync />}
-                onClick={handleSync}
-                disabled={syncing}
-                sx={{ mt: 2 }}
-              >
-                {syncing ? <CircularProgress size={20} /> : 'Re-Sync Subscribers'}
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
       </TabPanel>
 
-      {/* Schedule Dialog */}
-      <Dialog open={scheduleOpen} onClose={() => setScheduleOpen(false)}>
-        <DialogTitle>Schedule Notification</DialogTitle>
-        <DialogContent sx={{ minWidth: 320, pt: 2 }}>
-          <Box sx={{ display: 'grid', gap: 2 }}>
-            <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>Date</Typography>
-              <input
-                type="date"
-                min={new Date().toISOString().split('T')[0]}
-                value={scheduleDate}
-                onChange={(e) => setScheduleDate(e.target.value)}
-                style={{ width: '100%', padding: '8px', border: '1px solid #333', borderRadius: '4px', backgroundColor: '#1a1a1a', color: '#fff' }}
-              />
-            </Box>
-            <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>Time</Typography>
-              <input
-                type="time"
-                value={scheduleTime}
-                onChange={(e) => setScheduleTime(e.target.value)}
-                style={{ width: '100%', padding: '8px', border: '1px solid #333', borderRadius: '4px', backgroundColor: '#1a1a1a', color: '#fff' }}
-              />
-            </Box>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              Notification will be sent at {scheduleDate || '...'} {scheduleTime || '...'}
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setScheduleOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleSchedule} 
-            variant="contained" 
-            disabled={scheduling || !scheduleDate || !scheduleTime}
-          >
-            {scheduling ? <CircularProgress size={20} /> : 'Schedule'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Alert History Tab */}
+      {/* ─── TAB 1: Alert History ─── */}
       <TabPanel value={activeTab} index={1}>
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <History sx={{ color: 'info.main' }} /> Monitoring Alert Log
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <History sx={{ color: 'info.main' }} /> Monitoring Alert Log
+              </Typography>
+              <Button size="small" startIcon={alertLogLoading ? <CircularProgress size={12} /> : <Refresh />}
+                onClick={loadAlertLog} disabled={alertLogLoading}>
+                Refresh
+              </Button>
+            </Box>
             {alertLogLoading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
             ) : alertLog.length > 0 ? (
@@ -679,7 +788,7 @@ export default function PushNotificationsPage() {
                   <TableBody>
                     {alertLog.slice(0, 50).map((entry, i) => (
                       <TableRow key={i}>
-                        <TableCell>{new Date(entry.timestamp).toLocaleString()}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{new Date(entry.timestamp).toLocaleString()}</TableCell>
                         <TableCell>
                           <Chip
                             size="small"
@@ -688,11 +797,14 @@ export default function PushNotificationsPage() {
                             icon={entry.severity === 'critical' ? <ErrorIcon /> : entry.severity === 'warning' ? <Warning /> : <InfoIcon />}
                           />
                         </TableCell>
-                        <TableCell>{entry.title}</TableCell>
-                        <TableCell sx={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.message}</TableCell>
-                        <TableCell>{entry.channel}</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{entry.title}</TableCell>
+                        <TableCell sx={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.message}</TableCell>
                         <TableCell>
-                          <Chip size="small" label={entry.status} color={entry.status === 'sent' ? 'success' : entry.status === 'suppressed' ? 'default' : 'error'} />
+                          <Chip label={entry.channel} size="small" variant="outlined" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip size="small" label={entry.status}
+                            color={entry.status === 'sent' ? 'success' : entry.status === 'suppressed' ? 'default' : 'error'} />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -700,176 +812,169 @@ export default function PushNotificationsPage() {
                 </Table>
               </TableContainer>
             ) : (
-              <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No alerts logged yet</Typography>
+              <Box sx={{ py: 6, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>No alerts logged yet</Typography>
+                <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                  Monitoring alerts (CPU, memory, order thresholds) appear here when dispatched.
+                </Typography>
+              </Box>
             )}
           </CardContent>
         </Card>
       </TabPanel>
 
-      {/* Geography Tab */}
+      {/* ─── TAB 2: Geography ─── */}
       <TabPanel value={activeTab} index={2}>
         {geoLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
         ) : (
-        <Grid container spacing={2}>
-          {/* Subscriber Distribution by Country */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Public sx={{ color: 'info.main' }} /> Countries
-                </Typography>
-                {geoData?.countries && geoData.countries.length > 0 ? (
-                  <Box>
-                    {geoData.countries.slice(0, 10).map((country: any, i: number) => (
-                      <Box key={i} sx={{ mb: 1.5 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{country.name}</Typography>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>{country.count}</Typography>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Public sx={{ color: 'info.main' }} /> Countries
+                  </Typography>
+                  {geoData?.countries?.length > 0 ? (
+                    <Box>
+                      {geoData.countries.slice(0, 10).map((country: any, i: number) => (
+                        <Box key={i} sx={{ mb: 1.5 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{country.name}</Typography>
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{country.count}</Typography>
+                          </Box>
+                          <LinearProgress
+                            variant="determinate"
+                            value={geoData.countries[0]?.count ? (country.count / geoData.countries[0].count * 100) : 0}
+                            sx={{ height: 6, borderRadius: 1 }}
+                          />
                         </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={geoData.countries[0]?.count ? (country.count / geoData.countries[0].count * 100) : 0}
-                          sx={{ height: 6, borderRadius: 1 }}
-                        />
-                      </Box>
-                    ))}
-                  </Box>
-                ) : (
-                  <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No country data available</Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No country data available</Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
 
-          {/* Top Cities */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Language sx={{ color: 'success.main' }} /> Top Cities
-                </Typography>
-                {geoData?.cities && geoData.cities.length > 0 ? (
-                  <Box>
-                    {geoData.cities.slice(0, 10).map((city: any, i: number) => (
-                      <Box key={i} sx={{ mb: 1.5 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{city.name}</Typography>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>{city.count}</Typography>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Language sx={{ color: 'success.main' }} /> Top Cities
+                  </Typography>
+                  {geoData?.cities?.length > 0 ? (
+                    <Box>
+                      {geoData.cities.slice(0, 10).map((city: any, i: number) => (
+                        <Box key={i} sx={{ mb: 1.5 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{city.name}</Typography>
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{city.count}</Typography>
+                          </Box>
+                          <LinearProgress
+                            variant="determinate"
+                            value={geoData.cities[0]?.count ? (city.count / geoData.cities[0].count * 100) : 0}
+                            sx={{ height: 6, borderRadius: 1 }}
+                          />
                         </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={geoData.cities[0]?.count ? (city.count / geoData.cities[0].count * 100) : 0}
-                          sx={{ height: 6, borderRadius: 1 }}
-                        />
-                      </Box>
-                    ))}
-                  </Box>
-                ) : (
-                  <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No city data available</Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No city data available</Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
 
-          {/* Device Types */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Devices sx={{ color: 'primary.main' }} /> Devices
-                </Typography>
-                {deviceData ? (
-                  <Box>
-                    {Object.entries(deviceData).map(([device, count]) => (
-                      <Box key={device} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">{device}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{(count as number).toLocaleString()}</Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : (
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Devices sx={{ color: 'primary.main' }} /> Devices
+                  </Typography>
+                  {deviceData ? (
+                    <Box>
+                      {Object.entries(deviceData).map(([device, count]) => (
+                        <Box key={device} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2">{device}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{(count as number).toLocaleString()}</Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>}
+                </CardContent>
+              </Card>
+            </Grid>
 
-          {/* Browsers */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Web sx={{ color: 'success.main' }} /> Browsers
-                </Typography>
-                {browserData && browserData.length > 0 ? (
-                  <Box>
-                    {browserData.slice(0, 5).map((browser: any, i: number) => (
-                      <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">{browser.name}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{browser.count.toLocaleString()}</Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : (
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Web sx={{ color: 'success.main' }} /> Browsers
+                  </Typography>
+                  {browserData?.length > 0 ? (
+                    <Box>
+                      {browserData.slice(0, 5).map((browser: any, i: number) => (
+                        <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2">{browser.name}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{browser.count.toLocaleString()}</Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>}
+                </CardContent>
+              </Card>
+            </Grid>
 
-          {/* Operating Systems */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Dns sx={{ color: 'warning.main' }} /> Operating Systems
-                </Typography>
-                {osData && osData.length > 0 ? (
-                  <Box>
-                    {osData.slice(0, 5).map((os: any, i: number) => (
-                      <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">{os.name}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{os.count.toLocaleString()}</Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : (
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Dns sx={{ color: 'warning.main' }} /> Operating Systems
+                  </Typography>
+                  {osData?.length > 0 ? (
+                    <Box>
+                      {osData.slice(0, 5).map((os: any, i: number) => (
+                        <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2">{os.name}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{os.count.toLocaleString()}</Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : <Typography variant="body2" sx={{ color: 'text.secondary' }}>No data</Typography>}
+                </CardContent>
+              </Card>
+            </Grid>
 
-          {/* Summary */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Groups sx={{ color: 'info.main' }} /> Summary
-                </Typography>
-                <Box sx={{ display: 'grid', gap: 1 }}>
-                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Total Countries</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
-                      {geoData?.countries?.length || 0}
-                    </Typography>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Groups sx={{ color: 'info.main' }} /> Summary
+                  </Typography>
+                  <Box sx={{ display: 'grid', gap: 1 }}>
+                    <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1 }}>
+                      <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Total Countries</Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                        {geoData?.countries?.length || 0}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1 }}>
+                      <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Total Cities</Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 800, color: 'success.main' }}>
+                        {geoData?.cities?.length || 0}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box sx={{ p: 1.5, backgroundColor: 'background.default', borderRadius: 1 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Total Cities</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: 'success.main' }}>
-                      {geoData?.cities?.length || 0}
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
-        </Grid>
         )}
       </TabPanel>
 
-      {/* Subscribers Tab */}
+      {/* ─── TAB 3: Subscribers ─── */}
       <TabPanel value={activeTab} index={3}>
         <Card>
           <CardContent>
@@ -900,25 +1005,30 @@ export default function PushNotificationsPage() {
                             {sub.sid || sub.id || 'N/A'}
                           </Typography>
                         </TableCell>
-                        <TableCell>{sub.browser || sub.browser_name || 'Unknown'}</TableCell>
-                        <TableCell>{sub.os || sub.os_name || 'Unknown'}</TableCell>
-                        <TableCell>{sub.device_type || 'Unknown'}</TableCell>
-                        <TableCell>{sub.country || sub.location?.country || 'Unknown'}</TableCell>
-                        <TableCell>{sub.city || sub.location?.city || 'Unknown'}</TableCell>
-                        <TableCell>{sub.last_active || sub.created || 'N/A'}</TableCell>
+                        <TableCell>{sub.browser || sub.browser_name || '—'}</TableCell>
+                        <TableCell>{sub.os || sub.os_name || '—'}</TableCell>
+                        <TableCell>{sub.device_type || '—'}</TableCell>
+                        <TableCell>{sub.country || sub.location?.country || '—'}</TableCell>
+                        <TableCell>{sub.city || sub.location?.city || '—'}</TableCell>
+                        <TableCell>{sub.last_active || sub.created || '—'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </TableContainer>
             ) : (
-              <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No subscriber data available</Typography>
+              <Box sx={{ py: 6, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>No subscriber data available</Typography>
+                <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                  Subscribers appear here once users opt in to push notifications.
+                </Typography>
+              </Box>
             )}
           </CardContent>
         </Card>
       </TabPanel>
 
-      {/* Delivery Tab */}
+      {/* ─── TAB 4: Delivery ─── */}
       <TabPanel value={activeTab} index={4}>
         <Card>
           <CardContent>
@@ -943,7 +1053,7 @@ export default function PushNotificationsPage() {
                   <TableBody>
                     {deliveryStats.slice(0, 50).map((report: any, i: number) => (
                       <TableRow key={i}>
-                        <TableCell>{report.date || report.created || 'N/A'}</TableCell>
+                        <TableCell>{report.date || report.created || '—'}</TableCell>
                         <TableCell>{report.title || report.name || 'Notification'}</TableCell>
                         <TableCell>{report.sent?.toLocaleString() || 0}</TableCell>
                         <TableCell>{report.delivered?.toLocaleString() || 0}</TableCell>
@@ -955,14 +1065,114 @@ export default function PushNotificationsPage() {
                 </Table>
               </TableContainer>
             ) : (
-              <Typography variant="body2" sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No delivery data available yet</Typography>
+              <Box sx={{ py: 6, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>No delivery data available yet</Typography>
+                <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                  Send a notification first to see delivery stats here.
+                </Typography>
+              </Box>
             )}
           </CardContent>
         </Card>
       </TabPanel>
 
-      {/* Snackbar */}
-      <Snackbar open={snackbar.open} autoHideDuration={5000} onClose={handleCloseSnackbar}>
+      {/* ─── Preset Dialog ─── */}
+      <Dialog open={presetDialogOpen} onClose={() => setPresetDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Bolt /> Choose a Preset Notification
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+            Select a template to pre-fill the broadcast form. You can edit it before sending.
+          </Typography>
+          <Grid container spacing={1.5}>
+            {PRESET_NOTIFICATIONS.map(preset => (
+              <Grid size={{ xs: 12, sm: 6 }} key={preset.key}>
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 1.5,
+                    cursor: 'pointer',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderLeftWidth: 3,
+                    borderLeftColor: preset.color,
+                    transition: 'all 0.15s',
+                    '&:hover': {
+                      borderColor: preset.color,
+                      backgroundColor: preset.color + '10',
+                      transform: 'translateY(-1px)',
+                    },
+                  }}
+                  onClick={() => applyPreset(preset)}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <Box sx={{ color: preset.color }}>{preset.icon}</Box>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{preset.label}</Typography>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.4 }}>
+                    {preset.title}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPresetDialogOpen(false)}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ─── Schedule Dialog ─── */}
+      <Dialog open={scheduleOpen} onClose={() => setScheduleOpen(false)}>
+        <DialogTitle>Schedule Notification</DialogTitle>
+        <DialogContent sx={{ minWidth: 320, pt: 2 }}>
+          <Box sx={{ display: 'grid', gap: 2 }}>
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>Date</Typography>
+              <input
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                style={{ width: '100%', padding: '8px', border: '1px solid #333', borderRadius: '4px', backgroundColor: '#1a1a1a', color: '#fff' }}
+              />
+            </Box>
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>Time</Typography>
+              <input
+                type="time"
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+                style={{ width: '100%', padding: '8px', border: '1px solid #333', borderRadius: '4px', backgroundColor: '#1a1a1a', color: '#fff' }}
+              />
+            </Box>
+            {scheduleDate && scheduleTime && (
+              <Alert severity="info" sx={{ py: 0.5 }}>
+                <Typography variant="caption">
+                  Will send on <strong>{scheduleDate}</strong> at <strong>{scheduleTime}</strong>
+                </Typography>
+              </Alert>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setScheduleOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleSchedule}
+            variant="contained"
+            disabled={scheduling || !scheduleDate || !scheduleTime}
+          >
+            {scheduling ? <CircularProgress size={20} /> : 'Schedule'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ─── Snackbar ─── */}
+      <Snackbar open={snackbar.open} autoHideDuration={5000} onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>

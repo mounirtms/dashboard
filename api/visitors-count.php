@@ -5,7 +5,7 @@
  */
 
 ob_start();
-session_start();
+require_once __DIR__ . '/session_helper.php';
 header('Content-Type: application/json');
 header('Cache-Control: no-cache, must-revalidate');
 

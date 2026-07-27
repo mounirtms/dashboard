@@ -21,8 +21,9 @@ function getDb() {
         try {
             $pdo = Config::getPDO('dashboard_auth');
         } catch (PDOException $e) {
+            error_log('Auth DB connection failed: ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
+            echo json_encode(['error' => 'Service temporarily unavailable']);
             exit;
         }
     }

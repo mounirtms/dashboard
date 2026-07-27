@@ -4,27 +4,37 @@ import {
   Sync, CheckCircle, ArrowForward, SlideshowOutlined,
   Code, BugReport, Commit, TaskAlt, TrendingUp, OpenInNew,
 } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
 import logoTechno from '../assets/logo_techno.png';
 
+const REFRESH_INTERVAL = 60000;
+
 export default function MasterDashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const inFlightRef = useRef(false);
 
-  const fetchMasterData = useCallback(() => {
-    apiClient.get('/api/monitor.php?action=master_stats')
-      .then(({ data }) => setData(data))
-      .catch(e => console.error(e))
-      .finally(() => setLoading(false));
+  const fetchMasterData = useCallback(async () => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+    try {
+      const { data } = await apiClient.get('/api/monitor.php?action=master_stats');
+      setData(data);
+    } catch (e: any) {
+      if (e?.response?.status !== 429) console.error(e);
+    } finally {
+      setLoading(false);
+      inFlightRef.current = false;
+    }
   }, []);
 
   useEffect(() => {
     fetchMasterData();
-    const timer = setInterval(fetchMasterData, 30000);
+    const timer = setInterval(fetchMasterData, REFRESH_INTERVAL);
     return () => clearInterval(timer);
   }, [fetchMasterData]);
 

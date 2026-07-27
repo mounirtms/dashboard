@@ -1,6 +1,6 @@
 import { Box, Typography, Card, CardContent, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Collapse, TablePagination, Button, Alert } from '@mui/material';
 import { Person, ExpandMore, ExpandLess, Terminal, Storage, Memory, NetworkPing, AccessTime, Refresh } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchUserActivity, fetchBashHistory, UserData, BashHistoryEntry } from '../api/monitor';
 import LoadingState from '../components/common/LoadingState';
 
@@ -188,22 +188,27 @@ export default function UserActivityPage() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const inFlightRef = useRef(false);
 
   const loadData = useCallback(() => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setLoading(true);
     setError(null);
     fetchUserActivity()
       .then((d) => { setData(d); })
       .catch((e) => {
-        console.error('Failed to fetch user activity', e);
-        setError(e.message || 'Failed to load user activity');
+        if (e?.response?.status !== 429) {
+          console.error('Failed to fetch user activity', e);
+          setError(e.message || 'Failed to load user activity');
+        }
       })
-      .finally(() => setLoading(false));
+      .finally(() => { setLoading(false); inFlightRef.current = false; });
   }, []);
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000);
+    const interval = setInterval(loadData, 60000);
     return () => clearInterval(interval);
   }, [loadData]);
 

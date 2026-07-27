@@ -13,13 +13,16 @@ export default function QueuesPage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inFlightRef = useRef(false);
 
   const loadData = useCallback(() => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setLoading(true);
     fetchQueues()
       .then(setData)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+      .catch((e) => { if (e?.response?.status !== 429) setError(e.message); })
+      .finally(() => { setLoading(false); inFlightRef.current = false; });
   }, []);
 
   useEffect(() => {
@@ -29,7 +32,7 @@ export default function QueuesPage() {
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (autoRefresh) {
-      timerRef.current = setInterval(loadData, 30000); // 30s — was 15s, reduces 429 storms
+      timerRef.current = setInterval(loadData, 60000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [autoRefresh, loadData]);

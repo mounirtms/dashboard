@@ -235,9 +235,12 @@ switch ($action) {
     
     case 'send_test':
         requirePermission('can_send_notifications');
-        $env = $_POST['env'] ?? 'production';
-        $title = $_POST['title'] ?? '🧪 Test Notification';
-        $message = $_POST['message'] ?? 'This is a test push notification from the dashboard.';
+        // Accept both form-encoded POST and JSON body (apiClient sends JSON)
+        $rawInput = file_get_contents('php://input');
+        $jsonInput = $rawInput ? (json_decode($rawInput, true) ?? []) : [];
+        $env     = $jsonInput['env']     ?? $_POST['env']     ?? 'production';
+        $title   = $jsonInput['title']   ?? $_POST['title']   ?? '🧪 Dashboard Test Push';
+        $message = $jsonInput['message'] ?? $_POST['message'] ?? 'This is a test push notification from the TechnoStationery dashboard.';
         
         $envConfig = getEnvConfig($env);
         if (!$envConfig) {

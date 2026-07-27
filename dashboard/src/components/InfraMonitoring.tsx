@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Card,
@@ -42,20 +42,24 @@ const InfraMonitoring = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [logs, setLogs] = useState<any[]>([]);
   const [showLogs, setShowLogs] = useState(false);
+  const inFlightRef = useRef(false);
 
   const fetchVarnishStats = async () => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     try {
       setLoading(true);
       setError(null);
-      
+
       const { data } = await apiClient.get('/api/monitor.php?action=varnish');
       setVarnishStats(data);
       setLastUpdate(new Date());
     } catch (err: any) {
-      console.error('Failed to fetch Varnish stats:', err);
+      if (err?.response?.status !== 429) console.error('Failed to fetch Varnish stats:', err);
       setError(err.message || 'Failed to fetch Varnish stats');
     } finally {
       setLoading(false);
+      inFlightRef.current = false;
     }
   };
 
@@ -66,7 +70,7 @@ const InfraMonitoring = () => {
         setLogs(data.lines);
       }
     } catch (err) {
-      console.error('Failed to fetch logs:', err);
+      if (err?.response?.status !== 429) console.error('Failed to fetch logs:', err);
     }
   };
 
@@ -96,7 +100,7 @@ const InfraMonitoring = () => {
       interval = setInterval(() => {
         fetchVarnishStats();
         fetchLogs();
-      }, 30000);
+      }, 60000);
     }
     
     return () => {

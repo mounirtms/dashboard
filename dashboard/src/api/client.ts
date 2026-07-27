@@ -22,6 +22,8 @@ function isAuthUrl(url?: string): boolean {
   return AUTH_URLS.some(a => url.includes(a));
 }
 
+let _redirectingToLogin = false;
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -29,11 +31,12 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401) {
       error.isAuthError = true;
-      // Don't redirect if already on login page or request is an auth endpoint itself
       const onLoginPage = window.location.hash.startsWith('#/login') ||
                           window.location.hash.startsWith('#/reset-password');
-      if (!onLoginPage && !isAuthUrl(config?.url)) {
+      if (!onLoginPage && !isAuthUrl(config?.url) && !_redirectingToLogin) {
+        _redirectingToLogin = true;
         window.location.hash = '#/login';
+        setTimeout(() => { _redirectingToLogin = false; }, 2000);
       }
       return Promise.reject(error);
     }

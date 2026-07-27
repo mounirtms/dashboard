@@ -1,8 +1,9 @@
 import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip, Select, MenuItem, FormControl, InputLabel, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings, ErrorOutlined, Lock } from '@mui/icons-material';
+import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings, ErrorOutlined, Lock, Tune as TuneIcon } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchSettings, saveSettings, fetchPushSubscriptions, unsubscribeDevice, type UserSettings, type PushSubscription } from '../api/settings';
 import { fetchEmailSettings, saveEmailSettings, testEmailSettings, fetchEmailLogs, fetchEmailLogStats, clearEmailLogs, type EmailSettings, type EmailLog, type EmailLogStats } from '../api/notifications';
+import { fetchNotificationPreferences, saveNotificationPreferences, DEFAULT_PREFERENCES, type NotificationPreferences } from '../api/notificationPreferences';
 import { useWebpushrSubscription } from '../hooks/useWebpushrSubscription';
 
 interface TabPanelProps {
@@ -63,6 +64,12 @@ export default function SettingsPage() {
   // Push subscriptions
   const [subscriptions, setSubscriptions] = useState<PushSubscription[]>([]);
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = useWebpushrSubscription();
+
+  // Notification preferences
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>(DEFAULT_PREFERENCES);
+  const [notifPrefsLoading, setNotifPrefsLoading] = useState(false);
+  const [notifPrefsSaving, setNotifPrefsSaving] = useState(false);
+  const [notifPrefsMsg, setNotifPrefsMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Load settings from API on mount
   useEffect(() => {
@@ -207,6 +214,14 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (tab === 3) loadEmailLogs();
+    // Tab 7 = Notification Preferences (new)
+    if (tab === 7 && !notifPrefsLoading) {
+      setNotifPrefsLoading(true);
+      fetchNotificationPreferences()
+        .then(setNotifPrefs)
+        .catch(() => { /* keep defaults */ })
+        .finally(() => setNotifPrefsLoading(false));
+    }
   }, [tab, loadEmailLogs]);
 
   const handleClearEmailLogs = async () => {
@@ -252,7 +267,7 @@ export default function SettingsPage() {
 
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-          <Tabs value={tab} onChange={(_, v) => setTab(v)}>
+          <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" scrollButtons="auto">
             <Tab icon={<Person sx={{ fontSize: 18 }} />} iconPosition="start" label="Personal Info" />
             <Tab icon={<Palette sx={{ fontSize: 18 }} />} iconPosition="start" label="Appearance" />
             <Tab icon={<SettingsIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="General" />
@@ -260,6 +275,7 @@ export default function SettingsPage() {
             <Tab icon={<Api sx={{ fontSize: 18 }} />} iconPosition="start" label="API & Integration" />
             <Tab icon={<Security sx={{ fontSize: 18 }} />} iconPosition="start" label="Access Control" />
             <Tab icon={<Info sx={{ fontSize: 18 }} />} iconPosition="start" label="About" />
+            <Tab icon={<TuneIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Alert Prefs" />
           </Tabs>
         </Box>
         
@@ -798,6 +814,89 @@ export default function SettingsPage() {
                 </List>
               </Grid>
             </Grid>
+          </TabPanel>
+
+          {/* ── Tab 7: Alert Preferences ── */}
+          <TabPanel value={tab} index={7}>
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>My Alert Preferences</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Choose which events you receive on each notification channel
+                </Typography>
+              </Box>
+              <Button variant="contained" size="small"
+                startIcon={notifPrefsSaving ? <Refresh sx={{ animation: 'spin 1s linear infinite' }} /> : <Save />}
+                disabled={notifPrefsSaving || notifPrefsLoading}
+                onClick={async () => {
+                  setNotifPrefsSaving(true); setNotifPrefsMsg(null);
+                  try {
+                    await saveNotificationPreferences(notifPrefs);
+                    setNotifPrefsMsg({ type: 'success', text: 'Preferences saved.' });
+                  } catch (e: any) {
+                    setNotifPrefsMsg({ type: 'error', text: e.message });
+                  } finally { setNotifPrefsSaving(false); }
+                }}>
+                Save Preferences
+              </Button>
+            </Box>
+
+            {notifPrefsMsg && (
+              <Alert severity={notifPrefsMsg.type} onClose={() => setNotifPrefsMsg(null)} sx={{ mb: 2 }}>
+                {notifPrefsMsg.text}
+              </Alert>
+            )}
+
+            {notifPrefsLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <Refresh sx={{ animation: 'spin 1s linear infinite', fontSize: 32, color: 'text.secondary' }} />
+              </Box>
+            ) : (
+              <TableContainer component={Paper} variant="outlined">
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700, minWidth: 180 }}>Event Type</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>📧 Email</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>✈️ Telegram</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>🔔 Push</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {[
+                      { key: 'security_alert',  label: '🔴 Security Alert' },
+                      { key: 'login_alert',     label: '🔑 Login / Auth' },
+                      { key: 'task_assigned',   label: '📋 Task Assigned' },
+                      { key: 'task_approved',   label: '✅ Task Approved' },
+                      { key: 'cron_failure',    label: '⏰ Cron Failure' },
+                      { key: 'deploy_complete', label: '🚀 Deploy Complete' },
+                      { key: 'ecomscan_done',   label: '🛒 EcomScan Done' },
+                      { key: 'high_cpu',        label: '💻 High CPU/Mem' },
+                      { key: 'service_down',    label: '🔻 Service Down' },
+                      { key: 'backup_done',     label: '💾 Backup Done' },
+                    ].map(row => (
+                      <TableRow key={row.key} hover>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>{row.label}</Typography>
+                        </TableCell>
+                        {(['email', 'telegram', 'push'] as const).map(ch => {
+                          const prefKey = `${row.key}_${ch}` as keyof NotificationPreferences;
+                          return (
+                            <TableCell key={ch} align="center">
+                              <Switch size="small"
+                                checked={notifPrefs[prefKey] === true || notifPrefs[prefKey] === 1}
+                                onChange={e => setNotifPrefs(p => ({ ...p, [prefKey]: e.target.checked }))}
+                                color="primary"
+                              />
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
           </TabPanel>
         </CardContent>
         

@@ -61,8 +61,11 @@ export default function SystemAuditPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inFlightRef = useRef(false);
 
   const loadData = useCallback(() => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setLoading(true);
     setLoadError(null);
     // Use existing overview + sites + ssh endpoints to compose audit data
@@ -114,7 +117,7 @@ export default function SystemAuditPage() {
 
       setData(auditData);
     }).catch((e) => setLoadError(e.response?.data?.message || e.message || 'Failed to load audit data'))
-      .finally(() => setLoading(false));
+      .finally(() => { setLoading(false); inFlightRef.current = false; });
   }, []);
 
   useEffect(() => {
@@ -124,7 +127,7 @@ export default function SystemAuditPage() {
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (autoRefresh) {
-      timerRef.current = setInterval(loadData, 30000);
+      timerRef.current = setInterval(loadData, 60000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [autoRefresh, loadData]);

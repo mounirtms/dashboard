@@ -45,6 +45,7 @@ export interface RolePermissions {
   can_access_plans: boolean;
   can_access_cicd: boolean;
   can_access_script_runner: boolean;
+  can_access_task_queue: boolean;
   // ETL
   can_access_etl: boolean;
   created_at: string;

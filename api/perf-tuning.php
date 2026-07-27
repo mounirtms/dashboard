@@ -8,7 +8,6 @@
 header('Content-Type: application/json');
 header('Cache-Control: no-cache, must-revalidate');
 require_once __DIR__ . '/session_helper.php';
-session_start();
 
 if (empty($_SESSION['logged_in'])) {
     http_response_code(401);

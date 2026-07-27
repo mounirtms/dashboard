@@ -31,12 +31,10 @@ $cache = new CacheManager(
 $monitorApi = new MonitorApi($cache);
 
 // Rate limiting — 6000 req/min per user (100/sec headroom for multi-tab + aggressive polling)
-$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 6000, 60);
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/monitor_rate_limits', 6000, 60);
 $userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
 if (!$rateLimiter->checkOrReject($userIdentifier)) {
-    http_response_code(429);
-    echo json_encode(['error' => 'Rate limit exceeded', 'retry_after' => 5]);
-    exit;
+    exit; // checkOrReject already sent 429 response
 }
 
 // Get parameters
@@ -67,27 +65,27 @@ if (!in_array($action, $allowedActions)) {
 try {
     $data = null;
     
-    // Caching layer for read-only actions
+    // Caching layer for read-only actions — TTLs aligned with frontend 60s poll intervals
     $cacheableActions = [
-        'overview' => 15,
-        'master_stats' => 10,
-        'sites' => 30,
-        'crons' => 30,
-        'queues' => 15,
-        'dbhealth' => 60,
-        'redis' => 15,
-        'elasticsearch' => 30,
-        'varnish' => 60,  // Increased from 15s - varnishlog parsing is heavy
-        'apache' => 15,
-        'system_advanced' => 60,
-        'phpfpm_pools' => 15,
-        'alerts' => 60,
-        'cloudflare' => 60,
-        'ssh' => 10,
-        'services' => 15,
-        'network' => 10,
-        'user_activity' => 30,
-        'bash_history' => 15
+        'overview' => 30,
+        'master_stats' => 30,
+        'sites' => 60,
+        'crons' => 60,
+        'queues' => 30,
+        'dbhealth' => 120,
+        'redis' => 30,
+        'elasticsearch' => 60,
+        'varnish' => 120,
+        'apache' => 30,
+        'system_advanced' => 120,
+        'phpfpm_pools' => 30,
+        'alerts' => 120,
+        'cloudflare' => 120,
+        'ssh' => 30,
+        'services' => 30,
+        'network' => 30,
+        'user_activity' => 60,
+        'bash_history' => 30
     ];
 
     // Include site in cache key to prevent cross-site data leakage

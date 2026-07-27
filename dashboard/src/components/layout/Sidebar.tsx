@@ -172,6 +172,9 @@ const navItems: NavItem[] = [
       { path: '/reports/view.php?file=security_audit_report.html', label: 'Security Audit Report', icon: <SecurityIcon /> },
       { path: '/reports/view.php?file=ssh_hardening_report.html', label: 'SSH Hardening Report', icon: <SecurityIcon /> },
       { path: '/reports/view.php?file=2fa_setup_guide.html', label: '2FA Setup Guide', icon: <SecurityIcon /> },
+      { path: '/reports/view.php?file=MARIADB_LOAD_FIX_SUMMARY.md', label: 'MariaDB Fix Report', icon: <DocsIcon /> },
+      { path: '/reports/view.php?file=OPENCODE_UPDATE_SUMMARY.md', label: 'Opencode Update', icon: <DocsIcon /> },
+      { path: '/reports/view.php?file=gift_card_status_report.md', label: 'Gift Card Report', icon: <DocsIcon /> },
       { path: '/api/info.php', label: 'API Explorer', icon: <ApiIcon /> },
     ]
   }

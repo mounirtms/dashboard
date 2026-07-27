@@ -8,10 +8,9 @@
 if (!function_exists('start_secure_session')) {
     function start_secure_session() {
         if (session_status() === PHP_SESSION_NONE) {
-            // 12-hour session lifetime (reduced from 30 days for security)
+            // 12-hour session lifetime
             $sessionLifetime = 43200; // 12 hours
             ini_set('session.gc_maxlifetime', $sessionLifetime);
-            ini_set('session.cookie_lifetime', 0); // Session cookie expires when browser closes
             ini_set('session.cache_limiter', '');
             
             header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0', true);

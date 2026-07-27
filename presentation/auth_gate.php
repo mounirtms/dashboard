@@ -12,5 +12,9 @@ if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header('Location: https://dashboard.technostationery.com/#/login', true, 302);
     exit;
 }
+// Prevent caching of presentation content
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, private');
+header('Pragma: no-cache');
+header('Expires: 0');
 // Authenticated — continue serving the file
 ?>

@@ -122,7 +122,7 @@ export default function PlansPage() {
                   { label: 'Varnish hit rate → 60%+', done: 30 },
                   { label: 'Redis full-page cache warm', done: 45 },
                   { label: 'Cloudflare Polish + Rocket Loader', done: 60 },
-                  { label: 'DB query optimization (slow log)', done: 20 },
+                  { label: 'DB query optimization (slow log)', done: 100 },
                 ],
               },
               {

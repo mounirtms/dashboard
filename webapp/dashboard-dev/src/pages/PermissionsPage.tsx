@@ -53,6 +53,8 @@ const PERMISSION_GROUPS = [
       { key: 'can_access_plans', label: 'Plans' },
       { key: 'can_access_cicd', label: 'CI/CD' },
       { key: 'can_access_script_runner', label: 'Script Runner' },
+      { key: 'can_access_task_queue',    label: 'Task Queue' },
+      { key: 'can_access_etl',           label: 'ETL Platform' },
     ] as const,
   },
   {

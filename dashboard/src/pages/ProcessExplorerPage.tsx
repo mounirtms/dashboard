@@ -15,14 +15,17 @@ export default function ProcessExplorerPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [confirmPid, setConfirmPid] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inFlightRef = useRef(false);
 
   const loadData = useCallback(() => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setLoading(true);
     setLoadError(null);
     apiClient.get('/api/monitor.php?action=processes')
       .then(({ data }) => setProcs(data.processes || []))
-      .catch((e) => setLoadError(e.response?.data?.message || e.message || 'Failed to load process list'))
-      .finally(() => setLoading(false));
+      .catch((e) => { if (e?.response?.status !== 429) setLoadError(e.response?.data?.message || e.message || 'Failed to load process list'); })
+      .finally(() => { setLoading(false); inFlightRef.current = false; });
   }, []);
 
   useEffect(() => {
@@ -33,7 +36,7 @@ export default function ProcessExplorerPage() {
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (autoRefresh) {
-      timerRef.current = setInterval(loadData, 30000); // 30s — was 10s, reduces 429 storms
+      timerRef.current = setInterval(loadData, 60000);
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);

@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/session_helper.php';
 
 // Load environment variables
 $envFile = dirname(__DIR__) . '/.env';
@@ -25,15 +25,12 @@ error_reporting(0);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
-// Rate limiting: 500 requests per minute per user
+// Rate limiting: 500 requests per minute per user — separate storage from monitor.php
 require_once __DIR__ . '/RateLimiter.php';
 require_once __DIR__ . '/InputValidator.php';
-$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_rate_limits', 500, 60);
+$rateLimiter = new RateLimiter(sys_get_temp_dir() . '/dashboard_api_rate_limits', 500, 60);
 $userIdentifier = ($_SESSION['user_id'] ?? 'anonymous') . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
 if (!$rateLimiter->checkOrReject($userIdentifier)) {
     error_log("Dashboard API rate limit exceeded for user: $userIdentifier");

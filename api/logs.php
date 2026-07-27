@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/session_helper.php';
 if (empty($_SESSION['logged_in'])) {
     header('Content-Type: application/json');
     header('HTTP/1.1 401 Unauthorized');
@@ -12,7 +12,6 @@ if (empty($_SESSION['logged_in'])) {
  */
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 
 $recent = isset($_GET['recent']) ? (int)$_GET['recent'] : 20;
 $type = isset($_GET['type']) ? $_GET['type'] : 'all';

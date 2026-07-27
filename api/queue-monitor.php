@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . '/session_helper.php';
+require_once __DIR__ . '/config.php';
+Config::load();
 if (empty($_SESSION['logged_in'])) {
     header('Content-Type: application/json');
     header('HTTP/1.1 401 Unauthorized');
@@ -12,8 +14,6 @@ if (empty($_SESSION['logged_in'])) {
  */
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
 
 // Configuration
 $environments = [
@@ -32,10 +32,10 @@ $environments = [
 ];
 
 $dbConfig = [
-    'host' => '127.0.0.1',
-    'port' => 3307,
-    'user' => 'root',
-    'pass' => 'YourNewStrongPassword'
+    'host' => Config::get('db.host', '127.0.0.1'),
+    'port' => (int)Config::get('db.port', 3307),
+    'user' => Config::get('db.user', 'root'),
+    'pass' => Config::get('db.pass', '')
 ];
 
 // Get environment from request
