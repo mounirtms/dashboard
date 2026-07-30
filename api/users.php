@@ -20,17 +20,27 @@ if (empty($_SESSION['logged_in']) || !PermissionChecker::hasPermission('can_mana
 $action = $_GET['action'] ?? '';
 
 try {
-    $pdo = Config::getPDO('dashboard_auth');
+    $pdo = Config::getPDO(); // uses DB_PROD = technadminy7_dBT8x12y22 (Magento DB, admin_user table)
 
     switch ($action) {
         case 'list':
-            $stmt = $pdo->query("SELECT id, username, full_name, email, role, is_active, last_login, created_at FROM users ORDER BY created_at DESC");
+            $stmt = $pdo->query("
+                SELECT user_id AS id, username,
+                    CONCAT(firstname,' ',lastname) AS full_name,
+                    email, 'admin' AS role, is_active,
+                    logdate AS last_login, modified AS created_at
+                FROM admin_user ORDER BY modified DESC");
             echo json_encode($stmt->fetchAll());
             break;
 
         case 'get':
             $id = $_GET['id'] ?? 0;
-            $stmt = $pdo->prepare("SELECT id, username, full_name, email, role, is_active, last_login, created_at FROM users WHERE id = ?");
+            $stmt = $pdo->prepare("
+                SELECT user_id AS id, username,
+                    CONCAT(firstname,' ',lastname) AS full_name,
+                    email, 'admin' AS role, is_active,
+                    logdate AS last_login, modified AS created_at
+                FROM admin_user WHERE user_id = ?");
             $stmt->execute([$id]);
             $user = $stmt->fetch();
             if ($user) {
@@ -76,8 +86,8 @@ try {
                 break;
             }
 
-            // Check uniqueness
-            $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+            // Check uniqueness in admin_user
+            $stmt = $pdo->prepare("SELECT user_id FROM admin_user WHERE username = ? OR email = ?");
             $stmt->execute([$username, $email]);
             if ($stmt->fetch()) {
                 http_response_code(409);
@@ -85,9 +95,18 @@ try {
                 break;
             }
 
-            $passwordHash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
-            $stmt = $pdo->prepare("INSERT INTO users (username, email, full_name, role, password_hash, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$username, $email, $fullName, $role, $passwordHash]);
+            // Store as Magento-compatible SHA256 hash: hash:salt:1
+            $salt = bin2hex(random_bytes(16));
+            $hash = hash('sha256', $salt . $password);
+            $passwordHash = $hash . ':' . $salt . ':1';
+
+            // Split full_name into firstname/lastname for admin_user schema
+            $nameParts = explode(' ', $fullName, 2);
+            $firstname = $nameParts[0];
+            $lastname  = $nameParts[1] ?? '';
+
+            $stmt = $pdo->prepare("INSERT INTO admin_user (username, email, firstname, lastname, password, is_active, created) VALUES (?, ?, ?, ?, ?, 1, NOW())");
+            $stmt->execute([$username, $email, $firstname, $lastname, $passwordHash]);
             $userId = $pdo->lastInsertId();
 
             // Send welcome email
@@ -135,7 +154,7 @@ try {
             $role = in_array($input['role'] ?? '', ['admin', 'editor', 'moderator', 'viewer', 'marketing']) ? $input['role'] : 'viewer';
 
             // Check uniqueness (exclude current user)
-            $stmt = $pdo->prepare("SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?");
+            $stmt = $pdo->prepare("SELECT user_id FROM admin_user WHERE (username = ? OR email = ?) AND user_id != ?");
             $stmt->execute([$username, $email, $id]);
             if ($stmt->fetch()) {
                 http_response_code(409);
@@ -143,8 +162,12 @@ try {
                 break;
             }
 
-            $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ?, full_name = ?, role = ? WHERE id = ?");
-            $stmt->execute([$username, $email, $fullName, $role, $id]);
+            $nameParts = explode(' ', $fullName, 2);
+            $firstname = $nameParts[0];
+            $lastname  = $nameParts[1] ?? '';
+
+            $stmt = $pdo->prepare("UPDATE admin_user SET username = ?, email = ?, firstname = ?, lastname = ? WHERE user_id = ?");
+            $stmt->execute([$username, $email, $firstname, $lastname, $id]);
 
             // Audit log
             $auditStmt = $pdo->prepare("INSERT INTO audit_log (user_id, action, ip_address, user_agent, details) VALUES (?, 'user_updated', ?, ?, ?)");
@@ -173,7 +196,7 @@ try {
             }
 
             // Get username for logging
-            $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT username FROM admin_user WHERE user_id = ?");
             $stmt->execute([$id]);
             $targetUser = $stmt->fetch();
             if (!$targetUser) {
@@ -182,7 +205,7 @@ try {
                 break;
             }
 
-            $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+            $stmt = $pdo->prepare("DELETE FROM admin_user WHERE user_id = ?");
             $stmt->execute([$id]);
 
             // Audit log
@@ -204,7 +227,7 @@ try {
             }
 
             // Get user email
-            $stmt = $pdo->prepare("SELECT username, email FROM users WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT username, email FROM admin_user WHERE user_id = ?");
             $stmt->execute([$id]);
             $user = $stmt->fetch();
             if (!$user) {
@@ -219,11 +242,12 @@ try {
                 break;
             }
 
-            // Generate temporary password
+            // Generate temporary password as Magento-compatible SHA256 hash
             $tempPassword = substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%'), 0, 12);
-            $passwordHash = password_hash($tempPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+            $salt = bin2hex(random_bytes(16));
+            $passwordHash = hash('sha256', $salt . $tempPassword) . ':' . $salt . ':1';
 
-            $stmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE admin_user SET password = ? WHERE user_id = ?");
             $stmt->execute([$passwordHash, $id]);
 
             // Send password reset email
@@ -246,7 +270,7 @@ try {
                 break;
             }
 
-            $stmt = $pdo->prepare("UPDATE users SET is_active = 1 - is_active WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE admin_user SET is_active = 1 - is_active WHERE user_id = ?");
             $stmt->execute([$id]);
 
             // Audit log

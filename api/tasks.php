@@ -55,7 +55,7 @@ try {
     // Helper function to get user email and name
     $getUserInfo = function($username) use ($pdo) {
         if (empty($username)) return null;
-        $stmt = $pdo->prepare("SELECT email, full_name FROM users WHERE username = ?");
+        $stmt = $pdo->prepare("SELECT email, CONCAT(firstname,' ',lastname) AS full_name FROM admin_user WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         return ($user && !empty($user['email'])) ? $user : null;
@@ -94,8 +94,8 @@ try {
             // Filter by department (match assigned user's role)
             if (!empty($_GET['department'])) {
                 // Uses users.role as department — no schema changes required
-                $where[] = "assigned_to IN (SELECT username FROM users WHERE role = ?)";
-                $params[] = $_GET['department'];
+                // admin_user has no role column — skip department filter (all users are admins)
+                // $where[] = "assigned_to IN (SELECT username FROM admin_user WHERE ...)";
             }
             
             // Search in title and assigned_to

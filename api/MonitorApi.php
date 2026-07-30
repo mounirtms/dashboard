@@ -2307,8 +2307,7 @@ class MonitorApi extends BaseApi {
 
                 // Dashboard user info
                 try {
-                    $db->select_db('dashboard_auth');
-                    $stmt = $db->prepare("SELECT id, username, full_name, role, last_login, is_active, created_at FROM users WHERE username = ?");
+                    $stmt = $db->prepare("SELECT user_id AS id, username, CONCAT(firstname,' ',lastname) AS full_name, 'admin' AS role, logdate AS last_login, is_active, modified AS created_at FROM admin_user WHERE username = ?");
                     $stmt->execute([$username]);
                     $dashUser = $stmt->get_result()->fetch_assoc();
                     if ($dashUser) {
@@ -2339,11 +2338,10 @@ class MonitorApi extends BaseApi {
             // Active dashboard sessions
             $sessions = [];
             try {
-                $db->select_db('dashboard_auth');
                 $res = $db->query("
-                    SELECT s.*, u.username, u.role 
+                    SELECT s.*, u.username, 'admin' AS role
                     FROM sessions s 
-                    LEFT JOIN users u ON s.user_id = u.id 
+                    LEFT JOIN admin_user u ON u.user_id = s.user_id
                     ORDER BY s.last_activity DESC 
                     LIMIT 50
                 ");

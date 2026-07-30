@@ -8,13 +8,21 @@ export interface EtlStatus {
 }
 
 export async function fetchEtlStatus(): Promise<any> {
-  // Try both endpoints
-  const mdm = await apiClient.get('/api/mdm/connect');
-  const cegid = await apiClient.get('/api/cegid/connect');
-  return {
-    mdm: mdm.data,
-    cegid: cegid.data
-  };
+  // Run both in parallel; treat individual failures as disconnected (not a crash)
+  const [mdmResult, cegidResult] = await Promise.allSettled([
+    apiClient.get('/api/mdm/connect'),
+    apiClient.get('/api/cegid/connect'),
+  ]);
+
+  const mdm = mdmResult.status === 'fulfilled'
+    ? mdmResult.value.data
+    : { success: false, source: 'mdm', message: (mdmResult.reason as any)?.message ?? 'Unreachable' };
+
+  const cegid = cegidResult.status === 'fulfilled'
+    ? cegidResult.value.data
+    : { success: false, source: 'cegid', message: (cegidResult.reason as any)?.message ?? 'Unreachable' };
+
+  return { mdm, cegid };
 }
 
 export async function fetchMdmInventory(): Promise<any> {
