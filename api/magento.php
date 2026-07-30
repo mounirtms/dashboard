@@ -79,9 +79,22 @@ if (file_exists($configFile)) {
     }
 }
 
-// Also check environment variables
+// Use MagentoToken auto-refresh for prod env; fallback to static token otherwise
 $tokenEnv = "MAGENTO_TOKEN_" . strtoupper($env);
-$token = getenv($tokenEnv) ?: $envConfig['token'] ?? '';
+if ($env === 'prod' && file_exists(__DIR__ . '/magento-token.php')) {
+    // Auto-refreshes when near expiry (within 1 h), writes fresh token back to credentials file
+    try {
+        require_once __DIR__ . '/magento-token.php';
+        $token = MagentoToken::get();
+        $envConfig['token'] = $token;
+    } catch (Throwable $e) {
+        // Fallback to whatever is in the credentials file
+        $token = getenv($tokenEnv) ?: $envConfig['token'] ?? '';
+        error_log('[magento.php] MagentoToken::get() failed: ' . $e->getMessage());
+    }
+} else {
+    $token = getenv($tokenEnv) ?: $envConfig['token'] ?? '';
+}
 
 // Handle actions
 switch ($action) {
