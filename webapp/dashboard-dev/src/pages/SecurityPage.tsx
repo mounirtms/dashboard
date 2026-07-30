@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+const SECURITY_REFRESH_MS = 5 * 60_000; // 5 min auto-refresh for security scan
 import {
   Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Chip, useTheme, Alert, AlertTitle, Button, Tabs, Tab, Select,
@@ -211,6 +213,8 @@ function MalwareScanTab() {
   const [scanning, setScanning] = useState(false);
   const [account, setAccount] = useState('');
 
+  const scanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const loadScan = useCallback(async () => {
     try {
       const data = await fetchSecurityScan();
@@ -222,7 +226,11 @@ function MalwareScanTab() {
     }
   }, []);
 
-  useEffect(() => { loadScan(); }, [loadScan]);
+  useEffect(() => {
+    loadScan();
+    scanTimerRef.current = setInterval(loadScan, SECURITY_REFRESH_MS);
+    return () => { if (scanTimerRef.current) clearInterval(scanTimerRef.current); };
+  }, [loadScan]);
 
   const handleRunScan = async () => {
     setScanning(true);

@@ -1,8 +1,10 @@
 import { Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, Tooltip, Alert, Snackbar, CircularProgress, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Schedule, PlayArrow, Comment, Refresh } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchCrons, runCron, CronEntry } from '../api/system';
 import LoadingState from '../components/common/LoadingState';
+
+const AUTO_REFRESH_MS = 30000; // 30s auto-refresh
 
 const SITES = [
   { key: '', name: 'System (crontab)' },
@@ -21,6 +23,8 @@ export default function CronsPage() {
   const [executing, setExecuting] = useState<string | null>(null);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
 
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const loadCrons = useCallback(() => {
     setLoading(true);
     setError(null);
@@ -32,6 +36,8 @@ export default function CronsPage() {
 
   useEffect(() => {
     loadCrons();
+    timerRef.current = setInterval(loadCrons, AUTO_REFRESH_MS);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [loadCrons]);
 
   const handleRunNow = async (command: string) => {

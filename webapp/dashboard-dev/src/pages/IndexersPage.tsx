@@ -1,9 +1,11 @@
 import { Box, Typography, Card, CardContent, Button, Chip, Select, MenuItem, FormControl, InputLabel, LinearProgress, Divider, Grid, Snackbar, Alert } from '@mui/material';
 import { Refresh, PlayArrow, CheckCircle, Error, Warning, HourglassEmpty, Autorenew } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchMagentoIndexers, runMagentoIndexer } from '../api/magento';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
+
+const AUTO_REFRESH_MS = 60000; // 60s auto-refresh
 
 export default function IndexersPage() {
   const [indexers, setIndexers] = useState<any[]>([]);
@@ -12,6 +14,8 @@ export default function IndexersPage() {
   const [env, setEnv] = useState('prod');
   const [processing, setProcessing] = useState<string | null>(null);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -27,6 +31,8 @@ export default function IndexersPage() {
 
   useEffect(() => {
     loadData();
+    timerRef.current = setInterval(loadData, AUTO_REFRESH_MS);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [loadData]);
 
   const handleReindex = async (id: string) => {

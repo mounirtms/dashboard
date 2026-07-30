@@ -1,8 +1,10 @@
 import { Box, Typography, Card, CardContent, List, ListItem, ListItemText, Chip, Button, TextField, InputAdornment, TablePagination, Alert } from '@mui/material';
 import { History as AuditIcon, Refresh, Security, AdminPanelSettings, TravelExplore, Search } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
+
+const AUTO_REFRESH_MS = 30000; // 30s auto-refresh
 
 function getActionColor(action: string): string {
   const a = action?.toUpperCase() || '';
@@ -23,6 +25,8 @@ export default function AuditTrailPage() {
   const [page, setPage] = useState(0);
   const rowsPerPage = 25;
 
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const fetchAudit = useCallback(() => {
     setLoading(true);
     setError(null);
@@ -36,6 +40,8 @@ export default function AuditTrailPage() {
 
   useEffect(() => {
     fetchAudit();
+    timerRef.current = setInterval(fetchAudit, AUTO_REFRESH_MS);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [fetchAudit]);
 
   const parseEntry = (entry: string) => {

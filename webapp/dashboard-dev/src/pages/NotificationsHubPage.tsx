@@ -30,7 +30,9 @@ import {
   Refresh as RefreshIcon,
   Tune as TuneIcon,
 } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+const AUTO_REFRESH_MS = 30_000; // 30s auto-refresh for notifications hub
 import {
   fetchEmailSettings, fetchEmailLogStats, saveEmailSettings, testEmailSettings,
   fetchTelegramStats, sendTelegramTest,
@@ -128,6 +130,8 @@ export default function NotificationsHubPage() {
   const [prefsLoading, setPrefsLoading] = useState(false);
 
   // ── load overview ─────────────────────────────────────────────────────────
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const loadOverview = useCallback(async () => {
     setOverviewLoading(true);
     try {
@@ -168,7 +172,11 @@ export default function NotificationsHubPage() {
     }
   }, []);
 
-  useEffect(() => { loadOverview(); }, [loadOverview]);
+  useEffect(() => {
+    loadOverview();
+    timerRef.current = setInterval(loadOverview, AUTO_REFRESH_MS);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [loadOverview]);
   useEffect(() => { if (tab === 1) loadEmailSettings(); }, [tab, loadEmailSettings]);
   useEffect(() => { if (tab === 4) loadPrefs(); }, [tab, loadPrefs]);
 

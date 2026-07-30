@@ -5,7 +5,9 @@ import {
   IconButton, Tooltip
 } from '@mui/material';
 import { Refresh, FileDownload, Search, ClearAll, DataObject, Sync, Warning, CheckCircle, Error as ErrorIcon } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+const AUTO_REFRESH_MS = 30_000; // 30s auto-refresh for live log view
 import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 
@@ -67,6 +69,7 @@ export default function EtlLogsPage() {
   const [levelFilter, setLevelFilter] = useState('ALL');
   const [sourceFilter, setSourceFilter] = useState('ALL');
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -81,7 +84,11 @@ export default function EtlLogsPage() {
     }
   }, []);
 
-  useEffect(() => { fetchLogs(); }, [fetchLogs]);
+  useEffect(() => {
+    fetchLogs();
+    timerRef.current = setInterval(fetchLogs, AUTO_REFRESH_MS);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [fetchLogs]);
 
   const filtered = logs.filter(l => {
     const matchLevel  = levelFilter  === 'ALL' || l.level  === levelFilter;
@@ -119,7 +126,7 @@ export default function EtlLogsPage() {
             MDM/CEGID → Magento data pipeline — price sync, inventory sync, scheduler events
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
-            v5.3.0 &nbsp;·&nbsp; Last refreshed: {lastRefresh.toLocaleTimeString()}
+            v5.3.1 · Auto-refreshes every 30s · Last: {lastRefresh.toLocaleTimeString()}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>

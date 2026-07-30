@@ -1,13 +1,15 @@
 import { Box, Typography, Card, CardContent, Button, Chip, IconButton, Tooltip, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, InputAdornment } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { Person, Shield, Lock, PowerSettingsNew, Refresh, Edit, Add, Delete, Visibility, VisibilityOff, CheckCircle } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchUsers, createUser, updateUser, deleteUser, resetUserPassword, toggleUserStatus, type CreateUserInput, type UpdateUserInput, type UserRole } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import StatusBadge from '../components/common/StatusBadge';
 import { validatePassword, validatePasswordMatch } from '../utils/validation';
 import { useAuth } from '../hooks/useAuth';
 import { usePermissions } from '../hooks/usePermissions';
+
+const AUTO_REFRESH_MS = 60000; // 60s auto-refresh
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
@@ -31,6 +33,8 @@ export default function UsersPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const loadData = useCallback(() => {
     setLoading(true);
     fetchUsers()
@@ -41,6 +45,8 @@ export default function UsersPage() {
 
   useEffect(() => {
     loadData();
+    timerRef.current = setInterval(loadData, AUTO_REFRESH_MS);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [loadData]);
 
   const openAddDialog = () => {
