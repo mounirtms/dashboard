@@ -66,7 +66,7 @@ class PermissionChecker {
         if (self::$pdo === null) {
             require_once __DIR__ . '/config.php';
             Config::load();
-            self::$pdo = Config::getPDO('dashboard_auth');
+            self::$pdo = Config::getPDO();
         }
         return self::$pdo;
     }
@@ -74,9 +74,28 @@ class PermissionChecker {
     /**
      * Load all role permissions from DB into static cache
      */
+    /**
+     * Auto-create role_permissions table if it doesn't exist yet.
+     */
+    private static function ensureTable(PDO $pdo) {
+        $cols = implode(",\n            ", array_map(fn($c) => "`$c` TINYINT(1) NOT NULL DEFAULT " . (str_starts_with($c, 'can_access_magento_settings') ? '0' : '1'), self::VALID_PERMISSIONS));
+        $pdo->exec("CREATE TABLE IF NOT EXISTS role_permissions (
+            role VARCHAR(50) NOT NULL PRIMARY KEY,
+            $cols
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        // Seed default roles if empty
+        $count = $pdo->query("SELECT COUNT(*) FROM role_permissions")->fetchColumn();
+        if ((int)$count === 0) {
+            foreach (['admin', 'editor', 'moderator', 'viewer', 'marketing'] as $role) {
+                try { $pdo->exec("INSERT IGNORE INTO role_permissions (role) VALUES ('$role')"); } catch (\Exception $e) {}
+            }
+        }
+    }
+
     private static function loadPermissions() {
         if (self::$permissions === null) {
             $pdo = self::getDb();
+            self::ensureTable($pdo);
             self::ensureColumns($pdo);
             $stmt = $pdo->query("SELECT * FROM role_permissions");
             self::$permissions = [];

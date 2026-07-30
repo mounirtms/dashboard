@@ -92,12 +92,8 @@ Flight::route('GET /task-stats', function () {
 
     $db = Config::get('db');
     try {
-        $pdo = new PDO(
-            "mysql:host={$db['host']};port={$db['port']};dbname=dashboard_auth",
-            $db['user'],
-            $db['pass'],
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]
-        );
+        // Use DB_PROD (Magento DB) — dashboard_auth database does not exist
+        $pdo = Config::getPDO();
 
         $stats = $pdo->query("SELECT 
             COUNT(*) as total,

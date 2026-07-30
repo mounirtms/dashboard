@@ -42,7 +42,7 @@ function requirePermission($permission) {
 function getAuthDb() {
     static $pdo = null;
     if ($pdo === null) {
-        $pdo = Config::getPDO('dashboard_auth');
+        $pdo = Config::getPDO();
     }
     return $pdo;
 }

@@ -20,18 +20,52 @@ if (empty($_SESSION['logged_in'])) {
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 try {
-    $pdo = Config::getPDO('dashboard_auth');
+    $pdo = Config::getPDO();
 
-    // Lightweight schema check — DDL lives in migrate.php, run via CLI
-    $schemaVersion = '20260614';
+    // Auto-create tasks and task_activity tables if missing
+    $schemaVersion = '20260730';
     $cacheFile = __DIR__ . '/logs/task_schema.cache';
     if (!file_exists($cacheFile) || file_get_contents($cacheFile) !== $schemaVersion) {
-        $check = $pdo->query("SHOW TABLES LIKE 'tasks'");
-        if ($check->rowCount() === 0) {
-            http_response_code(503);
-            echo json_encode(['error' => 'Database schema not initialized. Run api/migrate.php via CLI.']);
-            exit;
-        }
+        $pdo->exec("CREATE TABLE IF NOT EXISTS tasks (
+            id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            title       VARCHAR(255)  NOT NULL,
+            description TEXT,
+            priority    ENUM('low','medium','high','critical') NOT NULL DEFAULT 'medium',
+            status      ENUM('pending','in_progress','completed','cancelled') NOT NULL DEFAULT 'pending',
+            assigned_to VARCHAR(100),
+            due_date    DATE,
+            category    VARCHAR(100),
+            created_by  VARCHAR(100),
+            created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_status  (status),
+            INDEX idx_assigned(assigned_to),
+            INDEX idx_due     (due_date)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS task_activity (
+            id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            task_id    INT UNSIGNED NOT NULL,
+            action     VARCHAR(100) NOT NULL,
+            actor      VARCHAR(100),
+            details    TEXT,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_task (task_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS audit_log (
+            id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            user_id    INT UNSIGNED,
+            action     VARCHAR(100) NOT NULL,
+            ip_address VARCHAR(45),
+            user_agent TEXT,
+            details    TEXT,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_user   (user_id),
+            INDEX idx_action (action),
+            INDEX idx_created(created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
         if (!is_dir(dirname($cacheFile))) mkdir(dirname($cacheFile), 0755, true);
         file_put_contents($cacheFile, $schemaVersion);
     }

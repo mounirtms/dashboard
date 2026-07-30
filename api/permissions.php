@@ -60,11 +60,18 @@ try {
 
             PermissionChecker::setRolePermission($role, $permission, (bool)$value);
 
-            // Audit log
+            // Audit log (table is auto-created by tasks.php on first use; silently skip if not yet created)
             try {
                 require_once __DIR__ . '/config.php';
                 Config::load();
-                $auditPdo = Config::getPDO('dashboard_auth');
+                $auditPdo = Config::getPDO();
+                $auditPdo->exec("CREATE TABLE IF NOT EXISTS audit_log (
+                    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT UNSIGNED, action VARCHAR(100) NOT NULL,
+                    ip_address VARCHAR(45), user_agent TEXT, details TEXT,
+                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_action(action)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
                 $stmt = $auditPdo->prepare("INSERT INTO audit_log (user_id, action, ip_address, user_agent, details) VALUES (?, 'permission_changed', ?, ?, ?)");
                 $stmt->execute([
                     $_SESSION['user_id'] ?? null,
