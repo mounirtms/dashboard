@@ -9,8 +9,10 @@ import {
   Check, Close, Refresh, Add, Assignment, HourglassTop,
   CheckCircle, Cancel, PlayArrow, InfoOutlined,
 } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
+
+const AUTO_REFRESH_MS = 15_000; // 15 seconds
 
 interface Task {
   id: number;
@@ -56,6 +58,7 @@ export default function TaskQueuePage() {
 
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadTasks = useCallback(async () => {
     setLoading(true);
@@ -73,7 +76,11 @@ export default function TaskQueuePage() {
     }
   }, [statusFilter]);
 
-  useEffect(() => { loadTasks(); }, [loadTasks]);
+  useEffect(() => {
+    loadTasks();
+    timerRef.current = setInterval(loadTasks, AUTO_REFRESH_MS);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [loadTasks]);
 
   const handleAction = async (taskId: number, action: 'approve' | 'reject') => {
     setActing(taskId);

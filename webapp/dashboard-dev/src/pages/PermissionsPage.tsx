@@ -125,8 +125,16 @@ export default function PermissionsPage() {
     }
   };
 
-  if (loading) return <LoadingState message="Loading permissions..." />;
-  if (!permissions) return <LoadingState message="Failed to load permissions" />;
+  if (loading && !permissions) return <LoadingState message="Loading permissions..." />;
+  if (!permissions) return (
+    <Box sx={{ p: 3 }}>
+      <Alert severity="error" action={
+        <Button color="inherit" size="small" onClick={loadData}>Retry</Button>
+      }>
+        {loadError ?? 'Failed to load permissions. Please retry.'}
+      </Alert>
+    </Box>
+  );
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

@@ -1,25 +1,31 @@
 import { Box, Typography, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, LinearProgress, Button, Alert, Snackbar, CircularProgress, Chip } from '@mui/material';
 import { Storage, CleaningServices, Info, CheckCircle, Refresh, TuneOutlined } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchDbHealth, performDbAction } from '../api/system';
 import LoadingState from '../components/common/LoadingState';
 import { formatNumber } from '../utils/formatters';
+
+const AUTO_REFRESH_MS = 60_000; // 60 seconds
 
 export default function DbHealthPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState<string | null>(null);
   const [notify, setNotify] = useState({ open: false, message: '', severity: 'success' as any });
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadData = useCallback(() => {
     setLoading(true);
     fetchDbHealth()
-      .then(setData)
+      .then(d => { setData(d); setLastRefresh(new Date()); })
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     loadData();
+    timerRef.current = setInterval(loadData, AUTO_REFRESH_MS);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [loadData]);
 
   const handleOptimize = async (db: string, table: string) => {
@@ -50,7 +56,12 @@ export default function DbHealthPage() {
             MariaDB {data.version} performance and storage optimization.
           </Typography>
         </Box>
-        <Button startIcon={<Refresh />} variant="outlined" onClick={loadData} disabled={loading}>Refresh</Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+            Auto-refreshes every 60s · Last: {lastRefresh.toLocaleTimeString()}
+          </Typography>
+          <Button startIcon={<Refresh />} variant="outlined" onClick={loadData} disabled={loading}>Refresh</Button>
+        </Box>
       </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>

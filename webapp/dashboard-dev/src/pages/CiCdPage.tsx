@@ -10,6 +10,7 @@ import {
 
 // Static CI/CD data — real git stats from mounirtms/dashboard
 const PIPELINE_RUNS = [
+  { id: '61820393', msg: 'fix(v5.3.1): InfrastructurePage 4-tab rewrite + full quality pass (batch 1+2+3) — 23 files: DB/Network monitoring, TerminalAI onKeyDown, QueuesPage Alert+Retry, 20+ console.error removed, v5.3.0 unified', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 30, 2026', duration: '2m 42s', files: 23  },
   { id: '7bd03cc0', msg: 'deploy(v5.2.1): new Vite chunk index-BmWyBmes.js — deploy unblocked (mv build/assets root-owned → new writable dir)', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 27, 2026', duration: '0m 58s', files: 5   },
   { id: '6220be7f', msg: 'feat(v5.2.1): telegram bot fix (QoderCLI.php tracked) + webpushr JSON body fix + push presets + TelegramPage grouped commands + PushNotificationsPage 8 presets + MUI v9 slotProps', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 27, 2026', duration: '2m 14s', files: 7   },
   { id: 'f176fe24', msg: 'feat(presentation): v5.0.1 — auth gate fix (php_value→index.php inline), Algeria SVG 58 wilayas, S17b 5-year chart, EcomScan 125 synced all slides, /presentation/ 302→/#/login verified', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 11, 2026', duration: '1m 48s', files: 963 },
@@ -35,8 +36,8 @@ const PIPELINE_RUNS = [
 ];
 
 const BRANCH_STATUS = [
-  { name: 'main',                  sha: 'b92ede19', behind: 5,  ahead: 0, status: 'behind', desc: 'Merge target — 5 commits behind genspark_ai_developer (v5.2.1: telegram fix, webpushr presets, infra improvements, MUI v9)' },
-  { name: 'genspark_ai_developer', sha: '7bd03cc0', behind: 0,  ahead: 0, status: 'current', desc: 'Active dev branch — PR #5 open → main (v5.2.1: telegram bot fix + webpushr presets + infrastructure page + quality pass)' },
+  { name: 'main',                  sha: 'b92ede19', behind: 4,  ahead: 0, status: 'behind', desc: 'Merge target — 4 commits behind genspark_ai_developer (v5.3.1: InfraPage rewrite, quality pass, version unification, console.error cleanup)' },
+  { name: 'genspark_ai_developer', sha: '61820393', behind: 0,  ahead: 0, status: 'current', desc: 'Active dev branch — PR #5 open → main (v5.3.1: InfraPage 4-tab rewrite, 23-file quality pass, all versions v5.3.1)' },
   { name: 'master (local)',        sha: 'current',  behind: 0,  ahead: 21, status: 'ahead', desc: 'Local master — 21 commits ahead of origin/master' },
 ];
 
@@ -135,8 +136,8 @@ export default function CiCdPage() {
               ))}
               <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>v5.2.1-202607271542</code> &nbsp;·&nbsp;
-                  Bundle: <code style={{ color: '#22c55e' }}>index-BmWyBmes.js</code> (584 KB) &nbsp;·&nbsp;
+                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>v5.3.1-202607302200</code> &nbsp;·&nbsp;
+                  Bundle: <code style={{ color: '#22c55e' }}>index-BqB_RUU0.js</code> (594 KB) &nbsp;·&nbsp;
                   Chunks: <code style={{ color: '#22c55e' }}>11</code>
                 </Typography>
               </Box>

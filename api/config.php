@@ -6,6 +6,7 @@
  * a unified configuration interface for all API endpoints.
  */
 
+if (!class_exists('Config')) {
 class Config {
     private static $config = [];
     private static $loaded = false;
@@ -231,3 +232,4 @@ class Config {
         return DatabasePool::getPDO($dsn, $db['user'], $db['pass']);
     }
 }
+} // end if (!class_exists('Config'))

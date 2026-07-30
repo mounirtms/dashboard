@@ -535,7 +535,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
           />
           <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
         </Box>
-        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v5.2.1 · technostationery.com</Typography>
+        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v5.3.1 · technostationery.com</Typography>
       </Box>
     </Box>
   );

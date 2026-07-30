@@ -788,8 +788,8 @@ export default function SettingsPage() {
                   <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>Techno Monitor</Typography>
                   <Typography variant="body2" sx={{ mb: 2 }}>The comprehensive infrastructure management platform for TechnoStationery e-commerce systems.</Typography>
                   <Box sx={{ display: 'grid', gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.2.1</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>v5.2.1-202607271542</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.3.1</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>v5.3.1-202607302200</strong></Typography>
                     <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>July 27, 2026</strong></Typography>
                   </Box>
                 </Box>
