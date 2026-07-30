@@ -64,12 +64,35 @@ function verifyMagentoPassword(string $password, string $storedHash): bool {
     return false;
 }
 
-// Get database connection
+// Get database connection — auto-creates sessions, remember_tokens on first call
 function getDb() {
     static $pdo = null;
     if ($pdo === null) {
         try {
             $pdo = Config::getPDO(); // uses DB_PROD = technadminy7_dBT8x12y22 (Magento DB)
+
+            // Ensure sessions table exists (used to track active dashboard sessions)
+            $pdo->exec("CREATE TABLE IF NOT EXISTS sessions (
+                id           VARCHAR(128) NOT NULL PRIMARY KEY,
+                user_id      INT UNSIGNED NOT NULL,
+                ip_address   VARCHAR(45),
+                user_agent   TEXT,
+                last_activity INT UNSIGNED NOT NULL,
+                INDEX idx_user (user_id),
+                INDEX idx_activity (last_activity)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            // Ensure remember_tokens table exists (used for 'Remember Me' logins)
+            $pdo->exec("CREATE TABLE IF NOT EXISTS remember_tokens (
+                id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                user_id    INT UNSIGNED NOT NULL,
+                token      VARCHAR(64) NOT NULL UNIQUE,
+                expires    DATETIME NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_user  (user_id),
+                INDEX idx_token (token)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
         } catch (PDOException $e) {
             error_log('Auth DB connection failed: ' . $e->getMessage());
             http_response_code(500);
