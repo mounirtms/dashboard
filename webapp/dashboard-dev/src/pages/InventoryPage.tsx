@@ -217,7 +217,7 @@ export default function InventoryPage() {
       {/* ── DataGrid ── */}
       <Card>
         <DataGrid
-          rows={items}
+          rows={items ?? []}
           columns={columns}
           loading={loading}
           paginationModel={paginationModel}

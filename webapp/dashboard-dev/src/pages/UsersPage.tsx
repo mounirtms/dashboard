@@ -286,7 +286,7 @@ export default function UsersPage() {
 
       <Card sx={{ flexGrow: 1 }}>
         <DataGrid
-          rows={users}
+          rows={users ?? []}
           columns={columns}
           density="compact"
           disableRowSelectionOnClick

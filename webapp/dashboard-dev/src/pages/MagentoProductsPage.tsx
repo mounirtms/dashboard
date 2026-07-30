@@ -1,5 +1,5 @@
 import { Box, Typography, Button, TextField, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, IconButton, Tooltip, Alert, Snackbar, Drawer, Grid, Card, CardContent, InputAdornment, Divider } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import { Add, Delete, Edit, CloudUpload, FileDownload, Search, Refresh, Close, Save, Image as ImageIcon, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchMagentoProducts, saveMagentoProduct, deleteMagentoProduct, uploadProductMedia, type MagentoProduct } from '../api/magento';
@@ -21,7 +21,7 @@ export default function MagentoProductsPage() {
   const [pageSize, setPageSize] = useState(20);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [selection, setSelection] = useState<number[]>([]);
+  const [selection, setSelection] = useState<GridRowSelectionModel>({ type: 'include', ids: new Set<number>() });
   const [editProduct, setEditProduct] = useState<Partial<MagentoProduct> | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -40,12 +40,21 @@ export default function MagentoProductsPage() {
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchMagentoProducts(env, page + 1, pageSize, debouncedSearch || undefined);
+      // Handle graceful error response from proxy (Magento 401/403 wrapped as 200 with error field)
+      if ((data as any).error) {
+        setError((data as any).error);
+        setProducts([]);
+        setTotalCount(0);
+        return;
+      }
       setProducts(data.items || []);
       setTotalCount(data.total_count || 0);
     } catch (e: any) {
-      setError(e.message);
+      setError(e.response?.data?.message || e.message || 'Failed to load products');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -58,7 +67,8 @@ export default function MagentoProductsPage() {
   };
 
   const handleBulkDelete = () => {
-    const skus = selection.map(id => products.find(p => p.id === id)?.sku).filter((s): s is string => !!s);
+    const selIds = selection.type === 'include' ? Array.from(selection.ids as Set<number>) : [];
+    const skus = selIds.map(id => products.find(p => p.id === id)?.sku).filter((s): s is string => !!s);
     if (!skus.length) return;
     setDeleteDialog({ open: true, bulkSkus: skus });
   };
@@ -72,7 +82,7 @@ export default function MagentoProductsPage() {
           try { await deleteMagentoProduct(s, env); } catch { /* continue */ }
         }
         setToast({ message: `${bulkSkus.length} product(s) deleted`, severity: 'success' });
-        setSelection([]);
+        setSelection({ type: 'include', ids: new Set<number>() });
       } else if (sku) {
         await deleteMagentoProduct(sku, env);
         setToast({ message: `Product ${sku} deleted`, severity: 'success' });
@@ -164,16 +174,13 @@ export default function MagentoProductsPage() {
     )},
   ];
 
-  if (error && !products.length) return (
-    <Box sx={{ p: 3 }}>
-      <Alert severity="error" action={<Button color="inherit" size="small" onClick={loadProducts}>Retry</Button>}>
-        {error}
-      </Alert>
-    </Box>
-  );
-
   return (
     <Box>
+      {error && (
+        <Alert severity="warning" sx={{ mb: 2 }} action={<Button color="inherit" size="small" onClick={loadProducts}>Retry</Button>}>
+          {error}
+        </Alert>
+      )}
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>Products</Typography>
@@ -191,7 +198,7 @@ export default function MagentoProductsPage() {
             <Button variant="contained" startIcon={<Add />} onClick={openNewProduct}>Add Product</Button>
           </PermissionGate>
           <PermissionGate permission="can_bulk_products">
-            <Button variant="outlined" startIcon={<CloudUpload />} onClick={() => { setUploadSku(selection.length === 1 ? (products.find(p => p.id === selection[0])?.sku || '') : ''); setUploadOpen(true); }}>
+            <Button variant="outlined" startIcon={<CloudUpload />} onClick={() => { const _ids = selection.type === 'include' ? Array.from(selection.ids as Set<number>) : []; setUploadSku(_ids.length === 1 ? (products.find(p => p.id === _ids[0])?.sku || '') : ''); setUploadOpen(true); }}>
               Upload Images
             </Button>
           </PermissionGate>
@@ -199,15 +206,15 @@ export default function MagentoProductsPage() {
         </Box>
       </Box>
 
-      {selection.length > 0 && (
+      {(selection.type === 'include' ? selection.ids.size : 0) > 0 && (
         <Alert severity="info" action={
           <PermissionGate permission="can_bulk_products">
             <Button color="error" size="small" startIcon={<Delete />} onClick={handleBulkDelete}>
-              Delete {selection.length} selected
+              Delete {selection.type === 'include' ? selection.ids.size : 0} selected
             </Button>
           </PermissionGate>
         } sx={{ mb: 2 }}>
-          {selection.length} product(s) selected
+          {selection.type === 'include' ? selection.ids.size : 0} product(s) selected
         </Alert>
       )}
 
@@ -218,20 +225,19 @@ export default function MagentoProductsPage() {
       </Box>
 
       <DataGrid
-        rows={products}
+        rows={products ?? []}
         columns={columns}
-        rowCount={totalCount}
+        rowCount={totalCount ?? 0}
         loading={loading}
         pageSizeOptions={[10, 20, 50, 100]}
         paginationMode="server"
         paginationModel={{ page, pageSize }}
         onPaginationModelChange={m => { setPage(m.page); setPageSize(m.pageSize); }}
         checkboxSelection
-        onRowSelectionModelChange={(model: any) => {
-          const ids = model?.ids ? Array.from(model.ids) as number[] : [];
-          setSelection(ids);
+        onRowSelectionModelChange={(model) => {
+          setSelection(model);
         }}
-        rowSelectionModel={selection as any}
+        rowSelectionModel={selection}
         getRowId={r => r.id || r.sku}
         disableRowSelectionOnClick
         sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, '& .MuiDataGrid-cell': { fontSize: '0.78rem' } }}

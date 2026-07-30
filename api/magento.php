@@ -400,6 +400,27 @@ function handleProducts($envConfig, $method, $endpoint, $pageSize, $currentPage)
     
     $result = magentoRequest($envConfig, $method, $apiEndpoint, $token, $params);
     
+    if ($result['http_code'] === 401) {
+        http_response_code(200);
+        echo json_encode([
+            'error' => 'Magento API token rejected (401). Please regenerate the token in Magento Admin → System → Integrations.',
+            'magento_http_code' => 401,
+            'items' => [],
+            'total_count' => 0,
+        ]);
+        return;
+    }
+    if ($result['http_code'] === 403) {
+        http_response_code(200);
+        echo json_encode([
+            'error' => 'Magento API token lacks permission for products (403). Ensure the integration has Magento_Catalog scope.',
+            'magento_http_code' => 403,
+            'items' => [],
+            'total_count' => 0,
+        ]);
+        return;
+    }
+    
     http_response_code($result['http_code']);
     
     if ($result['error']) {
@@ -429,7 +450,7 @@ function handleOrders($envConfig, $method, $endpoint, $pageSize, $currentPage) {
     
     if (empty($token)) {
         http_response_code(401);
-        echo json_encode(['error' => 'Magento API token not configured']);
+        echo json_encode(['error' => 'Magento API token not configured. Please add a token in Settings → Magento API.']);
         return;
     }
     
@@ -444,6 +465,27 @@ function handleOrders($envConfig, $method, $endpoint, $pageSize, $currentPage) {
     
     $result = magentoRequest($envConfig, $method, $apiEndpoint, $token, $params);
     
+    if ($result['http_code'] === 401) {
+        http_response_code(200);
+        echo json_encode([
+            'error' => 'Magento API token rejected (401). Token may have expired or lacks Magento_Sales::sales_order permission. Please regenerate the token in Magento Admin → System → Integrations.',
+            'magento_http_code' => 401,
+            'items' => [],
+            'total_count' => 0,
+        ]);
+        return;
+    }
+    if ($result['http_code'] === 403) {
+        http_response_code(200);
+        echo json_encode([
+            'error' => 'Magento API token lacks permission for orders (403). Please ensure the integration has Magento_Sales scope in Magento Admin → System → Integrations.',
+            'magento_http_code' => 403,
+            'items' => [],
+            'total_count' => 0,
+        ]);
+        return;
+    }
+    
     http_response_code($result['http_code']);
     echo $result['response'] ?: json_encode(['error' => $result['error']]);
 }
@@ -456,7 +498,7 @@ function handleCustomers($envConfig, $method, $endpoint, $pageSize, $currentPage
     
     if (empty($token)) {
         http_response_code(401);
-        echo json_encode(['error' => 'Magento API token not configured']);
+        echo json_encode(['error' => 'Magento API token not configured. Please add a token in Settings → Magento API.']);
         return;
     }
     
@@ -470,6 +512,27 @@ function handleCustomers($envConfig, $method, $endpoint, $pageSize, $currentPage
     $apiEndpoint = $endpoint ?: '/customers/search';
     
     $result = magentoRequest($envConfig, $method, $apiEndpoint, $token, $params);
+    
+    if ($result['http_code'] === 401) {
+        http_response_code(200);
+        echo json_encode([
+            'error' => 'Magento API token rejected (401). Token may have expired or lacks Magento_Customer permission. Please regenerate the token in Magento Admin → System → Integrations.',
+            'magento_http_code' => 401,
+            'items' => [],
+            'total_count' => 0,
+        ]);
+        return;
+    }
+    if ($result['http_code'] === 403) {
+        http_response_code(200);
+        echo json_encode([
+            'error' => 'Magento API token lacks permission for customers (403). Please ensure the integration has Magento_Customer scope in Magento Admin → System → Integrations.',
+            'magento_http_code' => 403,
+            'items' => [],
+            'total_count' => 0,
+        ]);
+        return;
+    }
     
     http_response_code($result['http_code']);
     echo $result['response'] ?: json_encode(['error' => $result['error']]);

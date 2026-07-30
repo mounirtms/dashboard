@@ -253,7 +253,7 @@ export default function MagentoCmsPage() {
                 <Button size="small" variant="contained" startIcon={<Add />} onClick={() => { setEditItem({ title: '', identifier: '', content: '', is_active: true }); setEditType('page'); setDrawerOpen(true); }}>New Page</Button>
               </PermissionGate>
             </Box>
-            <DataGrid rows={pages} columns={pageColumns} rowCount={pagesTotal} pageSizeOptions={[10, 20, 50]} paginationMode="server" paginationModel={{ page: pagesPage, pageSize: 20 }} onPaginationModelChange={m => setPagesPage(m.page)} getRowId={r => r.id} disableRowSelectionOnClick sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, '& .MuiDataGrid-cell': { fontSize: '0.78rem' } }} autoHeight />
+            <DataGrid rows={pages ?? []} columns={pageColumns} rowCount={pagesTotal ?? 0} pageSizeOptions={[10, 20, 50]} paginationMode="server" paginationModel={{ page: pagesPage, pageSize: 20 }} onPaginationModelChange={m => setPagesPage(m.page)} getRowId={r => r.id} disableRowSelectionOnClick sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, '& .MuiDataGrid-cell': { fontSize: '0.78rem' } }} autoHeight />
           </TabPanel>
 
           <TabPanel value={tab} index={1}>
@@ -262,7 +262,7 @@ export default function MagentoCmsPage() {
                 <Button size="small" variant="contained" startIcon={<Add />} onClick={() => { setEditItem({ title: '', identifier: '', content: '', is_active: true }); setEditType('block'); setDrawerOpen(true); }}>New Block</Button>
               </PermissionGate>
             </Box>
-            <DataGrid rows={blocks} columns={blockColumns} rowCount={blocksTotal} pageSizeOptions={[10, 20, 50]} paginationMode="server" paginationModel={{ page: blocksPage, pageSize: 20 }} onPaginationModelChange={m => setBlocksPage(m.page)} getRowId={r => r.id} disableRowSelectionOnClick sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, '& .MuiDataGrid-cell': { fontSize: '0.78rem' } }} autoHeight />
+            <DataGrid rows={blocks ?? []} columns={blockColumns} rowCount={blocksTotal ?? 0} pageSizeOptions={[10, 20, 50]} paginationMode="server" paginationModel={{ page: blocksPage, pageSize: 20 }} onPaginationModelChange={m => setBlocksPage(m.page)} getRowId={r => r.id} disableRowSelectionOnClick sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, '& .MuiDataGrid-cell': { fontSize: '0.78rem' } }} autoHeight />
           </TabPanel>
         </Box>
       </Box>

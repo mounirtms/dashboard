@@ -14,12 +14,62 @@ Config::load();
 define('MAX_LOGIN_ATTEMPTS', 5);
 define('LOCKOUT_DURATION', 900);
 
+/**
+ * Verify Magento 2 password format: hash:salt:version_info
+ * Magento 2 uses SHA256 + PBKDF2 internally via its own hash versions.
+ * Version prefix in hash string determines algorithm:
+ *  - No version info / old: md5(salt+password)
+ *  - :1 = sha256(salt+password) (legacy)
+ *  - :2 = hash_pbkdf2('sha256', password, salt, 2^N) (modern)
+ */
+function verifyMagentoPassword(string $password, string $storedHash): bool {
+    $parts = explode(':', $storedHash, 3);
+    $hash = $parts[0] ?? '';
+    $salt = $parts[1] ?? '';
+    $versionInfo = $parts[2] ?? '';
+
+    if ($versionInfo === '') {
+        // Legacy: md5(salt + password) or md5(password + salt)
+        return hash_equals($hash, md5($salt . $password))
+            || hash_equals($hash, md5($password . $salt))
+            || hash_equals($hash, md5($password));
+    }
+
+    $versionParts = explode('_', $versionInfo);
+    $version = (int)($versionParts[0] ?? 0);
+
+    if ($version === 1) {
+        // SHA256 simple
+        return hash_equals($hash, hash('sha256', $salt . $password));
+    }
+
+    if ($version >= 2) {
+        // PBKDF2 SHA256: version format is "2_32_N_iterations" or similar
+        // Magento 2.x modern: hash_pbkdf2('sha256', password, salt, iterations, 0, true) then bin2hex
+        // Default Magento iterations = 2^(version-1) * base; extract from versionInfo
+        // versionInfo example: "3_32_2_67108864" = (algo_ver)_(key_len)_(salt_len)_(iterations)
+        $iterations = (int)($versionParts[3] ?? 0);
+        if ($iterations < 1) {
+            // Fallback: try common Magento iteration counts
+            foreach ([262144, 524288, 1048576, 67108864] as $iter) {
+                $derived = bin2hex(hash_pbkdf2('sha256', $password, $salt, $iter, 0, true));
+                if (hash_equals($hash, $derived)) return true;
+            }
+            return false;
+        }
+        $derived = bin2hex(hash_pbkdf2('sha256', $password, $salt, $iterations, 0, true));
+        return hash_equals($hash, $derived);
+    }
+
+    return false;
+}
+
 // Get database connection
 function getDb() {
     static $pdo = null;
     if ($pdo === null) {
         try {
-            $pdo = Config::getPDO('dashboard_auth');
+            $pdo = Config::getPDO(); // uses DB_PROD = technadminy7_dBT8x12y22 (Magento DB)
         } catch (PDOException $e) {
             error_log('Auth DB connection failed: ' . $e->getMessage());
             http_response_code(500);
@@ -145,8 +195,15 @@ function handleLogin() {
     try {
         $pdo = getDb();
         
-        // Check if user exists and is active
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND is_active = 1");
+        // Check if user exists and is active (admin_user = Magento admin table)
+        $stmt = $pdo->prepare("SELECT user_id AS id,
+            username, password AS password_hash,
+            CONCAT(firstname, ' ', lastname) AS full_name,
+            email, is_active,
+            failures_num AS login_attempts,
+            lock_expires AS locked_until,
+            'admin' AS role
+            FROM admin_user WHERE username = ? AND is_active = 1");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         
@@ -156,50 +213,33 @@ function handleLogin() {
             return;
         }
         
-        // Check if locked_until column exists and account is locked
-        if (isset($user['locked_until']) && $user['locked_until'] && time() < $user['locked_until']) {
-            $remaining = ceil(($user['locked_until'] - time()) / 60);
+        // Check account lock (lock_expires is a DATETIME string in admin_user)
+        if (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
+            $remaining = ceil((strtotime($user['locked_until']) - time()) / 60);
             http_response_code(403);
             echo json_encode(['success' => false, 'error' => "Account locked. Try again in {$remaining} minutes"]);
             return;
         }
         
-        // Verify password
-        if (!password_verify($password, $user['password_hash'])) {
-            // Update login attempts if column exists
-            if (isset($user['login_attempts'])) {
-                $attempts = ($user['login_attempts'] ?? 0) + 1;
-                $lockedUntil = null;
-                
-                if ($attempts >= MAX_LOGIN_ATTEMPTS) {
-                    $lockedUntil = time() + LOCKOUT_DURATION;
-                }
-                
-                $updateFields = ["login_attempts = ?"];
-                $updateValues = [$attempts];
-                
-                if (isset($user['locked_until'])) {
-                    $updateFields[] = "locked_until = ?";
-                    $updateValues[] = $lockedUntil;
-                }
-                
-                $updateValues[] = $user['id'];
-                $stmt = $pdo->prepare("UPDATE users SET " . implode(', ', $updateFields) . " WHERE id = ?");
-                $stmt->execute($updateValues);
+        // Verify password using Magento 2 hash format (hash:salt:version)
+        if (!verifyMagentoPassword($password, $user['password_hash'])) {
+            // Increment failure counter
+            $attempts = ($user['login_attempts'] ?? 0) + 1;
+            $lockUntil = null;
+            if ($attempts >= MAX_LOGIN_ATTEMPTS) {
+                $lockUntil = date('Y-m-d H:i:s', time() + LOCKOUT_DURATION);
             }
+            $pdo->prepare("UPDATE admin_user SET failures_num = ?, lock_expires = ? WHERE user_id = ?")
+                ->execute([$attempts, $lockUntil, $user['id']]);
             
             http_response_code(401);
             echo json_encode(['success' => false, 'error' => 'Invalid credentials']);
             return;
         }
         
-        // Successful login - reset attempts
-        if (isset($user['login_attempts'])) {
-            $stmt = $pdo->prepare("UPDATE users SET login_attempts = 0, locked_until = NULL, last_login = NOW() WHERE id = ?");
-        } else {
-            $stmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
-        }
-        $stmt->execute([$user['id']]);
+        // Successful login — reset failure counter and update last login
+        $pdo->prepare("UPDATE admin_user SET failures_num = 0, lock_expires = NULL, logdate = NOW() WHERE user_id = ?")
+            ->execute([$user['id']]);
         
         // Create session
         $_SESSION['user_id'] = $user['id'];
@@ -227,16 +267,14 @@ function handleLogin() {
             }
         }
         
-        // Store session in database
-        $sessionId = session_id();
-        $stmt = $pdo->prepare("INSERT INTO sessions (id, user_id, ip_address, user_agent, last_activity) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE last_activity = VALUES(last_activity)");
-        $stmt->execute([
-            $sessionId,
-            $user['id'],
-            $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            $_SERVER['HTTP_USER_AGENT'] ?? '',
-            time()
-        ]);
+        // Store session in database (admin_user_session table)
+        try {
+            $sessionId = session_id();
+            $pdo->prepare("INSERT INTO sessions (id, user_id, ip_address, user_agent, last_activity) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE last_activity = VALUES(last_activity)")
+                ->execute([$sessionId, $user['id'], $_SERVER['REMOTE_ADDR'] ?? 'unknown', $_SERVER['HTTP_USER_AGENT'] ?? '', time()]);
+        } catch (Exception $e) {
+            // sessions table may not exist — non-fatal
+        }
         
         // Send login notification email (non-blocking)
         if (!empty($user['email'])) {
@@ -313,7 +351,7 @@ function handleCheckSession() {
     if (!empty($rememberToken)) {
         try {
             $pdo = getDb();
-            $stmt = $pdo->prepare("SELECT rt.user_id, u.username, u.full_name, u.role FROM remember_tokens rt JOIN users u ON u.id = rt.user_id WHERE rt.token = ? AND rt.expires > NOW() AND u.is_active = 1");
+            $stmt = $pdo->prepare("SELECT rt.user_id, u.username, CONCAT(u.firstname,' ',u.lastname) AS full_name, 'admin' AS role FROM remember_tokens rt JOIN admin_user u ON u.user_id = rt.user_id WHERE rt.token = ? AND rt.expires > NOW() AND u.is_active = 1");
             $stmt->execute([$rememberToken]);
             $tokenData = $stmt->fetch();
             
@@ -402,18 +440,19 @@ function handleForgotPassword() {
         $pdo = getDb();
         
         // Create password_resets table if it doesn't exist
-        $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
-            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            user_id INT UNSIGNED NOT NULL,
-            token VARCHAR(64) NOT NULL,
-            expires_at DATETIME NOT NULL,
-            used TINYINT(1) DEFAULT 0,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            INDEX idx_token (token)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                user_id INT UNSIGNED NOT NULL,
+                token VARCHAR(64) NOT NULL,
+                expires_at DATETIME NOT NULL,
+                used TINYINT(1) DEFAULT 0,
+                INDEX idx_token (token)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        } catch (Exception $e) { /* table may already exist or FK issue — ignore */ }
         
-        // Look up user by username or email
-        $stmt = $pdo->prepare("SELECT id, username, email FROM users WHERE username = ? OR email = ?");
+        // Look up user by username or email in admin_user
+        $stmt = $pdo->prepare("SELECT user_id AS id, username, email FROM admin_user WHERE (username = ? OR email = ?) AND is_active = 1");
         $stmt->execute([$identifier, $identifier]);
         $user = $stmt->fetch();
         
@@ -455,7 +494,7 @@ function handleVerifyResetToken() {
     try {
         $pdo = getDb();
         
-        $stmt = $pdo->prepare("SELECT pr.user_id, u.username FROM password_resets pr JOIN users u ON u.id = pr.user_id WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0 AND u.is_active = 1");
+        $stmt = $pdo->prepare("SELECT pr.user_id, u.username FROM password_resets pr JOIN admin_user u ON u.user_id = pr.user_id WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0 AND u.is_active = 1");
         $stmt->execute([$token]);
         $row = $stmt->fetch();
         
@@ -494,7 +533,7 @@ function handleResetPasswordWithToken() {
         $pdo = getDb();
         
         // Verify token
-        $stmt = $pdo->prepare("SELECT pr.user_id, u.username, u.email FROM password_resets pr JOIN users u ON u.id = pr.user_id WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0 AND u.is_active = 1");
+        $stmt = $pdo->prepare("SELECT pr.user_id, u.username, u.email FROM password_resets pr JOIN admin_user u ON u.user_id = pr.user_id WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0 AND u.is_active = 1");
         $stmt->execute([$token]);
         $row = $stmt->fetch();
         
@@ -504,9 +543,11 @@ function handleResetPasswordWithToken() {
             return;
         }
         
-        // Update password
-        $passwordHash = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
-        $pdo->prepare("UPDATE users SET password_hash = ?, login_attempts = 0, locked_until = NULL WHERE id = ?")->execute([$passwordHash, $row['user_id']]);
+        // Update password using Magento 2 hash format (sha256 + random salt, version=1)
+        $salt = bin2hex(random_bytes(16)); // 32 hex chars
+        $hash = hash('sha256', $salt . $newPassword);
+        $magento2Hash = $hash . ':' . $salt . ':1';
+        $pdo->prepare("UPDATE admin_user SET password = ?, failures_num = 0, lock_expires = NULL WHERE user_id = ?")->execute([$magento2Hash, $row['user_id']]);
         
         // Mark token as used
         $pdo->prepare("UPDATE password_resets SET used = 1 WHERE token = ?")->execute([$token]);

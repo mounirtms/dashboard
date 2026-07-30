@@ -171,11 +171,11 @@ try {
         $status = $_GET['status'] ?? '';
 
         $sql = "SELECT t.*,
-                    COALESCE(u1.username, t.requested_by_user, CONCAT('user#', t.requested_by)) AS requested_by_user,
-                    COALESCE(u2.username, t.approved_by_user)  AS approved_by_user
+                    COALESCE(u1.username, CONCAT('user#', t.requested_by)) AS requested_by_user,
+                    COALESCE(u2.username, CONCAT('user#', t.approved_by))  AS approved_by_user
                 FROM multi_user_tasks t
-                LEFT JOIN users u1 ON t.requested_by = u1.id
-                LEFT JOIN users u2 ON t.approved_by  = u2.id";
+                LEFT JOIN admin_user u1 ON t.requested_by = u1.user_id
+                LEFT JOIN admin_user u2 ON t.approved_by  = u2.user_id";
         $params = [];
 
         if (!empty($status)) {

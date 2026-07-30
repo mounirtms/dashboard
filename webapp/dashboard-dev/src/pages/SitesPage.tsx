@@ -217,7 +217,7 @@ export default function SitesPage() {
 
       <Card sx={{ flexGrow: 1, minHeight: 500 }}>
         <DataGrid
-          rows={sites}
+          rows={sites ?? []}
           columns={columns}
           getRowId={(row) => row.key}
           pageSizeOptions={[10, 20, 50]}

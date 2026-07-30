@@ -24,7 +24,7 @@
   <script>
     (function() {
       // Build stamp injected by post-build.sh — bump forces stale SW eviction
-      var BUILD_STAMP = 'v202607301337';
+      var BUILD_STAMP = 'v202607301430';
       var STAMP_KEY   = '_tsm_build';
       var prev = localStorage.getItem(STAMP_KEY);
       if (prev !== BUILD_STAMP) {
@@ -50,7 +50,7 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/build/assets/index-CDA6rVtY.js"></script>
+  <script type="module" crossorigin src="/build/assets/index-lueQ3W-I.js"></script>
   <link rel="modulepreload" crossorigin href="/build/assets/rolldown-runtime-QTnfLwEv.js">
   <link rel="modulepreload" crossorigin href="/build/assets/vendor-misc-DgUipCOo.js">
   <link rel="modulepreload" crossorigin href="/build/assets/vendor-react-0ZH1jpm5.js">
@@ -64,6 +64,14 @@
   <div id="root"></div>
   <!-- start webpushr tracking code -->
   <script>
+    // Suppress Webpushr SDK internal async errors (prompt_type crash etc.) before they reach console
+    window.addEventListener('unhandledrejection', function(e) {
+      var msg = e && e.reason && (e.reason.message || String(e.reason));
+      if (msg && (msg.indexOf('prompt_type') !== -1 || msg.indexOf('webpushr') !== -1)) {
+        e.preventDefault();
+        return;
+      }
+    });
     // Webpushr SDK — loads app.min.js asynchronously.
     // The queue wrapper (w.webpushr = function(){...push...}) ensures calls made before
     // SDK load are buffered and replayed once app.min.js is ready — no 'apply' TypeError.
@@ -80,15 +88,21 @@
   </script>
   <!-- end webpushr tracking code -->
   <script>
-    // Trigger subscription prompt once — debounced, only fires when SDK is fully ready
+    // Trigger subscription prompt once — waits for SDK to fully initialize (not just queue-drained)
+    // prompt_type crash happens when subscribe() fires before SDK internal state is ready.
     (function() {
       if (sessionStorage.getItem('webpushr_prompted')) return;
       var attempts = 0;
       var t = setInterval(function() {
         attempts++;
-        // webpushr must be a function (SDK loaded) AND have processed its queue
-        if (typeof webpushr === 'function' && (!webpushr.q || webpushr.q.length === 0)) {
+        // SDK is ready when: (a) webpushr is a native function (not our stub), AND
+        // (b) webpushr.q is gone or empty (queue drained), AND (c) the SDK set up its
+        // internal settings object (no .q property on the real SDK function).
+        var sdkReady = typeof webpushr === 'function' &&
+                       typeof webpushr.q === 'undefined';
+        if (sdkReady) {
           clearInterval(t);
+          // Extra 5s delay to allow SDK async init (avoids prompt_type crash)
           setTimeout(function() {
             try {
               webpushr('subscribe');
@@ -96,9 +110,9 @@
             } catch(e) {
               console.warn('[TSM] webpushr subscribe error:', e);
             }
-          }, 3000);
+          }, 5000);
         }
-        if (attempts > 50) clearInterval(t); // give up after 10s
+        if (attempts > 75) clearInterval(t); // give up after 15s
       }, 200);
     })();
   </script>

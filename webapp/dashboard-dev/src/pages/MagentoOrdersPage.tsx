@@ -39,8 +39,16 @@ export default function MagentoOrdersPage() {
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchMagentoOrders(env, page + 1, pageSize);
+      // Handle graceful error response from proxy (Magento 401/403 wrapped as 200 with error field)
+      if ((data as any).error) {
+        setError((data as any).error);
+        setOrders([]);
+        setTotalCount(0);
+        return;
+      }
       let items = (data.items || []);
       if (search) {
         const q = search.toLowerCase();
@@ -52,7 +60,8 @@ export default function MagentoOrdersPage() {
       setOrders(items);
       setTotalCount(data.total_count || 0);
     } catch (e: any) {
-      setError(e.message);
+      setError(e.response?.data?.message || e.message || 'Failed to load orders');
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -110,16 +119,15 @@ export default function MagentoOrdersPage() {
     )},
   ];
 
-  if (error && !orders.length) return (
-    <Box sx={{ p: 3 }}>
-      <Alert severity="error" action={<Button color="inherit" size="small" onClick={loadOrders}>Retry</Button>}>
-        {error}
-      </Alert>
-    </Box>
-  );
+  // Non-fatal error — show inline alert above the grid instead of replacing the whole page
 
   return (
     <Box>
+      {error && (
+        <Alert severity="warning" sx={{ mb: 2 }} action={<Button color="inherit" size="small" onClick={loadOrders}>Retry</Button>}>
+          {error}
+        </Alert>
+      )}
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.03em', mb: 0.5 }}>Orders</Typography>
@@ -183,7 +191,7 @@ export default function MagentoOrdersPage() {
       </Box>
 
       <DataGrid
-        rows={orders} columns={columns} rowCount={totalCount} loading={loading}
+        rows={orders ?? []} columns={columns} rowCount={totalCount ?? 0} loading={loading}
         pageSizeOptions={[10, 20, 50, 100]}
         paginationMode="server"
         paginationModel={{ page, pageSize }}

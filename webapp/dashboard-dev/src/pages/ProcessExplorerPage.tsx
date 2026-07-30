@@ -185,7 +185,7 @@ export default function ProcessExplorerPage() {
 
       <Card sx={{ flexGrow: 1 }}>
         <DataGrid
-          rows={filtered}
+          rows={filtered ?? []}
           columns={columns}
           getRowId={(row) => row.pid}
           density="compact"

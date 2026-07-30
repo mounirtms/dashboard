@@ -425,7 +425,7 @@ export default function TasksPage() {
       {/* DataGrid */}
       <Card sx={{ flexGrow: 1, mb: 2 }}>
         <DataGrid 
-          rows={tasks} 
+          rows={tasks ?? []} 
           columns={columns} 
           getRowId={(r) => r.id} 
           density="compact" 
