@@ -13,7 +13,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
 require_once __DIR__ . '/session_helper.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config.php';
 
 if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     http_response_code(401);
@@ -58,7 +58,7 @@ function saveAlertSettings(string $file, array $settings): void
 
 function tryDb(): ?PDO
 {
-    try { return getDbConnection(); } catch (Throwable $e) { return null; }
+    try { return Config::getPDO(); } catch (Throwable $e) { return null; }
 }
 
 function getAlertTypesFromDb(PDO $pdo): array

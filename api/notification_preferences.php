@@ -13,7 +13,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
 require_once __DIR__ . '/session_helper.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config.php';
 
 // ── Auth check ────────────────────────────────────────────────────────────────
 if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
@@ -120,7 +120,7 @@ if ($method === 'POST') {
 }
 
 try {
-    $pdo = getDbConnection();
+    $pdo = Config::getPDO();
     ensureTable($pdo);
     $useDb = true;
 } catch (Throwable $e) {
