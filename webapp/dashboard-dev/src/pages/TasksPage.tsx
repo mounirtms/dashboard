@@ -12,7 +12,7 @@ import {
   Download, Person, Schedule, Send, AssignmentInd, Flag, AccessTime,
   TrendingUp, Clear, Close, RadioButtonUnchecked,
 } from '@mui/icons-material';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   fetchTasks, createTask, updateTask, deleteTask, fetchTaskStats,
@@ -178,8 +178,19 @@ export default function TasksPage() {
   const [filterCategory, setFilterCategory] = useState('');
   const [filterAssignee, setFilterAssignee] = useState('');
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
-  const [myTasksOnly, setMyTasksOnly] = useState(!isAdmin);
+  // myTasksOnly defaults to true for non-admins; isAdmin may not be stable at init time
+  // so we use a separate effect to sync once permissions are resolved
+  const [myTasksOnly, setMyTasksOnly] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, perPage: 25, total: 0, totalPages: 0 });
+
+  // Sync myTasksOnly default once we know the user role — admins see all by default
+  const adminKnown = useRef(false);
+  useEffect(() => {
+    if (permissions !== null && !adminKnown.current) {
+      adminKnown.current = true;
+      if (isAdmin) setMyTasksOnly(false);
+    }
+  }, [permissions, isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── bulk ── */
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -358,7 +369,7 @@ export default function TasksPage() {
   }, [tasks]);
 
   /* ─── grid columns ───────────────────────────────────────────────────────── */
-  const columns: GridColDef[] = [
+  const columns: GridColDef[] = useMemo(() => [
 
     /* ── Title ──────────────────────────────────────────────────────────────── */
     {
@@ -534,9 +545,32 @@ export default function TasksPage() {
       },
     },
 
+    /* ── Due Date ────────────────────────────────────────────────────────────── */
+    {
+      field: 'due_date', headerName: 'Due', width: 96,
+      renderCell: (p: GridRenderCellParams) => {
+        const val = p.value as string | null;
+        if (!val) return <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.68rem' }}>—</Typography>;
+        const dd = dueDateInfo(p.row);
+        const display = new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        return (
+          <Tooltip title={new Date(val).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}>
+            <Typography variant="caption" sx={{
+              fontSize: '0.68rem',
+              fontWeight: dd?.urgent ? 700 : 500,
+              color: dd ? dd.color : 'text.secondary',
+            }}>
+              {dd?.urgent && <Schedule sx={{ fontSize: 9, mr: 0.3, verticalAlign: 'middle' }} />}
+              {display}
+            </Typography>
+          </Tooltip>
+        );
+      },
+    },
+
     /* ── Age ─────────────────────────────────────────────────────────────────── */
     {
-      field: 'created_at', headerName: 'Age', width: 88,
+      field: 'created_at', headerName: 'Age', width: 82,
       renderCell: (p: GridRenderCellParams) => {
         const rel = relativeTime(p.value as string);
         const isRecent = Date.now() - new Date(p.value as string).getTime() < 3_600_000;
@@ -557,7 +591,7 @@ export default function TasksPage() {
 
     /* ── Actions ─────────────────────────────────────────────────────────────── */
     {
-      field: 'actions', headerName: '', width: isAdmin ? 120 : 90,
+      field: 'actions', headerName: '', width: isAdmin ? 110 : 84,
       sortable: false, disableColumnMenu: true,
       renderCell: (p: GridRenderCellParams) => {
         const isOwner  = p.row.created_by === currentUsername || p.row.assigned_to === currentUsername;
@@ -601,7 +635,8 @@ export default function TasksPage() {
         );
       },
     },
-  ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [tasks, users, notesCount, isAdmin, currentUsername, permissions]);
 
   /* ─── row style ──────────────────────────────────────────────────────────── */
   const getRowClassName = useCallback((params: GridRowParams) => {
@@ -765,10 +800,11 @@ export default function TasksPage() {
           </FormControl>
 
           {/* Priority */}
-          <FormControl size="small" sx={{ minWidth: 108 }}>
+          <FormControl size="small" sx={{ minWidth: 115 }}>
             <Select value={filterPriority} displayEmpty onChange={(e) => setFilterPriority(e.target.value)}
               sx={{ fontSize: '0.72rem', height: 28 }}>
               <MenuItem value="">All Priority</MenuItem>
+              <MenuItem value="critical">🚨 Critical</MenuItem>
               <MenuItem value="high">🔴 High</MenuItem>
               <MenuItem value="medium">🟡 Medium</MenuItem>
               <MenuItem value="low">🔵 Low</MenuItem>
@@ -998,6 +1034,7 @@ export default function TasksPage() {
                   <MenuItem value="low"><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Flag sx={{ fontSize: 14, color: '#64748b' }} /> Low</Box></MenuItem>
                   <MenuItem value="medium"><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Flag sx={{ fontSize: 14, color: '#f59e0b' }} /> Medium</Box></MenuItem>
                   <MenuItem value="high"><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Flag sx={{ fontSize: 14, color: '#ef4444' }} /> High</Box></MenuItem>
+                  <MenuItem value="critical"><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Flag sx={{ fontSize: 14, color: '#dc2626' }} /> Critical</Box></MenuItem>
                 </Select>
               </FormControl>
               <FormControl fullWidth size="small">

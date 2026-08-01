@@ -30,7 +30,7 @@ try {
             id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             title       VARCHAR(255)  NOT NULL,
             description TEXT,
-            priority    ENUM('low','medium','high','critical') NOT NULL DEFAULT 'medium',
+            priority    ENUM('low','medium','high','critical')  NOT NULL DEFAULT 'medium',
             status      ENUM('pending','in_progress','completed','cancelled') NOT NULL DEFAULT 'pending',
             assigned_to VARCHAR(100),
             due_date    DATE,
@@ -123,7 +123,7 @@ try {
 
     $currentUser = $_SESSION['username'] ?? 'system';
 
-    $VALID_PRIORITIES = ['low', 'medium', 'high'];
+    $VALID_PRIORITIES = ['low', 'medium', 'high', 'critical'];
     // Frontend uses 'in-progress' (hyphen); DB ENUM uses 'in_progress' (underscore).
     // We accept both in validation and map to DB form before SQL writes.
     $VALID_STATUSES = ['pending', 'in-progress', 'in_progress', 'completed', 'cancelled'];
