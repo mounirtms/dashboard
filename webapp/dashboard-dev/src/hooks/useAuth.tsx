@@ -59,7 +59,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [checkAuth]);
 
   const login = async (credentials: any) => {
-    const { data } = await apiClient.post('/api/auth.php?action=login', credentials);
+    let data: any;
+    try {
+      const resp = await apiClient.post('/api/auth.php?action=login', credentials);
+      data = resp.data;
+    } catch (err: any) {
+      // Axios throws on 4xx/5xx — extract the real error from the response body
+      const respData = err.response?.data;
+      const msg = respData?.error || respData?.message || err.message || 'Login failed';
+      throw new Error(msg);
+    }
+
     if (data.success) {
       setIsAuthenticated(true);
       setUser(data.user);

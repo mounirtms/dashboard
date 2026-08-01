@@ -186,7 +186,7 @@ function handleLogin() {
         http_response_code(403);
         $reason = empty($csrfToken) ? 'Token missing in request' : (empty($_SESSION['csrf_token']) ? 'Token missing in session' : 'Token mismatch');
         
-        $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Fail: $reason | Request: " . substr($csrfToken ?? 'none', 0, 10) . " | Session: " . substr($_SESSION['csrf_token'] ?? 'none', 0, 10) . " | SID: " . session_id() . " | Session Data: " . json_encode($_SESSION) . "\n";
+        $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Fail: $reason | User: $username | Request: " . substr($csrfToken ?? 'none', 0, 10) . " | Session: " . substr($_SESSION['csrf_token'] ?? 'none', 0, 10) . " | SID: " . session_id() . " | Session Data: " . json_encode($_SESSION) . "\n";
         @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
 
         echo json_encode([
@@ -231,15 +231,20 @@ function handleLogin() {
         $user = $stmt->fetch();
         
         if (!$user) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => 'Invalid credentials']);
+            // Log failed attempt — user not found
+            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: User not found | Username: $username | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
+            @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
+            // Return 200 with success=false so frontend shows the actual error message (not generic 401)
+            echo json_encode(['success' => false, 'error' => 'Invalid username or password']);
             return;
         }
         
         // Check account lock (lock_expires is a DATETIME string in admin_user)
         if (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
             $remaining = ceil((strtotime($user['locked_until']) - time()) / 60);
-            http_response_code(403);
+            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: Account locked | Username: $username | Locked until: {$user['locked_until']} | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
+            @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
+            // Return 200 so frontend can show specific lock message
             echo json_encode(['success' => false, 'error' => "Account locked. Try again in {$remaining} minutes"]);
             return;
         }
@@ -255,14 +260,24 @@ function handleLogin() {
             $pdo->prepare("UPDATE admin_user SET failures_num = ?, lock_expires = ? WHERE user_id = ?")
                 ->execute([$attempts, $lockUntil, $user['id']]);
             
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => 'Invalid credentials']);
+            // Log failed password attempt with hash version info
+            $hashParts = explode(':', $user['password_hash']);
+            $hashVersion = $hashParts[2] ?? 'legacy';
+            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: Wrong password | Username: $username | HashVersion: $hashVersion | Attempt: $attempts | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
+            @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
+            
+            // Return 200 so frontend receives the real error message (axios won't throw on success HTTP code)
+            echo json_encode(['success' => false, 'error' => 'Invalid username or password']);
             return;
         }
         
         // Successful login — reset failure counter and update last login
         $pdo->prepare("UPDATE admin_user SET failures_num = 0, lock_expires = NULL, logdate = NOW() WHERE user_id = ?")
             ->execute([$user['id']]);
+        
+        // Log successful login
+        $logMsg = date('[Y-m-d H:i:s] ') . "Login OK | Username: $username | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . " | SID: " . session_id() . "\n";
+        @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
         
         // Create session
         $_SESSION['user_id'] = $user['id'];
@@ -651,5 +666,7 @@ if (basename($_SERVER['PHP_SELF']) === 'auth.php') {
     }
 }
 
-// Clean output buffer
-ob_end_flush();
+// Clean output buffer — only flush if a buffer was actually started
+if (ob_get_level() > 0) {
+    ob_end_flush();
+}

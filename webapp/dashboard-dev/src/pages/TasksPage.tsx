@@ -912,11 +912,14 @@ export default function TasksPage() {
                 <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>Assign:</Typography>
                 <Select
-                  size="small" value="" displayEmpty
-                  onChange={(e) => { if (e.target.value !== undefined) handleBulkAction('assigned_to', e.target.value as string); }}
+                  size="small" value="__pick__" displayEmpty
+                  onChange={(e) => {
+                    const val = e.target.value as string;
+                    if (val !== '__pick__') handleBulkAction('assigned_to', val);
+                  }}
                   sx={{ fontSize: '0.72rem', height: 24, minWidth: 120 }}
                 >
-                  <MenuItem value="" disabled>Pick user…</MenuItem>
+                  <MenuItem value="__pick__" disabled>Pick user…</MenuItem>
                   <MenuItem value="">— Unassign —</MenuItem>
                   {users.filter(u => u.is_active).map(u => (
                     <MenuItem key={u.id} value={u.username}>{u.full_name || u.username}</MenuItem>

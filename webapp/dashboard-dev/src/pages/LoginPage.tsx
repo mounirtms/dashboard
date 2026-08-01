@@ -115,8 +115,6 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    let retried = false;
-
     try {
       await login({
         username,
@@ -128,54 +126,39 @@ export default function LoginPage() {
       
       // Clean up old localStorage keys
       localStorage.removeItem('dashboard_username');
-
       navigate('/');
     } catch (err: any) {
-      // On 403 (CSRF mismatch), fetch new token and retry once
-      if (err.response?.status === 403 && !retried) {
-        const errorData = err.response?.data;
-        const isCsrfError = errorData?.error?.includes('CSRF') || errorData?.reason;
-        
-        // Only retry for CSRF errors, not Turnstile errors
-        if (isCsrfError) {
-          retried = true;
-          try {
-            const { data } = await apiClient.get('/api/auth.php?action=csrf_token');
-            if (data.success) {
-              setCsrfToken(data.csrf_token);
-              // Retry login with fresh token
-              await login({
-                username,
-                password,
-                csrf_token: data.csrf_token,
-                remember_me: rememberMe,
-                turnstile_token: turnstileToken,
-              });
-              localStorage.removeItem('dashboard_username');
-              navigate('/');
-              return;
-            }
-          } catch (retryErr: any) {
-            setError('Session expired. Please try logging in again.');
-            fetchCsrf();
-            setLoading(false);
+      const msg: string = err.message || '';
+      const isCsrfError = msg.includes('CSRF') || msg.includes('csrf');
+      
+      // On CSRF error, fetch fresh token and retry once
+      if (isCsrfError) {
+        try {
+          const { data } = await apiClient.get('/api/auth.php?action=csrf_token');
+          if (data.success) {
+            setCsrfToken(data.csrf_token);
+            await login({
+              username,
+              password,
+              csrf_token: data.csrf_token,
+              remember_me: rememberMe,
+              turnstile_token: turnstileToken,
+            });
+            localStorage.removeItem('dashboard_username');
+            navigate('/');
             return;
           }
-        } else {
-          // Turnstile or other error - show the actual error
-          setError(errorData?.error || err.message || 'Login failed. Please check your credentials.');
+        } catch (retryErr: any) {
+          setError(retryErr.message || 'Session expired. Please try logging in again.');
           fetchCsrf();
-          setLoading(false);
           return;
         }
       }
-      
-      setError(err.message || 'Login failed. Please check your credentials.');
-      fetchCsrf(); // Refresh token on failure
+
+      setError(msg || 'Login failed. Please check your credentials.');
+      fetchCsrf(); // Refresh CSRF token for next attempt
     } finally {
-      if (!retried) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
@@ -376,10 +359,10 @@ export default function LoginPage() {
         </Card>
         <Box sx={{ textAlign: 'center', mt: 3 }}>
           <Typography sx={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500, mb: 1 }}>
-            v5.3.0 &nbsp;·&nbsp; {new Date().toLocaleTimeString()}
+            v5.5.2 &nbsp;·&nbsp; {new Date().toLocaleTimeString()}
           </Typography>
           <Typography sx={{ color: '#475569', fontSize: '0.62rem' }}>
-            TSM Platform v5.3.0
+            TSM Platform v5.5.2
           </Typography>
         </Box>
       </Box>
