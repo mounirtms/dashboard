@@ -623,6 +623,57 @@ function handleResetPasswordWithToken() {
     }
 }
 
+function handleAccountStatus() {
+    // Admin-only: returns lock/attempt status for a given username (for debugging 401s)
+    if (empty($_SESSION['logged_in']) || ($_SESSION['role'] ?? '') !== 'admin') {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        return;
+    }
+    $username = $_GET['username'] ?? $_SESSION['username'] ?? '';
+    if (empty($username)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'username required']);
+        return;
+    }
+    try {
+        $pdo = getDb();
+        $stmt = $pdo->prepare("SELECT user_id, username, is_active, failures_num, lock_expires, logdate, email,
+            SUBSTRING(password, 1, 6) AS hash_prefix,
+            CHAR_LENGTH(password) AS hash_length,
+            (LOCATE(':', password, LOCATE(':', password)+1)+1) AS version_pos
+            FROM admin_user WHERE username = ?");
+        $stmt->execute([$username]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (!$row) {
+            echo json_encode(['found' => false, 'username' => $username]);
+            return;
+        }
+        // Parse hash version from password field
+        $stmt2 = $pdo->prepare("SELECT password FROM admin_user WHERE username = ?");
+        $stmt2->execute([$username]);
+        $pwRow = $stmt2->fetch(\PDO::FETCH_ASSOC);
+        $hashParts = explode(':', $pwRow['password'] ?? '', 3);
+        $hashVersion = $hashParts[2] ?? 'legacy';
+        $locked = !empty($row['lock_expires']) && strtotime($row['lock_expires']) > time();
+        echo json_encode([
+            'found' => true,
+            'username' => $row['username'],
+            'is_active' => $row['is_active'],
+            'failures_num' => $row['failures_num'],
+            'lock_expires' => $row['lock_expires'],
+            'locked_now' => $locked,
+            'lock_remaining_minutes' => $locked ? ceil((strtotime($row['lock_expires']) - time()) / 60) : 0,
+            'last_login' => $row['logdate'],
+            'hash_version' => $hashVersion,
+            'hash_preview' => $row['hash_prefix'] . '...' . substr($pwRow['password'] ?? '', -4),
+        ]);
+    } catch (\Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+    }
+}
+
 // ── Main Router ──
 if (basename($_SERVER['PHP_SELF']) === 'auth.php') {
     switch ($action) {
@@ -657,6 +708,10 @@ if (basename($_SERVER['PHP_SELF']) === 'auth.php') {
         
         case 'reset_password_with_token':
             handleResetPasswordWithToken();
+            break;
+        
+        case 'account_status':
+            handleAccountStatus();
             break;
         
         default:

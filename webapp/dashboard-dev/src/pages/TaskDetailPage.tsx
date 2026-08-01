@@ -23,7 +23,7 @@ export default function TaskDetailPage() {
   const [noteCategory, setNoteCategory] = useState<'tuning' | 'fix' | 'implementation' | 'question' | 'general'>('general');
   const [noteSubmitting, setNoteSubmitting] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editData, setEditData] = useState({ title: '', description: '', priority: 'medium' as 'low' | 'medium' | 'high', status: 'pending' as 'pending' | 'in-progress' | 'completed' | 'cancelled', assigned_to: '', due_date: '', category: 'general' });
+  const [editData, setEditData] = useState({ title: '', description: '', priority: 'medium' as Task['priority'], status: 'pending' as Task['status'], assigned_to: '', due_date: '', category: 'general' });
   
   // Notes UX state
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
@@ -381,7 +381,7 @@ export default function TaskDetailPage() {
   if (!task) return <Box sx={{ p: 3 }}><Typography>Task not found</Typography></Box>;
 
   const tabs = ['Overview', 'Notes', 'Activity', 'Settings'];
-  const priorityColor = (p: string) => p === 'high' ? 'error' : p === 'medium' ? 'warning' : 'default';
+  const priorityColor = (p: string) => p === 'critical' || p === 'high' ? 'error' : p === 'medium' ? 'warning' : 'default';
   const actionIcons: Record<string, string> = { created: '📝', updated: '✏️', status_changed: '🔄', commented: '💬', deleted: '🗑️', dispatched: '🚀', task_linked: '🔗', task_unlinked: '✂️', bulk_status_changed: '⚡', note_forwarded: '📨', note_status_changed: '🏷️' };
 
   return (
@@ -465,9 +465,64 @@ export default function TaskDetailPage() {
             </CardContent>
           </Card>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
-            <Card><CardContent><Typography variant="caption" sx={{ color: 'text.disabled' }}>Assigned To</Typography><Typography variant="body2" sx={{ fontWeight: 600 }}>{task.assigned_to || 'Unassigned'}</Typography></CardContent></Card>
-            <Card><CardContent><Typography variant="caption" sx={{ color: 'text.disabled' }}>Due Date</Typography><Typography variant="body2" sx={{ fontWeight: 600 }}>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}</Typography></CardContent></Card>
-            <Card><CardContent><Typography variant="caption" sx={{ color: 'text.disabled' }}>Category</Typography><Typography variant="body2" sx={{ fontWeight: 600, textTransform: 'capitalize' }}>{task.category}</Typography></CardContent></Card>
+            {/* Assignee card */}
+            <Card>
+              <CardContent sx={{ pb: '12px !important' }}>
+                <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, letterSpacing: '0.05em', fontSize: '0.62rem' }}>ASSIGNED TO</Typography>
+                {task.assigned_to ? (() => {
+                  const u = users.find(x => x.username === task.assigned_to);
+                  return (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.75 }}>
+                      <Avatar sx={{ width: 28, height: 28, fontSize: '0.7rem', bgcolor: getAvatarColor(task.assigned_to) }}>
+                        {task.assigned_to.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.78rem', lineHeight: 1.2 }}>{u?.full_name || task.assigned_to}</Typography>
+                        {u?.role && <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6rem' }}>{u.role}</Typography>}
+                      </Box>
+                    </Box>
+                  );
+                })() : (
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.disabled', mt: 0.75, fontStyle: 'italic' }}>Unassigned</Typography>
+                )}
+              </CardContent>
+            </Card>
+            {/* Due Date card */}
+            <Card>
+              <CardContent sx={{ pb: '12px !important' }}>
+                <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, letterSpacing: '0.05em', fontSize: '0.62rem' }}>DUE DATE</Typography>
+                {task.due_date ? (() => {
+                  const days = Math.ceil((new Date(task.due_date).getTime() - Date.now()) / 86_400_000);
+                  const isOverdue = days < 0 && task.status !== 'completed' && task.status !== 'cancelled';
+                  const isUrgent = days >= 0 && days <= 3 && task.status !== 'completed' && task.status !== 'cancelled';
+                  const urgColor = isOverdue ? '#ef4444' : isUrgent ? '#f59e0b' : undefined;
+                  return (
+                    <Box sx={{ mt: 0.75 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.78rem', color: urgColor }}>
+                        {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </Typography>
+                      {(isOverdue || isUrgent) && (
+                        <Typography variant="caption" sx={{ color: urgColor, fontSize: '0.62rem', fontWeight: 600 }}>
+                          {isOverdue ? `${Math.abs(days)}d overdue` : days === 0 ? 'Due today' : `${days}d remaining`}
+                        </Typography>
+                      )}
+                    </Box>
+                  );
+                })() : (
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.disabled', mt: 0.75, fontStyle: 'italic' }}>No due date</Typography>
+                )}
+              </CardContent>
+            </Card>
+            {/* Category card */}
+            <Card>
+              <CardContent sx={{ pb: '12px !important' }}>
+                <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, letterSpacing: '0.05em', fontSize: '0.62rem' }}>CATEGORY</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.75 }}>
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: CATEGORY_COLORS[task.category] || '#64748b', flexShrink: 0 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.78rem', textTransform: 'capitalize' }}>{task.category}</Typography>
+                </Box>
+              </CardContent>
+            </Card>
           </Box>
           
           {/* Linked Tasks */}
@@ -840,8 +895,11 @@ export default function TaskDetailPage() {
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Priority</InputLabel>
-                  <Select value={editData.priority} label="Priority" onChange={(e) => setEditData({ ...editData, priority: e.target.value as any })}>
-                    <MenuItem value="low">Low</MenuItem><MenuItem value="medium">Medium</MenuItem><MenuItem value="high">High</MenuItem>
+                  <Select value={editData.priority} label="Priority" onChange={(e) => setEditData({ ...editData, priority: e.target.value as Task['priority'] })}>
+                    <MenuItem value="low"><Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><Flag sx={{ fontSize: 13, color: '#64748b' }} />Low</Box></MenuItem>
+                    <MenuItem value="medium"><Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><Flag sx={{ fontSize: 13, color: '#f59e0b' }} />Medium</Box></MenuItem>
+                    <MenuItem value="high"><Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><Flag sx={{ fontSize: 13, color: '#ef4444' }} />High</Box></MenuItem>
+                    <MenuItem value="critical"><Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><Flag sx={{ fontSize: 13, color: '#dc2626' }} />🚨 Critical</Box></MenuItem>
                   </Select>
                 </FormControl>
                 <FormControl fullWidth size="small">

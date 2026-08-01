@@ -41,6 +41,7 @@ export const getTaskStatusColor = (status: string): 'success' | 'info' | 'error'
 
 export const getTaskPriorityColor = (priority: string): 'error' | 'warning' | 'default' => {
   switch (priority) {
+    case 'critical':
     case 'high': return 'error';
     case 'medium': return 'warning';
     default: return 'default';
@@ -51,7 +52,7 @@ export interface Task {
   id: number;
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high';
+  priority: 'low' | 'medium' | 'high' | 'critical';
   status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
   assigned_to: string;
   due_date: string | null;
