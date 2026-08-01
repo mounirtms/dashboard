@@ -14,8 +14,8 @@ if (php_sapi_name() !== 'cli') {
 require_once __DIR__ . '/config.php';
 Config::load();
 
-// Use DB_PROD (Magento DB) — dashboard_auth database does not exist
-$pdo = Config::getPDO();
+// Use dashboard_auth DB — all dashboard tables live here
+$pdo = Config::getDashboardPDO();
 $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
 echo "Running migrations...\n";

@@ -48,8 +48,9 @@ class Config {
             'port' => $getEnv('DB_PORT') ?: '3307',
             'user' => $getEnv('DB_USER') ?: 'root',
             'pass' => $getEnv('DB_PASS'),
-            'prod' => $getEnv('DB_PROD') ?: 'technadminy7_dBT8x12y22',
-            'beta' => $getEnv('DB_BETA') ?: 'beta_dBT8x12y22',
+            'prod'      => $getEnv('DB_PROD')      ?: 'technadminy7_dBT8x12y22',
+            'dashboard' => $getEnv('DB_DASHBOARD') ?: 'dashboard_auth',
+            'beta'      => $getEnv('DB_BETA')      ?: 'beta_dBT8x12y22',
             'tsdnd' => $getEnv('DB_TSDND') ?: 'tsdnd_dBT8x12y22',
         ];
 
@@ -229,6 +230,22 @@ class Config {
         $dbName = $database ?? $db['prod'];
         $dsn = "mysql:host={$db['host']};port={$db['port']};dbname=$dbName;charset=utf8mb4";
 
+        return DatabasePool::getPDO($dsn, $db['user'], $db['pass']);
+    }
+
+    /**
+     * Get PDO connection to the dashboard's own database (dashboard_auth).
+     * Used for: auth/users, tasks, sessions, permissions, audit_log, settings.
+     * Completely separate from the Magento DB.
+     */
+    public static function getDashboardPDO() {
+        if (!self::$loaded) {
+            self::load();
+        }
+        require_once __DIR__ . '/DatabasePool.php';
+        $db     = self::$config['db'];
+        $dbName = $db['dashboard'] ?? 'dashboard_auth';
+        $dsn    = "mysql:host={$db['host']};port={$db['port']};dbname=$dbName;charset=utf8mb4";
         return DatabasePool::getPDO($dsn, $db['user'], $db['pass']);
     }
 }

@@ -15,7 +15,7 @@ class ScriptRunner {
 
     public function __construct() {
         Config::load();
-        $this->pdo = Config::getPDO();
+        $this->pdo = Config::getDashboardPDO(); // dashboard_auth — script_executions
         $this->scriptsDir = Config::get('paths.scripts', dirname(__DIR__) . '/scripts');
     }
 

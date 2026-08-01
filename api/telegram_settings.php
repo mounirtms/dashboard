@@ -58,7 +58,7 @@ function saveAlertSettings(string $file, array $settings): void
 
 function tryDb(): ?PDO
 {
-    try { return Config::getPDO(); } catch (Throwable $e) { return null; }
+    try { return Config::getDashboardPDO(); } catch (Throwable $e) { return null; } // dashboard_auth — settings table
 }
 
 function getAlertTypesFromDb(PDO $pdo): array

@@ -15,7 +15,7 @@ require_once __DIR__ . '/DatabasePool.php';
 Config::load();
 
 try {
-    $pdo = Config::getPDO();
+    $pdo = Config::getDashboardPDO(); // dashboard_auth — script_executions
 
     // Create script_executions table (with script_id for allow-list keying)
     $pdo->exec("CREATE TABLE IF NOT EXISTS script_executions (

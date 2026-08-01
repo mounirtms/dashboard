@@ -66,7 +66,7 @@ class PermissionChecker {
         if (self::$pdo === null) {
             require_once __DIR__ . '/config.php';
             Config::load();
-            self::$pdo = Config::getPDO();
+            self::$pdo = Config::getDashboardPDO(); // dashboard_auth.role_permissions
         }
         return self::$pdo;
     }

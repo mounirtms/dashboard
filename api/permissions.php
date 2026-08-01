@@ -64,7 +64,7 @@ try {
             try {
                 require_once __DIR__ . '/config.php';
                 Config::load();
-                $auditPdo = Config::getPDO();
+                $auditPdo = Config::getDashboardPDO();
                 $auditPdo->exec("CREATE TABLE IF NOT EXISTS audit_log (
                     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                     user_id INT UNSIGNED, action VARCHAR(100) NOT NULL,

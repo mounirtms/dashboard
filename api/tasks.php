@@ -20,7 +20,7 @@ if (empty($_SESSION['logged_in'])) {
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 try {
-    $pdo = Config::getPDO();
+    $pdo = Config::getDashboardPDO(); // dashboard_auth.tasks
 
     // Auto-create tasks and related tables if missing
     $schemaVersion = '20260802';

@@ -38,7 +38,7 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
-    $pdo = Config::getPDO();
+    $pdo = Config::getDashboardPDO(); // dashboard_auth — scheduled_tasks
     
     // Create new cron job
     if ($method === 'POST') {

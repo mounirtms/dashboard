@@ -19,26 +19,32 @@ if (empty($_SESSION['logged_in'])) {
 $action = $_GET['action'] ?? 'status';
 
 try {
-    $pdo = Config::getPDO(); // DB_PROD — uses admin_user table
+    $pdo = Config::getDashboardPDO(); // dashboard_auth.users — NOT Magento admin_user
 
     switch ($action) {
         case 'status':
             $sessionAge = isset($_SESSION['last_regeneration']) ? time() - $_SESSION['last_regeneration'] : 0;
 
-            $activeUsers = $pdo->query("SELECT COUNT(*) FROM admin_user WHERE is_active = 1")->fetchColumn();
-            $totalUsers  = $pdo->query("SELECT COUNT(*) FROM admin_user")->fetchColumn();
+            $activeUsers = $pdo->query("SELECT COUNT(*) FROM users WHERE is_active = 1")->fetchColumn();
+            $totalUsers  = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 
-            // admin_user has no role column — all entries are admins
-            $roleCounts = [['role' => 'admin', 'count' => (int)$activeUsers]];
+            // Role counts from dashboard_auth.users
+            $roleCounts = $pdo->query("
+                SELECT role, COUNT(*) AS count
+                FROM users
+                WHERE is_active = 1
+                GROUP BY role
+                ORDER BY count DESC
+            ")->fetchAll(PDO::FETCH_ASSOC);
 
-            // Recent logins
+            // Recent logins from dashboard_auth.users
             $recentLogins = $pdo->query("
                 SELECT username,
-                    CONCAT(firstname,' ',lastname) AS full_name,
-                    logdate AS last_login
-                FROM admin_user
-                WHERE logdate IS NOT NULL
-                ORDER BY logdate DESC LIMIT 20
+                    full_name,
+                    last_login
+                FROM users
+                WHERE last_login IS NOT NULL
+                ORDER BY last_login DESC LIMIT 20
             ")->fetchAll();
 
             echo json_encode([

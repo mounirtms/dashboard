@@ -120,7 +120,7 @@ if ($method === 'POST') {
 }
 
 try {
-    $pdo = Config::getPDO();
+    $pdo = Config::getDashboardPDO(); // dashboard_auth
     ensureTable($pdo);
     $useDb = true;
 } catch (Throwable $e) {

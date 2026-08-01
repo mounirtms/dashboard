@@ -15,7 +15,7 @@ require_once __DIR__ . '/DatabasePool.php';
 Config::load();
 
 try {
-    $pdo = Config::getPDO();
+    $pdo = Config::getDashboardPDO(); // dashboard_auth — multi_user_tasks
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS multi_user_tasks (
         id INT PRIMARY KEY AUTO_INCREMENT,

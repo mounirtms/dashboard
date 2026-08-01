@@ -32,7 +32,7 @@ class Mailer {
         require_once __DIR__ . '/config.php';
         Config::load();
         
-        return Config::getPDO(); // DB_PROD — Magento DB
+        return Config::getDashboardPDO(); // dashboard_auth — email_settings
     }
 
     /**

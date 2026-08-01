@@ -1,6 +1,10 @@
 <?php
 /**
- * Dashboard Authentication Handler - Standardized
+ * Dashboard Authentication Handler
+ *
+ * Uses the dashboard's own database (dashboard_auth) — NOT the Magento DB.
+ * Users are stored in dashboard_auth.users with bcrypt passwords.
+ * Magento credentials/tokens are managed separately at runtime via Magento Settings.
  */
 
 header('Content-Type: application/json', true);
@@ -10,79 +14,28 @@ require_once __DIR__ . '/InputValidator.php';
 require_once __DIR__ . '/Mailer.php';
 Config::load();
 
-// Configuration (must be defined before use)
 define('MAX_LOGIN_ATTEMPTS', 5);
-define('LOCKOUT_DURATION', 900);
+define('LOCKOUT_DURATION',   900); // 15 minutes
 
-/**
- * Verify Magento 2 password format: hash:salt:version_info
- * Magento 2 uses SHA256 + PBKDF2 internally via its own hash versions.
- * Version prefix in hash string determines algorithm:
- *  - No version info / old: md5(salt+password)
- *  - :1 = sha256(salt+password) (legacy)
- *  - :2 = hash_pbkdf2('sha256', password, salt, 2^N) (modern)
- */
-function verifyMagentoPassword(string $password, string $storedHash): bool {
-    $parts = explode(':', $storedHash, 3);
-    $hash = $parts[0] ?? '';
-    $salt = $parts[1] ?? '';
-    $versionInfo = $parts[2] ?? '';
-
-    if ($versionInfo === '') {
-        // Legacy: md5(salt + password) or md5(password + salt)
-        return hash_equals($hash, md5($salt . $password))
-            || hash_equals($hash, md5($password . $salt))
-            || hash_equals($hash, md5($password));
-    }
-
-    $versionParts = explode('_', $versionInfo);
-    $version = (int)($versionParts[0] ?? 0);
-
-    if ($version === 1) {
-        // SHA256 simple
-        return hash_equals($hash, hash('sha256', $salt . $password));
-    }
-
-    if ($version >= 2) {
-        // PBKDF2 SHA256: version format is "2_32_N_iterations" or similar
-        // Magento 2.x modern: hash_pbkdf2('sha256', password, salt, iterations, 0, true) then bin2hex
-        // Default Magento iterations = 2^(version-1) * base; extract from versionInfo
-        // versionInfo example: "3_32_2_67108864" = (algo_ver)_(key_len)_(salt_len)_(iterations)
-        $iterations = (int)($versionParts[3] ?? 0);
-        if ($iterations < 1) {
-            // Fallback: try common Magento iteration counts
-            foreach ([262144, 524288, 1048576, 67108864] as $iter) {
-                $derived = bin2hex(hash_pbkdf2('sha256', $password, $salt, $iter, 0, true));
-                if (hash_equals($hash, $derived)) return true;
-            }
-            return false;
-        }
-        $derived = bin2hex(hash_pbkdf2('sha256', $password, $salt, $iterations, 0, true));
-        return hash_equals($hash, $derived);
-    }
-
-    return false;
-}
-
-// Get database connection — auto-creates sessions, remember_tokens, dashboard_password on first call
+// ── Database ─────────────────────────────────────────────────────────────────
+// All auth/user data lives in dashboard_auth, not in the Magento DB.
 function getDb() {
     static $pdo = null;
     if ($pdo === null) {
         try {
-            $pdo = Config::getPDO(); // uses DB_PROD = technadminy7_dBT8x12y22 (Magento DB)
+            $pdo = Config::getDashboardPDO(); // dashboard_auth DB
 
-            // Ensure sessions table exists (used to track active dashboard sessions)
+            // Auto-create supporting tables if missing
             $pdo->exec("CREATE TABLE IF NOT EXISTS sessions (
-                id           VARCHAR(128) NOT NULL PRIMARY KEY,
-                user_id      INT UNSIGNED NOT NULL,
-                ip_address   VARCHAR(45),
-                user_agent   TEXT,
+                id            VARCHAR(128) NOT NULL PRIMARY KEY,
+                user_id       INT UNSIGNED NOT NULL,
+                ip_address    VARCHAR(45),
+                user_agent    TEXT,
                 last_activity INT UNSIGNED NOT NULL,
-                INDEX idx_user (user_id),
+                INDEX idx_user     (user_id),
                 INDEX idx_activity (last_activity)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-            // Ensure remember_tokens table exists (used for 'Remember Me' logins)
             $pdo->exec("CREATE TABLE IF NOT EXISTS remember_tokens (
                 id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 user_id    INT UNSIGNED NOT NULL,
@@ -93,21 +46,14 @@ function getDb() {
                 INDEX idx_token (token)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-            // Add dashboard_password column to admin_user if it doesn't exist.
-            // This stores a bcrypt hash for dashboard login, completely separate from
-            // the Magento admin password (stored in admin_user.password).
-            // This allows resetting dashboard access without touching Magento admin panel.
-            try {
-                $colCheck = $pdo->query("SHOW COLUMNS FROM admin_user LIKE 'dashboard_password'");
-                if ($colCheck->rowCount() === 0) {
-                    $pdo->exec("ALTER TABLE admin_user ADD COLUMN dashboard_password VARCHAR(255) NULL DEFAULT NULL COMMENT 'Dashboard-specific bcrypt password (separate from Magento admin password)'");
-                    $logMsg = date('[Y-m-d H:i:s] ') . "Migration: Added dashboard_password column to admin_user\n";
-                    @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
-                }
-            } catch (Exception $e) {
-                // Column may already exist or we don't have ALTER privilege — non-fatal
-                error_log('Auth migration warning: ' . $e->getMessage());
-            }
+            $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
+                id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                user_id    INT UNSIGNED NOT NULL,
+                token      VARCHAR(64) NOT NULL,
+                expires_at DATETIME NOT NULL,
+                used       TINYINT(1) DEFAULT 0,
+                INDEX idx_token (token)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
         } catch (PDOException $e) {
             error_log('Auth DB connection failed: ' . $e->getMessage());
@@ -119,640 +65,557 @@ function getDb() {
     return $pdo;
 }
 
-// Determine action
+// ── Routing ───────────────────────────────────────────────────────────────────
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
-// Actions that don't require authentication
-$allowWithoutAuth = ['login', 'csrf_token', 'status', 'forgot_password', 'verify_reset_token', 'reset_password_with_token', 'turnstile_config'];
+$publicActions = [
+    'login', 'csrf_token', 'status', 'check',
+    'forgot_password', 'verify_reset_token', 'reset_password_with_token',
+    'turnstile_config',
+];
 
-// Check authentication for protected actions
-if (!in_array($action, $allowWithoutAuth)) {
-    if ($action === 'check' || $action === 'logout' || $action === 'status') {
-        // These are special cases
-    } else if (empty($_SESSION['logged_in'])) {
-        http_response_code(401);
-        echo json_encode(['authenticated' => false, 'error' => 'Authentication required']);
-        exit;
-    }
+if (!in_array($action, $publicActions) && empty($_SESSION['logged_in'])) {
+    http_response_code(401);
+    echo json_encode(['authenticated' => false, 'error' => 'Authentication required']);
+    exit;
 }
 
-// ── Action Handlers ──
-
-/**
- * Verify Cloudflare Turnstile token
- */
+// ── Cloudflare Turnstile ──────────────────────────────────────────────────────
 function verifyTurnstile($token) {
     if (empty($token)) {
         return ['success' => false, 'error' => 'Turnstile verification required'];
     }
-    
     $secretKey = Config::get('cloudflare.turnstile_secret_key');
     if (empty($secretKey)) {
-        // If no secret key configured, skip verification (backward compatibility)
-        return ['success' => true];
+        return ['success' => true]; // not configured — skip
     }
-    
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, 'https://challenges.cloudflare.com/turnstile/v0/siteverify');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-        'secret' => $secretKey,
+        'secret'   => $secretKey,
         'response' => $token,
         'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '',
     ]));
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
+    $curlErr  = curl_error($ch);
     curl_close($ch);
-    
-    if ($error || $httpCode !== 200) {
-        return ['success' => false, 'error' => 'Turnstile verification failed: ' . ($error ?: 'HTTP ' . $httpCode)];
+    if ($curlErr || $httpCode !== 200) {
+        return ['success' => false, 'error' => 'Turnstile check failed: ' . ($curlErr ?: "HTTP $httpCode")];
     }
-    
     $body = json_decode($response, true);
-    
-    if (!isset($body['success']) || !$body['success']) {
-        $errorCodes = $body['error-codes'] ?? ['unknown-error'];
-        return ['success' => false, 'error' => 'Turnstile verification failed: ' . implode(', ', $errorCodes)];
+    if (empty($body['success'])) {
+        $codes = implode(', ', $body['error-codes'] ?? ['unknown']);
+        return ['success' => false, 'error' => "Turnstile failed: $codes"];
     }
-    
     return ['success' => true];
 }
 
+// ── handleLogin ───────────────────────────────────────────────────────────────
 function handleLogin() {
-    // Support both $_POST and JSON input
     $rawInput = file_get_contents('php://input');
-    $input = json_decode($rawInput, true);
-    
-    $username = $_POST['username'] ?? $input['username'] ?? '';
-    $password = $_POST['password'] ?? $input['password'] ?? '';
-    $csrfToken = $_POST['csrf_token'] ?? $input['csrf_token'] ?? '';
-    
-    if (empty($username) || empty($password)) {
+    $input    = json_decode($rawInput, true) ?? [];
+
+    $username   = trim($_POST['username']   ?? $input['username']   ?? '');
+    $password   =      $_POST['password']   ?? $input['password']   ?? '';
+    $csrfToken  =      $_POST['csrf_token'] ?? $input['csrf_token'] ?? '';
+
+    if ($username === '' || $password === '') {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Username and password required']);
+        echo json_encode(['success' => false, 'error' => 'Username and password are required']);
         return;
     }
 
-    // CSRF Verification
+    // CSRF check
     if (empty($csrfToken) || empty($_SESSION['csrf_token']) || $csrfToken !== $_SESSION['csrf_token']) {
-        http_response_code(403);
-        $reason = empty($csrfToken) ? 'Token missing in request' : (empty($_SESSION['csrf_token']) ? 'Token missing in session' : 'Token mismatch');
-        
-        $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Fail: $reason | User: $username | Request: " . substr($csrfToken ?? 'none', 0, 10) . " | Session: " . substr($_SESSION['csrf_token'] ?? 'none', 0, 10) . " | SID: " . session_id() . " | Session Data: " . json_encode($_SESSION) . "\n";
+        $reason = empty($csrfToken)
+            ? 'Token missing in request'
+            : (empty($_SESSION['csrf_token']) ? 'Token missing in session' : 'Token mismatch');
+        $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Fail: $reason | User: $username | ReqToken: "
+            . substr($csrfToken ?: 'none', 0, 10) . " | SessToken: "
+            . substr($_SESSION['csrf_token'] ?? 'none', 0, 10)
+            . " | SID: " . session_id() . "\n";
         @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
-
+        // Return 200 so axios can read the body
         echo json_encode([
-            'success' => false, 
-            'error' => 'Invalid CSRF token', 
-            'reason' => $reason,
-            'session_id' => session_id()
+            'success' => false,
+            'error'   => 'Invalid CSRF token',
+            'reason'  => $reason,
         ]);
         return;
     }
-    
-    // Cloudflare Turnstile Verification
+
+    // Turnstile (warning mode — logs but does not block)
     $turnstileToken = $_POST['turnstile_token'] ?? $input['turnstile_token'] ?? '';
     $turnstileResult = verifyTurnstile($turnstileToken);
     if (!$turnstileResult['success']) {
-        // Log Turnstile failure but don't block login (for now)
-        $logMsg = date('[Y-m-d H:i:s] ') . "Turnstile Warn: " . $turnstileResult['error'] . " | Token: " . substr($turnstileToken ?? 'none', 0, 10) . " | SID: " . session_id() . "\n";
+        $logMsg = date('[Y-m-d H:i:s] ') . "Turnstile Warn: " . $turnstileResult['error']
+            . " | Token: " . substr($turnstileToken ?: 'none', 0, 10)
+            . " | SID: " . session_id() . "\n";
         @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
-        // Note: Turnstile verification is in warning mode - login will proceed
-        // Uncomment the following lines to enforce Turnstile:
-        // http_response_code(403);
-        // echo json_encode([
-        //     'success' => false,
-        //     'error' => $turnstileResult['error']
-        // ]);
-        // return;
+        // Not blocking — continue
     }
-    
+
     try {
-        $pdo = getDb();
-        
-        // Check if user exists and is active (admin_user = Magento admin table)
-        // Supports login by username OR email address
-        // Also fetches dashboard_password (bcrypt) if set — dashboard-specific override
-        $stmt = $pdo->prepare("SELECT user_id AS id,
-            username, password AS password_hash,
-            dashboard_password,
-            CONCAT(firstname, ' ', lastname) AS full_name,
-            email, is_active,
-            failures_num AS login_attempts,
-            lock_expires AS locked_until,
-            'admin' AS role
-            FROM admin_user WHERE (username = ? OR email = ?) AND is_active = 1");
+        $pdo = getDb(); // dashboard_auth
+
+        // Fetch user from dashboard_auth.users (supports username OR email login)
+        $stmt = $pdo->prepare(
+            "SELECT id, username, password_hash, full_name, email, role, is_active,
+                    login_attempts, locked_until
+             FROM users
+             WHERE (username = ? OR email = ?) AND is_active = 1
+             LIMIT 1"
+        );
         $stmt->execute([$username, $username]);
-        $user = $stmt->fetch();
-        
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
         if (!$user) {
-            // Log failed attempt — user not found
-            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: User not found | Username: $username | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
+            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: User not found | Username: $username | IP: "
+                . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
             @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
-            // Return 200 with success=false so frontend shows the actual error message (not generic 401)
+            // Return 200 so frontend sees the real message
             echo json_encode(['success' => false, 'error' => 'Invalid username or password']);
             return;
         }
-        
-        // Check account lock (lock_expires is a DATETIME string in admin_user)
+
+        // Account lock check (locked_until is a DATETIME)
         if (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
             $remaining = ceil((strtotime($user['locked_until']) - time()) / 60);
-            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: Account locked | Username: $username | Locked until: {$user['locked_until']} | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
+            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: Account locked | Username: $username"
+                . " | Until: {$user['locked_until']} | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
             @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
-            // Return 200 so frontend can show specific lock message
-            echo json_encode(['success' => false, 'error' => "Account locked. Try again in {$remaining} minutes"]);
+            echo json_encode(['success' => false, 'error' => "Account locked. Try again in {$remaining} minute(s)"]);
             return;
         }
-        
-        // Password verification strategy:
-        // 1. If dashboard_password (bcrypt) is set → use it FIRST (dashboard-specific password)
-        // 2. Otherwise fall back to verifyMagentoPassword (Magento admin hash)
-        // This allows resetting dashboard access without affecting Magento admin panel.
-        $dashPwd = $user['dashboard_password'] ?? null;
-        $passwordOk = false;
-        $authMethod = 'magento';
 
-        if (!empty($dashPwd)) {
-            // Bcrypt verification for dashboard-specific password
-            $passwordOk = password_verify($password, $dashPwd);
-            $authMethod = 'dashboard_bcrypt';
-        }
-
-        if (!$passwordOk) {
-            // Fallback: Magento 2 hash format (hash:salt:version)
-            $passwordOk = verifyMagentoPassword($password, $user['password_hash']);
-            $authMethod = $passwordOk ? 'magento_hash' : 'failed';
-        }
-
-        if (!$passwordOk) {
-            // Increment failure counter
-            $attempts = ($user['login_attempts'] ?? 0) + 1;
+        // Bcrypt password verification (dashboard_auth.users.password_hash)
+        if (!password_verify($password, $user['password_hash'])) {
+            $attempts  = ($user['login_attempts'] ?? 0) + 1;
             $lockUntil = null;
             if ($attempts >= MAX_LOGIN_ATTEMPTS) {
                 $lockUntil = date('Y-m-d H:i:s', time() + LOCKOUT_DURATION);
             }
-            $pdo->prepare("UPDATE admin_user SET failures_num = ?, lock_expires = ? WHERE user_id = ?")
+            $pdo->prepare("UPDATE users SET login_attempts = ?, locked_until = ? WHERE id = ?")
                 ->execute([$attempts, $lockUntil, $user['id']]);
-            
-            // Log failed password attempt with hash version info
-            $hashParts = explode(':', $user['password_hash']);
-            $hashVersion = $hashParts[2] ?? 'legacy';
-            $hasDashPwd = !empty($dashPwd) ? 'yes' : 'no';
-            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: Wrong password | Username: $username | HashVersion: $hashVersion | DashboardPwd: $hasDashPwd | Attempt: $attempts | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
+
+            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: Wrong password | Username: $username"
+                . " | Attempt: $attempts | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
             @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
-            
-            // Return 200 so frontend receives the real error message (axios won't throw on success HTTP code)
             echo json_encode(['success' => false, 'error' => 'Invalid username or password']);
             return;
         }
-        
-        // Successful login — reset failure counter and update last login
-        $pdo->prepare("UPDATE admin_user SET failures_num = 0, lock_expires = NULL, logdate = NOW() WHERE user_id = ?")
+
+        // ── Success ──────────────────────────────────────────────────────────
+        // Reset failure counter + update last_login
+        $pdo->prepare("UPDATE users SET login_attempts = 0, locked_until = NULL, last_login = NOW() WHERE id = ?")
             ->execute([$user['id']]);
-        
-        // Log successful login (with auth method used)
-        $logMsg = date('[Y-m-d H:i:s] ') . "Login OK | Username: $username | Method: $authMethod | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . " | SID: " . session_id() . "\n";
+
+        $logMsg = date('[Y-m-d H:i:s] ') . "Login OK | Username: $username | Role: {$user['role']}"
+            . " | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . " | SID: " . session_id() . "\n";
         @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
-        
-        // Create session
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
+
+        // Establish session
+        $_SESSION['user_id']   = $user['id'];
+        $_SESSION['username']  = $user['username'];
         $_SESSION['full_name'] = $user['full_name'];
-        $_SESSION['role'] = $user['role'];
+        $_SESSION['role']      = $user['role'];
         $_SESSION['logged_in'] = true;
-        
-        // Generate remember me token if requested
+
+        // Persist session record in dashboard_auth.sessions
+        try {
+            $sessionId = session_id();
+            $pdo->prepare(
+                "INSERT INTO sessions (id, user_id, ip_address, user_agent, last_activity)
+                 VALUES (?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE last_activity = VALUES(last_activity)"
+            )->execute([
+                $sessionId,
+                $user['id'],
+                $_SERVER['REMOTE_ADDR']   ?? 'unknown',
+                $_SERVER['HTTP_USER_AGENT'] ?? '',
+                time(),
+            ]);
+        } catch (Exception $e) { /* non-fatal */ }
+
+        // Remember-me token
         $rememberMeToken = null;
         $rememberMe = ($input['remember_me'] ?? $_POST['remember_me'] ?? false);
         if ($rememberMe) {
             $rememberMeToken = bin2hex(random_bytes(32));
             $expires = date('Y-m-d H:i:s', time() + 2592000); // 30 days
-            
-            // Store token in database
             try {
-                $stmt = $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ?");
-                $stmt->execute([$user['id']]);
-                
-                $stmt = $pdo->prepare("INSERT INTO remember_tokens (user_id, token, expires, created_at) VALUES (?, ?, ?, NOW())");
-                $stmt->execute([$user['id'], $rememberMeToken, $expires]);
-            } catch (Exception $e) {
-                // Table may not exist yet - token still works via cookie
-            }
+                $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ?")->execute([$user['id']]);
+                $pdo->prepare(
+                    "INSERT INTO remember_tokens (user_id, token, expires) VALUES (?, ?, ?)"
+                )->execute([$user['id'], $rememberMeToken, $expires]);
+            } catch (Exception $e) { /* non-fatal */ }
         }
-        
-        // Store session in database (admin_user_session table)
-        try {
-            $sessionId = session_id();
-            $pdo->prepare("INSERT INTO sessions (id, user_id, ip_address, user_agent, last_activity) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE last_activity = VALUES(last_activity)")
-                ->execute([$sessionId, $user['id'], $_SERVER['REMOTE_ADDR'] ?? 'unknown', $_SERVER['HTTP_USER_AGENT'] ?? '', time()]);
-        } catch (Exception $e) {
-            // sessions table may not exist — non-fatal
-        }
-        
-        // Send login notification email (non-blocking)
+
+        // Login notification email (non-blocking)
         if (!empty($user['email'])) {
             try {
                 Mailer::sendLoginNotification($user['email'], $user['username'], $_SERVER['REMOTE_ADDR'] ?? 'unknown');
             } catch (Exception $e) {
-                error_log("[Auth] Failed to send login notification: " . $e->getMessage());
+                error_log('[Auth] Login notification failed: ' . $e->getMessage());
             }
         }
-        
+
         $response = [
             'success' => true,
-            'user' => [
-                'username' => $user['username'],
+            'user'    => [
+                'id'        => $user['id'],
+                'username'  => $user['username'],
                 'full_name' => $user['full_name'],
-                'role' => $user['role']
-            ]
+                'email'     => $user['email'],
+                'role'      => $user['role'],
+            ],
         ];
         if ($rememberMeToken) {
             $response['remember_token'] = $rememberMeToken;
         }
-        
         echo json_encode($response);
-        
+
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Login failed: ' . $e->getMessage()]);
     }
 }
 
+// ── handleLogout ─────────────────────────────────────────────────────────────
 function handleLogout() {
-    // Clear remember me token
-    if (isset($_COOKIE['remember_token'])) {
+    // Remove remember-me token
+    if (!empty($_COOKIE['remember_token'])) {
         try {
             $pdo = getDb();
-            $stmt = $pdo->prepare("DELETE FROM remember_tokens WHERE token = ?");
-            $stmt->execute([$_COOKIE['remember_token']]);
+            $pdo->prepare("DELETE FROM remember_tokens WHERE token = ?")
+                ->execute([$_COOKIE['remember_token']]);
         } catch (Exception $e) {}
-        
         setcookie('remember_token', '', time() - 3600, '/', '', false, true);
     }
-    
+
+    // Remove session record
     try {
-        if (isset($_SESSION['user_id'])) {
+        if (!empty($_SESSION['user_id'])) {
             $pdo = getDb();
-            $sessionId = session_id();
-            $stmt = $pdo->prepare("DELETE FROM sessions WHERE id = ?");
-            $stmt->execute([$sessionId]);
+            $pdo->prepare("DELETE FROM sessions WHERE id = ?")
+                ->execute([session_id()]);
         }
-    } catch (Exception $e) {
-        // Continue with logout even if DB cleanup fails
-    }
-    
+    } catch (Exception $e) {}
+
     session_destroy();
     echo json_encode(['success' => true]);
 }
 
+// ── handleCheckSession ───────────────────────────────────────────────────────
 function handleCheckSession() {
+    // Active session
     if (!empty($_SESSION['logged_in'])) {
         echo json_encode([
             'authenticated' => true,
-            'logged_in' => true,
-            'user' => [
-                'username' => $_SESSION['username'] ?? '',
+            'logged_in'     => true,
+            'user'          => [
+                'id'        => $_SESSION['user_id']   ?? null,
+                'username'  => $_SESSION['username']  ?? '',
                 'full_name' => $_SESSION['full_name'] ?? '',
-                'role' => $_SESSION['role'] ?? 'user'
-            ]
+                'role'      => $_SESSION['role']      ?? 'viewer',
+            ],
         ]);
         return;
     }
-    
-    // Try auto-login via remember token
+
+    // Try remember-me auto-login
     $rememberToken = $_COOKIE['remember_token'] ?? '';
     if (!empty($rememberToken)) {
         try {
-            $pdo = getDb();
-            $stmt = $pdo->prepare("SELECT rt.user_id, u.username, CONCAT(u.firstname,' ',u.lastname) AS full_name, 'admin' AS role FROM remember_tokens rt JOIN admin_user u ON u.user_id = rt.user_id WHERE rt.token = ? AND rt.expires > NOW() AND u.is_active = 1");
+            $pdo  = getDb();
+            $stmt = $pdo->prepare(
+                "SELECT rt.user_id, u.username, u.full_name, u.role, u.email
+                 FROM remember_tokens rt
+                 JOIN users u ON u.id = rt.user_id
+                 WHERE rt.token = ? AND rt.expires > NOW() AND u.is_active = 1"
+            );
             $stmt->execute([$rememberToken]);
-            $tokenData = $stmt->fetch();
-            
-            if ($tokenData) {
-                // Re-establish session
-                $_SESSION['user_id'] = $tokenData['user_id'];
-                $_SESSION['username'] = $tokenData['username'];
-                $_SESSION['full_name'] = $tokenData['full_name'];
-                $_SESSION['role'] = $tokenData['role'];
+            $td = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($td) {
+                $_SESSION['user_id']   = $td['user_id'];
+                $_SESSION['username']  = $td['username'];
+                $_SESSION['full_name'] = $td['full_name'];
+                $_SESSION['role']      = $td['role'];
                 $_SESSION['logged_in'] = true;
-                $_SESSION['last_regeneration'] = time();
-                
-                // Update session in DB
-                $sessionId = session_id();
-                $stmt = $pdo->prepare("INSERT INTO sessions (id, user_id, ip_address, user_agent, last_activity) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE last_activity = VALUES(last_activity)");
-                $stmt->execute([
-                    $sessionId,
-                    $tokenData['user_id'],
-                    $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-                    $_SERVER['HTTP_USER_AGENT'] ?? '',
-                    time()
-                ]);
-                
+
+                try {
+                    $pdo->prepare(
+                        "INSERT INTO sessions (id, user_id, ip_address, user_agent, last_activity)
+                         VALUES (?, ?, ?, ?, ?)
+                         ON DUPLICATE KEY UPDATE last_activity = VALUES(last_activity)"
+                    )->execute([
+                        session_id(),
+                        $td['user_id'],
+                        $_SERVER['REMOTE_ADDR']     ?? 'unknown',
+                        $_SERVER['HTTP_USER_AGENT'] ?? '',
+                        time(),
+                    ]);
+                } catch (Exception $e) {}
+
                 echo json_encode([
                     'authenticated' => true,
-                    'logged_in' => true,
-                    'user' => [
-                        'username' => $tokenData['username'],
-                        'full_name' => $tokenData['full_name'],
-                        'role' => $tokenData['role']
+                    'logged_in'     => true,
+                    'restored'      => true,
+                    'user'          => [
+                        'id'        => $td['user_id'],
+                        'username'  => $td['username'],
+                        'full_name' => $td['full_name'],
+                        'role'      => $td['role'],
                     ],
-                    'restored' => true
                 ]);
                 return;
             }
-        } catch (Exception $e) {
-            // Token table may not exist
-        }
+        } catch (Exception $e) { /* non-fatal */ }
     }
-    
+
     echo json_encode(['authenticated' => false, 'logged_in' => false]);
 }
 
+// ── handleCsrfToken ──────────────────────────────────────────────────────────
 function handleCsrfToken() {
-    // Ensure session is started
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-    
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-    
-    // Log session info for debugging
-    $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Token Generated | SID: " . session_id() . " | Token: " . substr($_SESSION['csrf_token'], 0, 10) . "...\n";
+    $logMsg = date('[Y-m-d H:i:s] ') . "CSRF Token Generated | SID: " . session_id()
+        . " | Token: " . substr($_SESSION['csrf_token'], 0, 10) . "...\n";
     @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
-    
+
     echo json_encode([
-        'success' => true, 
+        'success'    => true,
         'csrf_token' => $_SESSION['csrf_token'],
-        'session_id' => session_id()
+        'session_id' => session_id(),
     ]);
 }
 
+// ── handleGetTurnstileConfig ─────────────────────────────────────────────────
 function handleGetTurnstileConfig() {
     $siteKey = Config::get('cloudflare.turnstile_site_key');
     echo json_encode([
-        'success' => true,
+        'success'  => true,
         'site_key' => $siteKey,
-        'enabled' => !empty($siteKey)
+        'enabled'  => !empty($siteKey),
     ]);
 }
 
+// ── handleForgotPassword ─────────────────────────────────────────────────────
 function handleForgotPassword() {
-    $rawInput = file_get_contents('php://input');
-    $input = json_decode($rawInput, true) ?? [];
-    
+    $rawInput   = file_get_contents('php://input');
+    $input      = json_decode($rawInput, true) ?? [];
     $identifier = trim($input['username'] ?? $input['email'] ?? '');
-    if (empty($identifier)) {
+
+    if ($identifier === '') {
         http_response_code(400);
-        echo json_encode(['error' => 'Username or email is required.']);
+        echo json_encode(['error' => 'Username or email is required']);
         return;
     }
-    
+
     try {
         $pdo = getDb();
-        
-        // Create password_resets table if it doesn't exist
-        try {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
-                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                user_id INT UNSIGNED NOT NULL,
-                token VARCHAR(64) NOT NULL,
-                expires_at DATETIME NOT NULL,
-                used TINYINT(1) DEFAULT 0,
-                INDEX idx_token (token)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-        } catch (Exception $e) { /* table may already exist or FK issue — ignore */ }
-        
-        // Look up user by username or email in admin_user
-        $stmt = $pdo->prepare("SELECT user_id AS id, username, email FROM admin_user WHERE (username = ? OR email = ?) AND is_active = 1");
+
+        // Look up in dashboard_auth.users (not Magento)
+        $stmt = $pdo->prepare(
+            "SELECT id, username, email FROM users
+             WHERE (username = ? OR email = ?) AND is_active = 1 LIMIT 1"
+        );
         $stmt->execute([$identifier, $identifier]);
-        $user = $stmt->fetch();
-        
-        // Always return success to prevent user enumeration
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Always return success (no user enumeration)
         if (!$user || empty($user['email'])) {
-            echo json_encode(['success' => true, 'message' => 'If the account exists, a reset link has been sent to the registered email.']);
+            echo json_encode(['success' => true, 'message' => 'If the account exists, a reset link has been sent.']);
             return;
         }
-        
-        // Generate token
-        $token = bin2hex(random_bytes(32));
-        $expiresAt = gmdate('Y-m-d H:i:s', time() + 3600); // 1 hour in UTC
-        
-        // Invalidate old tokens for this user
+
+        $token     = bin2hex(random_bytes(32));
+        $expiresAt = gmdate('Y-m-d H:i:s', time() + 3600);
+
         $pdo->prepare("DELETE FROM password_resets WHERE user_id = ?")->execute([$user['id']]);
-        
-        // Store new token
-        $stmt = $pdo->prepare("INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)");
-        $stmt->execute([$user['id'], $token, $expiresAt]);
-        
-        // Send email
+        $pdo->prepare(
+            "INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)"
+        )->execute([$user['id'], $token, $expiresAt]);
+
         Mailer::sendForgotPassword($user['email'], $user['username'], $token);
-        
-        echo json_encode(['success' => true, 'message' => 'If the account exists, a reset link has been sent to the registered email.']);
-        
+
+        echo json_encode(['success' => true, 'message' => 'If the account exists, a reset link has been sent.']);
+
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to process request: ' . $e->getMessage()]);
     }
 }
 
+// ── handleVerifyResetToken ────────────────────────────────────────────────────
 function handleVerifyResetToken() {
     $token = $_GET['token'] ?? '';
     if (empty($token)) {
-        echo json_encode(['valid' => false, 'error' => 'Token is required.']);
+        echo json_encode(['valid' => false, 'error' => 'Token is required']);
         return;
     }
-    
     try {
-        $pdo = getDb();
-        
-        $stmt = $pdo->prepare("SELECT pr.user_id, u.username FROM password_resets pr JOIN admin_user u ON u.user_id = pr.user_id WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0 AND u.is_active = 1");
+        $pdo  = getDb();
+        $stmt = $pdo->prepare(
+            "SELECT pr.user_id, u.username
+             FROM password_resets pr
+             JOIN users u ON u.id = pr.user_id
+             WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0 AND u.is_active = 1"
+        );
         $stmt->execute([$token]);
-        $row = $stmt->fetch();
-        
-        if ($row) {
-            echo json_encode(['valid' => true, 'username' => $row['username']]);
-        } else {
-            echo json_encode(['valid' => false, 'error' => 'Invalid or expired token.']);
-        }
-        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        echo json_encode($row
+            ? ['valid' => true,  'username' => $row['username']]
+            : ['valid' => false, 'error'    => 'Invalid or expired token']
+        );
     } catch (Exception $e) {
-        echo json_encode(['valid' => false, 'error' => 'Token verification failed.']);
+        echo json_encode(['valid' => false, 'error' => 'Token verification failed']);
     }
 }
 
+// ── handleResetPasswordWithToken ─────────────────────────────────────────────
 function handleResetPasswordWithToken() {
-    $rawInput = file_get_contents('php://input');
-    $input = json_decode($rawInput, true) ?? [];
-    
-    $token = $input['token'] ?? '';
+    $rawInput    = file_get_contents('php://input');
+    $input       = json_decode($rawInput, true) ?? [];
+    $token       = $input['token']        ?? '';
     $newPassword = $input['new_password'] ?? '';
-    
-    if (empty($token) || empty($newPassword)) {
+
+    if ($token === '' || $newPassword === '') {
         http_response_code(400);
-        echo json_encode(['error' => 'Token and new password are required.']);
+        echo json_encode(['error' => 'Token and new password are required']);
         return;
     }
-    
+
     $pwValidation = InputValidator::validatePassword($newPassword);
     if (!$pwValidation['valid']) {
         http_response_code(400);
         echo json_encode(['error' => implode('. ', $pwValidation['errors'])]);
         return;
     }
-    
+
     try {
-        $pdo = getDb();
-        
-        // Verify token
-        $stmt = $pdo->prepare("SELECT pr.user_id, u.username, u.email FROM password_resets pr JOIN admin_user u ON u.user_id = pr.user_id WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0 AND u.is_active = 1");
+        $pdo  = getDb();
+        $stmt = $pdo->prepare(
+            "SELECT pr.user_id, u.username, u.email
+             FROM password_resets pr
+             JOIN users u ON u.id = pr.user_id
+             WHERE pr.token = ? AND pr.expires_at > UTC_TIMESTAMP() AND pr.used = 0 AND u.is_active = 1"
+        );
         $stmt->execute([$token]);
-        $row = $stmt->fetch();
-        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
         if (!$row) {
             http_response_code(400);
-            echo json_encode(['error' => 'Invalid or expired token.']);
+            echo json_encode(['error' => 'Invalid or expired token']);
             return;
         }
-        
-        // Update password using Magento 2 hash format (sha256 + random salt, version=1)
-        $salt = bin2hex(random_bytes(16)); // 32 hex chars
-        $hash = hash('sha256', $salt . $newPassword);
-        $magento2Hash = $hash . ':' . $salt . ':1';
-        $pdo->prepare("UPDATE admin_user SET password = ?, failures_num = 0, lock_expires = NULL WHERE user_id = ?")->execute([$magento2Hash, $row['user_id']]);
-        
-        // Mark token as used
+
+        // Store bcrypt hash in dashboard_auth.users.password_hash
+        $bcryptHash = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+        $pdo->prepare("UPDATE users SET password_hash = ?, login_attempts = 0, locked_until = NULL WHERE id = ?")
+            ->execute([$bcryptHash, $row['user_id']]);
+
         $pdo->prepare("UPDATE password_resets SET used = 1 WHERE token = ?")->execute([$token]);
-        
-        // Invalidate all sessions and remember tokens for this user
-        $pdo->prepare("DELETE FROM sessions WHERE user_id = ?")->execute([$row['user_id']]);
-        try {
-            $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ?")->execute([$row['user_id']]);
-        } catch (\Exception $e) {
-            // Table may not exist - continue
-        }
-        
-        // Send confirmation email
+
+        // Invalidate all sessions / remember tokens for this user
+        $pdo->prepare("DELETE FROM sessions       WHERE user_id = ?")->execute([$row['user_id']]);
+        $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ?")->execute([$row['user_id']]);
+
         if (!empty($row['email'])) {
             try {
                 Mailer::sendPasswordChanged($row['email'], $row['username']);
             } catch (Exception $e) {
-                error_log("[Auth] Failed to send password changed notification: " . $e->getMessage());
+                error_log('[Auth] sendPasswordChanged failed: ' . $e->getMessage());
             }
         }
-        
+
         // Audit log
-        $pdo->prepare("INSERT INTO audit_log (user_id, action, ip_address, user_agent, details) VALUES (?, 'password_reset_token', ?, ?, ?)")->execute([
-            $row['user_id'],
-            $_SERVER['REMOTE_ADDR'] ?? '',
-            $_SERVER['HTTP_USER_AGENT'] ?? '',
-            "Password reset via token for: {$row['username']}"
-        ]);
-        
-        echo json_encode(['success' => true, 'message' => 'Password has been reset successfully. Please log in with your new password.']);
-        
+        try {
+            $pdo->prepare(
+                "INSERT INTO audit_log (user_id, action, ip_address, user_agent, details) VALUES (?, 'password_reset_token', ?, ?, ?)"
+            )->execute([
+                $row['user_id'],
+                $_SERVER['REMOTE_ADDR']     ?? '',
+                $_SERVER['HTTP_USER_AGENT'] ?? '',
+                "Password reset via token for: {$row['username']}",
+            ]);
+        } catch (Exception $e) { /* audit_log may not exist — non-fatal */ }
+
+        echo json_encode(['success' => true, 'message' => 'Password reset successfully. Please log in.']);
+
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to reset password: ' . $e->getMessage()]);
     }
 }
 
+// ── handleAccountStatus (admin debug endpoint) ────────────────────────────────
 function handleAccountStatus() {
-    // Admin-only: returns lock/attempt status for a given username (for debugging 401s)
     if (empty($_SESSION['logged_in']) || ($_SESSION['role'] ?? '') !== 'admin') {
         http_response_code(401);
         echo json_encode(['error' => 'Unauthorized']);
         return;
     }
     $username = $_GET['username'] ?? $_SESSION['username'] ?? '';
-    if (empty($username)) {
+    if ($username === '') {
         http_response_code(400);
         echo json_encode(['error' => 'username required']);
         return;
     }
     try {
-        $pdo = getDb();
-        $stmt = $pdo->prepare("SELECT user_id, username, is_active, failures_num, lock_expires, logdate, email,
-            SUBSTRING(password, 1, 6) AS hash_prefix,
-            CHAR_LENGTH(password) AS hash_length,
-            (LOCATE(':', password, LOCATE(':', password)+1)+1) AS version_pos
-            FROM admin_user WHERE username = ?");
+        $pdo  = getDb();
+        $stmt = $pdo->prepare(
+            "SELECT id, username, email, role, is_active, login_attempts, locked_until, last_login, created_at
+             FROM users WHERE username = ?"
+        );
         $stmt->execute([$username]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
         if (!$row) {
             echo json_encode(['found' => false, 'username' => $username]);
             return;
         }
-        // Parse hash version from password field
-        $stmt2 = $pdo->prepare("SELECT password FROM admin_user WHERE username = ?");
-        $stmt2->execute([$username]);
-        $pwRow = $stmt2->fetch(\PDO::FETCH_ASSOC);
-        $hashParts = explode(':', $pwRow['password'] ?? '', 3);
-        $hashVersion = $hashParts[2] ?? 'legacy';
-        $locked = !empty($row['lock_expires']) && strtotime($row['lock_expires']) > time();
+
+        $locked = !empty($row['locked_until']) && strtotime($row['locked_until']) > time();
         echo json_encode([
-            'found' => true,
-            'username' => $row['username'],
-            'is_active' => $row['is_active'],
-            'failures_num' => $row['failures_num'],
-            'lock_expires' => $row['lock_expires'],
-            'locked_now' => $locked,
-            'lock_remaining_minutes' => $locked ? ceil((strtotime($row['lock_expires']) - time()) / 60) : 0,
-            'last_login' => $row['logdate'],
-            'hash_version' => $hashVersion,
-            'hash_preview' => $row['hash_prefix'] . '...' . substr($pwRow['password'] ?? '', -4),
+            'found'                   => true,
+            'username'                => $row['username'],
+            'email'                   => $row['email'],
+            'role'                    => $row['role'],
+            'is_active'               => $row['is_active'],
+            'login_attempts'          => $row['login_attempts'],
+            'locked_until'            => $row['locked_until'],
+            'locked_now'              => $locked,
+            'lock_remaining_minutes'  => $locked ? ceil((strtotime($row['locked_until']) - time()) / 60) : 0,
+            'last_login'              => $row['last_login'],
+            'auth_method'             => 'bcrypt (dashboard_auth.users)',
         ]);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => $e->getMessage()]);
     }
 }
 
-// ── Main Router ──
+// ── Main Router ───────────────────────────────────────────────────────────────
 if (basename($_SERVER['PHP_SELF']) === 'auth.php') {
     switch ($action) {
-        case 'login':
-            handleLogin();
-            break;
-        
-        case 'logout':
-            handleLogout();
-            break;
-        
+        case 'login':                    handleLogin();                    break;
+        case 'logout':                   handleLogout();                   break;
         case 'check':
-        case 'status':
-            handleCheckSession();
-            break;
-        
-        case 'csrf_token':
-            handleCsrfToken();
-            break;
-        
-        case 'turnstile_config':
-            handleGetTurnstileConfig();
-            break;
-        
-        case 'forgot_password':
-            handleForgotPassword();
-            break;
-        
-        case 'verify_reset_token':
-            handleVerifyResetToken();
-            break;
-        
-        case 'reset_password_with_token':
-            handleResetPasswordWithToken();
-            break;
-        
-        case 'account_status':
-            handleAccountStatus();
-            break;
-        
+        case 'status':                   handleCheckSession();             break;
+        case 'csrf_token':               handleCsrfToken();                break;
+        case 'turnstile_config':         handleGetTurnstileConfig();       break;
+        case 'forgot_password':          handleForgotPassword();           break;
+        case 'verify_reset_token':       handleVerifyResetToken();         break;
+        case 'reset_password_with_token':handleResetPasswordWithToken();   break;
+        case 'account_status':           handleAccountStatus();            break;
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Unknown action: ' . $action]);
@@ -760,7 +623,6 @@ if (basename($_SERVER['PHP_SELF']) === 'auth.php') {
     }
 }
 
-// Clean output buffer — only flush if a buffer was actually started
 if (ob_get_level() > 0) {
     ob_end_flush();
 }

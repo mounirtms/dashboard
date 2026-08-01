@@ -40,7 +40,7 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
-    $pdo    = Config::getPDO();
+    $pdo = Config::getDashboardPDO(); // dashboard_auth.task_queue
     $userId = $_SESSION['user_id'] ?? null;
     $isAdmin = PermissionChecker::isAdmin();
 
