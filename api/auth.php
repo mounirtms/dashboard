@@ -64,7 +64,7 @@ function verifyMagentoPassword(string $password, string $storedHash): bool {
     return false;
 }
 
-// Get database connection — auto-creates sessions, remember_tokens on first call
+// Get database connection — auto-creates sessions, remember_tokens, dashboard_password on first call
 function getDb() {
     static $pdo = null;
     if ($pdo === null) {
@@ -92,6 +92,22 @@ function getDb() {
                 INDEX idx_user  (user_id),
                 INDEX idx_token (token)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            // Add dashboard_password column to admin_user if it doesn't exist.
+            // This stores a bcrypt hash for dashboard login, completely separate from
+            // the Magento admin password (stored in admin_user.password).
+            // This allows resetting dashboard access without touching Magento admin panel.
+            try {
+                $colCheck = $pdo->query("SHOW COLUMNS FROM admin_user LIKE 'dashboard_password'");
+                if ($colCheck->rowCount() === 0) {
+                    $pdo->exec("ALTER TABLE admin_user ADD COLUMN dashboard_password VARCHAR(255) NULL DEFAULT NULL COMMENT 'Dashboard-specific bcrypt password (separate from Magento admin password)'");
+                    $logMsg = date('[Y-m-d H:i:s] ') . "Migration: Added dashboard_password column to admin_user\n";
+                    @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
+                }
+            } catch (Exception $e) {
+                // Column may already exist or we don't have ALTER privilege — non-fatal
+                error_log('Auth migration warning: ' . $e->getMessage());
+            }
 
         } catch (PDOException $e) {
             error_log('Auth DB connection failed: ' . $e->getMessage());
@@ -220,8 +236,10 @@ function handleLogin() {
         
         // Check if user exists and is active (admin_user = Magento admin table)
         // Supports login by username OR email address
+        // Also fetches dashboard_password (bcrypt) if set — dashboard-specific override
         $stmt = $pdo->prepare("SELECT user_id AS id,
             username, password AS password_hash,
+            dashboard_password,
             CONCAT(firstname, ' ', lastname) AS full_name,
             email, is_active,
             failures_num AS login_attempts,
@@ -250,8 +268,27 @@ function handleLogin() {
             return;
         }
         
-        // Verify password using Magento 2 hash format (hash:salt:version)
-        if (!verifyMagentoPassword($password, $user['password_hash'])) {
+        // Password verification strategy:
+        // 1. If dashboard_password (bcrypt) is set → use it FIRST (dashboard-specific password)
+        // 2. Otherwise fall back to verifyMagentoPassword (Magento admin hash)
+        // This allows resetting dashboard access without affecting Magento admin panel.
+        $dashPwd = $user['dashboard_password'] ?? null;
+        $passwordOk = false;
+        $authMethod = 'magento';
+
+        if (!empty($dashPwd)) {
+            // Bcrypt verification for dashboard-specific password
+            $passwordOk = password_verify($password, $dashPwd);
+            $authMethod = 'dashboard_bcrypt';
+        }
+
+        if (!$passwordOk) {
+            // Fallback: Magento 2 hash format (hash:salt:version)
+            $passwordOk = verifyMagentoPassword($password, $user['password_hash']);
+            $authMethod = $passwordOk ? 'magento_hash' : 'failed';
+        }
+
+        if (!$passwordOk) {
             // Increment failure counter
             $attempts = ($user['login_attempts'] ?? 0) + 1;
             $lockUntil = null;
@@ -264,7 +301,8 @@ function handleLogin() {
             // Log failed password attempt with hash version info
             $hashParts = explode(':', $user['password_hash']);
             $hashVersion = $hashParts[2] ?? 'legacy';
-            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: Wrong password | Username: $username | HashVersion: $hashVersion | Attempt: $attempts | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
+            $hasDashPwd = !empty($dashPwd) ? 'yes' : 'no';
+            $logMsg = date('[Y-m-d H:i:s] ') . "Login Fail: Wrong password | Username: $username | HashVersion: $hashVersion | DashboardPwd: $hasDashPwd | Attempt: $attempts | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
             @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
             
             // Return 200 so frontend receives the real error message (axios won't throw on success HTTP code)
@@ -276,8 +314,8 @@ function handleLogin() {
         $pdo->prepare("UPDATE admin_user SET failures_num = 0, lock_expires = NULL, logdate = NOW() WHERE user_id = ?")
             ->execute([$user['id']]);
         
-        // Log successful login
-        $logMsg = date('[Y-m-d H:i:s] ') . "Login OK | Username: $username | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . " | SID: " . session_id() . "\n";
+        // Log successful login (with auth method used)
+        $logMsg = date('[Y-m-d H:i:s] ') . "Login OK | Username: $username | Method: $authMethod | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . " | SID: " . session_id() . "\n";
         @file_put_contents(__DIR__ . '/logs/auth_debug.log', $logMsg, FILE_APPEND);
         
         // Create session
