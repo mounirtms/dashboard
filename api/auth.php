@@ -219,6 +219,7 @@ function handleLogin() {
         $pdo = getDb();
         
         // Check if user exists and is active (admin_user = Magento admin table)
+        // Supports login by username OR email address
         $stmt = $pdo->prepare("SELECT user_id AS id,
             username, password AS password_hash,
             CONCAT(firstname, ' ', lastname) AS full_name,
@@ -226,8 +227,8 @@ function handleLogin() {
             failures_num AS login_attempts,
             lock_expires AS locked_until,
             'admin' AS role
-            FROM admin_user WHERE username = ? AND is_active = 1");
-        $stmt->execute([$username]);
+            FROM admin_user WHERE (username = ? OR email = ?) AND is_active = 1");
+        $stmt->execute([$username, $username]);
         $user = $stmt->fetch();
         
         if (!$user) {

@@ -263,17 +263,28 @@ export default function LoginPage() {
             {error && (
               <Alert severity="error" sx={{ mb: 3, borderRadius: '10px', backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
                 {error}
+                {(error.includes('Invalid') || error.includes('credentials')) && (
+                  <Box sx={{ mt: 0.75, fontSize: '0.78rem' }}>
+                    Tip: Try logging in with your email address, or use{' '}
+                    <Box component="span"
+                      onClick={openForgotDialog}
+                      sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }}>
+                      Forgot password?
+                    </Box>
+                    {' '}to reset access.
+                  </Box>
+                )}
               </Alert>
             )}
 
             <form onSubmit={handleSubmit}>
               <Box sx={{ mb: 2.5 }}>
-                <Typography sx={{ mb: 1, fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600 }}>Username</Typography>
+                <Typography sx={{ mb: 1, fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600 }}>Username or Email</Typography>
                 <TextField
                   fullWidth
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  placeholder="Enter your username or email"
                   required
                   autoFocus
                   slotProps={{
