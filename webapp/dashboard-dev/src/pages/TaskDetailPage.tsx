@@ -1,8 +1,8 @@
 import { Box, Typography, Card, CardContent, Button, Chip, TextField, IconButton, Tooltip, Divider, Avatar, CircularProgress, FormControl, InputLabel, Select, MenuItem, Paper, Menu, MenuItem as MuiMenuItem, Popper, ClickAwayListener, List, ListItem, ListItemButton, ListItemAvatar, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, Link } from '@mui/material';
-import { ArrowBack, Delete, Send, CheckCircle, Edit, PushPin, Reply, Code, FormatQuote, MoreVert, Save, Close, AddPhotoAlternate, OpenInNew, KeyboardArrowRight, Link as LinkIcon, UnfoldMore, LinkOff } from '@mui/icons-material';
+import { ArrowBack, Delete, Send, CheckCircle, Edit, PushPin, Reply, Code, FormatQuote, MoreVert, Save, Close, AddPhotoAlternate, OpenInNew, KeyboardArrowRight, Link as LinkIcon, UnfoldMore, LinkOff, AssignmentInd, Flag, AccessTime } from '@mui/icons-material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchTasks, fetchTask, updateTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, fetchScreenshots, deleteScreenshot, forwardNote, setNoteStatus, uploadScreenshot, getTaskLinks, linkTask, unlinkTask, type Task, type TaskNote, type TaskActivity, type TaskScreenshot, type TaskLink, type Task as TaskType, getTaskStatusColor, NOTE_CATEGORIES, TASK_CATEGORIES } from '../api/tasks';
+import { fetchTasks, fetchTask, updateTask, dispatchTask, fetchTaskNotes, addNote, deleteNote, editNote, pinNote, fetchTaskActivity, fetchScreenshots, deleteScreenshot, forwardNote, setNoteStatus, uploadScreenshot, getTaskLinks, linkTask, unlinkTask, type Task, type TaskNote, type TaskActivity, type TaskScreenshot, type TaskLink, type Task as TaskType, getTaskStatusColor, NOTE_CATEGORIES, TASK_CATEGORIES, CATEGORY_COLORS } from '../api/tasks';
 import { fetchUsers, type User } from '../api/users';
 import LoadingState from '../components/common/LoadingState';
 import { usePermissions } from '../hooks/usePermissions';
@@ -49,6 +49,11 @@ export default function TaskDetailPage() {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkDialogType, setLinkDialogType] = useState<TaskLink['link_type']>('related');
   const [linkTargetTaskId, setLinkTargetTaskId] = useState('');
+
+  // Dispatch dialog (admin)
+  const [dispatchDialogOpen, setDispatchDialogOpen] = useState(false);
+  const [dispatchTarget, setDispatchTarget] = useState('');
+  const [dispatchSaving, setDispatchSaving] = useState(false);
 
   // @mention state
   const [users, setUsers] = useState<User[]>([]);
@@ -312,6 +317,20 @@ export default function TaskDetailPage() {
     } catch { }
   };
 
+  const handleDispatch = async () => {
+    if (!task) return;
+    setDispatchSaving(true);
+    try {
+      await dispatchTask(task.id, dispatchTarget);
+      setDispatchDialogOpen(false);
+      loadData();
+    } catch (err: any) {
+      // silently fall through — main error handling in tasks.ts
+    } finally {
+      setDispatchSaving(false);
+    }
+  };
+
   const handleLinkTask = async () => {
     if (!task || !linkTargetTaskId) return;
     try {
@@ -351,6 +370,7 @@ export default function TaskDetailPage() {
         if (editing) setEditing(false);
         if (forwardDialogOpen) setForwardDialogOpen(false);
         if (linkDialogOpen) setLinkDialogOpen(false);
+        if (dispatchDialogOpen) setDispatchDialogOpen(false);
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -362,7 +382,7 @@ export default function TaskDetailPage() {
 
   const tabs = ['Overview', 'Notes', 'Activity', 'Settings'];
   const priorityColor = (p: string) => p === 'high' ? 'error' : p === 'medium' ? 'warning' : 'default';
-  const actionIcons: Record<string, string> = { created: '📝', updated: '✏️', status_changed: '🔄', commented: '💬', deleted: '🗑️' };
+  const actionIcons: Record<string, string> = { created: '📝', updated: '✏️', status_changed: '🔄', commented: '💬', deleted: '🗑️', dispatched: '🚀', task_linked: '🔗', task_unlinked: '✂️', bulk_status_changed: '⚡', note_forwarded: '📨', note_status_changed: '🏷️' };
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -375,12 +395,55 @@ export default function TaskDetailPage() {
             <Typography variant="caption" sx={{ color: 'text.disabled' }}>#{task.id} · Created {new Date(task.created_at).toLocaleDateString()} by {task.created_by}</Typography>
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Chip label={task.priority.toUpperCase()} size="small" color={priorityColor(task.priority)} sx={{ fontWeight: 700 }} />
-          <Chip label={task.status.toUpperCase().replace('-', ' ')} size="small" color={getTaskStatusColor(task.status)} sx={{ fontWeight: 700, cursor: 'pointer' }} onClick={handleStatusToggle} title="Click to cycle status" />
-          {task.status !== 'completed' && <Tooltip title="Mark Complete"><IconButton size="small" color="success" onClick={handleStatusToggle}><CheckCircle /></IconButton></Tooltip>}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Priority badge */}
+          <Chip
+            icon={<Flag sx={{ fontSize: 12 }} />}
+            label={task.priority.toUpperCase()}
+            size="small"
+            color={priorityColor(task.priority)}
+            sx={{ fontWeight: 700, fontSize: '0.68rem' }}
+          />
+          {/* Status chip — clickable to cycle */}
+          <Chip
+            label={task.status === 'in-progress' ? 'IN PROGRESS' : task.status.toUpperCase()}
+            size="small"
+            color={getTaskStatusColor(task.status)}
+            sx={{ fontWeight: 700, cursor: 'pointer', fontSize: '0.68rem' }}
+            onClick={handleStatusToggle}
+          />
+          {/* Age */}
+          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: 0.3 }}>
+            <AccessTime sx={{ fontSize: 11 }} />
+            {new Date(task.created_at).toLocaleDateString()}
+          </Typography>
+          <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+          {task.status !== 'completed' && (
+            <Tooltip title="Mark Complete">
+              <IconButton size="small" color="success" onClick={handleStatusToggle}>
+                <CheckCircle sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          )}
           {(task.created_by === currentUser || permissions?.can_update_any_task) && (
-            <Tooltip title="Edit"><IconButton size="small" onClick={() => setEditing(!editing)}><Edit /></IconButton></Tooltip>
+            <Tooltip title="Edit task">
+              <IconButton size="small" onClick={() => setEditing(!editing)}>
+                <Edit sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          )}
+          {/* Admin dispatch button */}
+          {permissions?.can_update_any_task && (
+            <Tooltip title="Dispatch / Reassign to user">
+              <Button
+                size="small" variant="outlined"
+                startIcon={<AssignmentInd sx={{ fontSize: 14 }} />}
+                onClick={() => setDispatchDialogOpen(true)}
+                sx={{ fontSize: '0.7rem', py: 0.3, px: 1 }}
+              >
+                Dispatch
+              </Button>
+            </Tooltip>
           )}
         </Box>
       </Box>
@@ -927,6 +990,62 @@ export default function TaskDetailPage() {
           <Button onClick={() => { setLinkDialogOpen(false); setLinkTargetTaskId(''); }}>Cancel</Button>
           <Button variant="contained" onClick={handleLinkTask} disabled={!linkTargetTaskId}>
             Link Tasks
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Dispatch Dialog (Admin) ─────────────────────────────────────── */}
+      <Dialog
+        open={dispatchDialogOpen}
+        onClose={() => setDispatchDialogOpen(false)}
+        maxWidth="xs" fullWidth
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AssignmentInd color="primary" />
+            Dispatch Task
+          </Box>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.3 }}>
+            #{task.id} · {task.title.length > 45 ? task.title.slice(0, 45) + '…' : task.title}
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2, fontSize: '0.8rem' }}>
+            Currently assigned to: <strong>{task.assigned_to || 'Nobody'}</strong>
+          </Typography>
+          <FormControl fullWidth size="small">
+            <InputLabel>Assign To</InputLabel>
+            <Select
+              value={dispatchTarget}
+              label="Assign To"
+              onChange={(e) => setDispatchTarget(e.target.value)}
+            >
+              <MenuItem value=""><em>— Unassigned —</em></MenuItem>
+              {users.filter(u => u.is_active).map(u => (
+                <MenuItem key={u.id} value={u.username}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar sx={{ width: 24, height: 24, fontSize: '0.65rem', bgcolor: '#6366f1' }}>
+                      {u.username.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{u.full_name || u.username}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem' }}>{u.role}</Typography>
+                    </Box>
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDispatchDialogOpen(false)} variant="outlined">Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleDispatch}
+            disabled={dispatchSaving}
+            startIcon={dispatchSaving ? <CircularProgress size={13} /> : <Send sx={{ fontSize: 14 }} />}
+          >
+            Dispatch
           </Button>
         </DialogActions>
       </Dialog>

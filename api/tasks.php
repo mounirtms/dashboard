@@ -403,17 +403,21 @@ try {
             $oldStmt->execute([$id]);
             $oldTask = $oldStmt->fetch();
 
-            // Permission check: only the task owner may update (no edit by others)
-            $isOwner = ($currentUser === $oldTask['created_by']);
-            if (!$isOwner) {
+            // Permission check:
+            // - can_update_any_task (admin/moderator) → may edit any task
+            // - otherwise only the task owner may edit their own task
+            $canUpdateAny = PermissionChecker::hasPermission('can_update_any_task');
+            $isOwner      = ($currentUser === ($oldTask['created_by'] ?? ''))
+                         || ($currentUser === ($oldTask['assigned_to'] ?? ''));
+
+            if (!$canUpdateAny && !$isOwner) {
                 http_response_code(403);
-                echo json_encode(['error' => 'Only the task owner can update this task']);
+                echo json_encode(['error' => 'Only the task owner or an admin can update this task']);
                 break;
             }
-            // Owner-level permission required
-            if (!PermissionChecker::hasPermission('can_update_own_tasks')) {
+            if (!$canUpdateAny && !PermissionChecker::hasPermission('can_update_own_tasks')) {
                 http_response_code(403);
-                echo json_encode(['error' => 'You do not have permission to update your own tasks']);
+                echo json_encode(['error' => 'You do not have permission to update tasks']);
                 break;
             }
 
@@ -469,11 +473,12 @@ try {
             $stmt = $pdo->prepare("UPDATE tasks SET " . implode(', ', $fields) . " WHERE id = ?");
             $stmt->execute($values);
 
-            // Log activity
-            $newStatus = $input['status'] ?? $oldTask['status'];
-            if ($newStatus !== $oldTask['status']) {
+            // Log activity — compare DB statuses (both now stored as in_progress)
+            $newStatus    = $input['status'] ?? $oldTask['status'];
+            $oldStatusDb  = $oldTask['status'];
+            if ($newStatus !== $oldStatusDb) {
                 $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'status_changed', ?, ?)")
-                    ->execute([$id, $currentUser, "Status: {$oldTask['status']} → $newStatus"]);
+                    ->execute([$id, $currentUser, "Status: {$statusFromDb($oldStatusDb)} → {$statusFromDb($newStatus)}"]);
 
                 // Send email notification for status change
                 $assignedTo = $oldTask['assigned_to'] ?? '';
@@ -533,6 +538,76 @@ try {
             }
 
             echo json_encode(['success' => true]);
+            break;
+
+        // ── dispatch: admin-only reassign a task to another user ─────────────
+        case 'dispatch':
+            if (!PermissionChecker::hasPermission('can_update_any_task')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Admin permission required to dispatch tasks']);
+                break;
+            }
+            if (!$checkRateLimit()) break;
+
+            $rawInput = file_get_contents('php://input');
+            $input    = json_decode($rawInput, true) ?? [];
+
+            $id         = (int)($input['task_id'] ?? $input['id'] ?? 0);
+            $assignedTo = trim($input['assigned_to'] ?? '');
+
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'task_id is required']);
+                break;
+            }
+
+            // Verify user exists if provided
+            if ($assignedTo !== '') {
+                $uStmt = $pdo->prepare("SELECT username, email, CONCAT(firstname,' ',lastname) AS full_name FROM admin_user WHERE username = ? AND is_active = 1 LIMIT 1");
+                $uStmt->execute([$assignedTo]);
+                $targetUser = $uStmt->fetch();
+                if (!$targetUser) {
+                    http_response_code(400);
+                    echo json_encode(['error' => "User '$assignedTo' not found or inactive"]);
+                    break;
+                }
+            }
+
+            // Fetch task for activity log
+            $tStmt = $pdo->prepare("SELECT title, assigned_to FROM tasks WHERE id = ?");
+            $tStmt->execute([$id]);
+            $tRow = $tStmt->fetch();
+            if (!$tRow) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Task not found']);
+                break;
+            }
+
+            $prevAssignee = $tRow['assigned_to'] ?? '';
+            $pdo->prepare("UPDATE tasks SET assigned_to = ?, updated_at = NOW() WHERE id = ?")
+                ->execute([$assignedTo, $id]);
+
+            $detail = $assignedTo
+                ? "Dispatched to $assignedTo (was: " . ($prevAssignee ?: 'unassigned') . ")"
+                : "Unassigned (was: " . ($prevAssignee ?: 'unassigned') . ")";
+
+            $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'dispatched', ?, ?)")
+                ->execute([$id, $currentUser, $detail]);
+
+            // Email notification to new assignee
+            if ($assignedTo && !empty($targetUser['email'])) {
+                try {
+                    Mailer::sendTaskAssignment(
+                        $targetUser['email'],
+                        $targetUser['full_name'] ?: $assignedTo,
+                        $tRow['title'], '', 'medium', $currentUser, null, $id
+                    );
+                } catch (\Exception $e) {
+                    error_log("[tasks.php] dispatch email failed: " . $e->getMessage());
+                }
+            }
+
+            echo json_encode(['success' => true, 'assigned_to' => $assignedTo]);
             break;
 
         case 'delete':

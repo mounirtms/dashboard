@@ -1,6 +1,15 @@
 import apiClient from './client';
 
 // Shared constants
+export const CATEGORY_COLORS: Record<string, string> = {
+  general:       '#64748b',
+  development:   '#6366f1',
+  design:        '#ec4899',
+  testing:       '#f59e0b',
+  documentation: '#06b6d4',
+  maintenance:   '#8b5cf6',
+};
+
 export const TASK_CATEGORIES = [
   { value: 'general', label: 'General' },
   { value: 'development', label: 'Development' },
@@ -255,5 +264,17 @@ export async function getTaskLinks(taskId: number): Promise<TaskLink[]> {
 
 export async function unlinkTask(linkId: number): Promise<any> {
   const { data } = await apiClient.post('/api/tasks.php?action=unlink_task', { id: linkId });
+  return data;
+}
+
+/**
+ * Admin-only: dispatch (reassign) a task to a user.
+ * Pass an empty string to unassign.
+ */
+export async function dispatchTask(taskId: number, assignedTo: string): Promise<any> {
+  const { data } = await apiClient.post('/api/tasks.php?action=dispatch', {
+    task_id: taskId,
+    assigned_to: assignedTo,
+  });
   return data;
 }
