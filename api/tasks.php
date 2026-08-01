@@ -22,8 +22,8 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 try {
     $pdo = Config::getPDO();
 
-    // Auto-create tasks and task_activity tables if missing
-    $schemaVersion = '20260730';
+    // Auto-create tasks and related tables if missing
+    $schemaVersion = '20260801';
     $cacheFile = __DIR__ . '/logs/task_schema.cache';
     if (!file_exists($cacheFile) || file_get_contents($cacheFile) !== $schemaVersion) {
         $pdo->exec("CREATE TABLE IF NOT EXISTS tasks (
@@ -66,6 +66,43 @@ try {
             INDEX idx_created(created_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+        $pdo->exec("CREATE TABLE IF NOT EXISTS task_notes (
+            id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            task_id    INT UNSIGNED NOT NULL,
+            parent_id  INT UNSIGNED DEFAULT NULL,
+            author     VARCHAR(100) NOT NULL,
+            content    TEXT NOT NULL,
+            category   VARCHAR(50)  NOT NULL DEFAULT 'general',
+            status     VARCHAR(50)  NOT NULL DEFAULT 'active',
+            is_pinned  TINYINT(1)   NOT NULL DEFAULT 0,
+            created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_task   (task_id),
+            INDEX idx_parent (parent_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS task_links (
+            id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            task_id        INT UNSIGNED NOT NULL,
+            linked_task_id INT UNSIGNED NOT NULL,
+            link_type      VARCHAR(50)  NOT NULL DEFAULT 'related',
+            created_by     VARCHAR(100),
+            created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_link (task_id, linked_task_id, link_type),
+            INDEX idx_task  (task_id),
+            INDEX idx_linked(linked_task_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS task_screenshots (
+            id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            task_id    INT UNSIGNED NOT NULL,
+            filename   VARCHAR(255) NOT NULL,
+            caption    VARCHAR(500) DEFAULT '',
+            uploaded_by VARCHAR(100),
+            created_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_task (task_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
         if (!is_dir(dirname($cacheFile))) mkdir(dirname($cacheFile), 0755, true);
         file_put_contents($cacheFile, $schemaVersion);
     }
@@ -73,7 +110,15 @@ try {
     $currentUser = $_SESSION['username'] ?? 'system';
 
     $VALID_PRIORITIES = ['low', 'medium', 'high'];
-    $VALID_STATUSES = ['pending', 'in-progress', 'completed', 'cancelled'];
+    // Frontend uses 'in-progress' (hyphen); DB ENUM uses 'in_progress' (underscore).
+    // We accept both in validation and map to DB form before SQL writes.
+    $VALID_STATUSES = ['pending', 'in-progress', 'in_progress', 'completed', 'cancelled'];
+    $statusToDb = function(string $s): string {
+        return $s === 'in-progress' ? 'in_progress' : $s;
+    };
+    $statusFromDb = function(string $s): string {
+        return $s === 'in_progress' ? 'in-progress' : $s;
+    };
     $VALID_CATEGORIES = ['general', 'development', 'design', 'testing', 'documentation', 'maintenance'];
 
     // Rate limiter for mutations (30/min per user)
@@ -101,10 +146,10 @@ try {
             $where = [];
             $params = [];
             
-            // Filter by status
+            // Filter by status (map frontend 'in-progress' → DB 'in_progress')
             if (!empty($_GET['status'])) {
                 $where[] = "status = ?";
-                $params[] = $_GET['status'];
+                $params[] = $statusToDb($_GET['status']);
             }
             
             // Filter by priority
@@ -149,7 +194,8 @@ try {
             
             // Sorting
             $allowedSortFields = ['title', 'status', 'priority', 'assigned_to', 'due_date', 'category', 'created_at', 'updated_at'];
-            $sortField = in_array($_GET['sort_field'] ?? 'created_at', $allowedSortFields) ? $_GET['sort_field'] : 'created_at';
+            $rawSort  = $_GET['sort_field'] ?? 'created_at';
+            $sortField = in_array($rawSort, $allowedSortFields, true) ? $rawSort : 'created_at';
             $sortDirection = (isset($_GET['sort_direction']) && strtoupper($_GET['sort_direction']) === 'ASC') ? 'ASC' : 'DESC';
             
             // Pagination
@@ -166,6 +212,12 @@ try {
             $stmt = $pdo->prepare("SELECT * FROM tasks $whereClause ORDER BY $sortField $sortDirection LIMIT $perPage OFFSET $offset");
             $stmt->execute($params);
             $tasks = $stmt->fetchAll();
+
+            // Normalise DB 'in_progress' → frontend 'in-progress'
+            foreach ($tasks as &$t) {
+                if (isset($t['status'])) $t['status'] = $statusFromDb($t['status']);
+            }
+            unset($t);
             
             echo json_encode([
                 'tasks' => $tasks,
@@ -182,6 +234,8 @@ try {
             $stmt->execute([$id]);
             $task = $stmt->fetch();
             if ($task) {
+                // Normalise DB 'in_progress' → frontend 'in-progress'
+                if (isset($task['status'])) $task['status'] = $statusFromDb($task['status']);
                 echo json_encode($task);
             } else {
                 http_response_code(404);
@@ -218,9 +272,10 @@ try {
             $status = $input['status'] ?? 'pending';
             if (!in_array($status, $VALID_STATUSES)) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Invalid status. Valid: ' . implode(', ', $VALID_STATUSES)]);
+                echo json_encode(['error' => 'Invalid status. Valid: pending, in-progress, completed, cancelled']);
                 break;
             }
+            $statusDb = $statusToDb($status); // map 'in-progress' → 'in_progress' for DB ENUM
 
             $category = $input['category'] ?? 'general';
             if (!in_array($category, $VALID_CATEGORIES)) {
@@ -243,7 +298,7 @@ try {
                 $title,
                 htmlspecialchars($input['description'] ?? '', ENT_QUOTES, 'UTF-8'),
                 $priority,
-                $status,
+                $statusDb,
                 $input['assigned_to'] ?? '',
                 $input['due_date'] ?? null,
                 $category,
@@ -387,6 +442,11 @@ try {
                 }
             }
 
+            // Map 'in-progress' → 'in_progress' for DB ENUM before building the SET clause
+            if (isset($input['status'])) {
+                $input['status'] = $statusToDb($input['status']);
+            }
+
             $fields = [];
             $values = [];
             $allowedFields = ['title', 'description', 'priority', 'status', 'assigned_to', 'due_date', 'category'];
@@ -528,7 +588,7 @@ try {
             // Validate enum fields
             if (isset($input['status']) && !in_array($input['status'], $VALID_STATUSES)) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Invalid status. Valid: ' . implode(', ', $VALID_STATUSES)]);
+                echo json_encode(['error' => 'Invalid status. Valid: pending, in-progress, completed, cancelled']);
                 break;
             }
             if (isset($input['priority']) && !in_array($input['priority'], $VALID_PRIORITIES)) {
@@ -540,6 +600,11 @@ try {
                 http_response_code(400);
                 echo json_encode(['error' => 'Invalid category. Valid: ' . implode(', ', $VALID_CATEGORIES)]);
                 break;
+            }
+
+            // Map 'in-progress' → 'in_progress' for DB ENUM
+            if (isset($input['status'])) {
+                $input['status'] = $statusToDb($input['status']);
             }
 
             $fields = [];
@@ -884,14 +949,21 @@ $taskListItems
             break;
 
         case 'stats':
-            $statsStmt = $pdo->query("SELECT 
+            $statsStmt = $pdo->query("SELECT
                 COUNT(*) as total,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-                SUM(CASE WHEN status = 'in-progress' THEN 1 ELSE 0 END) as in_progress,
-                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+                SUM(CASE WHEN status = 'completed'  THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+                SUM(CASE WHEN status = 'pending'    THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'cancelled'  THEN 1 ELSE 0 END) as cancelled
             FROM tasks");
-            echo json_encode($statsStmt->fetch());
+            $statsRow = $statsStmt->fetch(PDO::FETCH_ASSOC);
+            echo json_encode([
+                'total'       => (int)($statsRow['total']       ?? 0),
+                'completed'   => (int)($statsRow['completed']   ?? 0),
+                'in_progress' => (int)($statsRow['in_progress'] ?? 0),
+                'pending'     => (int)($statsRow['pending']     ?? 0),
+                'cancelled'   => (int)($statsRow['cancelled']   ?? 0),
+            ]);
             break;
 
         case 'notes_counts':

@@ -69,49 +69,76 @@ switch ($action) {
         echo json_encode(['error' => 'Unknown action: ' . $action]);
 }
 
+/**
+ * Quick non-blocking check: can we reach varnishstat at all?
+ * Runs with a 2-second timeout; returns false on empty output or timeout.
+ */
+function varnish_available(): bool {
+    static $cached = null;
+    if ($cached !== null) return $cached;
+    $out = run_cmd('varnishstat -1 -f MAIN.uptime 2>/dev/null', 2);
+    $cached = !empty(trim($out));
+    return $cached;
+}
+
 function getCacheStats() {
     $stats = ['timestamp' => date('Y-m-d H:i:s')];
 
     // ─── Varnish Stats ──────────────────────────────────────────────
-    $varnish_lines = run_cmd_lines('varnishstat -1 2>/dev/null');
-    $v = [];
-    foreach ($varnish_lines as $line) {
-        $parts = preg_split('/\s+/', trim($line));
-        if (count($parts) >= 2) {
-            $v[$parts[0]] = $parts[1];
+    if (varnish_available()) {
+        $varnish_lines = run_cmd_lines('varnishstat -1 2>/dev/null', 5);
+        $v = [];
+        foreach ($varnish_lines as $line) {
+            $parts = preg_split('/\s+/', trim($line));
+            if (count($parts) >= 2) {
+                $v[$parts[0]] = $parts[1];
+            }
         }
+
+        $hits   = (int)($v['MAIN.cache_hit']  ?? 0);
+        $misses = (int)($v['MAIN.cache_miss'] ?? 0);
+        $total  = $hits + $misses;
+        $hit_rate = $total > 0 ? round(($hits / $total) * 100, 1) : 0;
+
+        $health_status = 'critical';
+        if ($hit_rate >= 80)      $health_status = 'healthy';
+        elseif ($hit_rate >= 60)  $health_status = 'warning';
+        elseif ($hit_rate >= 40)  $health_status = 'degraded';
+
+        $stats['varnish'] = [
+            'available'          => true,
+            'hit_rate'           => $hit_rate,
+            'hits'               => $hits,
+            'misses'             => $misses,
+            'total_requests'     => (int)($v['MAIN.client_req']  ?? 0),
+            'cached_objects'     => (int)($v['MAIN.n_object']    ?? 0),
+            'backend_connections'=> (int)($v['MAIN.backend_conn']?? 0),
+            'backend_fails'      => (int)($v['MAIN.backend_fail']?? 0),
+            'uptime'             => (int)($v['MAIN.uptime']      ?? 0),
+            'health_status'      => $health_status,
+            'storage_used_mb'    => (int)(($v['MAIN.s0.g_bytes'] ?? 0) / 1024 / 1024),
+        ];
+    } else {
+        $stats['varnish'] = [
+            'available'      => false,
+            'hit_rate'       => 0,
+            'hits'           => 0,
+            'misses'         => 0,
+            'total_requests' => 0,
+            'cached_objects' => 0,
+            'backend_fails'  => 0,
+            'uptime'         => 0,
+            'health_status'  => 'unavailable',
+            'storage_used_mb'=> 0,
+            'note'           => 'Varnish not reachable from this host',
+        ];
     }
-
-    $hits = $v['MAIN.cache_hit'] ?? 0;
-    $misses = $v['MAIN.cache_miss'] ?? 0;
-    $total = $hits + $misses;
-    $hit_rate = $total > 0 ? round(($hits / $total) * 100, 1) : 0;
-
-    // Determine health status
-    $health_status = 'critical';
-    if ($hit_rate >= 80) $health_status = 'healthy';
-    elseif ($hit_rate >= 60) $health_status = 'warning';
-    elseif ($hit_rate >= 40) $health_status = 'degraded';
-
-    $stats['varnish'] = [
-        'hit_rate' => $hit_rate,
-        'hits' => (int)$hits,
-        'misses' => (int)$misses,
-        'total_requests' => (int)($v['MAIN.client_req'] ?? 0),
-        'cached_objects' => (int)($v['MAIN.n_object'] ?? 0),
-        'backend_connections' => (int)($v['MAIN.backend_conn'] ?? 0),
-        'backend_fails' => (int)($v['MAIN.backend_fail'] ?? 0),
-        'uptime' => (int)($v['MAIN.uptime'] ?? 0),
-        'health_status' => $health_status,
-        'storage_used_mb' => (int)(($v['MAIN.s0.g_bytes'] ?? 0) / 1024 / 1024),
-    ];
 
     // ─── Per-Device Hit Rates ───────────────────────────────────────
     $stats['devices'] = getDeviceHitRates();
 
     // ─── Redis Stats ────────────────────────────────────────────────
-    $redis_stats = getRedisStats();
-    $stats['redis'] = $redis_stats;
+    $stats['redis'] = getRedisStats();
 
     // ─── Magento Cache Status ───────────────────────────────────────
     $stats['magento'] = getMagentoCacheStatus();
@@ -157,19 +184,23 @@ function getCloudflareEdgeStatus() {
 
 function getCacheRecommendations($stats) {
     $recs = [];
-    $hit_rate = $stats['varnish']['hit_rate'];
-    
-    if ($hit_rate < 50) {
-        $recs[] = ['severity' => 'critical', 'message' => 'Cache hit rate is below 50%. Run cache warmup immediately.'];
-    } elseif ($hit_rate < 70) {
-        $recs[] = ['severity' => 'warning', 'message' => 'Cache hit rate is below 70%. Consider running cache warmup.'];
+
+    $varnish = $stats['varnish'] ?? [];
+    if (!empty($varnish['available'])) {
+        $hit_rate = $varnish['hit_rate'] ?? 0;
+        if ($hit_rate < 50) {
+            $recs[] = ['severity' => 'critical', 'message' => 'Cache hit rate is below 50%. Run cache warmup immediately.'];
+        } elseif ($hit_rate < 70) {
+            $recs[] = ['severity' => 'warning', 'message' => 'Cache hit rate is below 70%. Consider running cache warmup.'];
+        }
+        if (($varnish['backend_fails'] ?? 0) > 10) {
+            $recs[] = ['severity' => 'error', 'message' => "Backend has {$varnish['backend_fails']} failures. Check Apache/PHP-FPM health."];
+        }
+    } else {
+        $recs[] = ['severity' => 'info', 'message' => 'Varnish is not reachable from this host. Stats are unavailable.'];
     }
 
-    if ($stats['varnish']['backend_fails'] > 10) {
-        $recs[] = ['severity' => 'error', 'message' => "Backend has {$stats['varnish']['backend_fails']} failures. Check Apache/PHP-FPM health."];
-    }
-
-    $cf_status = $stats['cloudflare']['edge_status'];
+    $cf_status = $stats['cloudflare']['edge_status'] ?? 'unknown';
     if ($cf_status === 'HIT') {
         $recs[] = ['severity' => 'info', 'message' => 'Cloudflare edge cache is active. Purge CF cache to ensure device-specific Vary headers are respected.'];
     }
@@ -177,7 +208,7 @@ function getCacheRecommendations($stats) {
     if (!empty($stats['devices'])) {
         foreach (['desktop', 'mobile', 'tablet'] as $device) {
             $d = $stats['devices'][$device] ?? [];
-            if (isset($d['hit_rate']) && $d['hit_rate'] < 30 && $d['total'] > 10) {
+            if (isset($d['hit_rate']) && $d['hit_rate'] < 30 && ($d['total'] ?? 0) > 10) {
                 $recs[] = ['severity' => 'warning', 'message' => "{$device} cache hit rate is {$d['hit_rate']}%. Run per-device warmup."];
             }
         }
@@ -192,6 +223,17 @@ function getDeviceHitRates() {
         'mobile'  => ['hits' => 0, 'misses' => 0, 'bytes_transferred' => 0],
         'tablet'  => ['hits' => 0, 'misses' => 0, 'bytes_transferred' => 0]
     ];
+
+    // Skip log parsing when varnish is not reachable
+    if (!varnish_available()) {
+        $empty = ['hits' => 0, 'misses' => 0, 'total' => 0, 'hit_rate' => 0, 'bytes_transferred' => 0, 'bytes_human' => '0 B'];
+        return [
+            'desktop'       => $empty,
+            'mobile'        => $empty,
+            'tablet'        => $empty,
+            '_distribution' => ['desktop_pct' => 0, 'mobile_pct' => 0, 'tablet_pct' => 0],
+        ];
+    }
 
     // Parse recent varnishlog entries for device + cache status
     // Uses same regex patterns as VCL for consistency
@@ -258,18 +300,25 @@ function getDeviceHitRates() {
 }
 
 function getRedisStats() {
-    $result = [];
+    $result = ['connected' => false, 'available' => false];
     try {
-        $info = run_cmd('redis-cli INFO memory 2>/dev/null | grep -E "used_memory_human|used_memory_peak_human|keys|db0"');
+        // Ping first with a 2s timeout to avoid hanging
+        $ping = run_cmd('redis-cli PING 2>/dev/null', 2);
+        if (strtoupper(trim($ping)) !== 'PONG') {
+            $result['note'] = 'Redis not reachable (no PONG response)';
+            return $result;
+        }
+        $info = run_cmd('redis-cli INFO memory 2>/dev/null | grep -E "used_memory_human|used_memory_peak_human|keys|db0"', 5);
         if ($info) {
             foreach (explode("\n", trim($info)) as $line) {
                 if (strpos($line, ':') !== false) {
-                    list($key, $val) = explode(':', $line, 2);
+                    [$key, $val] = explode(':', $line, 2);
                     $result[trim($key)] = trim($val);
                 }
             }
         }
         $result['connected'] = true;
+        $result['available'] = true;
     } catch (\Exception $e) {
         $result['connected'] = false;
         $result['error'] = $e->getMessage();
@@ -297,6 +346,7 @@ function getMagentoCacheStatus() {
 }
 
 function getTopCachedUrls() {
+    if (!varnish_available()) return [];
     $urls = [];
     $lines = run_cmd_lines("varnishlog -d -i ReqURL 2>/dev/null | grep 'ReqURL' | awk '{print \$NF}' | sort | uniq -c | sort -rn | head -20", 3);
     foreach ($lines as $line) {
@@ -309,6 +359,7 @@ function getTopCachedUrls() {
 
 function getRecentCacheActivity() {
     $activity = ['last_hour_hits' => 0, 'last_hour_misses' => 0, 'last_5min_hits' => 0, 'last_5min_misses' => 0];
+    if (!varnish_available()) return $activity;
 
     // Count HIT/MISS in recent varnishlog
     $lines = run_cmd_lines("varnishlog -d -i RespHeader -I 'X-Magento-Cache-Debug' 2>/dev/null | grep 'X-Magento-Cache-Debug' | tail -500", 2);
