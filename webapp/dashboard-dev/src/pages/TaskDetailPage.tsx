@@ -706,7 +706,6 @@ export default function TaskDetailPage() {
 
                 {/* Replies */}
                 {(repliesByParentId.get(note.id) || []).map(reply => {
-                  const replyCat = getCategoryConfig(reply.category);
                   return (
                     <Paper key={reply.id} sx={{ mt: 1, p: 1.5, backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -853,7 +852,26 @@ export default function TaskDetailPage() {
                 </FormControl>
               </Box>
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <TextField label="Assigned To" fullWidth size="small" value={editData.assigned_to} onChange={(e) => setEditData({ ...editData, assigned_to: e.target.value })} />
+                <FormControl fullWidth size="small">
+                  <InputLabel>Assign To</InputLabel>
+                  <Select value={editData.assigned_to} label="Assign To"
+                    onChange={(e) => setEditData({ ...editData, assigned_to: e.target.value })}>
+                    <MenuItem value=""><em>— Unassigned —</em></MenuItem>
+                    {users.filter(u => u.is_active).map(u => (
+                      <MenuItem key={u.id} value={u.username}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Avatar sx={{ width: 20, height: 20, fontSize: '0.55rem', bgcolor: u.role === 'admin' ? '#ef4444' : '#6366f1' }}>
+                            {u.username.charAt(0).toUpperCase()}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontSize: '0.78rem' }}>{u.full_name || u.username}</Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.6rem' }}>{u.role}</Typography>
+                          </Box>
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <TextField label="Due Date" fullWidth size="small" type="date" value={editData.due_date} onChange={(e) => setEditData({ ...editData, due_date: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
               </Box>
               <FormControl fullWidth size="small">

@@ -23,7 +23,7 @@ try {
     $pdo = Config::getPDO();
 
     // Auto-create tasks and related tables if missing
-    $schemaVersion = '20260801';
+    $schemaVersion = '20260802';
     $cacheFile = __DIR__ . '/logs/task_schema.cache';
     if (!file_exists($cacheFile) || file_get_contents($cacheFile) !== $schemaVersion) {
         $pdo->exec("CREATE TABLE IF NOT EXISTS tasks (
@@ -94,14 +94,28 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
         $pdo->exec("CREATE TABLE IF NOT EXISTS task_screenshots (
-            id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            task_id    INT UNSIGNED NOT NULL,
-            filename   VARCHAR(255) NOT NULL,
-            caption    VARCHAR(500) DEFAULT '',
-            uploaded_by VARCHAR(100),
+            id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            task_id     INT UNSIGNED NOT NULL,
+            file_path   VARCHAR(500) NOT NULL,
+            caption     VARCHAR(500) DEFAULT '',
+            author      VARCHAR(100),
             created_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_task (task_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        // Migrate old task_screenshots schema if it used 'filename'/'uploaded_by' columns
+        try {
+            $cols = $pdo->query("SHOW COLUMNS FROM task_screenshots")->fetchAll(PDO::FETCH_COLUMN);
+            if (in_array('filename', $cols) && !in_array('file_path', $cols)) {
+                $pdo->exec("ALTER TABLE task_screenshots
+                    ADD COLUMN file_path VARCHAR(500) NOT NULL DEFAULT '' AFTER task_id,
+                    ADD COLUMN author    VARCHAR(100)              AFTER caption");
+                $pdo->exec("UPDATE task_screenshots SET file_path = CONCAT('/uploads/screenshots/', filename), author = uploaded_by WHERE file_path = ''");
+                $pdo->exec("ALTER TABLE task_screenshots DROP COLUMN filename, DROP COLUMN uploaded_by");
+            }
+        } catch (\Exception $migrateEx) {
+            error_log('[tasks.php] screenshot migration: ' . $migrateEx->getMessage());
+        }
 
         if (!is_dir(dirname($cacheFile))) mkdir(dirname($cacheFile), 0755, true);
         file_put_contents($cacheFile, $schemaVersion);

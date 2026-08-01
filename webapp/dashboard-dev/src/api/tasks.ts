@@ -28,7 +28,7 @@ export const NOTE_CATEGORIES = [
 ] as const;
 
 export const TASK_STATUSES = ['pending', 'in-progress', 'completed', 'cancelled'] as const;
-export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;
+export const TASK_PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
 
 export const getTaskStatusColor = (status: string): 'success' | 'info' | 'error' | 'default' => {
   switch (status) {

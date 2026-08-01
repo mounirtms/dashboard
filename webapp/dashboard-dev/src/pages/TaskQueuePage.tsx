@@ -1,13 +1,13 @@
 import {
-  Box, Typography, Card, CardContent, Table, TableBody, TableCell,
+  Box, Typography, Card, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, IconButton, Button,
   Tooltip, CircularProgress, Alert, Dialog, DialogTitle, DialogContent,
   DialogActions, Divider, TextField, MenuItem, Select, FormControl,
-  InputLabel, Tabs, Tab, Badge,
+  InputLabel,
 } from '@mui/material';
 import {
   Check, Close, Refresh, Add, Assignment, HourglassTop,
-  CheckCircle, Cancel, PlayArrow, InfoOutlined,
+  PlayArrow, InfoOutlined,
 } from '@mui/icons-material';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
