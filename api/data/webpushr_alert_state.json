@@ -1,8 +1,7 @@
 {
-    "sysmon_a676d8b4c5c3bd9e747a45b8a109ea42": 1781023803,
-    "sysmon_b8c6db6aeef5492423ea05d41b6a6b80": 1781024403,
-    "high_cpu_load": 1781025003,
-    "cron_fail_1790cc6f41dc5a0d9f2424f125caeaf2": 1781025606,
-    "cpumon_4cda2323947706728302d5870f6d78d4": 1781026501,
-    "sysmon_b77bfdf828dfbdc275ff6ae0319a6e81": 1781027403
+    "varnish_storage_critical": 1787312162,
+    "sysmon_e706c402d04d6962b212241e89444b53": 1787313423,
+    "cpumon_c231a6889b0af77ebdb4a1f4940653de": 1787311502,
+    "service_down:varnish": 1787314801,
+    "cpumon_0875a5de300e1696f9f0da2b4b0f0d9d": 1787314201
 }

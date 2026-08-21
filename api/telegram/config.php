@@ -6,10 +6,27 @@
  * Each bot can have its own token, authorized users, and command sets.
  */
 
+// Secrets are read from the dashboard .env (never hardcode them in the repo)
+$_envFile = dirname(__DIR__, 2) . '/.env';
+$_envValues = [];
+if (is_file($_envFile)) {
+    foreach (file($_envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $_line) {
+        $__l = trim($_line);
+        if ($__l === '' || strpos($__l, '#') === 0) continue;
+        if (strpos($__l, '=') !== false) {
+            list($_k, $_v) = explode('=', $__l, 2);
+            $_envValues[trim($_k)] = trim($_v);
+        }
+    }
+}
+$_dbPassFromEnv = $_envValues['DB_PASS'] ?? null;
+$_serverBotToken = $_envValues['TELEGRAM_SERVER_BOT_TOKEN'] ?? '';
+$_customerBotToken = $_envValues['TELEGRAM_CUSTOMER_BOT_TOKEN'] ?? '';
+
 return [
     'bots' => [
         'server' => [
-            'token' => '8534022192:AAEUTgGuYGH31FvaY9nuw-Onj3d9P2k4EAY',
+            'token' => $_serverBotToken,
             'name' => 'ServerNotif205bot',
             'enabled' => true,
             'authorized_chats' => [6972138184], // Mounir's chat ID
@@ -17,7 +34,7 @@ return [
             'alert_types' => ['service', 'load', 'memory', 'queue', 'http_error'],
         ],
         'customer' => [
-            'token' => '8753016217:AAFikNXFcZ3ZTA_5VTwU_z-pt2coclGB1os',
+            'token' => $_customerBotToken,
             'name' => 'TechnoStationeryShoppingBot',
             'enabled' => true,
             'environment' => 'beta',
@@ -66,7 +83,7 @@ return [
         'host' => '127.0.0.1',
         'port' => '3307',
         'user' => 'root',
-        'pass' => 'YourNewStrongPassword',
+        'pass' => $_dbPassFromEnv ?? '',
         'mysql_bin' => '/opt/mariadb10.6/mariadb/bin/mysql',
     ],
 
@@ -77,7 +94,7 @@ return [
             'path' => '/home/technadminy7/public_html',
             'db' => 'technadminy7_dBT8x12y22',
             'db_user' => 'root',
-            'db_pass' => 'YourNewStrongPassword',
+            'db_pass' => $_dbPassFromEnv ?? '',
             'type' => 'magento',
             'version' => '2.4.6',
             'mode' => 'production',

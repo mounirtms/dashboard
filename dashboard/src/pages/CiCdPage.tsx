@@ -7,32 +7,18 @@ import {
   CheckCircle, Cancel, Schedule, Commit, AccountTree,
   Merge, RocketLaunch, Build, Code, GitHub,
 } from '@mui/icons-material';
-
-// Static CI/CD data — real git stats from mounirtms/dashboard
-const PIPELINE_RUNS = [
-  { id: 'ff9f94b4', msg: 'feat(dashboard): S9+S10 — telegram/webpushr/log-explorer fixes + full audit sweep',                    branch: 'genspark_ai_developer', status: 'success', date: 'Jul 8, 2026', duration: '3m 10s', files: 925 },
-  { id: 'c0934e53', msg: 'fix(dashboard+presentation): comprehensive audit pass v7+v8 — real data, server tunings, ecomscan accuracy', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 8, 2026', duration: '2m 34s', files: 880 },
-  { id: 'b92ede19', msg: 'feat(dashboard): major page upgrades — traffic, performance, inventory, geography, settings',             branch: 'genspark_ai_developer', status: 'success', date: 'Jul 7, 2026', duration: '3m 12s', files: 312 },
-  { id: '6c45aeaf', msg: 'feat(dashboard): update sprint progress, commit hash, H1 2025 vs H1 2026 comparison charts',             branch: 'genspark_ai_developer', status: 'success', date: 'Jul 7, 2026', duration: '2m 08s', files: 47  },
-  { id: '6fc21289', msg: 'feat(presentation): v4 — 37 slides, Algeria map, semester compare, server tunings, logo, Mounir credit', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 4, 2026', duration: '1m 55s', files: 6   },
-  { id: 'f0721a84', msg: 'perf(presentation): v3 optimizations — transitions, chart cache, kbd hint, data fixes',                  branch: 'genspark_ai_developer', status: 'success', date: 'Jun 29, 2026', duration: '0m 48s', files: 3  },
-];
-
-const BRANCH_STATUS = [
-  { name: 'main',                  sha: 'b92ede19', behind: 2,  ahead: 0, status: 'behind', desc: 'Merge target — 2 commits behind genspark_ai_developer (S9+S10)' },
-  { name: 'genspark_ai_developer', sha: 'ff9f94b4', behind: 0,  ahead: 0, status: 'current', desc: 'Active dev branch — PR #3 open → main (S9+S10 sweep)' },
-  { name: 'master (local)',        sha: 'ff9f94b4', behind: 0,  ahead: 7, status: 'ahead', desc: 'Local master — 7 commits ahead of origin/master' },
-];
+import { useState, useEffect, useCallback } from 'react';
+import apiClient from '../api/client';
 
 const BUILD_STEPS = [
-  { name: 'TypeScript Check',      cmd: 'tsc -b --noEmit',            status: 'success', time: '8.2s'  },
-  { name: 'Vite Build',            cmd: 'npm run build',               status: 'success', time: '45.1s' },
-  { name: 'post-build.sh',         cmd: 'bash post-build.sh',          status: 'success', time: '0.3s'  },
-  { name: 'BUILD_STAMP inject',    cmd: 'sed BUILD_STAMP → index.html', status: 'success', time: '0.1s'  },
-  { name: 'Stale chunk cleanup',   cmd: 'rm old index-*.js',           status: 'success', time: '0.1s'  },
-  { name: '.htaccess write',       cmd: 'cat > build/.htaccess',       status: 'success', time: '0.1s'  },
-  { name: 'Git commit',            cmd: 'git commit -m "..."',          status: 'success', time: '0.5s'  },
-  { name: 'Git push (force)',      cmd: 'git push origin master:genspark_ai_developer --force', status: 'success', time: '4.7s' },
+  { name: 'TypeScript Check',      cmd: 'tsc -b --noEmit',            status: 'success', time: '~8s'   },
+  { name: 'Vite Build',            cmd: 'npm run build',               status: 'success', time: '~45s'  },
+  { name: 'post-build.sh',         cmd: 'bash post-build.sh',          status: 'success', time: '~0.3s' },
+  { name: 'BUILD_STAMP inject',    cmd: 'sed BUILD_STAMP → index.html', status: 'success', time: '~0.1s' },
+  { name: 'Stale chunk cleanup',   cmd: 'rm old index-*.js',           status: 'success', time: '~0.1s' },
+  { name: '.htaccess write',       cmd: 'cat > build/.htaccess',       status: 'success', time: '~0.1s' },
+  { name: 'Git commit',            cmd: 'git commit -m "..."',          status: 'success', time: '~0.5s' },
+  { name: 'Git push',              cmd: 'git push origin main',         status: 'success', time: '~5s'   },
 ];
 
 const TECH_STACK = [
@@ -47,7 +33,44 @@ const TECH_STACK = [
   { label: 'AlmaLinux',  version: '9.6',    color: '#ef4444' },
 ];
 
+interface GitCommit {
+  hash: string;
+  subject: string;
+  date: string;
+}
+
+interface GitStatus {
+  repo: string;
+  branch: string;
+  head: string;
+  total_commits: number;
+  ahead: number;
+  behind: number;
+  commits: GitCommit[];
+  build: { bundle: string; size_kb: number; stamp: string; assets: number };
+}
+
 export default function CiCdPage() {
+  const [git, setGit] = useState<GitStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    apiClient.get('/api/cicd.php?action=git_status')
+      .then(({ data }) => {
+        if (data.error) throw new Error(data.error);
+        setGit(data);
+      })
+      .catch((e: any) => setError(e.response?.data?.error || e.message || 'Failed to load git status'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const runs: GitCommit[] = git?.commits || [];
+
   return (
     <Box>
       {/* Header */}
@@ -57,28 +80,34 @@ export default function CiCdPage() {
             CI/CD Pipeline
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Build pipeline, deploy history, branch status — mounirtms/dashboard
+            Build pipeline, deploy history, branch status — {git?.repo || 'dashboard'}
           </Typography>
         </Box>
         <Button
           variant="outlined"
           startIcon={<GitHub />}
-          href="https://github.com/mounirtms/dashboard/pull/3"
+          href="https://github.com/mounirtms/dashboard"
           target="_blank"
           rel="noopener noreferrer"
           sx={{ fontWeight: 700, textTransform: 'none', borderColor: 'rgba(255,255,255,0.15)' }}
         >
-          PR #3 — Open
+          GitHub Repo
         </Button>
       </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} action={<Button size="small" color="inherit" onClick={load}>Retry</Button>}>
+          {error}
+        </Alert>
+      )}
 
       {/* Build Stats KPIs */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Total Commits',    value: '94',       color: '#3b82f6', icon: <Commit sx={{ fontSize: 20 }} /> },
-          { label: 'Active Branch',    value: 'genspark_ai_developer', color: '#8b5cf6', icon: <Code sx={{ fontSize: 20 }} /> },
-          { label: 'Last Build',       value: 'ff9f94b4', color: '#22c55e', icon: <Build sx={{ fontSize: 20 }} /> },
-          { label: 'Bundle Size',      value: '476 KB',   color: '#f59e0b', icon: <RocketLaunch sx={{ fontSize: 20 }} /> },
+          { label: 'Total Commits',    value: loading && !git ? '—' : String(git?.total_commits ?? '—'), color: '#3b82f6', icon: <Commit sx={{ fontSize: 20 }} /> },
+          { label: 'Active Branch',    value: loading && !git ? '—' : (git?.branch || '—'), color: '#8b5cf6', icon: <Code sx={{ fontSize: 20 }} /> },
+          { label: 'Last Build',       value: loading && !git ? '—' : (git?.head || '—'), color: '#22c55e', icon: <Build sx={{ fontSize: 20 }} /> },
+          { label: 'Bundle Size',      value: loading && !git ? '—' : `${git?.build.size_kb || 0} KB`, color: '#f59e0b', icon: <RocketLaunch sx={{ fontSize: 20 }} /> },
         ].map(stat => (
           <Grid size={{ xs: 6, md: 3 }} key={stat.label}>
             <Card>
@@ -119,9 +148,9 @@ export default function CiCdPage() {
               ))}
               <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>1783544141</code> &nbsp;·&nbsp;
-                  Bundle: <code style={{ color: '#22c55e' }}>index-Dy37m8Cb.js</code> (476 KB) &nbsp;·&nbsp;
-                  Chunks: <code style={{ color: '#22c55e' }}>9</code>
+                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>{git?.build.stamp || '—'}</code> &nbsp;·&nbsp;
+                  Bundle: <code style={{ color: '#22c55e' }}>{git?.build.bundle || '—'}</code> ({git?.build.size_kb || 0} KB) &nbsp;·&nbsp;
+                  Chunks: <code style={{ color: '#22c55e' }}>{git?.build.assets || '—'}</code>
                 </Typography>
               </Box>
             </CardContent>
@@ -135,7 +164,24 @@ export default function CiCdPage() {
               <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <AccountTree sx={{ fontSize: 16, color: '#8b5cf6' }} /> Branch Status
               </Typography>
-              {BRANCH_STATUS.map((b, i) => (
+              {[
+                {
+                  name: git?.branch || 'main',
+                  sha: git?.head || '—',
+                  status: git && git.ahead > 0 ? 'ahead' : 'current',
+                  desc: git
+                    ? `Active branch — ${git.ahead} commits ahead, ${git.behind} behind origin/main`
+                    : 'Loading...',
+                },
+                {
+                  name: 'origin/main',
+                  sha: git?.commits?.[git.behind]?.hash || git?.head || '—',
+                  status: git && git.behind > 0 ? 'behind' : 'current',
+                  desc: git
+                    ? `Remote main — ${git.behind} commits behind active branch`
+                    : 'Loading...',
+                },
+              ].map((b, i) => (
                 <Box key={i} sx={{ p: 1.5, mb: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: b.status === 'current' ? 'rgba(34,197,94,0.3)' : 'divider', background: b.status === 'current' ? 'rgba(34,197,94,0.04)' : 'transparent' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                     <Typography variant="caption" sx={{ fontWeight: 800, fontFamily: 'monospace', color: b.status === 'current' ? 'success.main' : 'text.primary' }}>
@@ -153,7 +199,7 @@ export default function CiCdPage() {
                 </Box>
               ))}
               <Alert severity="info" sx={{ mt: 1 }}>
-                <Typography variant="caption">PR #3: <code>genspark_ai_developer → main</code> is open. Merge to promote to production.</Typography>
+                <Typography variant="caption">Push commits to <code>origin/main</code> to promote the latest build to production.</Typography>
               </Alert>
             </CardContent>
           </Card>
@@ -164,7 +210,7 @@ export default function CiCdPage() {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Schedule sx={{ fontSize: 16, color: '#06b6d4' }} /> Deploy History (H1 2026 — Latest 6)
+            <Schedule sx={{ fontSize: 16, color: '#06b6d4' }} /> Recent Commits — Live from {git?.repo || 'repo'}
           </Typography>
           <TableContainer>
             <Table size="small">
@@ -175,26 +221,28 @@ export default function CiCdPage() {
                   <TableCell sx={{ fontWeight: 600 }}>Branch</TableCell>
                   <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Files</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {PIPELINE_RUNS.map((run, i) => (
-                  <TableRow key={i} hover>
-                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#8b5cf6', fontWeight: 700 }}>{run.id}</TableCell>
+                {loading && !runs.length && (
+                  <TableRow><TableCell colSpan={5} sx={{ py: 3 }}><LinearProgress /></TableCell></TableRow>
+                )}
+                {!loading && !runs.length && (
+                  <TableRow><TableCell colSpan={5} sx={{ py: 3, color: 'text.disabled' }}>No commit data available.</TableCell></TableRow>
+                )}
+                {runs.map((run, i) => (
+                  <TableRow key={run.hash} hover>
+                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#8b5cf6', fontWeight: 700 }}>{run.hash}</TableCell>
                     <TableCell sx={{ maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.78rem' }}>
-                      {run.msg}
+                      {run.subject}
                     </TableCell>
                     <TableCell>
-                      <Chip label={run.branch} size="small" sx={{ fontSize: '0.6rem', height: 18, fontFamily: 'monospace', color: '#94a3b8', borderColor: 'divider' }} variant="outlined" />
+                      <Chip label={git?.branch || 'main'} size="small" sx={{ fontSize: '0.6rem', height: 18, fontFamily: 'monospace', color: '#94a3b8', borderColor: 'divider' }} variant="outlined" />
                     </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}>
                       <CheckCircle sx={{ fontSize: 16, color: 'success.main' }} />
                     </TableCell>
                     <TableCell sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>{run.date}</TableCell>
-                    <TableCell sx={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.75rem', color: '#64748b' }}>
-                      {run.files.toLocaleString()}
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

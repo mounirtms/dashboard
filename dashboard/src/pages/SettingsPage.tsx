@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchSettings, saveSettings, fetchPushSubscriptions, unsubscribeDevice, type UserSettings, type PushSubscription } from '../api/settings';
 import { fetchEmailSettings, saveEmailSettings, testEmailSettings, fetchEmailLogs, fetchEmailLogStats, clearEmailLogs, type EmailSettings, type EmailLog, type EmailLogStats } from '../api/notifications';
 import { useWebpushrSubscription } from '../hooks/useWebpushrSubscription';
+import apiClient from '../api/client';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -122,6 +123,20 @@ export default function SettingsPage() {
       setSaving(false);
     }
   }, [personal, appearance, general]);
+
+  const saveIntegration = async () => {
+    setSaving(true);
+    try {
+      await apiClient.post('/api/telegram_settings.php?action=set_webhook', {
+        webhook_url: telegramWebhook,
+      });
+      setLastSaved(new Date().toLocaleTimeString());
+    } catch (err: any) {
+      console.error('Failed to save integration settings:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Auto-save on changes
   useEffect(() => {
@@ -717,7 +732,7 @@ export default function SettingsPage() {
                 sx={{ mb: 3, '& .MuiInputBase-input': { fontSize: '0.75rem', fontFamily: 'monospace' } }}
               />
               
-              <Button variant="contained">Save Integration Settings</Button>
+              <Button variant="contained" onClick={saveIntegration} disabled={saving}>Save Integration Settings</Button>
             </Box>
           </TabPanel>
 
@@ -753,9 +768,9 @@ export default function SettingsPage() {
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Role Summary</Typography>
                 <Box sx={{ display: 'grid', gap: 1 }}>
                   {[
-                    { role: 'admin',    label: 'Administrator', color: '#ef4444', note: 'Full access — all pages + destructive ops' },
-                    { role: 'manager', label: 'Manager',        color: '#f59e0b', note: 'Commerce, logs, push notifications' },
-                    { role: 'viewer',  label: 'Viewer',         color: '#3b82f6', note: 'Read-only — monitoring + cloudflare' },
+                    { role: 'admin',      label: 'Administrator', color: '#ef4444', note: 'Full access — all pages + destructive ops' },
+                    { role: 'editor',     label: 'Editor',        color: '#f59e0b', note: 'Commerce, logs, tasks, push notifications' },
+                    { role: 'viewer',     label: 'Viewer',         color: '#3b82f6', note: 'Read-only — monitoring + cloudflare' },
                   ].map(({ role, label, color, note }) => (
                     <Box key={role} sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', background: 'rgba(255,255,255,0.02)' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -803,8 +818,8 @@ export default function SettingsPage() {
         
         <Divider />
         <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button variant="outlined" color="inherit">Discard Changes</Button>
-          <Button variant="contained">Apply Global Settings</Button>
+          <Button variant="outlined" color="inherit" onClick={() => { setPersonal(defaultPersonal); setAppearance(defaultAppearance); setGeneral(defaultGeneral); }}>Discard Changes</Button>
+          <Button variant="contained" onClick={saveAll} disabled={saving}>Apply Global Settings</Button>
         </Box>
       </Card>
     </Box>

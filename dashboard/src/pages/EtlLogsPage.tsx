@@ -61,7 +61,8 @@ function fmt(ts: string) {
 }
 
 export default function EtlLogsPage() {
-  const [logs, setLogs] = useState<EtlLogEntry[]>(MOCK_LOGS);
+  const [logs, setLogs] = useState<EtlLogEntry[]>([]);
+  const [usingMock, setUsingMock] = useState(false);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [levelFilter, setLevelFilter] = useState('ALL');
@@ -72,9 +73,14 @@ export default function EtlLogsPage() {
     setLoading(true);
     try {
       const { data } = await apiClient.get('/api/etl/logs');
-      if (Array.isArray(data) && data.length > 0) setLogs(data);
+      if (Array.isArray(data)) {
+        setLogs(data.length > 0 ? data : []);
+        setUsingMock(false);
+      }
     } catch {
-      // silently fall back to mock data
+      // Only fall back to sample data on error — and surface that clearly
+      setLogs(MOCK_LOGS);
+      setUsingMock(true);
     } finally {
       setLoading(false);
       setLastRefresh(new Date());
@@ -121,6 +127,11 @@ export default function EtlLogsPage() {
           <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
             v4.3.0-TSM &nbsp;·&nbsp; Last refreshed: {lastRefresh.toLocaleTimeString()}
           </Typography>
+          {usingMock && (
+            <Alert severity="warning" sx={{ mt: 1, maxWidth: 560 }}>
+              <b>Sample data shown.</b> The ETL logs API is unreachable — these are placeholder events, not live pipeline logs.
+            </Alert>
+          )}
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Export CSV">

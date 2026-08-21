@@ -2,8 +2,9 @@
 /**
  * magento-token-refresh.php
  * CLI / cron script — refreshes the Magento JWT when it is within 4 h of expiry.
- * Designed to run every 6 hours via cron:
- *   0 */6 * * * /usr/bin/php /home/dashboard/public_html/api/magento-token-refresh.php >> /home/dashboard/public_html/api/logs/token_refresh.log 2>&1
+ * Designed to run every 6 hours via cron (six-hourly, minutes zero).
+ *  0 0,6,12,18 * * *  php /home/dashboard/public_html/api/magento-token-refresh.php
+ *  (avoid the 'star slash' cron shorthand inside comments: it ends the block)
  *
  * The MagentoToken class handles the actual refresh and writes the new token
  * back to /home/dashboard/public_html/config/magento_credentials.json

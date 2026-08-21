@@ -194,7 +194,7 @@ export default function PerformancePage() {
         <CardContent>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Storage sx={{ fontSize: 16, color: '#06b6d4' }} /> Server Tuning Status — Audit Jul 8, 2026
+              <Storage sx={{ fontSize: 16, color: '#06b6d4' }} /> Server Tuning Status — Audit May 5, 2026
             </Typography>
             <Chip label="APPLIED" size="small" color="success" sx={{ fontWeight: 800 }} />
           </Box>
@@ -255,10 +255,8 @@ export default function PerformancePage() {
           </Grid>
           <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, background: 'rgba(6,182,212,0.06)', border: '1px solid rgba(6,182,212,0.15)' }}>
             <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-              Source: <code style={{ color: '#06b6d4' }}>AUDIT_COMPLETION_STATUS.txt</code> &nbsp;\u00b7&nbsp;
-              <code style={{ color: '#06b6d4' }}>MARIADB_PHP_ISSUES_ANALYSIS.md</code> &nbsp;\u00b7&nbsp;
-              <code style={{ color: '#06b6d4' }}>SERVER_FIX_COMPLETE_REPORT.md</code> &nbsp;\u00b7&nbsp;
-              Load: <strong style={{ color: '#22c55e' }}>86.5% reduction</strong>
+              Source: <code style={{ color: '#06b6d4' }}>audit-reports/AUDIT_COMPLETION_STATUS.txt</code> &nbsp;\u00b7&nbsp;
+              <code style={{ color: '#06b6d4' }}>audit-reports/SERVER_FIX_COMPLETE_REPORT.md</code>
             </Typography>
           </Box>
         </CardContent>

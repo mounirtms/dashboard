@@ -41,7 +41,8 @@ echo "   Deployed locales: $(find pub/static/frontend -maxdepth 3 -type d -name 
 echo ""
 
 echo "8. Database Connection:"
-/opt/mariadb10.6/mariadb/bin/mysql -u root -p'YourNewStrongPassword' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e "SELECT 'Connected' as Status;" 2>/dev/null || echo "   Failed"
+DB_PASS_ENV=$(grep -E '^DB_PASS=' /home/dashboard/public_html/.env | head -1 | cut -d= -f2-)
+/opt/mariadb10.6/mariadb/bin/mysql -u root -p"${DB_PASS_ENV:-}" -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e "SELECT 'Connected' as Status;" 2>/dev/null || echo "   Failed"
 echo ""
 
 echo "9. Redis Connection:"

@@ -18,11 +18,11 @@ export interface TelegramLog {
 export async function fetchTelegramStats(): Promise<TelegramStats> {
   const { data } = await apiClient.get('/api/monitor.php?action=telegram_stats');
   return {
-    bot_username: data.bot_username || '@ServerNotif205bot',
+    bot_username: data.bot_username || '',
     webhook_status: data.webhook_status === true,
     webhook_url: data.webhook_url || '',
-    auth_count: data.auth_count ?? 1,
-    alerts_enabled: data.alerts_enabled !== false,
+    auth_count: typeof data.auth_count === 'number' ? data.auth_count : 0,
+    alerts_enabled: data.alerts_enabled === true,
   };
 }
 
@@ -66,7 +66,7 @@ export async function fetchPushStats(env?: string): Promise<PushStats> {
   return {
     subscribers: data.subscribers ?? 0,
     last_sent: data.last_sent,
-    env_status: data.env_status ?? { 'Production': 'OK', 'Beta': 'OK', 'Development': 'OK' },
+    env_status: data.env_status ?? {},
     segments: data.segments ?? [],
     current_env: data.current_env,
   };

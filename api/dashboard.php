@@ -198,11 +198,15 @@ function handleRequest() {
             $customers = $helper->getCustomerStats($env);
             $products = $helper->getProductStats($env);
             $recent = $helper->getRecentOrders($env, 5);
+            $monthly = $helper->getMonthlyStats($env);
+            $regions = $helper->getOrdersByRegion($env);
             
             sendResponse([
                 'success' => true,
                 'env' => $env,
                 'data' => [
+                    'monthly' => $monthly,
+                    'regions' => $regions,
                     'today_orders' => $revenue['today'] ?? ['count' => 0, 'revenue' => 0],
                     'last_hour_orders' => $revenue['last_hour'] ?? ['count' => 0, 'revenue' => 0],
                     'active_carts' => $revenue['active_carts'] ?? ['count' => 0, 'value' => 0],

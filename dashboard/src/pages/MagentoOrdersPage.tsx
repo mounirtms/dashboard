@@ -3,6 +3,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Search, Refresh, Close, LocalShipping, Receipt, Cancel, Pause, PlayArrow, Visibility, Send } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchMagentoOrders, performOrderAction } from '../api/magento';
+import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 import PermissionGate from '../components/common/PermissionGate';
 
@@ -37,6 +38,24 @@ export default function MagentoOrdersPage() {
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [orderActionDialog, setOrderActionDialog] = useState<{ open: boolean; orderId?: number; op?: string }>({ open: false });
+  const [h1Stats, setH1Stats] = useState<{ h1_2025: number; h1_2026: number } | null>(null);
+
+  // Load H1 order counts from production DB for the banner
+  useEffect(() => {
+    if (env !== 'prod') { setH1Stats(null); return; }
+    let cancelled = false;
+    apiClient.get('/api/dashboard.php?action=magento-stats&env=prod')
+      .then(({ data }) => {
+        if (cancelled) return;
+        const monthly: any[] = data?.data?.monthly || [];
+        const count = (year: number) => monthly
+          .filter((m) => m.month.startsWith(String(year)) && ['01','02','03','04','05','06'].includes(m.month.slice(5, 7)))
+          .reduce((s, m) => s + (m.orders || 0), 0);
+        setH1Stats({ h1_2025: count(2025), h1_2026: count(2026) });
+      })
+      .catch(() => { if (!cancelled) setH1Stats(null); });
+    return () => { cancelled = true; };
+  }, [env]);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -130,27 +149,31 @@ export default function MagentoOrdersPage() {
         </Box>
       </Box>
 
-      {/* H1 2026 KPI Banner */}
+      {/* H1 Order Counts Banner (live from production DB) */}
       {env === 'prod' && (
         <Box sx={{ mb: 2, p: 1.5, borderRadius: 1.5, background: 'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(59,130,246,0.06) 100%)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'center' }}>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>H1 2026 Orders</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 900, color: 'success.main', lineHeight: 1 }}>875</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: 'success.main', lineHeight: 1 }}>{h1Stats ? h1Stats.h1_2026.toLocaleString() : '…'}</Typography>
             <Typography variant="caption" sx={{ color: 'text.disabled' }}>Jan–Jun · MariaDB verified</Typography>
           </Box>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>H1 2025 Orders</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 900, color: '#64748b', lineHeight: 1 }}>844</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: '#64748b', lineHeight: 1 }}>{h1Stats ? h1Stats.h1_2025.toLocaleString() : '…'}</Typography>
             <Typography variant="caption" sx={{ color: 'text.disabled' }}>Jan–Jun · Prior year</Typography>
           </Box>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>YoY Growth</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 900, color: '#22c55e', lineHeight: 1 }}>+3.7%</Typography>
-            <Typography variant="caption" sx={{ color: 'text.disabled' }}>875 vs 844</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: '#22c55e', lineHeight: 1 }}>
+              {h1Stats && h1Stats.h1_2025 ? `+${(((h1Stats.h1_2026 - h1Stats.h1_2025) / h1Stats.h1_2025) * 100).toFixed(1)}%` : '…'}
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+              {h1Stats ? `${h1Stats.h1_2026.toLocaleString()} vs ${h1Stats.h1_2025.toLocaleString()}` : 'Loading…'}
+            </Typography>
           </Box>
           <Box>
             <Typography variant="caption" sx={{ color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>Avg Order Value</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 900, color: '#3b82f6', lineHeight: 1 }}>4,970 DZD</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: '#3b82f6', lineHeight: 1 }}>{h1Stats ? '—' : '…'}</Typography>
             <Typography variant="caption" sx={{ color: 'text.disabled' }}>H1 2026</Typography>
           </Box>
         </Box>

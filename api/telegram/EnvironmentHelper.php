@@ -783,6 +783,62 @@ class EnvironmentHelper {
     /**
      * Get revenue statistics (today, last hour, active carts)
      */
+    public function getOrdersByRegion(string $env, int $limit = 60): array {
+        $db = $this->getDb($env);
+        if (!$db) return ['error' => 'Cannot connect to database'];
+
+        $result = [];
+        $r = $db->query("
+            SELECT oa.region, COUNT(*) AS cnt
+            FROM sales_order_address oa
+            JOIN sales_order so ON so.entity_id = oa.parent_id
+            WHERE oa.address_type = 'shipping'
+              AND oa.region IS NOT NULL AND oa.region != ''
+              AND so.status NOT IN ('canceled', 'closed')
+            GROUP BY oa.region
+            ORDER BY cnt DESC
+            LIMIT $limit
+        ");
+        if ($r) {
+            while ($row = $r->fetch_assoc()) {
+                $result[] = [
+                    'region' => $row['region'],
+                    'orders' => (int)$row['cnt'],
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+    public function getMonthlyStats(string $env, int $months = 12): array {
+        $db = $this->getDb($env);
+        if (!$db) return ['error' => 'Cannot connect to database'];
+
+        $result = [];
+        $r = $db->query("
+            SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym,
+                   COUNT(*) AS cnt,
+                   COALESCE(SUM(grand_total), 0) AS rev
+            FROM sales_order
+            WHERE status != 'canceled'
+              AND created_at >= DATE_SUB(CURDATE(), INTERVAL $months MONTH)
+            GROUP BY ym
+            ORDER BY ym ASC
+        ");
+        if ($r) {
+            while ($row = $r->fetch_assoc()) {
+                $result[] = [
+                    'month' => $row['ym'],
+                    'orders' => (int)$row['cnt'],
+                    'revenue' => (float)$row['rev'],
+                ];
+            }
+        }
+
+        return $result;
+    }
+
     public function getRevenueStats(string $env): array {
         $db = $this->getDb($env);
         if (!$db) return ['error' => 'Cannot connect to database'];

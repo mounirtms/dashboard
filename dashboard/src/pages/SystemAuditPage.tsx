@@ -74,16 +74,35 @@ export default function SystemAuditPage() {
       apiClient.get('/api/monitor.php?action=services'),
       apiClient.get('/api/monitor.php?action=ssh'),
       apiClient.get('/api/monitor.php?action=alerts'),
-    ]).then(([overviewRes, servicesRes, sshRes, alertsRes]) => {
+      apiClient.get('/api/monitor.php?action=dbhealth'),
+      apiClient.get('/api/users.php?action=list'),
+    ]).then(([overviewRes, servicesRes, sshRes, alertsRes, dbRes, usersRes]) => {
       const overview = (overviewRes.status === 'fulfilled' ? overviewRes.value.data : {}) as any;
       const services = (servicesRes.status === 'fulfilled' ? servicesRes.value.data : {}) as any;
       const ssh = (sshRes.status === 'fulfilled' ? sshRes.value.data : {}) as any;
       const alerts = (alertsRes.status === 'fulfilled' ? alertsRes.value.data : {}) as any;
+      const dbHealth = (dbRes.status === 'fulfilled' ? dbRes.value.data : {}) as any;
+      const userList = (usersRes.status === 'fulfilled' ? usersRes.value.data : {}) as any;
+
+      const userRows = Array.isArray(userList) ? userList : (userList.users || []);
+      const userStats = {
+        active: userRows.filter((u: any) => u.is_active === 1 || u.is_active === true).length,
+        total: userRows.length,
+        locked: userRows.filter((u: any) => u.locked_until).length,
+      };
+
+      const dbList = Array.isArray(dbHealth?.databases)
+        ? Object.values(dbHealth.databases).map((db: any) => ({
+            name: db.name || 'unknown',
+            size_mb: db.size_mb || 0,
+            tables: db.tables || 0,
+          }))
+        : [];
 
       const auditData: AuditData = {
         services: services.categories || {},
         service_summary: services.summary || { total: 0, active: 0, inactive: 0, failed: 0 },
-        databases: [],
+        databases: dbList,
         disk_usage: [],
         security: {
           failed_logins_24h: ssh.failed_logins_24h || ssh.failed_logins_total || 0,
@@ -97,9 +116,9 @@ export default function SystemAuditPage() {
           warnings: 0,
         },
         users: {
-          active: overview.active_users || 0,
-          total: 0,
-          locked: 0,
+          active: userStats.total ? userStats.active : (overview.active_users || 0),
+          total: userStats.total || 0,
+          locked: userStats.locked || 0,
         },
         timestamp: Date.now(),
       };
@@ -172,7 +191,7 @@ export default function SystemAuditPage() {
             control={
               <Switch size="small" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
             }
-            label={<Typography variant="caption" sx={{ color: 'text.secondary' }}>Auto (30s)</Typography>}
+            label={<Typography variant="caption" sx={{ color: 'text.secondary' }}>Auto (60s)</Typography>}
           />
           <Button variant="outlined" size="small" startIcon={<Refresh />} onClick={loadData} disabled={loading}>
             Refresh

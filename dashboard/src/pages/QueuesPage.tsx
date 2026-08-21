@@ -71,7 +71,7 @@ export default function QueuesPage() {
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <FormControlLabel
             control={<Switch size="small" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />}
-            label={<Typography variant="caption" sx={{ color: 'text.secondary' }}>Auto (15s)</Typography>}
+            label={<Typography variant="caption" sx={{ color: 'text.secondary' }}>Auto (60s)</Typography>}
           />
           <Button startIcon={<Refresh />} variant="outlined" onClick={loadData} disabled={loading}>Refresh</Button>
           <Button 

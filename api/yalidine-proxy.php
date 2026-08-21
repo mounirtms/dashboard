@@ -4,6 +4,21 @@
  * Proxies requests to the Node.js backend running on port 5000
  * This avoids needing mod_proxy and works with Cloudflare
  */
+
+// Require an authenticated dashboard session (or a localhost caller) so this
+// cannot be abused as an unauthenticated open proxy.
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? '';
+$isLocal = in_array($clientIp, ['127.0.0.1', '::1'], true);
+if (!$isLocal) {
+    require_once __DIR__ . '/session_helper.php';
+    if (empty($_SESSION['logged_in'])) {
+        header('Content-Type: application/json');
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
+        exit;
+    }
+}
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');

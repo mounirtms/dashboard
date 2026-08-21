@@ -10,8 +10,21 @@
  * 5. Set TELEGRAM_ENABLED to true
  */
 
-define('TELEGRAM_BOT_TOKEN', '8534022192:AAEUTgGuYGH31FvaY9nuw-Onj3d9P2k4EAY');
-define('TELEGRAM_CHAT_ID', '6972138184');
+// Bot credentials read from .env — never hardcoded in the repo
+$_tgEnv = [];
+$_tgEnvFile = __DIR__ . '/../.env';
+if (is_file($_tgEnvFile)) {
+    foreach (file($_tgEnvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $_line) {
+        if (strpos(trim($_line), '#') === 0) continue;
+        if (strpos($_line, '=') !== false) {
+            list($_k, $_v) = explode('=', $_line, 2);
+            $_tgEnv[trim($_k)] = trim($_v);
+        }
+    }
+}
+
+define('TELEGRAM_BOT_TOKEN', $_tgEnv['TELEGRAM_SERVER_BOT_TOKEN'] ?? '');
+define('TELEGRAM_CHAT_ID', $_tgEnv['TELEGRAM_SERVER_CHAT_ID'] ?? '');
 define('TELEGRAM_ENABLED', true); // Enabled - alerts will be sent
 define('TELEGRAM_ALERT_LEVEL', 'critical'); // critical | warning | all
 

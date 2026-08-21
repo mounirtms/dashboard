@@ -120,11 +120,11 @@ class Config {
         self::$config['cloudflare'] = [
             'api_token' => $getEnv('CF_API_TOKEN'),
             'global_key' => $getEnv('CF_GLOBAL_KEY'),
-            'zone_id' => $getEnv('CF_ZONE_ID') ?: '4919ad3406fcabba381edbd543814a68',
+            'zone_id' => $getEnv('CF_ZONE_ID'),
             'account_id' => $getEnv('CF_ACCOUNT_ID'),
             'email' => $getEnv('CF_EMAIL'),
-            'turnstile_site_key' => $getEnv('CF_TURNSTILE_SITE_KEY') ?: '0x4AAAAAADOHEIn3ZnHV64fQ',
-            'turnstile_secret_key' => $getEnv('CF_TURNSTILE_SECRET_KEY') ?: '0x4AAAAAADOHELGXgTYqHT3lkzjkObCm8MA',
+            'turnstile_site_key' => $getEnv('CF_TURNSTILE_SITE_KEY'),
+            'turnstile_secret_key' => $getEnv('CF_TURNSTILE_SECRET_KEY'),
             'origin_ca_key' => $getEnv('CF_ORIGIN_CA_KEY'),
         ];
 
@@ -137,26 +137,26 @@ class Config {
         // Webpushr configuration
         self::$config['webpushr'] = [
             'dashboard' => [
-                'key' => 'c33c74cd215b2669cf9a57943410e033',
-                'token' => '121243',
+                'key' => $getEnv('WEBPUSHR_DASHBOARD_KEY'),
+                'token' => $getEnv('WEBPUSHR_DASHBOARD_TOKEN'),
                 'url' => 'https://dashboard.technostationery.com',
                 'label' => 'Dashboard',
             ],
             'production' => [
-                'key' => 'a40b88bbd3c88fe47a03d6fff988d756',
-                'token' => '119340',
+                'key' => $getEnv('WEBPUSHR_PRODUCTION_KEY'),
+                'token' => $getEnv('WEBPUSHR_PRODUCTION_TOKEN'),
                 'url' => 'https://technostationery.com',
                 'label' => 'Production',
             ],
             'beta' => [
-                'key' => 'feaeb40a4fd2249e51f5faf74d387668',
-                'token' => '119339',
+                'key' => $getEnv('WEBPUSHR_BETA_KEY'),
+                'token' => $getEnv('WEBPUSHR_BETA_TOKEN'),
                 'url' => 'https://beta.technostationery.com',
                 'label' => 'Beta',
             ],
             'dev' => [
-                'key' => '55959835165c4a4be195a52e877b4966',
-                'token' => '119338',
+                'key' => $getEnv('WEBPUSHR_DEV_KEY'),
+                'token' => $getEnv('WEBPUSHR_DEV_TOKEN'),
                 'url' => 'https://dev.technostationery.com',
                 'label' => 'Dev',
             ],

@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/session_helper.php';
+require_once __DIR__ . '/config.php';
+Config::load();
 if (empty($_SESSION['logged_in'])) {
     header('Content-Type: application/json');
     header('HTTP/1.1 401 Unauthorized');
@@ -12,6 +14,9 @@ if (empty($_SESSION['logged_in'])) {
  */
 
 header('Content-Type: application/json');
+
+// DB password from .env (never hardcoded)
+$dbPass = Config::get('db.pass', '');
 
 function getResponseTime($url) {
     $start = microtime(true);
@@ -56,7 +61,8 @@ function getElasticsearchHealth() {
 }
 
 function getMariaDBHealth() {
-    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'YourNewStrongPassword' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SELECT COUNT(*) as active FROM INFORMATION_SCHEMA.PROCESSLIST WHERE COMMAND != 'Sleep';\" 2>&1", $output, $return);
+    global $dbPass;
+    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SELECT COUNT(*) as active FROM INFORMATION_SCHEMA.PROCESSLIST WHERE COMMAND != 'Sleep';\" 2>&1", $output, $return);
     
     $active_queries = 0;
     foreach ($output as $line) {
@@ -65,7 +71,7 @@ function getMariaDBHealth() {
         }
     }
     
-    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'YourNewStrongPassword' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SHOW ENGINE INNODB STATUS\\G\" 2>&1 | grep -A 5 'DEADLOCK' | head -10", $deadlock_output);
+    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SHOW ENGINE INNODB STATUS\\G\" 2>&1 | grep -A 5 'DEADLOCK' | head -10", $deadlock_output);
     
     return [
         'status' => $return === 0 ? 'ok' : 'error',
@@ -75,7 +81,8 @@ function getMariaDBHealth() {
 }
 
 function getCronStatus() {
-    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'YourNewStrongPassword' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SELECT status, COUNT(*) as count FROM cron_schedule GROUP BY status;\" 2>&1", $output);
+    global $dbPass;
+    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SELECT status, COUNT(*) as count FROM cron_schedule GROUP BY status;\" 2>&1", $output);
     
     $status = ['pending' => 0, 'success' => 0, 'error' => 0, 'missed' => 0];
     foreach ($output as $line) {
@@ -139,11 +146,12 @@ function getSecurityStatus() {
     // Check CSF firewall
     exec('systemctl is-active csf 2>&1', $csf_status);
     
-    // Check recent file changes in pub/
+    // Check recent file changes in pub/ (last 24h)
     exec('find /home/technadminy7/public_html/pub -name "*.php" -type f -mtime -1 2>/dev/null | wc -l', $new_files);
     
-    // Check for web shells
-    exec('grep -r "eval(base64_decode" /home/technadminy7/public_html/pub/ 2>/dev/null | wc -l', $shells);
+    // Check for web shells — scan ONLY files modified in the last 24h.
+    // A full recursive grep -r over the whole pub/ tree takes ~55s (hangs the endpoint).
+    exec('find /home/technadminy7/public_html/pub -name "*.php" -type f -mtime -1 -print0 2>/dev/null | xargs -0 -r grep -l "eval(base64_decode" 2>/dev/null | wc -l', $shells);
     
     return [
         'firewall' => $csf_status[0] ?? 'unknown',

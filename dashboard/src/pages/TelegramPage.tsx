@@ -20,8 +20,8 @@ export default function TelegramPage() {
     fetchTelegramStats()
       .then(setStats)
       .catch(() => {
-        // Fallback: show partial data even if stats call fails
-        setStats({ bot_username: '@ServerNotif205bot', webhook_status: false, auth_count: 1, alerts_enabled: true });
+        // Keep empty on failure — no fabricated fallback that could mislead
+        setStats(undefined);
       })
       .finally(() => setLoading(false));
   }, []);

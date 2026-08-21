@@ -160,7 +160,7 @@ export default function ProcessExplorerPage() {
             }
             label={
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Auto (10s)
+                Auto (60s)
               </Typography>
             }
           />
@@ -172,7 +172,7 @@ export default function ProcessExplorerPage() {
 
       {autoRefresh && (
         <Chip
-          label="Auto-refreshing every 10s"
+          label="Auto-refreshing every 60s"
           size="small"
           color="info"
           variant="outlined"

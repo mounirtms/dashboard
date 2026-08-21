@@ -28,12 +28,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // ── Security: Only allow authenticated users ──
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/config.php';
+Config::load();
 $auth = new Auth();
 if (!$auth->check()) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
     exit;
 }
+
+// DB credentials from .env (never hardcoded)
+$dbPass = Config::get('db.pass', '');
 
 // ── Environment Configuration ──
 $ENVIRONMENTS = [
@@ -171,6 +176,62 @@ switch ($action) {
 
     case 'jobs':
         echo json_encode(['success' => true, 'jobs' => getRecentJobs(30)]);
+        break;
+
+    case 'git_status':
+        $repo = dirname(__DIR__);
+        $git = function (string $cmd, int $timeout = 5) use ($repo) {
+            $cmd = 'cd ' . escapeshellarg($repo) . ' && ' . $cmd . ' 2>/dev/null';
+            $out = [];
+            $code = 0;
+            exec($cmd . ' </dev/null', $out, $code);
+            return $code === 0 ? trim(implode("\n", $out)) : '';
+        };
+        $buildAssets = glob(__DIR__ . '/../build/assets/index-*.js');
+        $bundleFile  = $buildAssets ? basename($buildAssets[0]) : 'n/a';
+        $bundleSize  = $buildAssets ? round(filesize($buildAssets[0]) / 1024) : 0;
+        $stamp = '';
+        $stampHtml = file_get_contents(__DIR__ . '/../build/index.html');
+        if ($stampHtml && preg_match('/BUILD_STAMP[^0-9]*([0-9]+)/', $stampHtml, $m)) $stamp = $m[1];
+
+        $commits = [];
+        $log = $git("git log -6 --pretty=format:'%h|%s|%ai'");
+        if ($log) {
+            foreach (explode("\n", $log) as $line) {
+                $parts = explode('|', $line, 3);
+                if (count($parts) === 3) {
+                    $commits[] = [
+                        'hash'    => $parts[0],
+                        'subject' => $parts[1],
+                        'date'    => date('M j, Y', strtotime($parts[2])),
+                    ];
+                }
+            }
+        }
+
+        $head = $git('git rev-parse --short HEAD');
+        $branch = $git('git rev-parse --abbrev-ref HEAD');
+        $totalCommits = (int)$git('git rev-list --count HEAD');
+        $aheadBehind = $git("git rev-list --left-right --count origin/main...HEAD");
+        $ab = explode("\t", $aheadBehind);
+
+        echo json_encode([
+            'success' => true,
+            'repo'    => basename($repo),
+            'branch'  => $branch ?: 'main',
+            'head'    => $head ?: 'n/a',
+            'total_commits' => $totalCommits,
+            'ahead'   => isset($ab[1]) ? (int)$ab[1] : 0,
+            'behind'  => isset($ab[0]) ? (int)$ab[0] : 0,
+            'commits' => $commits,
+            'build'   => [
+                'bundle'     => $bundleFile,
+                'size_kb'    => $bundleSize,
+                'stamp'      => $stamp,
+                'assets'     => count(glob(__DIR__ . '/../build/assets/index-*.js')),
+            ],
+            'timestamp' => time(),
+        ]);
         break;
 
     case 'job_status':
@@ -324,9 +385,9 @@ switch ($action) {
         $cmd = "echo '=== DB Migration: {$srcDb} -> {$tgtDb} ===' && echo 'Mode: {$mode}' && ";
         
         if ($mode === 'structure') {
-            $cmd .= "/opt/mariadb10.6/mariadb/bin/mysqldump -u root -p'YourNewStrongPassword' -h 127.0.0.1 -P 3307 --no-data --routines --triggers {$srcDb} 2>/dev/null | /opt/mariadb10.6/mariadb/bin/mysql -u root -p'YourNewStrongPassword' -h 127.0.0.1 -P 3307 {$tgtDb} 2>&1 && echo 'Structure migration complete'";
+            $cmd .= "/opt/mariadb10.6/mariadb/bin/mysqldump -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 --no-data --routines --triggers {$srcDb} 2>/dev/null | /opt/mariadb10.6/mariadb/bin/mysql -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 {$tgtDb} 2>&1 && echo 'Structure migration complete'";
         } elseif ($mode === 'structure+data') {
-            $cmd .= "/opt/mariadb10.6/mariadb/bin/mysqldump -u root -p'YourNewStrongPassword' -h 127.0.0.1 -P 3307 --single-transaction --routines --triggers {$srcDb} 2>/dev/null | /opt/mariadb10.6/mariadb/bin/mysql -u root -p'YourNewStrongPassword' -h 127.0.0.1 -P 3307 {$tgtDb} 2>&1 && echo 'Full migration complete'";
+            $cmd .= "/opt/mariadb10.6/mariadb/bin/mysqldump -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 --single-transaction --routines --triggers {$srcDb} 2>/dev/null | /opt/mariadb10.6/mariadb/bin/mysql -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 {$tgtDb} 2>&1 && echo 'Full migration complete'";
         } else {
             echo json_encode(['error' => 'Invalid migration mode']);
             break;

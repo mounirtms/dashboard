@@ -8,10 +8,16 @@
 # Configuration
 MYSQL_BIN="/opt/mariadb10.6/mariadb/bin/mysql"
 MYSQL_USER="root"
-MYSQL_PASS="YourNewStrongPassword"
 MYSQL_HOST="127.0.0.1"
 MYSQL_PORT="3307"
 DB_NAME="technadminy7_dBT8x12y22"
+
+# Pull real DB password from dashboard .env (never hardcode it here)
+ENV_FILE="/home/dashboard/public_html/.env"
+if [ -f "$ENV_FILE" ]; then
+    MYSQL_PASS=$(grep -E '^DB_PASS=' "$ENV_FILE" | head -1 | cut -d= -f2-)
+fi
+MYSQL_PASS="${MYSQL_PASS:-}"
 
 # Thresholds (unified with other monitoring scripts)
 QUEUE_WARNING_THRESHOLD=1000    # Warn when queue exceeds this

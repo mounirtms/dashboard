@@ -14,6 +14,14 @@
 
 $SECRET   = 'techno_fix_2026';
 $provided = $_GET['secret'] ?? $_POST['secret'] ?? '';
+
+// Harden: only reachable from localhost (SSH/CLI recovery). Remote abuse blocked.
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? '';
+if (!in_array($clientIp, ['127.0.0.1', '::1'], true)) {
+    http_response_code(403);
+    die(json_encode(['error' => 'forbidden: localhost only']));
+}
+
 if ($provided !== $SECRET) {
     http_response_code(403);
     die(json_encode(['error' => 'forbidden']));

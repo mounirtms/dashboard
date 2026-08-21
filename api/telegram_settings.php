@@ -140,7 +140,7 @@ switch ($action) {
             $configFile = __DIR__ . '/telegram/config.php';
             if (file_exists($configFile)) {
                 $config = require $configFile;
-                $token  = $config['bot_token'] ?? '';
+                $token  = $config['bots']['server']['token'] ?? '';
                 if ($token) {
                     $apiUrl = "https://api.telegram.org/bot{$token}/getWebhookInfo";
                     $ctx = stream_context_create(['http' => ['timeout' => 5]]);
@@ -162,6 +162,43 @@ switch ($action) {
             // silently ignore
         }
         echo json_encode(['success' => true, 'webhook' => $webhookInfo]);
+        break;
+
+    case 'set_webhook':
+        $url = trim((string)($body['webhook_url'] ?? ''));
+        if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL) || !str_starts_with($url, 'https://')) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid webhook URL — must be a valid https URL']);
+            break;
+        }
+        $configFile = __DIR__ . '/telegram/config.php';
+        if (!file_exists($configFile)) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Telegram config not found']);
+            break;
+        }
+        $config = require $configFile;
+        $token  = $config['bots']['server']['token'] ?? '';
+        if (!$token) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Telegram bot token not configured']);
+            break;
+        }
+        $apiUrl = "https://api.telegram.org/bot{$token}/setWebhook?url=" . urlencode($url);
+        $ctx = stream_context_create(['http' => ['timeout' => 8, 'ignore_errors' => true]]);
+        $resp = @file_get_contents($apiUrl, false, $ctx);
+        if ($resp) {
+            $data = json_decode($resp, true);
+            if (($data['ok'] ?? false)) {
+                echo json_encode(['success' => true, 'message' => 'Webhook updated', 'webhook' => ['url' => $url]]);
+                break;
+            }
+            http_response_code(502);
+            echo json_encode(['error' => 'Telegram API: ' . ($data['description'] ?? 'unknown error')]);
+            break;
+        }
+        http_response_code(502);
+        echo json_encode(['error' => 'Failed to reach Telegram API']);
         break;
 
     default:

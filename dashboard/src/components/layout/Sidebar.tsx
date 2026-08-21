@@ -53,6 +53,7 @@ import {
   Lan,
   TrendingUp,
   CloudDownload,
+  MonitorHeart,
 } from '@mui/icons-material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -79,6 +80,7 @@ const navItems: NavItem[] = [
       { path: '/cache-control', label: 'Cache Control', icon: <Cached /> },
       { path: '/process-explorer', label: 'Process Explorer', icon: <Terminal /> },
       { path: '/log-explorer', label: 'Log Explorer', icon: <DocsIcon /> },
+      { path: '/netdata', label: 'Netdata Charts', icon: <MonitorHeart /> },
       { path: '/monitoring/ssh', label: 'SSH Sessions', icon: <SecurityIcon /> },
       { path: '/monitoring/commands', label: 'Command History', icon: <HistoryIcon /> },
       { path: '/monitoring/users', label: 'User Activity', icon: <Person /> },

@@ -39,7 +39,7 @@ const InfraMonitoring = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
   const [lastUpdate, setLastUpdate] = useState<any>(null);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false);
   const [logs, setLogs] = useState<any[]>([]);
   const [showLogs, setShowLogs] = useState(false);
   const inFlightRef = useRef(false);

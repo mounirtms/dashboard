@@ -6,25 +6,12 @@ import {
   LineChart, Line, ReferenceLine,
 } from 'recharts';
 import { fetchMagentoOrders, fetchMagentoStatus } from '../api/magento';
+import apiClient from '../api/client';
 import LoadingState from '../components/common/LoadingState';
 import StatCard from '../components/common/StatCard';
 import StatusBadge from '../components/common/StatusBadge';
 
-// ── H1 Semester comparison data (from S36 slide / audit reports) ──────────────
-const H1_MONTHLY = [
-  { month: 'Jan', h1_2025: 142, h1_2026: 198 },
-  { month: 'Feb', h1_2025: 128, h1_2026: 187 },
-  { month: 'Mar', h1_2025: 167, h1_2026: 231 },
-  { month: 'Apr', h1_2025: 153, h1_2026: 219 },
-  { month: 'May', h1_2025: 184, h1_2026: 264 },
-  { month: 'Jun', h1_2025: 196, h1_2026: 287 },
-];
-
-const H1_SUMMARY = {
-  h1_2025: { orders: 970,  revenue: 4_382_500, customers: 314, avgOrder: 4_518 },
-  h1_2026: { orders: 1386, revenue: 6_741_200, customers: 452, avgOrder: 4_863 },
-};
-
+// ── Dev velocity comparison (from git/audit reports) ────────────────────────
 const DEV_METRICS = [
   { label: 'Commits (H1)', h1_2025: 64, h1_2026: 112 },
   { label: 'Features',     h1_2025: 24, h1_2026: 44  },
@@ -32,7 +19,14 @@ const DEV_METRICS = [
   { label: 'Deploys',     h1_2025: 18, h1_2026: 29  },
 ];
 
+interface MonthlyPoint {
+  month: string; // YYYY-MM
+  orders: number;
+  revenue: number;
+}
+
 function pctChange(a: number, b: number) {
+  if (!a) return '—';
   const d = ((b - a) / a) * 100;
   return `${d > 0 ? '+' : ''}${d.toFixed(1)}%`;
 }
@@ -40,15 +34,22 @@ function pctChange(a: number, b: number) {
 export default function SalesOverviewPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [status, setStatus] = useState<any>(null);
+  const [monthly, setMonthly] = useState<MonthlyPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const theme = useTheme();
 
   useEffect(() => {
-    Promise.all([fetchMagentoStatus('prod'), fetchMagentoOrders('prod', 1)])
-      .then(([statusData, ordersData]) => {
+    Promise.all([
+      fetchMagentoStatus('prod'),
+      fetchMagentoOrders('prod', 1),
+      apiClient.get('/api/dashboard.php?action=magento-stats&env=prod'),
+    ])
+      .then(([statusData, ordersData, statsRes]) => {
         setStatus(statusData);
         setOrders(ordersData.items || []);
+        const monthlyRaw = statsRes.data?.data?.monthly || [];
+        setMonthly(Array.isArray(monthlyRaw) ? monthlyRaw : []);
       })
       .catch((e) => {
         if (e.message.includes('401') || e.message.includes('token not configured')) {
@@ -72,6 +73,26 @@ export default function SalesOverviewPage() {
   const returnedOrders  = orders.filter((o) => o.status === 'canceled' || o.status === 'closed').length;
 
   const gridColor = `${theme.palette.divider}99`;
+
+  // ── H1 semester comparison from live monthly data ──
+  const h1Months = (year: number) => monthly.filter((m) => m.month.startsWith(String(year)) && ['01','02','03','04','05','06'].includes(m.month.slice(5, 7)));
+  const aggregate = (pts: MonthlyPoint[]) => ({
+    orders: pts.reduce((s, p) => s + p.orders, 0),
+    revenue: pts.reduce((s, p) => s + p.revenue, 0),
+  });
+  const H1_MONTHLY = ['01','02','03','04','05','06'].map((mm, i) => {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun'];
+    const a = h1Months(2025).find((m) => m.month.endsWith(mm))?.orders || 0;
+    const b = h1Months(2026).find((m) => m.month.endsWith(mm))?.orders || 0;
+    return { month: months[i], h1_2025: a, h1_2026: b };
+  });
+  const sum25 = aggregate(h1Months(2025));
+  const sum26 = aggregate(h1Months(2026));
+  const H1_SUMMARY = {
+    h1_2025: { ...sum25, customers: 0, avgOrder: sum25.orders ? Math.round(sum25.revenue / sum25.orders) : 0 },
+    h1_2026: { ...sum26, customers: 0, avgOrder: sum26.orders ? Math.round(sum26.revenue / sum26.orders) : 0 },
+  };
+  const hasRealH1 = sum26.orders > 0;
 
   return (
     <Box>
@@ -113,6 +134,9 @@ export default function SalesOverviewPage() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
             <CompareArrows sx={{ color: '#8b5cf6' }} />
             <Typography variant="h6" sx={{ fontWeight: 800 }}>H1 2025 vs H1 2026 — Semester Comparison</Typography>
+            {!hasRealH1 && (
+              <Chip label="Live data unavailable" size="small" color="warning" sx={{ ml: 1, fontSize: '0.65rem' }} />
+            )}
           </Box>
 
           {/* ── Summary KPIs ── */}
@@ -120,7 +144,6 @@ export default function SalesOverviewPage() {
             {[
               { label: 'Total Orders',       k: 'orders',    fmt: (v: number) => v.toLocaleString(),                   unit: '' },
               { label: 'Revenue (DZD)',       k: 'revenue',   fmt: (v: number) => `${(v / 1_000_000).toFixed(2)}M`,    unit: '' },
-              { label: 'Unique Customers',    k: 'customers', fmt: (v: number) => v.toLocaleString(),                   unit: '' },
               { label: 'Avg Order Value',     k: 'avgOrder',  fmt: (v: number) => `${v.toLocaleString()} DZD`,          unit: '' },
             ].map(({ label, k, fmt }) => {
               const v25 = H1_SUMMARY.h1_2025[k as keyof typeof H1_SUMMARY.h1_2025];
@@ -143,7 +166,7 @@ export default function SalesOverviewPage() {
           </Grid>
 
           {/* ── Monthly orders bar chart ── */}
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.secondary' }}>Monthly Orders — H1 Comparison</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.secondary' }}>Monthly Orders — H1 Comparison (live from production DB)</Typography>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={H1_MONTHLY} margin={{ top: 4, right: 16, left: 0, bottom: 4 }} barCategoryGap="30%">
               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />

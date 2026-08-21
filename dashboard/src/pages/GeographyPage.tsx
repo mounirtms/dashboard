@@ -5,6 +5,8 @@ import {
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts';
 import { useCloudflareData } from '../hooks/useCloudflareData';
+import apiClient from '../api/client';
+import { useState, useEffect } from 'react';
 import LoadingState from '../components/common/LoadingState';
 import { formatNumber, formatBytes } from '../utils/formatters';
 
@@ -96,29 +98,56 @@ function heatColor(value: number, max: number): string {
   return '#1e3a5f';
 }
 
-// Mock order distribution based on real e-commerce patterns (Alger=capital dominates)
-const MOCK_WILAYA_DIST: Record<string, number> = {
-  '16': 148, '31': 72, '09': 67, '25': 55, '15': 52,
-  '19': 44, '05': 41, '35': 42, '06': 38, '10': 35,
-  '23': 36, '28': 31, '42': 33, '21': 28, '26': 29,
-  '17': 26, '13': 27, '22': 18, '07': 29, '04': 24,
-  '14': 22, '43': 22, '12': 19, '44': 19, '24': 20,
-  '34': 23, '40': 16, '27': 16, '03': 18, '41': 14,
-  '20': 14, '48': 17, '02': 32, '29': 13, '47': 14,
-  '38': 10, '39': 17, '30': 12, '55': 10, '57':  9,
-  '51':  8, '08': 11, '49':  5, '58':  6, '01':  8,
-  '52':  4, '37':  3, '11':  4, '53':  3, '50':  2,
-  '54':  1, '33':  2, '56':  2, '45':  7, '32':  9,
-  '36': 15, '18': 21,
-};
+// Real order distribution by wilaya (loaded live from production MariaDB via api/dashboard.php)
 
 export default function GeographyPage() {
   const theme = useTheme();
   const { data, loading, error } = useCloudflareData();
+  const [wilayaDist, setWilayaDist] = useState<Record<string, number> | null>(null);
+  const [regionLoading, setRegionLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiClient.get('/api/dashboard.php?action=magento-stats&env=prod')
+      .then(({ data: res }) => {
+        if (cancelled) return;
+        const regions: any[] = res?.data?.regions || [];
+        const map: Record<string, number> = {};
+        regions.forEach((r) => { map[r.region] = r.orders; });
+        setWilayaDist(map);
+      })
+      .catch(() => { if (!cancelled) setWilayaDist({}); })
+      .finally(() => { if (!cancelled) setRegionLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   if (loading) return <LoadingState />;
   if (error)   return <Alert severity="error" sx={{ mb: 2 }}>Error: {error}</Alert>;
   if (!data)   return null;
+
+  // Wilaya name normalization for the Algeria map
+  const wilayaName = (name: string) => {
+    const norm = name.trim().toLowerCase().replace(/['’]/g, '').replace(/\s+/g, ' ');
+    for (const w of WILAYAS) {
+      if (w.name.toLowerCase().replace(/['’]/g, '') === norm) return w.code;
+    }
+    return '';
+  };
+
+  // Build wilaya request distribution (real order counts by shipping region)
+  const dist: Record<string, number> = { ...(wilayaDist || {}) };
+  Object.keys(dist).forEach((k) => {
+    const code = wilayaName(k);
+    if (code && code !== k) { dist[code] = (dist[code] || 0) + dist[k]; delete dist[k]; }
+  });
+
+  const maxVal = Math.max(...Object.values(dist), 1);
+
+  // Top-10 wilayas for sidebar
+  const top10 = Object.entries(dist)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([code, val]) => ({ code, name: WILAYAS.find(w => w.code === code)?.name || code, val }));
 
   const countryColumns: GridColDef[] = [
     { field: 'flag',       headerName: '',          width: 50,  renderCell: (p) => <span style={{ fontSize: 20 }}>{p.value}</span> },
@@ -136,15 +165,6 @@ export default function GeographyPage() {
 
   const gc40 = `${theme.palette.divider}66`;
   const gc60 = `${theme.palette.divider}99`;
-
-  // Build wilaya request distribution
-  const maxVal = Math.max(...Object.values(MOCK_WILAYA_DIST), 1);
-
-  // Top-10 wilayas for sidebar
-  const top10 = Object.entries(MOCK_WILAYA_DIST)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([code, val]) => ({ code, name: WILAYAS.find(w => w.code === code)?.name || code, val }));
 
   return (
     <Box>
@@ -185,7 +205,7 @@ export default function GeographyPage() {
                 <Chip label="58 wilayas" size="small" variant="outlined" sx={{ fontSize: '0.65rem' }} />
               </Box>
               <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1 }}>
-                Geographic positions · Jan–Jun 2026 · Hover for details
+                {regionLoading ? 'Loading real order distribution…' : 'Live order distribution by shipping wilaya · Hover for details'}
               </Typography>
 
               {/* SVG map — accurate geographic layout */}
@@ -196,7 +216,7 @@ export default function GeographyPage() {
                     🌊 Mediterranean Sea
                   </text>
                   {WILAYAS.map((w) => {
-                    const val = MOCK_WILAYA_DIST[w.code] || 0;
+                    const val = dist[w.code] || 0;
                     const fill = heatColor(val, maxVal);
                     const labelX = w.x + w.w / 2;
                     const labelY = w.y + w.h / 2;
@@ -259,6 +279,12 @@ export default function GeographyPage() {
                 <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   Top 10 Wilayas by Orders
                 </Typography>
+                {regionLoading && (
+                  <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', py: 1 }}>Loading…</Typography>
+                )}
+                {!regionLoading && !top10.length && (
+                  <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', py: 1 }}>No regional order data available.</Typography>
+                )}
                 {top10.map(({ code, name, val }, idx) => (
                   <Box key={code} sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mt: 0.5 }}>
                     <Typography variant="caption" sx={{ fontWeight: 900, color: '#6366f1', width: 18, fontSize: '0.65rem' }}>#{idx + 1}</Typography>

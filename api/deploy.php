@@ -4,7 +4,7 @@
  * Handles deployments, rollbacks, migrations across all environments
  */
 require_once __DIR__ . '/session_helper.php';
-require_once __DIR__ . '/Config.php';
+require_once __DIR__ . '/config.php';
 
 if (empty($_SESSION['logged_in'])) {
     header('Content-Type: application/json');

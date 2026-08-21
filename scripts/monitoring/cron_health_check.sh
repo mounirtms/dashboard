@@ -12,11 +12,17 @@ set -e
 DB_HOST="127.0.0.1"
 DB_PORT="3307"
 DB_USER="root"
-DB_PASS="YourNewStrongPassword"
 DB_NAME="technadminy7_dBT8x12y22"
 MYSQL_CMD="/opt/mariadb10.6/mariadb/bin/mysql"
 MAGENTO_ROOT="/home/betapublic_html"
 LOG_FILE="$MAGENTO_ROOT/var/log/cron_health.log"
+
+# Pull real DB password from dashboard .env (never hardcode it here)
+ENV_FILE="/home/dashboard/public_html/.env"
+if [ -f "$ENV_FILE" ]; then
+    DB_PASS=$(grep -E '^DB_PASS=' "$ENV_FILE" | head -1 | cut -d= -f2-)
+fi
+DB_PASS="${DB_PASS:-}"
 
 # Thresholds
 PENDING_JOB_THRESHOLD=50

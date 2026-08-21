@@ -100,3 +100,11 @@ RewriteRule ^\.git - [F,L]
 <FilesMatch "\.(phtml|inc)$">
     Require all denied
 </FilesMatch>
+
+# Block access to backup/source-exposure files (.bak, .orig, .swp, .sql dumps, env, keys)
+<FilesMatch "\.(bak|orig|swp|swo|sql|log|env|key|pem)$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^(\.env|\.git-credentials|webpushr\.keys|magento_credentials\.json|auth\.php\.bak)$">
+    Require all denied
+</FilesMatch>

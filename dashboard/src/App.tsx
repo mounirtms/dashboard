@@ -18,7 +18,6 @@ import PerformancePage from './pages/PerformancePage.tsx';
 import GeographyPage from './pages/GeographyPage.tsx';
 import SecurityPage from './pages/SecurityPage.tsx';
 import SettingsPage from './pages/SettingsPage.tsx';
-import PlaceholderPage from './pages/PlaceholderPage.tsx';
 import SalesOverviewPage from './pages/SalesOverviewPage.tsx';
 import InventoryPage from './pages/InventoryPage.tsx';
 import IndexersPage from './pages/IndexersPage.tsx';
@@ -52,6 +51,7 @@ import MagentoOrdersPage from './pages/MagentoOrdersPage.tsx';
 import MagentoCmsPage from './pages/MagentoCmsPage.tsx';
 import MagentoSettingsPage from './pages/MagentoSettingsPage.tsx';
 import CiCdPage from './pages/CiCdPage.tsx';
+import NetdataPage from './pages/NetdataPage.tsx';
 
 export default function App() {
   return (
@@ -77,6 +77,7 @@ export default function App() {
                 <Route path="log-explorer" element={<LogViewerPage />} />
                 <Route path="monitoring/users" element={<UserActivityPage />} />
                 <Route path="terminal-ai" element={<TerminalAiPage />} />
+                <Route path="netdata" element={<NetdataPage />} />
                 <Route path="system-health" element={<SystemHealthPage />} />
                 <Route path="monitoring/ssh" element={<SshSessionsPage />} />
                 <Route path="monitoring/commands" element={<ServerCommandHistoryPage />} />

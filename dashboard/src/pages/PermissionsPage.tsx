@@ -1,6 +1,6 @@
 import { Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Switch, Paper, Chip, Snackbar, Alert, CircularProgress, Button } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { Fragment, useState, useEffect, useCallback } from 'react';
 import { fetchAllRolePermissions, updateRolePermission, type RolePermissions } from '../api/permissions';
 import LoadingState from '../components/common/LoadingState';
 
@@ -159,7 +159,7 @@ export default function PermissionsPage() {
             </TableHead>
             <TableBody>
               {PERMISSION_GROUPS.map(group => (
-                <>
+                <Fragment key={group.label}>
                   {/* Group header */}
                   <TableRow key={`group-${group.label}`}>
                     <TableCell colSpan={ROLES.length + 1} sx={{ backgroundColor: 'rgba(255,255,255,0.02)', fontWeight: 700, fontSize: '0.7rem', color: 'primary.main', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
@@ -190,7 +190,7 @@ export default function PermissionsPage() {
                       })}
                     </TableRow>
                   ))}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>

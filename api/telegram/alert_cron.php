@@ -127,11 +127,18 @@ function cmd($c, $timeout=5) {
 function cmd_line($c, $t=5) { $r=cmd($c,$t); return trim(implode("\n",$r['output'])); }
 function safe_num($v,$d=0) { return is_numeric($v) ? round($v+0,$d) : $d; }
 
-// Database config
+// Database config (password pulled from dashboard .env — never hardcoded)
 define('DB_HOST', '127.0.0.1');
 define('DB_PORT', '3307');
 define('DB_USER', 'root');
-define('DB_PASS', 'YourNewStrongPassword');
+$_dbPass = '';
+$_envFile = dirname(__DIR__, 2) . '/.env';
+if (is_file($_envFile)) {
+    foreach (file($_envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $_line) {
+        if (preg_match('/^DB_PASS=(.*)$/', trim($_line), $_m)) { $_dbPass = trim($_m[1]); break; }
+    }
+}
+define('DB_PASS', $_dbPass);
 
 // Collect system metrics
 $load = sys_getloadavg();
