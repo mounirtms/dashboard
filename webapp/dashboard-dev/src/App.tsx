@@ -50,6 +50,7 @@ import MagentoOrdersPage from './pages/MagentoOrdersPage.tsx';
 import MagentoCmsPage from './pages/MagentoCmsPage.tsx';
 import MagentoSettingsPage from './pages/MagentoSettingsPage.tsx';
 import CiCdPage from './pages/CiCdPage.tsx';
+import GitLabPipelinePage from './pages/GitLabPipelinePage.tsx';
 import TaskQueuePage from './pages/TaskQueuePage.tsx';
 import ScriptRunnerPage from './pages/ScriptRunnerPage.tsx';
 import EmailNotificationsPage from './pages/EmailNotificationsPage.tsx';
@@ -107,6 +108,7 @@ export default function App() {
 
                 {/* Dev & CI/CD */}
                 <Route path="cicd" element={<CiCdPage />} />
+                <Route path="cicd/gitlab" element={<GitLabPipelinePage />} />
                 {/* scripts → redirect to tools/actions (same page, no duplicate render) */}
                 <Route path="scripts" element={<Navigate to="/tools/actions" replace />} />
 

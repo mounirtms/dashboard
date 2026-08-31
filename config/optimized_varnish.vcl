@@ -126,17 +126,17 @@ sub vcl_backend_response {
     # TTL CONFIGURATION
     # ============================================
     
-    # Very long TTL for images and fonts (7 days)
+    # Medium TTL for images and fonts (3 days — was 7d, contributed to storage overflow)
     if (bereq.url ~ "\.(jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot|otf|webp|bmp)(\?.*)?$") {
-        set beresp.ttl = 7d;
-        set beresp.grace = 24h;
+        set beresp.ttl = 3d;
+        set beresp.grace = 6h;
         unset beresp.http.Set-Cookie;
     }
     
     # Long TTL for CSS and JS (1 hour)
     if (bereq.url ~ "\.(css|js)(\?.*)?$") {
         set beresp.ttl = 1h;
-        set beresp.grace = 24h;
+        set beresp.grace = 6h;
         unset beresp.http.Set-Cookie;
     }
     
@@ -150,7 +150,7 @@ sub vcl_backend_response {
     # Static directories - 1 hour TTL
     if (bereq.url ~ "^/(static|assets|media|images|css|js|fonts)/") {
         set beresp.ttl = 1h;
-        set beresp.grace = 24h;
+        set beresp.grace = 6h;
         unset beresp.http.Set-Cookie;
     }
     
@@ -166,8 +166,8 @@ sub vcl_backend_response {
         return (deliver);
     }
     
-    # Enable grace mode for all cached content
-    set beresp.grace = 24h;
+    # Enable grace mode — reduced from 24h to 6h (storage was full; 7521 LRU evictions on 2026-08-24)
+    set beresp.grace = 6h;
     
     # Enable ESI for HTML content
     if (beresp.http.Content-Type ~ "text/html") {

@@ -28,6 +28,7 @@ export const PERMISSION_PATHS: Record<string, PermissionKey> = {
   '/tools/backups':          'can_access_cache_control', // backups = admin-adjacent
   '/plans':                  'can_access_plans',
   '/cicd':                   'can_access_cicd',
+  '/cicd/gitlab':            'can_access_cicd',
   '/scripts':                'can_access_script_runner',
   '/tools/script-runner':    'can_access_script_runner',
   '/tools/task-queue':       'can_access_task_queue',

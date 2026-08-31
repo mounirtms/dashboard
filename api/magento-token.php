@@ -173,8 +173,12 @@ class MagentoToken
             $password = getenv('MAGENTO_PASSWORD') ?: '';
         }
         if (empty($password)) {
-            // Use hardcoded credentials as fallback (same as was used for initial token)
-            $password = '@dM1n$#@2o26MaBB0T';
+            // No password available — refuse to proceed rather than using a hardcoded fallback.
+            // Configure credentials via Dashboard → Magento Settings before using this endpoint.
+            throw new \RuntimeException(
+                'No Magento admin password configured. ' .
+                'Set the password via Dashboard → Magento Settings → Save Credentials.'
+            );
         }
 
         $url     = $baseUrl . '/rest/V1/integration/admin/token';

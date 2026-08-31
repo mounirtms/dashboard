@@ -235,10 +235,10 @@ sub vcl_backend_response {
     set beresp.http.x-url = bereq.url;
     set beresp.http.X-Varnish-Host = bereq.http.host;
 
-    # Static files - 1 year TTL
+    # Static files - 30 day TTL (was 365d — caused Storage Full + 7521 LRU evictions)
     if (bereq.url ~ "\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot|otf|webp|bmp)$") {
-        set beresp.ttl = 365d;
-        set beresp.http.Cache-Control = "public, max-age=31536000";
+        set beresp.ttl = 30d;
+        set beresp.http.Cache-Control = "public, max-age=2592000";
         unset beresp.http.Set-Cookie;
         return (deliver);
     }
@@ -265,9 +265,9 @@ sub vcl_backend_response {
         }
     }
 
-    # Grace and keep
-    set beresp.grace = 24h;
-    set beresp.keep = 8h;
+    # Grace and keep — reduced to free storage (was grace=24h/keep=8h → caused LRU saturation)
+    set beresp.grace = 6h;
+    set beresp.keep = 2h;
 
     return (deliver);
 }

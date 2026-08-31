@@ -76,7 +76,7 @@ mysql_query() {
 log_message "=== Queue Monitor Check Started ==="
 
 # Check queue_message table
-QUEUE_COUNT=$(mysql_query "SELECT COUNT(*) FROM queue_message;" 2>/dev/null || echo "0")
+QUEUE_COUNT=$(mysql_query "SELECT COUNT(*) FROM queue_message_status WHERE status != 4;" 2>/dev/null || echo "0")
 log_message "Queue messages: $QUEUE_COUNT"
 
 # Check queue_message_status

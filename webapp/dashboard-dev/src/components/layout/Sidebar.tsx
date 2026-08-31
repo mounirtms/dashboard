@@ -39,6 +39,7 @@ import {
   ListAlt as OrdersIcon,
   Terminal as ScriptsIcon,
   Sync as CicdIcon,
+  AccountTree as GitLabIcon,
   Storage as DbIcon,
   Notifications as AlertsIcon,
   Email as EmailIcon,
@@ -109,7 +110,8 @@ const navItems: NavItem[] = [
     label: 'Dev & CI/CD',
     icon: <CicdIcon />,
     children: [
-      { path: '/cicd', label: 'Pipeline', icon: <CicdIcon /> },
+      { path: '/cicd', label: 'Dashboard Pipeline', icon: <CicdIcon /> },
+      { path: '/cicd/gitlab', label: 'Magento GitLab', icon: <GitLabIcon /> },
       { path: '/tools/script-runner', label: 'Script Runner', icon: <ScriptsIcon /> },
     ]
   },
@@ -535,7 +537,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
           />
           <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>technostationery.com</Typography>
         </Box>
-        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v5.3.1 · technostationery.com</Typography>
+        <Typography sx={{ fontSize: '0.62rem', color: 'text.disabled' }}>TSM Platform v5.5.7 · technostationery.com</Typography>
       </Box>
     </Box>
   );

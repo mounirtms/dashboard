@@ -30,7 +30,7 @@ MEMORY_WARNING=70
 MEMORY_CRITICAL=85
 QUEUE_WARNING=1000
 QUEUE_CRITICAL=5000
-PHP_FPM_MAX=6
+PHP_FPM_MAX=12
 
 # Log files
 LOG_FILE="/home/dashboard/public_html/logs/system_monitor.log"
@@ -106,7 +106,7 @@ else
     MEM_PERCENT=0
 fi
 
-QUEUE_COUNT=$($MYSQL_BIN -u "$MYSQL_USER" -p"$MYSQL_PASS" -h "$MYSQL_HOST" -P "$MYSQL_PORT" "$DB_NAME" -N -e "SELECT COUNT(*) FROM queue_message;" 2>/dev/null || echo "0")
+QUEUE_COUNT=$($MYSQL_BIN -u "$MYSQL_USER" -p"$MYSQL_PASS" -h "$MYSQL_HOST" -P "$MYSQL_PORT" "$DB_NAME" -N -e "SELECT COUNT(*) FROM queue_message_status WHERE status != 4;" 2>/dev/null || echo "0")
 
 PHP_FPM_COUNT=$(ps aux | grep -E "php-fpm.*technostationery" | grep -v grep | grep -v master | wc -l)
 
@@ -231,6 +231,34 @@ if [ "$CONSUMER_COUNT" -eq 0 ] && [ "$QUEUE_COUNT" -gt 100 ]; then
     cd /home/technadminy7/public_html
     nohup /opt/cpanel/ea-php82/root/usr/bin/php bin/magento queue:consumers:start async.operations.all --single-thread --max-messages=1000 >> /home/technadminy7/public_html/var/log/consumer_async.log 2>&1 &
     nohup /opt/cpanel/ea-php82/root/usr/bin/php bin/magento queue:consumers:start inventory.reservations.updateSalabilityStatus --single-thread --max-messages=1000 >> /home/technadminy7/public_html/var/log/consumer_inventory.log 2>&1 &
+fi
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Varnish Cache Health Check
+# ═══════════════════════════════════════════════════════════════════════════
+
+VARNISH_WARN_MB=1500
+VARNISH_CRIT_MB=1900
+
+if command -v varnishstat &>/dev/null; then
+    VARNISH_NUKED=$(varnishstat -1 -f "MAIN.n_lru_nuked" 2>/dev/null | awk '{print $2}' || echo "0")
+    VARNISH_BYTES=$(varnishstat -1 2>/dev/null \
+        | grep -E "SMA.*c_bytes|MSE.*c_bytes" \
+        | awk '{sum += $2} END {print int(sum/1024/1024)}' || echo "0")
+
+    log_message "Varnish: LRU nuked=${VARNISH_NUKED} | Storage=${VARNISH_BYTES}MB"
+
+    if [ "${VARNISH_BYTES:-0}" -ge "$VARNISH_CRIT_MB" ] 2>/dev/null; then
+        send_alert "CRITICAL" "Varnish Storage almost full: ${VARNISH_BYTES} MB used — LRU nuked: ${VARNISH_NUKED}"
+    elif [ "${VARNISH_BYTES:-0}" -ge "$VARNISH_WARN_MB" ] 2>/dev/null; then
+        send_alert "WARNING" "Varnish Storage high: ${VARNISH_BYTES} MB (limit ~2048 MB)"
+    fi
+
+    # Rapid LRU evictions signal storage pressure
+    if [ "${VARNISH_NUKED:-0}" -gt 500 ] 2>/dev/null; then
+        send_alert "WARNING" "Varnish force-evicting objects: LRU nuked=${VARNISH_NUKED} — storage full"
+    fi
 fi
 
 log_message "=== System Monitor Check Completed ==="

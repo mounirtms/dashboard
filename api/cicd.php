@@ -27,11 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // ── Security: Only allow authenticated users ──
-require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/session_helper.php';
 require_once __DIR__ . '/config.php';
 Config::load();
-$auth = new Auth();
-if (!$auth->check()) {
+if (empty($_SESSION['logged_in'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
     exit;

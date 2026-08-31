@@ -8,9 +8,8 @@
  */
 
 // Load from environment variables (set by Config::load() from .env)
-// NOTE: CF_API_TOKEN is invalid (returns "Invalid API Token" from Cloudflare API).
-// Clearing it so the manager falls back to the Global API Key.
-$apiToken = '';
+// Use CF_API_TOKEN from environment for scoped-token authentication (preferred).
+$apiToken = getenv('CF_API_TOKEN') ?: ($_ENV['CF_API_TOKEN'] ?? '');
 $globalKey = getenv('CF_GLOBAL_KEY') ?: ($_ENV['CF_GLOBAL_KEY'] ?? '');
 $email = getenv('CF_EMAIL') ?: ($_ENV['CF_EMAIL'] ?? '');
 $zoneId = getenv('CF_ZONE_ID') ?: ($_ENV['CF_ZONE_ID'] ?? '4919ad3406fcabba381edbd543814a68');

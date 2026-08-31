@@ -45,7 +45,7 @@ export default function MasterDashboardPage() {
               Unified platform summary &amp; real-time infrastructure telemetry.
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
-              v5.5.6 &nbsp;·&nbsp; Deployed: Aug 1, 2026 &nbsp;·&nbsp; Build: v5.5.6
+              v5.5.7 &nbsp;·&nbsp; Deployed: Aug 1, 2026 &nbsp;·&nbsp; Build: v5.5.7
             </Typography>
           </Box>
         </Box>
@@ -222,7 +222,7 @@ export default function MasterDashboardPage() {
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                   Branch: <code style={{ color: '#8b5cf6' }}>main</code>
                   &nbsp;·&nbsp; Repo: <code style={{ color: '#8b5cf6' }}>mounirtms/dashboard</code>
-                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>v5.5.6</code>
+                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>v5.5.7</code>
                 </Typography>
               </Box>
             </CardContent>
