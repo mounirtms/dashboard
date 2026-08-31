@@ -1,12 +1,15 @@
 import {
   Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, useTheme, Alert, Chip, Tooltip,
+  CircularProgress,
 } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts';
 import { useCloudflareData } from '../hooks/useCloudflareData';
 import LoadingState from '../components/common/LoadingState';
 import { formatNumber, formatBytes } from '../utils/formatters';
+import { useState, useEffect } from 'react';
+import apiClient from '../api/client';
 
 // ── Algeria Wilaya SVG data ─────────────────────────────────────────────────
 // 58 wilayas with geographically accurate lat/lon-derived positions.
@@ -96,72 +99,47 @@ function heatColor(value: number, max: number): string {
   return '#1e3a5f';
 }
 
-// Real wilaya distribution — Source: Magento REST API v1 · sales_order_address
-// H1 2026 (Jan–Jun) · 498 CMD_Done orders · 49 wilayas covered
-// Fetched: 2026-07-12 via Bearer token (mabbot)
-const MOCK_WILAYA_DIST: Record<string, number> = {
-  '16': 161, // Alger        (32.3%) — capital, always #1
-  '25': 30,  // Constantine  (6.0%)
-  '15': 23,  // Tizi Ouzou   (4.6%)
-  '09': 21,  // Blida        (4.2%)
-  '21': 17,  // Skikda       (3.4%)
-  '31': 16,  // Oran         (3.2%)
-  '10': 16,  // Bouira       (3.2%)
-  '18': 15,  // Jijel        (3.0%)
-  '17': 14,  // Djelfa       (2.8%)
-  '13': 14,  // Tlemcen      (2.8%)
-  '19': 11,  // Sétif        (2.2%)
-  '06': 11,  // Béjaïa       (2.2%)
-  '35': 10,  // Boumerdès    (2.0%)
-  '24': 9,   // Guelma       (1.8%)
-  '05': 9,   // Batna        (1.8%)
-  '23': 8,   // Annaba       (1.6%)
-  '26': 7,   // Médéa        (1.4%)
-  '44': 7,   // Aïn Defla    (1.4%)
-  '22': 6,   // Sidi Bel Abbès(1.2%)
-  '42': 6,   // Tipaza       (1.2%)
-  '04': 5,   // Oum El Bouaghi(1.0%)
-  '07': 5,   // Biskra       (1.0%)
-  '14': 4,   // Tiaret       (0.8%)
-  '27': 4,   // Mostaganem   (0.8%)
-  '28': 4,   // M'Sila       (0.8%)
-  '43': 3,   // Mila         (0.6%)
-  '46': 3,   // Aïn Témouchent(0.6%)
-  '41': 3,   // Souk Ahras   (0.6%)
-  '02': 3,   // Chlef        (0.6%)
-  '34': 2,   // Bordj Bou A. (0.4%)
-  '39': 2,   // El Oued      (0.4%)
-  '30': 2,   // Ouargla      (0.4%)
-  '48': 2,   // Relizane     (0.4%)
-  '40': 1,   // Khenchela    (0.2%)
-  '20': 1,   // Saïda        (0.2%)
-  '47': 1,   // Ghardaïa     (0.2%)
-  '29': 0,   // Mascara
-  '03': 0,   // Laghouat
-  '12': 0,   // Tébessa
-  '08': 0,   // Béchar
-  '38': 0,   // Tissemsilt
-  '32': 0,   // El Bayadh
-  '01': 0,   // Adrar
-  '55': 0,   // Touggourt
-  '45': 0,   // Naâma
-  '11': 0,   // Tamanrasset
-  '51': 0,   // Ouled Djellal
-  '57': 0,   // El M'Ghair
-  '33': 0,   // Illizi
-  '37': 0,   // Tindouf
-  '49': 0,   // Timimoun
-  '50': 0,   // Bordj Badji Mokhtar
-  '52': 0,   // Béni Abbès
-  '53': 0,   // In Salah
-  '54': 0,   // In Guezzam
-  '56': 0,   // Djanet
-  '58': 0,   // El Méniaa
-};
+// No mock data — wilaya distribution is fetched live from Magento DB
+interface GeoOrderData {
+  wilaya_dist:    Record<string, number>;
+  total_orders:   number;
+  total_all:      number;
+  wilayas_active: number;
+  period:         string;
+  fetched_at:     string;
+  error?:         string;
+}
 
 export default function GeographyPage() {
   const theme = useTheme();
   const { data, loading, error } = useCloudflareData();
+
+  // ── Geography orders state (live from Magento DB) ──────────────────────────
+  const [geoData, setGeoData]       = useState<GeoOrderData | null>(null);
+  const [geoLoading, setGeoLoading] = useState(true);
+  const [geoError, setGeoError]     = useState<string | null>(null);
+
+  useEffect(() => {
+    setGeoLoading(true);
+    apiClient
+      .get('/api/monitor.php?action=geography_orders')
+      .then(({ data: d }) => {
+        if (d?.error && !d?.wilaya_dist) {
+          setGeoError(d.error);
+        } else {
+          setGeoData(d);
+          if (d?.error) setGeoError(d.error); // partial error — still show map
+        }
+      })
+      .catch((err: unknown) => {
+        setGeoError(err instanceof Error ? err.message : 'Failed to load geography data');
+      })
+      .finally(() => setGeoLoading(false));
+  }, []);
+
+  const wilayas_dist: Record<string, number> = geoData?.wilaya_dist ?? {};
+  const geoTotal   = geoData?.total_orders ?? 0;
+  const geoActive  = geoData?.wilayas_active ?? 0;
 
   if (loading) return <LoadingState />;
   if (error)   return <Alert severity="error" sx={{ mb: 2 }}>Error: {error}</Alert>;
@@ -184,11 +162,11 @@ export default function GeographyPage() {
   const gc40 = `${theme.palette.divider}66`;
   const gc60 = `${theme.palette.divider}99`;
 
-  // Build wilaya request distribution
-  const maxVal = Math.max(...Object.values(MOCK_WILAYA_DIST), 1);
+  // Build wilaya heat values from live data
+  const maxVal = Math.max(...Object.values(wilayas_dist), 1);
 
   // Top-10 wilayas for sidebar
-  const top10 = Object.entries(MOCK_WILAYA_DIST)
+  const top10 = Object.entries(wilayas_dist)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
     .map(([code, val]) => ({ code, name: WILAYAS.find(w => w.code === code)?.name || code, val }));
@@ -197,7 +175,12 @@ export default function GeographyPage() {
     <Box>
       <Typography variant="h4" sx={{ mb: 0.5, fontWeight: 800, letterSpacing: '-0.03em' }}>Geography &amp; Regional Traffic</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Algeria wilaya map — Source: Magento REST API · sales_order_address · H1 2026 · 498 CMD_Done · 49 wilayas actives
+        Algeria wilaya map — Source: Magento DB · sales_order_address
+        {geoLoading
+          ? ' · Loading…'
+          : geoData
+          ? ` · ${geoTotal.toLocaleString()} orders · ${geoActive} wilayas · Fetched: ${new Date(geoData.fetched_at).toLocaleString()}`
+          : ' · No data'}
       </Typography>
 
       <Grid container spacing={3}>
@@ -231,10 +214,24 @@ export default function GeographyPage() {
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Algeria — Orders by Wilaya</Typography>
-                <Chip label="35 actives / 58 total" size="small" variant="outlined" sx={{ fontSize: '0.65rem' }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {geoLoading && <CircularProgress size={12} />}
+                  <Chip
+                    label={geoLoading ? 'Loading…' : `${geoActive} actives / 58 total`}
+                    size="small"
+                    variant="outlined"
+                    color={geoError && !geoData ? 'error' : 'default'}
+                    sx={{ fontSize: '0.65rem' }}
+                  />
+                </Box>
               </Box>
+              {geoError && (
+                <Alert severity="warning" sx={{ mb: 1, py: 0.5 }}>
+                  <Typography variant="caption">{geoError} — map may show partial or no order data.</Typography>
+                </Alert>
+              )}
               <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1 }}>
-                Positions géographiques · Source: Magento API REST · H1 2026 CMD_Done · 49 wilayas · Hover pour détails
+                Positions géographiques · Source: Magento DB (sales_order_address) · Hover pour détails
               </Typography>
 
               {/* SVG map — accurate geographic layout */}
@@ -245,7 +242,7 @@ export default function GeographyPage() {
                     🌊 Mediterranean Sea
                   </text>
                   {WILAYAS.map((w) => {
-                    const val = MOCK_WILAYA_DIST[w.code] || 0;
+                    const val = wilayas_dist[w.code] || 0;
                     const fill = heatColor(val, maxVal);
                     const labelX = w.x + w.w / 2;
                     const labelY = w.y + w.h / 2;

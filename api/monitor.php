@@ -53,7 +53,8 @@ $allowedActions = [
     'services', 'network', 'notification_log', 'telegram_action', 'telegram_stats',
     'user_activity', 'bash_history',
     'security_scan', 'security_scan_run', 'security_harden', 'security_harden_run',
-    'ecomscan', 'ecomscan_run'
+    'ecomscan', 'ecomscan_run',
+    'geography_orders'
 ];
 
 if (!in_array($action, $allowedActions)) {
@@ -85,7 +86,8 @@ try {
         'services' => 30,
         'network' => 30,
         'user_activity' => 60,
-        'bash_history' => 30
+        'bash_history' => 30,
+        'geography_orders' => 3600  // cache 1h — Magento order addresses change slowly
     ];
 
     // Include site in cache key to prevent cross-site data leakage
@@ -286,6 +288,69 @@ try {
             require_once __DIR__ . '/AuditLogger.php';
             AuditLogger::log('SECURITY', 'ecomscan_run', "Account: " . ($_GET['account'] ?? 'all'));
             $data = $monitorApi->runEcomscan();
+            break;
+        case 'geography_orders':
+            // Aggregate order shipping addresses by Algeria wilaya (region_id)
+            // Queries the Magento production DB (technadminy7_dBT8x12y22)
+            // Returns: { wilaya_dist: { '16': 161, ... }, total_orders: 498, wilayas_active: 35, period: '...' }
+            try {
+                $pdo = Config::getPDO(); // Magento DB — order_address is Magento data
+                // status = 'complete' covers CMD_Done equivalent in Magento
+                // region_id maps to Algeria wilaya codes (Magento uses numeric region IDs)
+                // We use shipping_address (address_type = 'shipping') for delivery geography
+                $stmt = $pdo->query("
+                    SELECT
+                        LPAD(CAST(r.code AS UNSIGNED), 2, '0') AS wilaya_code,
+                        COUNT(*) AS order_count
+                    FROM sales_order o
+                    JOIN sales_order_address a ON a.parent_id = o.entity_id
+                        AND a.address_type = 'shipping'
+                    JOIN directory_country_region r ON r.region_id = a.region_id
+                        AND r.country_id = 'DZ'
+                    WHERE o.status IN ('complete', 'cmd_done')
+                    GROUP BY wilaya_code
+                    ORDER BY order_count DESC
+                ");
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                $wilayas = [];
+                $totalOrders = 0;
+                foreach ($rows as $row) {
+                    $code = str_pad((string)$row['wilaya_code'], 2, '0', STR_PAD_LEFT);
+                    $wilayas[$code] = (int)$row['order_count'];
+                    $totalOrders += (int)$row['order_count'];
+                }
+
+                // Also get total regardless of region to validate coverage
+                $totalAllStmt = $pdo->query("
+                    SELECT COUNT(*) FROM sales_order
+                    WHERE status IN ('complete', 'cmd_done')
+                ");
+                $totalAll = (int)$totalAllStmt->fetchColumn();
+
+                $data = [
+                    'wilaya_dist'    => $wilayas,
+                    'total_orders'   => $totalOrders,
+                    'total_all'      => $totalAll,
+                    'wilayas_active' => count($wilayas),
+                    'period'         => 'All time (complete/cmd_done)',
+                    'source'         => 'Magento sales_order + sales_order_address + directory_country_region',
+                    'fetched_at'     => gmdate('c'),
+                ];
+            } catch (\Exception $e) {
+                // DB error — return empty dist so the map shows gracefully with no data
+                error_log('[geography_orders] DB error: ' . $e->getMessage());
+                $data = [
+                    'wilaya_dist'    => [],
+                    'total_orders'   => 0,
+                    'total_all'      => 0,
+                    'wilayas_active' => 0,
+                    'period'         => 'unavailable',
+                    'source'         => 'Magento DB',
+                    'error'          => 'DB query failed: ' . $e->getMessage(),
+                    'fetched_at'     => gmdate('c'),
+                ];
+            }
             break;
         default: 
             $data = $monitorApi->getOverview(); 

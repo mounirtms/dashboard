@@ -38,24 +38,7 @@ const SOURCE_COLOR: Record<string, string> = {
   SCHEDULER: '#94a3b8',
 };
 
-// Fallback mock logs — shown if API returns nothing
-const MOCK_LOGS: EtlLogEntry[] = [
-  { id: 1, timestamp: '2026-07-10T19:57:00Z', level: 'SUCCESS', source: 'PRICES',    message: 'Price sync completed: 4,812 SKUs updated from MDM → Magento', duration_ms: 14320, records_affected: 4812 },
-  { id: 2, timestamp: '2026-07-10T19:57:00Z', level: 'INFO',    source: 'MDM',       message: 'MDM connection established — SQL Server 2019 @ techno-mdm:1433', duration_ms: 230 },
-  { id: 3, timestamp: '2026-07-10T19:56:30Z', level: 'INFO',    source: 'CEGID',     message: 'CEGID session opened — Retail 11.4 API v3', duration_ms: 180 },
-  { id: 4, timestamp: '2026-07-10T18:30:00Z', level: 'SUCCESS', source: 'INVENTORY', message: 'Inventory sync completed: 3,210 qty adjustments applied', duration_ms: 9800, records_affected: 3210 },
-  { id: 5, timestamp: '2026-07-10T18:30:00Z', level: 'WARNING', source: 'INVENTORY', message: '42 SKUs had negative stock in MDM — clamped to 0 in Magento', records_affected: 42 },
-  { id: 6, timestamp: '2026-07-10T17:00:00Z', level: 'ERROR',   source: 'PRICES',    message: 'Price sync failed: MDM connection timeout after 30s — retrying in 5min', duration_ms: 30000 },
-  { id: 7, timestamp: '2026-07-10T17:05:00Z', level: 'SUCCESS', source: 'PRICES',    message: 'Price sync retry succeeded: 4,812 SKUs updated', duration_ms: 12100, records_affected: 4812 },
-  { id: 8, timestamp: '2026-07-10T16:00:00Z', level: 'INFO',    source: 'SCHEDULER', message: 'ETL scheduler heartbeat — next price sync in 60min', duration_ms: 2 },
-  { id: 9, timestamp: '2026-07-10T15:00:00Z', level: 'SUCCESS', source: 'PRICES',    message: 'Price sync completed: 4,812 SKUs updated', duration_ms: 13450, records_affected: 4812 },
-  { id:10, timestamp: '2026-07-10T14:00:00Z', level: 'DEBUG',   source: 'MDM',       message: 'MDM query: SELECT TOP 5000 sku, price FROM dbo.PriceList WHERE active=1', duration_ms: 1240 },
-  { id:11, timestamp: '2026-07-10T13:00:00Z', level: 'SUCCESS', source: 'INVENTORY', message: 'Inventory sync: 3,180 adjustments applied', duration_ms: 9200, records_affected: 3180 },
-  { id:12, timestamp: '2026-07-10T12:00:00Z', level: 'WARNING', source: 'CEGID',     message: 'CEGID response slow (8.2s) — possible rate-limit, throttling for 2min' },
-  { id:13, timestamp: '2026-07-10T11:00:00Z', level: 'INFO',    source: 'MAGENTO',   message: 'Magento catalog price index triggered after sync', duration_ms: 4100 },
-  { id:14, timestamp: '2026-07-10T10:00:00Z', level: 'SUCCESS', source: 'PRICES',    message: 'Price sync completed: 4,812 SKUs updated', duration_ms: 13900, records_affected: 4812 },
-  { id:15, timestamp: '2026-07-10T09:00:00Z', level: 'INFO',    source: 'SCHEDULER', message: 'ETL service started — PID 28441, MariaDB 10.6.17 @ localhost:3307', duration_ms: 340 },
-];
+// No mock data — always show live API results or proper empty state
 
 function fmt(ts: string) {
   try { return new Date(ts).toLocaleString('fr-DZ', { timeZone: 'Africa/Algiers', hour12: false }); }
@@ -63,21 +46,27 @@ function fmt(ts: string) {
 }
 
 export default function EtlLogsPage() {
-  const [logs, setLogs] = useState<EtlLogEntry[]>(MOCK_LOGS);
-  const [loading, setLoading] = useState(false);
+  const [logs, setLogs] = useState<EtlLogEntry[]>([]);
+  const [loading, setLoading] = useState(true); // start true — first fetch in progress
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [levelFilter, setLevelFilter] = useState('ALL');
   const [sourceFilter, setSourceFilter] = useState('ALL');
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const { data } = await apiClient.get('/api/etl/logs');
-      if (Array.isArray(data) && data.length > 0) setLogs(data);
-    } catch {
-      // silently fall back to mock data
+      if (Array.isArray(data)) {
+        setLogs(data);
+      } else if (data?.error) {
+        setFetchError(data.error);
+      }
+    } catch (err: unknown) {
+      setFetchError(err instanceof Error ? err.message : 'Failed to load ETL logs');
     } finally {
       setLoading(false);
       setLastRefresh(new Date());
@@ -126,7 +115,8 @@ export default function EtlLogsPage() {
             MDM/CEGID → Magento data pipeline — price sync, inventory sync, scheduler events
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
-            {'v5.3.1 \u00b7 Auto-refreshes every 30s \u00b7 Last: '}{lastRefresh.toLocaleTimeString()}
+            Auto-refreshes every 30s
+            {lastRefresh ? ` · Last: ${lastRefresh.toLocaleTimeString()}` : ' · Loading…'}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -233,8 +223,15 @@ export default function EtlLogsPage() {
         </CardContent>
       </Card>
 
+      {/* Fetch error */}
+      {fetchError && (
+        <Alert severity="warning" sx={{ mb: 2 }} onClose={() => setFetchError(null)}>
+          Could not load ETL logs: {fetchError}
+        </Alert>
+      )}
+
       {/* Log Table */}
-      {loading ? <LoadingState message="Loading ETL logs…" /> : (
+      {loading && logs.length === 0 ? <LoadingState message="Loading ETL logs…" /> : (
         <Card>
           <TableContainer component={Paper} sx={{ bgcolor: 'transparent', maxHeight: '60vh', overflow: 'auto' }}>
             <Table stickyHeader size="small">
@@ -251,8 +248,20 @@ export default function EtlLogsPage() {
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                      No log entries match the current filters.
+                    <TableCell colSpan={6} sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                        <DataObject sx={{ fontSize: 36, opacity: 0.25 }} />
+                        <Typography variant="body2" color="text.disabled">
+                          {logs.length === 0
+                            ? 'No ETL log entries recorded yet. Logs will appear here once the ETL pipeline runs.'
+                            : 'No log entries match the current filters.'}
+                        </Typography>
+                        {logs.length === 0 && (
+                          <Typography variant="caption" color="text.disabled">
+                            ETL endpoint: <code>/api/etl/logs</code> · Auto-refreshes every 30s
+                          </Typography>
+                        )}
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ) : filtered.map(l => (

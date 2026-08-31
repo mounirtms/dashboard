@@ -36,9 +36,8 @@ const PIPELINE_RUNS = [
 ];
 
 const BRANCH_STATUS = [
-  { name: 'main',                  sha: 'b92ede19', behind: 4,  ahead: 0, status: 'behind', desc: 'Merge target — 4 commits behind genspark_ai_developer (v5.3.1: InfraPage rewrite, quality pass, version unification, console.error cleanup)' },
-  { name: 'genspark_ai_developer', sha: '61820393', behind: 0,  ahead: 0, status: 'current', desc: 'Active dev branch — PR #5 open → main (v5.3.1: InfraPage 4-tab rewrite, 23-file quality pass, all versions v5.3.1)' },
-  { name: 'master (local)',        sha: 'current',  behind: 0,  ahead: 21, status: 'ahead', desc: 'Local master — 21 commits ahead of origin/master' },
+  { name: 'main',                  sha: 'dfeb3ec2', behind: 0, ahead: 0, status: 'current', desc: 'Active branch — v5.5.7 deployed. All Wave-1+Wave-2 fixes merged: GitLab pipeline, MOCK data removal, geography_orders, CiCdPage, MasterDashboard (Aug 31 2026).' },
+  { name: 'genspark_ai_developer', sha: 'dfeb3ec2', behind: 0, ahead: 0, status: 'current', desc: 'Dev branch — in sync with main at v5.5.7. Wave 2 changes committed. Next: v5.5.8 with EtlLogs/Geography live data + version bumps.' },
 ];
 
 const BUILD_STEPS = [
@@ -80,22 +79,22 @@ export default function CiCdPage() {
         <Button
           variant="outlined"
           startIcon={<GitHub />}
-          href="https://github.com/mounirtms/dashboard/pull/3"
+          href="https://github.com/mounirtms/dashboard/commits/main"
           target="_blank"
           rel="noopener noreferrer"
           sx={{ fontWeight: 700, textTransform: 'none', borderColor: 'rgba(255,255,255,0.15)' }}
         >
-          PR #3 — Open
+          View on GitHub
         </Button>
       </Box>
 
       {/* Build Stats KPIs */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Total Commits',    value: '92',       color: '#3b82f6', icon: <Commit sx={{ fontSize: 20 }} /> },
-          { label: 'Active Branch',    value: 'genspark_ai_developer', color: '#8b5cf6', icon: <Code sx={{ fontSize: 20 }} /> },
-          { label: 'Last Build',       value: 'v4.6.0',   color: '#22c55e', icon: <Build sx={{ fontSize: 20 }} /> },
-          { label: 'Bundle Size',      value: '512 KB',   color: '#f59e0b', icon: <RocketLaunch sx={{ fontSize: 20 }} /> },
+          { label: 'Total Commits',    value: '115',      color: '#3b82f6', icon: <Commit sx={{ fontSize: 20 }} /> },
+          { label: 'Active Branch',    value: 'main',     color: '#8b5cf6', icon: <Code sx={{ fontSize: 20 }} /> },
+          { label: 'Last Build',       value: 'v5.5.8',   color: '#22c55e', icon: <Build sx={{ fontSize: 20 }} /> },
+          { label: 'Bundle Size',      value: '632 KB',   color: '#f59e0b', icon: <RocketLaunch sx={{ fontSize: 20 }} /> },
         ].map(stat => (
           <Grid size={{ xs: 6, md: 3 }} key={stat.label}>
             <Card>
@@ -136,8 +135,8 @@ export default function CiCdPage() {
               ))}
               <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>v5.3.1-202607302200</code> &nbsp;·&nbsp;
-                  Bundle: <code style={{ color: '#22c55e' }}>index-BqB_RUU0.js</code> (594 KB) &nbsp;·&nbsp;
+                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>v202608312230</code> &nbsp;·&nbsp;
+                  Bundle: <code style={{ color: '#22c55e' }}>index-B40pbJmz.js</code> (632 KB) &nbsp;·&nbsp;
                   Chunks: <code style={{ color: '#22c55e' }}>11</code>
                 </Typography>
               </Box>
@@ -156,7 +155,7 @@ export default function CiCdPage() {
               variant="contained" 
               color="primary" 
               onClick={() => {
-                fetch('/api/gitlab_deploy.php', {
+                fetch('/api/gitlab-pipeline.php', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ action: 'trigger', env: 'dev', branch: 'dev' })
@@ -172,7 +171,7 @@ export default function CiCdPage() {
               variant="contained" 
               color="secondary" 
               onClick={() => {
-                fetch('/api/gitlab_deploy.php', {
+                fetch('/api/gitlab-pipeline.php', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ action: 'trigger', env: 'tsdnd', branch: 'tsdnd' })
@@ -189,10 +188,10 @@ export default function CiCdPage() {
               color="error" 
               onClick={() => {
                 if (window.confirm("Are you sure you want to deploy to PRODUCTION?")) {
-                  fetch('/api/gitlab_deploy.php', {
+                  fetch('/api/gitlab-pipeline.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'trigger', env: 'prod', branch: 'production' })
+                    body: JSON.stringify({ action: 'trigger', env: 'prod', branch: 'master' })
                   })
                   .then(r => r.json())
                   .then(data => alert(data.message || data.error))
@@ -200,7 +199,7 @@ export default function CiCdPage() {
                 }
               }}
             >
-              Deploy to Prod
+              Deploy to Master (Prod)
             </Button>
           </Box>
         </CardContent>
@@ -230,8 +229,8 @@ export default function CiCdPage() {
                   <Typography variant="caption" sx={{ display: 'block', color: 'text.disabled', fontSize: '0.68rem', mt: 0.3 }}>{b.desc}</Typography>
                 </Box>
               ))}
-              <Alert severity="info" sx={{ mt: 1 }}>
-                <Typography variant="caption">PR #3: <code>genspark_ai_developer → main</code> is open. Merge to promote to production.</Typography>
+              <Alert severity="success" sx={{ mt: 1 }}>
+                <Typography variant="caption">Branch <code>main</code> at <code>dfeb3ec2</code> (v5.5.7) — all changes merged. Use the new Magento GitLab page for Magento pipeline triggers.</Typography>
               </Alert>
             </CardContent>
           </Card>
