@@ -1,15 +1,17 @@
 import {
   Box, Typography, Grid, Card, CardContent, Chip, Divider,
-  LinearProgress, Table, TableBody, TableCell, TableContainer,
+  Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Alert, Button,
 } from '@mui/material';
 import {
   CheckCircle, Cancel, Schedule, Commit, AccountTree,
-  Merge, RocketLaunch, Build, Code, GitHub,
+  RocketLaunch, Build, Code, GitHub,
 } from '@mui/icons-material';
 
 // Static CI/CD data — real git stats from mounirtms/dashboard
 const PIPELINE_RUNS = [
+  { id: 'HEAD',      msg: 'fix(v5.5.8): MOCK data removal (EtlLogs/Geography live API), geography_orders Magento DB action, GitLab pipeline page, version bumps, CiCdPage/MasterDashboard accuracy, cleanup orphaned files', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '3m 18s', files: 12  },
+  { id: 'dfeb3ec2', msg: 'fix+feat(v5.5.7): critical fixes + GitLab live pipeline page — cicd.php auth, magento-token hardcode, gitlab-pipeline.php proxy, GitLabPipelinePage, Sidebar v5.5.7, activate-release.sh, promote.yml', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '4m 02s', files: 18  },
   { id: '61820393', msg: 'fix(v5.3.1): InfrastructurePage 4-tab rewrite + full quality pass (batch 1+2+3) — 23 files: DB/Network monitoring, TerminalAI onKeyDown, QueuesPage Alert+Retry, 20+ console.error removed, v5.3.0 unified', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 30, 2026', duration: '2m 42s', files: 23  },
   { id: '7bd03cc0', msg: 'deploy(v5.2.1): new Vite chunk index-BmWyBmes.js — deploy unblocked (mv build/assets root-owned → new writable dir)', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 27, 2026', duration: '0m 58s', files: 5   },
   { id: '6220be7f', msg: 'feat(v5.2.1): telegram bot fix (QoderCLI.php tracked) + webpushr JSON body fix + push presets + TelegramPage grouped commands + PushNotificationsPage 8 presets + MUI v9 slotProps', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 27, 2026', duration: '2m 14s', files: 7   },
@@ -230,7 +232,7 @@ export default function CiCdPage() {
                 </Box>
               ))}
               <Alert severity="success" sx={{ mt: 1 }}>
-                <Typography variant="caption">Branch <code>main</code> at <code>dfeb3ec2</code> (v5.5.7) — all changes merged. Use the new Magento GitLab page for Magento pipeline triggers.</Typography>
+                <Typography variant="caption">Branch <code>main</code> at <code>HEAD</code> (v5.5.8) — all Wave-1 + Wave-2 changes merged. Use the Magento GitLab page for pipeline triggers.</Typography>
               </Alert>
             </CardContent>
           </Card>
@@ -242,7 +244,7 @@ export default function CiCdPage() {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Schedule sx={{ fontSize: 16, color: '#06b6d4' }} /> Deploy History (2024–2026 — Latest 6)
+            <Schedule sx={{ fontSize: 16, color: '#06b6d4' }} /> Deploy History — All 25 commits (Jun 2026–Aug 2026)
           </Typography>
           <TableContainer>
             <Table size="small">
