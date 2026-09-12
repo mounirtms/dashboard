@@ -11,6 +11,7 @@ export const ADMIN_PATHS = new Set([
   '/tools/permissions',
   '/tools/actions',
   '/settings',
+  '/notifications/email', // admin-only: calls email_settings.php + email_logs.php (both PermissionChecker::isAdmin())
 ]);
 
 /**
