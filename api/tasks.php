@@ -145,10 +145,10 @@ try {
         return $rateLimiter->checkOrReject('tasks_' . $currentUser);
     };
 
-    // Helper function to get user email and name
+    // Helper function to get user email and full name from dashboard_auth.users
     $getUserInfo = function($username) use ($pdo) {
         if (empty($username)) return null;
-        $stmt = $pdo->prepare("SELECT email, CONCAT(firstname,' ',lastname) AS full_name FROM admin_user WHERE username = ?");
+        $stmt = $pdo->prepare("SELECT email, full_name FROM users WHERE username = ? AND is_active = 1 LIMIT 1");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         return ($user && !empty($user['email'])) ? $user : null;
@@ -575,9 +575,9 @@ try {
                 break;
             }
 
-            // Verify user exists if provided
+            // Verify user exists if provided (dashboard_auth.users)
             if ($assignedTo !== '') {
-                $uStmt = $pdo->prepare("SELECT username, email, CONCAT(firstname,' ',lastname) AS full_name FROM admin_user WHERE username = ? AND is_active = 1 LIMIT 1");
+                $uStmt = $pdo->prepare("SELECT username, email, full_name FROM users WHERE username = ? AND is_active = 1 LIMIT 1");
                 $uStmt->execute([$assignedTo]);
                 $targetUser = $uStmt->fetch();
                 if (!$targetUser) {

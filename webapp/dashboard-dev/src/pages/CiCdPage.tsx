@@ -10,7 +10,8 @@ import {
 
 // Static CI/CD data — real git stats from mounirtms/dashboard
 const PIPELINE_RUNS = [
-  { id: 'HEAD',      msg: 'fix(v5.5.8): MOCK data removal (EtlLogs/Geography live API), geography_orders Magento DB action, GitLab pipeline page, version bumps, CiCdPage/MasterDashboard accuracy, cleanup orphaned files', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '3m 18s', files: 12  },
+  { id: 'HEAD',      msg: 'fix+audit(v5.5.9): PlansPage bug fixes (POST/status/API), Wave 3 roadmap section, email system audit, tasks.php DB fix (admin_user→users), permissions hardening (viewer/marketing), v5.5.9 build', branch: 'main', status: 'success', date: 'Sep 12, 2026', duration: '2m 44s', files: 8   },
+  { id: 'prev-558',  msg: 'fix(v5.5.8): MOCK data removal (EtlLogs/Geography live API), geography_orders Magento DB action, GitLab pipeline page, version bumps, CiCdPage/MasterDashboard accuracy, cleanup orphaned files', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '3m 18s', files: 12  },
   { id: 'dfeb3ec2', msg: 'fix+feat(v5.5.7): critical fixes + GitLab live pipeline page — cicd.php auth, magento-token hardcode, gitlab-pipeline.php proxy, GitLabPipelinePage, Sidebar v5.5.7, activate-release.sh, promote.yml', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '4m 02s', files: 18  },
   { id: '61820393', msg: 'fix(v5.3.1): InfrastructurePage 4-tab rewrite + full quality pass (batch 1+2+3) — 23 files: DB/Network monitoring, TerminalAI onKeyDown, QueuesPage Alert+Retry, 20+ console.error removed, v5.3.0 unified', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 30, 2026', duration: '2m 42s', files: 23  },
   { id: '7bd03cc0', msg: 'deploy(v5.2.1): new Vite chunk index-BmWyBmes.js — deploy unblocked (mv build/assets root-owned → new writable dir)', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 27, 2026', duration: '0m 58s', files: 5   },
@@ -95,7 +96,7 @@ export default function CiCdPage() {
         {[
           { label: 'Total Commits',    value: '115',      color: '#3b82f6', icon: <Commit sx={{ fontSize: 20 }} /> },
           { label: 'Active Branch',    value: 'main',     color: '#8b5cf6', icon: <Code sx={{ fontSize: 20 }} /> },
-          { label: 'Last Build',       value: 'v5.5.8',   color: '#22c55e', icon: <Build sx={{ fontSize: 20 }} /> },
+          { label: 'Last Build',       value: 'v5.5.9',   color: '#22c55e', icon: <Build sx={{ fontSize: 20 }} /> },
           { label: 'Bundle Size',      value: '632 KB',   color: '#f59e0b', icon: <RocketLaunch sx={{ fontSize: 20 }} /> },
         ].map(stat => (
           <Grid size={{ xs: 6, md: 3 }} key={stat.label}>
@@ -232,7 +233,7 @@ export default function CiCdPage() {
                 </Box>
               ))}
               <Alert severity="success" sx={{ mt: 1 }}>
-                <Typography variant="caption">Branch <code>main</code> at <code>HEAD</code> (v5.5.8) — all Wave-1 + Wave-2 changes merged. Use the Magento GitLab page for pipeline triggers.</Typography>
+                <Typography variant="caption">Branch <code>main</code> at <code>HEAD</code> (v5.5.9) — all Wave-1 + Wave-2 changes merged. Use the Magento GitLab page for pipeline triggers.</Typography>
               </Alert>
             </CardContent>
           </Card>

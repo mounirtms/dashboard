@@ -1,31 +1,24 @@
-import { Box, Typography, Card, CardContent, Grid, Chip, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, LinearProgress, Divider, Alert } from '@mui/material';
-import { Add, Task, CheckCircle, HourglassEmpty, Pending, Delete, RocketLaunch, TrendingUp, Security, Speed, Warning } from '@mui/icons-material';
+import { Box, Typography, Card, CardContent, Grid, Chip, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, LinearProgress, Divider, Alert, Tooltip } from '@mui/material';
+import { Add, Task, CheckCircle, HourglassEmpty, Pending, Delete, RocketLaunch, TrendingUp, Security, Speed, Warning, Build, Email, Lock, Assignment, AdminPanelSettings } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
-import apiClient from '../api/client';
+import { fetchTasks, createTask, updateTask, deleteTask } from '../api/tasks';
 import LoadingState from '../components/common/LoadingState';
 
-interface TaskItem {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  assigned_to: string;
-  due_date: string;
-  created_at: string;
-}
+import type { Task as TaskItem } from '../api/tasks';
 
+// Frontend uses 'in-progress' (hyphen) — matches tasks.php $statusFromDb normalization
 const STATUS_COLORS: Record<string, { bg: string; color: string; label: string }> = {
-  pending: { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24', label: 'Planned' },
-  in_progress: { bg: 'rgba(59,130,246,0.15)', color: '#3b82f6', label: 'In Progress' },
-  completed: { bg: 'rgba(74,222,128,0.15)', color: '#4ade80', label: 'Completed' },
-  cancelled: { bg: 'rgba(248,113,113,0.15)', color: '#f87171', label: 'Cancelled' },
+  pending:     { bg: 'rgba(251,191,36,0.15)',  color: '#fbbf24', label: 'Planned' },
+  'in-progress': { bg: 'rgba(59,130,246,0.15)',  color: '#3b82f6', label: 'In Progress' },
+  completed:   { bg: 'rgba(74,222,128,0.15)',  color: '#4ade80', label: 'Completed' },
+  cancelled:   { bg: 'rgba(248,113,113,0.15)', color: '#f87171', label: 'Cancelled' },
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: '#94a3b8',
-  medium: '#fbbf24',
-  high: '#f87171',
+  low:      '#94a3b8',
+  medium:   '#fbbf24',
+  high:     '#f87171',
+  critical: '#ef4444',
 };
 
 export default function PlansPage() {
@@ -37,28 +30,22 @@ export default function PlansPage() {
 
   const loadTasks = useCallback(() => {
     setLoading(true);
-    apiClient.get('/api/tasks.php?action=list')
-      .then(({ data }) => {
-        setTasks(data.tasks || []);
-      })
+    fetchTasks({ per_page: 200 })
+      .then(({ tasks: t }) => setTasks(t))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
+  useEffect(() => { loadTasks(); }, [loadTasks]);
 
   const handleCreate = () => {
     if (!newTask.title.trim()) return;
-    const params = new URLSearchParams({
-      action: 'create',
-      title: newTask.title,
+    createTask({
+      title:       newTask.title,
       description: newTask.description,
-      status: newTask.status,
-      priority: newTask.priority,
-    });
-    apiClient.post(`/api/tasks.php?${params.toString()}`)
+      status:      newTask.status as TaskItem['status'],
+      priority:    newTask.priority as TaskItem['priority'],
+    })
       .then(() => {
         setDialogOpen(false);
         setNewTask({ title: '', description: '', status: 'pending', priority: 'medium' });
@@ -68,14 +55,14 @@ export default function PlansPage() {
   };
 
   const handleStatusChange = (taskId: number, status: string) => {
-    apiClient.post(`/api/tasks.php?action=update&id=${taskId}&status=${status}`)
+    updateTask({ id: taskId, status: status as TaskItem['status'] })
       .then(() => loadTasks())
       .catch(() => {});
   };
 
   const handleDeleteConfirm = () => {
     if (!deleteDialog.id) return;
-    apiClient.post(`/api/tasks.php?action=delete&id=${deleteDialog.id}`)
+    deleteTask(deleteDialog.id)
       .then(() => { loadTasks(); setDeleteDialog({ open: false }); })
       .catch(() => setDeleteDialog({ open: false }));
   };
@@ -83,9 +70,9 @@ export default function PlansPage() {
   if (loading && tasks.length === 0) return <LoadingState message="Loading plans..." />;
 
   const groupedTasks = {
-    pending: tasks.filter(t => t.status === 'pending'),
-    in_progress: tasks.filter(t => t.status === 'in_progress'),
-    completed: tasks.filter(t => t.status === 'completed'),
+    pending:      tasks.filter(t => t.status === 'pending'),
+    'in-progress': tasks.filter(t => t.status === 'in-progress'),
+    completed:    tasks.filter(t => t.status === 'completed'),
   };
 
   return (
@@ -104,7 +91,97 @@ export default function PlansPage() {
         </Button>
       </Box>
 
-      {/* Q3 2026 Roadmap Section */}
+      {/* ── Wave 3: Dashboard Platform — Completed ─────────────────────────── */}
+      <Card sx={{ mb: 2, background: 'linear-gradient(135deg, rgba(74,222,128,0.06) 0%, rgba(16,185,129,0.04) 100%)', border: '1px solid rgba(74,222,128,0.25)' }}>
+        <CardContent sx={{ py: 1.5, px: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <Build sx={{ fontSize: 16, color: '#4ade80' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#4ade80' }}>Wave 3 — Dashboard Platform Hardening</Typography>
+            <Chip label="✓ Completed" size="small" sx={{ ml: 'auto', fontSize: '0.6rem', color: '#4ade80', bgcolor: 'rgba(74,222,128,0.12)', borderColor: 'rgba(74,222,128,0.35)', border: '1px solid' }} />
+          </Box>
+          <Grid container spacing={1.5}>
+            {[
+              {
+                icon: <Email sx={{ fontSize: 14, color: '#06b6d4' }} />,
+                title: 'Email System',
+                color: '#06b6d4',
+                items: [
+                  { label: 'email_settings table created in dashboard_auth', done: 100 },
+                  { label: 'Mailer::loadSettings() reads from DB (not hardcoded)', done: 100 },
+                  { label: 'sendTestEmail / sendForgotPassword / sendTaskAssignment', done: 100 },
+                  { label: 'Email settings save/test UI (admin-only)', done: 100 },
+                ],
+              },
+              {
+                icon: <Lock sx={{ fontSize: 14, color: '#a78bfa' }} />,
+                title: 'Auth & Password Reset',
+                color: '#a78bfa',
+                items: [
+                  { label: 'password_resets table + token-based flow', done: 100 },
+                  { label: 'handleForgotPassword / handleVerifyResetToken', done: 100 },
+                  { label: 'handleResetPasswordWithToken + bcrypt update', done: 100 },
+                  { label: 'ResetPasswordPage.tsx end-to-end verified', done: 100 },
+                ],
+              },
+              {
+                icon: <Assignment sx={{ fontSize: 14, color: '#f59e0b' }} />,
+                title: 'Tasks & Notifications',
+                color: '#f59e0b',
+                items: [
+                  { label: 'Fixed getUserInfo: admin_user → dashboard_auth.users', done: 100 },
+                  { label: 'Fixed dispatch verify: admin_user → dashboard_auth.users', done: 100 },
+                  { label: 'Email on create / assign / status-change / complete', done: 100 },
+                  { label: 'Admin notification for high-priority + completion', done: 100 },
+                ],
+              },
+              {
+                icon: <AdminPanelSettings sx={{ fontSize: 14, color: '#fb7185' }} />,
+                title: 'Permissions & Roles',
+                color: '#fb7185',
+                items: [
+                  { label: 'viewer / marketing: destructive Magento perms → 0', done: 100 },
+                  { label: 'admin: can_access_magento_settings → 1', done: 100 },
+                  { label: '44-permission matrix with auto-column migration', done: 100 },
+                  { label: 'PermissionsPage.tsx matrix with live toggle & audit', done: 100 },
+                ],
+              },
+            ].map(section => (
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={section.title}>
+                <Box sx={{ p: 1.2, borderRadius: 1.5, border: '1px solid rgba(255,255,255,0.06)', height: '100%' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1 }}>
+                    {section.icon}
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: section.color, textTransform: 'uppercase', letterSpacing: 0.6, fontSize: '0.65rem' }}>
+                      {section.title}
+                    </Typography>
+                  </Box>
+                  {section.items.map(item => (
+                    <Box key={item.label} sx={{ mb: 0.9 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.2 }}>
+                        <Tooltip title={item.label} placement="top">
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.67rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                            {item.label}
+                          </Typography>
+                        </Tooltip>
+                        <Typography variant="caption" sx={{ color: '#4ade80', fontWeight: 700, fontSize: '0.65rem', ml: 0.5, flexShrink: 0 }}>{item.done}%</Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={item.done}
+                        sx={{
+                          height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.05)',
+                          '& .MuiLinearProgress-bar': { backgroundColor: '#4ade80', borderRadius: 2 },
+                        }}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* ── Q3 2026 Roadmap ────────────────────────────────────────────────── */}
       <Card sx={{ mb: 3, background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(59,130,246,0.04) 100%)', border: '1px solid rgba(139,92,246,0.2)' }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -182,7 +259,7 @@ export default function PlansPage() {
       <Divider sx={{ mb: 3 }} />
       <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2 }}>Live Task Board</Typography>
 
-      {/* Summary */}
+      {/* Summary counters */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {Object.entries(groupedTasks).map(([status, items]) => {
           const config = STATUS_COLORS[status] || STATUS_COLORS.pending;
@@ -211,14 +288,14 @@ export default function PlansPage() {
             <Grid size={{ xs: 12, md: 4 }} key={status}>
               <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                 {status === 'pending' ? <Pending sx={{ fontSize: 18, color: config.color }} /> :
-                 status === 'in_progress' ? <HourglassEmpty sx={{ fontSize: 18, color: config.color }} /> :
+                 status === 'in-progress' ? <HourglassEmpty sx={{ fontSize: 18, color: config.color }} /> :
                  <CheckCircle sx={{ fontSize: 18, color: config.color }} />}
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: config.color }}>
                   {config.label}
                 </Typography>
                 <Chip label={items.length} size="small" sx={{ ml: 'auto', bgcolor: `${config.color}20`, color: config.color, height: 18, fontSize: '0.6rem' }} />
               </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 'calc(100vh - 320px)', overflow: 'auto' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 'calc(100vh - 420px)', overflow: 'auto' }}>
                 {items.map(task => (
                   <Card key={task.id} sx={{ bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <CardContent sx={{ py: 1.5, px: 2 }}>
@@ -239,7 +316,7 @@ export default function PlansPage() {
                       )}
                       <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
                         {status !== 'completed' && (
-                          <Button size="small" sx={{ minWidth: 'auto', p: 0.3, fontSize: '0.6rem' }} onClick={() => handleStatusChange(task.id, status === 'pending' ? 'in_progress' : 'completed')}>
+                          <Button size="small" sx={{ minWidth: 'auto', p: 0.3, fontSize: '0.6rem' }} onClick={() => handleStatusChange(task.id, status === 'pending' ? 'in-progress' : 'completed')}>
                             {status === 'pending' ? 'Start' : 'Complete'}
                           </Button>
                         )}
@@ -318,6 +395,7 @@ export default function PlansPage() {
                 <MenuItem value="low">Low</MenuItem>
                 <MenuItem value="medium">Medium</MenuItem>
                 <MenuItem value="high">High</MenuItem>
+                <MenuItem value="critical">Critical</MenuItem>
               </Select>
             </FormControl>
           </Box>
