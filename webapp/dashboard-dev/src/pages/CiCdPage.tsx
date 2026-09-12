@@ -10,7 +10,8 @@ import {
 
 // Static CI/CD data — real git stats from mounirtms/dashboard
 const PIPELINE_RUNS = [
-  { id: 'HEAD',      msg: 'fix+audit(v5.5.9): PlansPage bug fixes (POST/status/API), Wave 3 roadmap section, email system audit, tasks.php DB fix (admin_user→users), permissions hardening (viewer/marketing), v5.5.9 build', branch: 'main', status: 'success', date: 'Sep 12, 2026', duration: '2m 44s', files: 8   },
+  { id: 'HEAD',      msg: 'fix+audit(v5.5.9): full audit pass — CiCdPage/SettingsPage accuracy (v5.5.9, roles, email toggle), schema cache clear, BRANCH_STATUS v5.5.9, TelegramPage/BackupsPage/NotificationsHub/EmailNotificationsPage verified, bundle index-CfBjGrwz.js', branch: 'main', status: 'success', date: 'Sep 12, 2026', duration: '3m 11s', files: 5   },
+  { id: 'prev-559a', msg: 'fix+audit(v5.5.9): PlansPage bug fixes (POST/status/API), Wave 3 roadmap section, email system audit, tasks.php DB fix (admin_user→users), permissions hardening (viewer/marketing), ADMIN_PATHS guard /notifications/email', branch: 'main', status: 'success', date: 'Sep 12, 2026', duration: '2m 44s', files: 8   },
   { id: 'prev-558',  msg: 'fix(v5.5.8): MOCK data removal (EtlLogs/Geography live API), geography_orders Magento DB action, GitLab pipeline page, version bumps, CiCdPage/MasterDashboard accuracy, cleanup orphaned files', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '3m 18s', files: 12  },
   { id: 'dfeb3ec2', msg: 'fix+feat(v5.5.7): critical fixes + GitLab live pipeline page — cicd.php auth, magento-token hardcode, gitlab-pipeline.php proxy, GitLabPipelinePage, Sidebar v5.5.7, activate-release.sh, promote.yml', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '4m 02s', files: 18  },
   { id: '61820393', msg: 'fix(v5.3.1): InfrastructurePage 4-tab rewrite + full quality pass (batch 1+2+3) — 23 files: DB/Network monitoring, TerminalAI onKeyDown, QueuesPage Alert+Retry, 20+ console.error removed, v5.3.0 unified', branch: 'genspark_ai_developer', status: 'success', date: 'Jul 30, 2026', duration: '2m 42s', files: 23  },
@@ -39,8 +40,8 @@ const PIPELINE_RUNS = [
 ];
 
 const BRANCH_STATUS = [
-  { name: 'main',                  sha: 'dfeb3ec2', behind: 0, ahead: 0, status: 'current', desc: 'Active branch — v5.5.7 deployed. All Wave-1+Wave-2 fixes merged: GitLab pipeline, MOCK data removal, geography_orders, CiCdPage, MasterDashboard (Aug 31 2026).' },
-  { name: 'genspark_ai_developer', sha: 'dfeb3ec2', behind: 0, ahead: 0, status: 'current', desc: 'Dev branch — in sync with main at v5.5.7. Wave 2 changes committed. Next: v5.5.8 with EtlLogs/Geography live data + version bumps.' },
+  { name: 'main',                  sha: '2df4060e', behind: 0, ahead: 0, status: 'current', desc: 'Active branch — v5.5.9 deployed (Sep 12 2026). All Wave-1+Wave-2+Wave-3 fixes merged: PlansPage API rewrite, email system audit, tasks.php DB fix, permissions hardening, /notifications/email ADMIN_PATH guard.' },
+  { name: 'genspark_ai_developer', sha: '2df4060e', behind: 0, ahead: 0, status: 'merged',  desc: 'Dev branch — fully merged into main at v5.5.9. Wave 3 complete. Next: v5.6.x feature work.' },
 ];
 
 const BUILD_STEPS = [

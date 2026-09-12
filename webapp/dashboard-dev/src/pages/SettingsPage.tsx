@@ -477,8 +477,8 @@ export default function SettingsPage() {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={emailSettings.enabled === 'true'}
-                        onChange={(e) => handleEmailChange('enabled', e.target.checked ? 'true' : 'false')}
+                    checked={emailSettings.enabled === '1' || emailSettings.enabled === 'true'}
+                      onChange={(e) => handleEmailChange('enabled', e.target.checked ? '1' : '0')}
                       />
                     }
                     label={<Box><Typography variant="body2" sx={{ fontWeight: 600 }}>Enable Email Notifications</Typography><Typography variant="caption" color="text.disabled">Send email alerts for critical events</Typography></Box>}
@@ -763,9 +763,11 @@ export default function SettingsPage() {
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Role Summary</Typography>
                 <Box sx={{ display: 'grid', gap: 1 }}>
                   {[
-                    { role: 'admin',    label: 'Administrator', color: '#ef4444', note: 'Full access — all pages + destructive ops' },
-                    { role: 'manager', label: 'Manager',        color: '#f59e0b', note: 'Commerce, logs, push notifications' },
-                    { role: 'viewer',  label: 'Viewer',         color: '#3b82f6', note: 'Read-only — monitoring + cloudflare' },
+                    { role: 'admin',     label: 'Administrator', color: '#ef4444', note: 'Full access — bypasses all permission checks' },
+                    { role: 'moderator', label: 'Moderator',     color: '#8b5cf6', note: 'Create/update tasks, add notes, Magento read+write' },
+                    { role: 'editor',    label: 'Editor',        color: '#f59e0b', note: 'Create/update tasks, add notes, Magento read+edit' },
+                    { role: 'viewer',    label: 'Viewer',        color: '#3b82f6', note: 'Read-only — monitoring, no destructive ops' },
+                    { role: 'marketing', label: 'Marketing',     color: '#10b981', note: 'Magento products/customers/orders read only' },
                   ].map(({ role, label, color, note }) => (
                     <Box key={role} sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', background: 'rgba(255,255,255,0.02)' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -788,9 +790,9 @@ export default function SettingsPage() {
                   <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>Techno Monitor</Typography>
                   <Typography variant="body2" sx={{ mb: 2 }}>The comprehensive infrastructure management platform for TechnoStationery e-commerce systems.</Typography>
                   <Box sx={{ display: 'grid', gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.3.1</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>v5.3.1-202607302200</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>July 27, 2026</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.5.9</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>index-Cdr8wyDa.js (v202609120001)</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>September 12, 2026</strong></Typography>
                   </Box>
                 </Box>
               </Grid>
