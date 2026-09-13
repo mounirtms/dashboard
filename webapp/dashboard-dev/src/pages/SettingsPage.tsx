@@ -1,5 +1,6 @@
 import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip, Select, MenuItem, FormControl, InputLabel, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings, ErrorOutlined, Lock, Tune as TuneIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings, ErrorOutlined, Lock, Tune as TuneIcon, OpenInNew, SmartToy, NotificationsActive } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchSettings, saveSettings, fetchPushSubscriptions, unsubscribeDevice, type UserSettings, type PushSubscription } from '../api/settings';
 import { fetchEmailSettings, saveEmailSettings, testEmailSettings, fetchEmailLogs, fetchEmailLogStats, clearEmailLogs, type EmailSettings, type EmailLog, type EmailLogStats } from '../api/notifications';
@@ -27,9 +28,8 @@ const defaultGeneral: UserSettings['general'] = { notifications_enabled: true, a
 
 export default function SettingsPage() {
   const [tab, setTab] = useState(0);
+  const navigate = useNavigate();
   const [showKey, setShowKey] = useState(false);
-  const [apiToken, setApiToken] = useState('••••••••••••••••••••••••••••••••');
-  const [telegramWebhook, setTelegramWebhook] = useState('https://dashboard.technostationery.com/api/telegram/webhook.php');
   
   // API-loaded settings
   const [personal, setPersonal] = useState<UserSettings['personal']>(defaultPersonal);
@@ -693,42 +693,71 @@ export default function SettingsPage() {
           </TabPanel>
 
           <TabPanel value={tab} index={4}>
-            <Box sx={{ maxWidth: 600 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>External API Tokens</Typography>
-              <TextField 
-                fullWidth 
-                label="Master Access Token" 
-                size="small" 
-                type={showKey ? 'text' : 'password'}
-                value={apiToken}
-                onChange={(e) => setApiToken(e.target.value)}
-                sx={{ mb: 3 }}
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setShowKey(!showKey)} edge="end">
-                          {showKey ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                    sx: { fontFamily: 'monospace' }
-                  }
-                }}
-              />
-              
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Telegram Webhook URL</Typography>
-              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 1 }}>The destination for all Telegram bot events</Typography>
-              <TextField 
-                fullWidth 
-                size="small" 
-                value={telegramWebhook}
-                onChange={(e) => setTelegramWebhook(e.target.value)}
-                sx={{ mb: 3, '& .MuiInputBase-input': { fontSize: '0.75rem', fontFamily: 'monospace' } }}
-              />
-              
-              <Button variant="contained">Save Integration Settings</Button>
-            </Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>External Integrations</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              All API keys, tokens, and connection settings live in their dedicated management pages. Navigate directly:
+            </Typography>
+            <Grid container spacing={2}>
+              {[
+                {
+                  icon: <Api sx={{ fontSize: 28, color: '#f59e0b' }} />,
+                  title: 'Magento API Connections',
+                  desc: 'Base URLs, admin credentials, and API tokens for all Magento environments (prod, dev, tsdnd, pim). Includes token auto-fetch and connection test.',
+                  route: '/tools/magento-settings',
+                  label: 'Open Magento Settings',
+                  color: '#f59e0b',
+                },
+                {
+                  icon: <SmartToy sx={{ fontSize: 28, color: '#2AABEE' }} />,
+                  title: 'Telegram Bot',
+                  desc: 'Webhook URL, per-alert-type toggles, quick command dispatch, and bot status monitoring.',
+                  route: '/notifications/telegram',
+                  label: 'Open Telegram Page',
+                  color: '#2AABEE',
+                },
+                {
+                  icon: <NotificationsActive sx={{ fontSize: 28, color: '#f97316' }} />,
+                  title: 'Webpushr Push Notifications',
+                  desc: 'Device subscriptions, send presets, segment management, and analytics.',
+                  route: '/notifications/push',
+                  label: 'Open Push Page',
+                  color: '#f97316',
+                },
+                {
+                  icon: <Email sx={{ fontSize: 28, color: '#06b6d4' }} />,
+                  title: 'Email (SMTP)',
+                  desc: 'SMTP host, port, credentials, from address, admin recipients, and delivery log. Admin-only.',
+                  route: '/notifications/email',
+                  label: 'Open Email Settings',
+                  color: '#06b6d4',
+                },
+              ].map(card => (
+                <Grid size={{ xs: 12, sm: 6 }} key={card.title}>
+                  <Box sx={{ p: 2.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', height: '100%',
+                    background: 'rgba(255,255,255,0.015)',
+                    '&:hover': { borderColor: card.color, background: `${card.color}08` }, transition: 'all 0.15s' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                      <Box sx={{ mt: 0.3 }}>{card.icon}</Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5 }}>{card.title}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5, lineHeight: 1.5 }}>
+                          {card.desc}
+                        </Typography>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          endIcon={<OpenInNew sx={{ fontSize: 13 }} />}
+                          onClick={() => navigate(card.route)}
+                          sx={{ borderColor: card.color, color: card.color, '&:hover': { bgcolor: `${card.color}12` }, fontWeight: 700, textTransform: 'none', fontSize: '0.72rem' }}
+                        >
+                          {card.label}
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           </TabPanel>
 
           <TabPanel value={tab} index={5}>
@@ -790,9 +819,9 @@ export default function SettingsPage() {
                   <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>Techno Monitor</Typography>
                   <Typography variant="body2" sx={{ mb: 2 }}>The comprehensive infrastructure management platform for TechnoStationery e-commerce systems.</Typography>
                   <Box sx={{ display: 'grid', gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.5.9</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>index-Cdr8wyDa.js (v202609120001)</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>September 12, 2026</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.5.10</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>index-CfBjGrwz.js (v202609130001)</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>September 13, 2026</strong></Typography>
                   </Box>
                 </Box>
               </Grid>
@@ -897,9 +926,20 @@ export default function SettingsPage() {
         </CardContent>
         
         <Divider />
-        <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button variant="outlined" color="inherit">Discard Changes</Button>
-          <Button variant="contained">Apply Global Settings</Button>
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', gap: 2, alignItems: 'center' }}>
+          {lastSaved && (
+            <Typography variant="caption" color="text.secondary">
+              Changes auto-saved at {lastSaved}
+            </Typography>
+          )}
+          <Button
+            variant="contained"
+            startIcon={saving ? <Refresh sx={{ animation: 'spin 1s linear infinite' }} /> : <Save />}
+            onClick={saveAll}
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Settings'}
+          </Button>
         </Box>
       </Card>
     </Box>

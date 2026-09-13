@@ -187,7 +187,7 @@ export default function PlansPage() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
             <RocketLaunch sx={{ fontSize: 18, color: '#8b5cf6' }} />
             <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>Q3 2026 Roadmap — TechnoStationery Platform</Typography>
-            <Chip label="Jul – Sep 2026" size="small" variant="outlined" sx={{ ml: 'auto', fontSize: '0.6rem', color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.4)' }} />
+            <Chip label="✓ Closed" size="small" sx={{ ml: 'auto', fontSize: '0.6rem', color: '#4ade80', bgcolor: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)' }} />
           </Box>
           <Grid container spacing={2}>
             {[
@@ -196,10 +196,10 @@ export default function PlansPage() {
                 title: 'Performance & Caching',
                 color: '#06b6d4',
                 items: [
-                  { label: 'Varnish hit rate → 60%+', done: 30 },
-                  { label: 'Redis full-page cache warm', done: 45 },
-                  { label: 'Cloudflare Polish + Rocket Loader', done: 60 },
-                  { label: 'DB query optimization (slow log)', done: 20 },
+                  { label: 'Varnish hit rate → 60%+', done: 38 },
+                  { label: 'Redis full-page cache warm', done: 55 },
+                  { label: 'Cloudflare Polish + Rocket Loader', done: 80 },
+                  { label: 'DB query optimization (slow log)', done: 30 },
                 ],
               },
               {
@@ -207,10 +207,10 @@ export default function PlansPage() {
                 title: 'Security & Hardening',
                 color: '#f59e0b',
                 items: [
-                  { label: 'Imunify360 daily schedule review', done: 80 },
-                  { label: 'eComscan false-positive audit', done: 65 },
-                  { label: 'ModSecurity rule tuning', done: 40 },
-                  { label: 'PHP-FPM chroot isolation', done: 10 },
+                  { label: 'Imunify360 daily schedule review', done: 95 },
+                  { label: 'eComscan false-positive audit', done: 80 },
+                  { label: 'ModSecurity rule tuning', done: 55 },
+                  { label: 'PHP-FPM chroot isolation', done: 15 },
                 ],
               },
               {
@@ -218,10 +218,10 @@ export default function PlansPage() {
                 title: 'Commerce & Analytics',
                 color: '#22c55e',
                 items: [
-                  { label: 'H2 2026 sales target: 950 orders', done: 0 },
-                  { label: 'Yalidine shipping API v2', done: 35 },
-                  { label: 'Customer retention dashboard', done: 15 },
-                  { label: 'Abandoned cart automation', done: 5 },
+                  { label: 'H2 2026 sales target: 950 orders', done: 42 },
+                  { label: 'Yalidine shipping API v2', done: 60 },
+                  { label: 'Customer retention dashboard', done: 25 },
+                  { label: 'Abandoned cart automation', done: 10 },
                 ],
               },
             ].map(section => (
@@ -238,6 +238,81 @@ export default function PlansPage() {
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem' }}>{item.label}</Typography>
                         <Typography variant="caption" sx={{ color: section.color, fontWeight: 700, fontSize: '0.7rem' }}>{item.done}%</Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={item.done}
+                        sx={{
+                          height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.05)',
+                          '& .MuiLinearProgress-bar': { backgroundColor: section.color, borderRadius: 2 },
+                        }}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* ── Q4 2026 Roadmap ────────────────────────────────────────────────── */}
+      <Card sx={{ mb: 3, background: 'linear-gradient(135deg, rgba(251,191,36,0.06) 0%, rgba(239,68,68,0.03) 100%)', border: '1px solid rgba(251,191,36,0.2)' }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <RocketLaunch sx={{ fontSize: 18, color: '#fbbf24' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>Q4 2026 Roadmap — TechnoStationery Platform</Typography>
+            <Chip label="Oct – Dec 2026" size="small" variant="outlined" sx={{ ml: 'auto', fontSize: '0.6rem', color: '#fbbf24', borderColor: 'rgba(251,191,36,0.4)' }} />
+          </Box>
+          <Grid container spacing={2}>
+            {[
+              {
+                icon: <Speed sx={{ fontSize: 16, color: '#06b6d4' }} />,
+                title: 'Platform Stability',
+                color: '#06b6d4',
+                items: [
+                  { label: 'Varnish hit rate target 65%+', done: 0 },
+                  { label: 'Full Redis FPC warm-up automation', done: 0 },
+                  { label: 'Magento 2.4.8 upgrade evaluation', done: 5 },
+                  { label: 'PHP 8.3 compatibility testing', done: 0 },
+                ],
+              },
+              {
+                icon: <Build sx={{ fontSize: 16, color: '#a78bfa' }} />,
+                title: 'Dashboard v5.6',
+                color: '#a78bfa',
+                items: [
+                  { label: 'Configurable key/secret vault page', done: 10 },
+                  { label: 'Theme switcher (dark/light) live preview', done: 0 },
+                  { label: 'Audit trail search + export CSV', done: 0 },
+                  { label: 'Task assignment email templates', done: 15 },
+                ],
+              },
+              {
+                icon: <TrendingUp sx={{ fontSize: 16, color: '#22c55e' }} />,
+                title: 'Commerce Growth',
+                color: '#22c55e',
+                items: [
+                  { label: 'Q4 sales target: 1200 orders', done: 0 },
+                  { label: 'Abandoned cart email automation', done: 10 },
+                  { label: 'Loyalty programme integration', done: 0 },
+                  { label: 'Multi-wilaya delivery SLA dashboard', done: 0 },
+                ],
+              },
+            ].map(section => (
+              <Grid size={{ xs: 12, md: 4 }} key={section.title}>
+                <Box sx={{ p: 1.5, borderRadius: 1.5, border: '1px solid rgba(255,255,255,0.06)', height: '100%' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                    {section.icon}
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: section.color, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                      {section.title}
+                    </Typography>
+                  </Box>
+                  {section.items.map(item => (
+                    <Box key={item.label} sx={{ mb: 1.2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem' }}>{item.label}</Typography>
+                        <Typography variant="caption" sx={{ color: item.done > 0 ? section.color : 'text.disabled', fontWeight: 700, fontSize: '0.7rem' }}>{item.done}%</Typography>
                       </Box>
                       <LinearProgress
                         variant="determinate"

@@ -45,7 +45,7 @@ export default function MasterDashboardPage() {
               Unified platform summary &amp; real-time infrastructure telemetry.
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
-              v5.5.9 &nbsp;·&nbsp; Deployed: Sep 12, 2026 &nbsp;·&nbsp; Build: v5.5.9
+              v5.5.10 &nbsp;·&nbsp; Deployed: Sep 13, 2026 &nbsp;·&nbsp; Build: v5.5.10
             </Typography>
           </Box>
         </Box>
@@ -222,7 +222,7 @@ export default function MasterDashboardPage() {
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                   Branch: <code style={{ color: '#8b5cf6' }}>main</code>
                   &nbsp;·&nbsp; Repo: <code style={{ color: '#8b5cf6' }}>mounirtms/dashboard</code>
-                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>v5.5.9</code>
+                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>v5.5.10</code>
                 </Typography>
               </Box>
             </CardContent>
@@ -237,19 +237,23 @@ export default function MasterDashboardPage() {
                 <TaskAlt sx={{ color: '#22c55e' }} /> Sprint Progress
               </Typography>
               {[
-                { label: 'Build & Deploy Pipeline (post-build.sh v3)',     done: 100, color: '#22c55e' },
-                { label: 'GitLab CI Fix: Docker image + activate-release', done: 100, color: '#f97316' },
-                { label: 'GitLab Promote Stage (5 manual jobs)',           done: 100, color: '#f97316' },
-                { label: 'GitLab Live Pipeline Page (/cicd/gitlab)',       done: 100, color: '#3b82f6' },
-                { label: 'cicd.php Auth Fix (new Auth()→session guard)',   done: 100, color: '#ef4444' },
-                { label: 'magento-token.php Security (rm hardcoded pwd)',  done: 100, color: '#ef4444' },
-                { label: 'EtlLogsPage: Remove MOCK_LOGS → live API',      done: 100, color: '#10b981' },
-                { label: 'GeographyPage: Remove MOCK_WILAYA → live DB',   done: 100, color: '#10b981' },
-                { label: 'monitor.php geography_orders (Magento SQL)',     done: 100, color: '#06b6d4' },
-                { label: 'CiCdPage: Real git log 23 commits + fixes',     done: 100, color: '#8b5cf6' },
-                { label: 'Infra Page Rewrite + UX + TS 0-error',          done: 100, color: '#a78bfa' },
-                { label: 'CF Real-Data Integration (WAF, TLS, Traffic)',   done: 100, color: '#f59e0b' },
-                { label: 'CF WAF + TLS 1.3 Upgrade',                      done: 15,  color: '#f59e0b' },
+                { label: 'Build & Deploy Pipeline (post-build.sh v3)',        done: 100, color: '#22c55e' },
+                { label: 'GitLab CI Fix: Docker image + activate-release',    done: 100, color: '#f97316' },
+                { label: 'GitLab Promote Stage (5 manual jobs)',              done: 100, color: '#f97316' },
+                { label: 'GitLab Live Pipeline Page (/cicd/gitlab)',          done: 100, color: '#3b82f6' },
+                { label: 'cicd.php Auth Fix (new Auth()→session guard)',      done: 100, color: '#ef4444' },
+                { label: 'magento-token.php Security (rm hardcoded pwd)',     done: 100, color: '#ef4444' },
+                { label: 'EtlLogsPage: Remove MOCK_LOGS → live API',         done: 100, color: '#10b981' },
+                { label: 'GeographyPage: Remove MOCK_WILAYA → live DB',      done: 100, color: '#10b981' },
+                { label: 'CF Real-Data Integration (WAF, TLS, Traffic)',      done: 100, color: '#f59e0b' },
+                { label: 'Email system: email_settings DB + Mailer audit',    done: 100, color: '#06b6d4' },
+                { label: 'tasks.php: admin_user → dashboard_auth.users fix',  done: 100, color: '#ef4444' },
+                { label: 'Permissions: editor/moderator hardening + 44 cols', done: 100, color: '#8b5cf6' },
+                { label: 'PlansPage: 4 API bugs + Wave 3 roadmap section',    done: 100, color: '#a78bfa' },
+                { label: 'ADMIN_PATHS: /notifications/email guard added',     done: 100, color: '#fb7185' },
+                { label: 'SettingsPage: roles/version/email-toggle fixes',    done: 100, color: '#fbbf24' },
+                { label: 'CF WAF + TLS 1.3 Upgrade (in progress)',            done: 35,  color: '#f59e0b' },
+                { label: 'Varnish hit-rate optimisation (target 60%+)',       done: 30,  color: '#06b6d4' },
               ].map(item => (
                 <Box key={item.label} sx={{ mb: 1.5 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>

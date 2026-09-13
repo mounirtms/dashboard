@@ -93,11 +93,12 @@ export default function MagentoSettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    const payload: Record<string, { base_url?: string; token?: string; username?: string }> = {};
+    const payload: Record<string, { base_url?: string; token?: string; username?: string; password?: string }> = {};
     for (const [env, state] of Object.entries(envs)) {
       payload[env] = { base_url: state.base_url };
-      if (state.token) payload[env].token = state.token;
+      if (state.token)    payload[env].token    = state.token;
       if (state.username) payload[env].username = state.username;
+      if (state.password) payload[env].password = state.password;
     }
     try {
       await saveMagentoSettings(payload);
