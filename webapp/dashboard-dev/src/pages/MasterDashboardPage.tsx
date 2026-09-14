@@ -45,7 +45,7 @@ export default function MasterDashboardPage() {
               Unified platform summary &amp; real-time infrastructure telemetry.
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
-              v5.5.10 &nbsp;·&nbsp; Deployed: Sep 13, 2026 &nbsp;·&nbsp; Build: v5.5.10
+              v5.5.11 &nbsp;·&nbsp; Deployed: Sep 13, 2026 &nbsp;·&nbsp; Build: v5.5.11
             </Typography>
           </Box>
         </Box>
@@ -222,7 +222,7 @@ export default function MasterDashboardPage() {
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                   Branch: <code style={{ color: '#8b5cf6' }}>main</code>
                   &nbsp;·&nbsp; Repo: <code style={{ color: '#8b5cf6' }}>mounirtms/dashboard</code>
-                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>v5.5.10</code>
+                  &nbsp;·&nbsp; Tip: <code style={{ color: '#64748b' }}>v5.5.11</code>
                 </Typography>
               </Box>
             </CardContent>
@@ -252,6 +252,8 @@ export default function MasterDashboardPage() {
                 { label: 'PlansPage: 4 API bugs + Wave 3 roadmap section',    done: 100, color: '#a78bfa' },
                 { label: 'ADMIN_PATHS: /notifications/email guard added',     done: 100, color: '#fb7185' },
                 { label: 'SettingsPage: roles/version/email-toggle fixes',    done: 100, color: '#fbbf24' },
+                { label: 'MagentoSettings: password payload fix + audit',     done: 100, color: '#f97316' },
+                { label: 'System Config tab: .env key vault UI (admin)',       done: 100, color: '#06b6d4' },
                 { label: 'CF WAF + TLS 1.3 Upgrade (in progress)',            done: 35,  color: '#f59e0b' },
                 { label: 'Varnish hit-rate optimisation (target 60%+)',       done: 30,  color: '#06b6d4' },
               ].map(item => (

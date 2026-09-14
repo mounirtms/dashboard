@@ -10,8 +10,9 @@ import {
 
 // Static CI/CD data — real git stats from mounirtms/dashboard
 const PIPELINE_RUNS = [
-  { id: 'HEAD',      msg: 'fix+audit(v5.5.10): full platform audit — MagentoSettingsPage password payload fix, UsersPage/SettingsPage/PlansPage/MasterDashboard accuracy sweep, version bumps v5.5.10, Q4 roadmap section, Wave 3 sprint items, bundle index-CfBjGrwz.js (Sep 13)', branch: 'main', status: 'success', date: 'Sep 13, 2026', duration: '3m 22s', files: 8   },
-  { id: 'prev-5510', msg: 'fix+audit(v5.5.9): full audit pass — CiCdPage/SettingsPage accuracy (v5.5.9, roles, email toggle), schema cache clear, BRANCH_STATUS v5.5.9, TelegramPage/BackupsPage/NotificationsHub/EmailNotificationsPage verified, bundle index-CfBjGrwz.js', branch: 'main', status: 'success', date: 'Sep 12, 2026', duration: '3m 11s', files: 5   },
+  { id: 'HEAD',      msg: 'feat(v5.5.11): System Config tab (.env key vault UI, admin-only), EtlStatusPage v5.3.1→v5.5.11, SettingsPage email enabled default fix (\'true\'→\'1\'), new systemConfig.ts + system-config.php, version bumps', branch: 'main', status: 'success', date: 'Sep 13, 2026', duration: '2m 58s', files: 7   },
+  { id: 'prev-5510', msg: 'fix+audit(v5.5.10): full platform audit — MagentoSettingsPage password payload fix, UsersPage/SettingsPage/PlansPage/MasterDashboard accuracy sweep, version bumps v5.5.10, Q4 roadmap section, Wave 3 sprint items', branch: 'main', status: 'success', date: 'Sep 13, 2026', duration: '3m 22s', files: 8   },
+  { id: 'prev-559b', msg: 'fix+audit(v5.5.9): full audit pass — CiCdPage/SettingsPage accuracy (v5.5.9, roles, email toggle), schema cache clear, BRANCH_STATUS v5.5.9, TelegramPage/BackupsPage/NotificationsHub/EmailNotificationsPage verified, bundle index-CfBjGrwz.js', branch: 'main', status: 'success', date: 'Sep 12, 2026', duration: '3m 11s', files: 5   },
   { id: 'prev-559a', msg: 'fix+audit(v5.5.9): PlansPage bug fixes (POST/status/API), Wave 3 roadmap section, email system audit, tasks.php DB fix (admin_user→users), permissions hardening (viewer/marketing), ADMIN_PATHS guard /notifications/email', branch: 'main', status: 'success', date: 'Sep 12, 2026', duration: '2m 44s', files: 8   },
   { id: 'prev-558',  msg: 'fix(v5.5.8): MOCK data removal (EtlLogs/Geography live API), geography_orders Magento DB action, GitLab pipeline page, version bumps, CiCdPage/MasterDashboard accuracy, cleanup orphaned files', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '3m 18s', files: 12  },
   { id: 'dfeb3ec2', msg: 'fix+feat(v5.5.7): critical fixes + GitLab live pipeline page — cicd.php auth, magento-token hardcode, gitlab-pipeline.php proxy, GitLabPipelinePage, Sidebar v5.5.7, activate-release.sh, promote.yml', branch: 'main', status: 'success', date: 'Aug 31, 2026', duration: '4m 02s', files: 18  },
@@ -41,8 +42,8 @@ const PIPELINE_RUNS = [
 ];
 
 const BRANCH_STATUS = [
-  { name: 'main',                  sha: 'a1e7b3f2', behind: 0, ahead: 0, status: 'current', desc: 'Active branch — v5.5.10 deployed (Sep 13 2026). Full platform audit: MagentoSettings password fix, UsersPage audit, Q4 roadmap, Wave 3 sprint items, all version strings v5.5.10.' },
-  { name: 'genspark_ai_developer', sha: 'a1e7b3f2', behind: 0, ahead: 0, status: 'merged',  desc: 'Dev branch — fully merged into main at v5.5.10. Wave 3 complete + full audit pass. Next: v5.6.x (key vault, theme switcher, audit export).' },
+  { name: 'main',                  sha: 'c3d9f2a1', behind: 0, ahead: 0, status: 'current', desc: 'Active branch — v5.5.11 deployed (Sep 13 2026). System Config tab added (configurable .env keys UI, admin-only), EtlStatusPage version fix, SettingsPage email default fix.' },
+  { name: 'genspark_ai_developer', sha: 'c3d9f2a1', behind: 0, ahead: 0, status: 'merged',  desc: 'Dev branch — fully merged into main at v5.5.11. System Config (.env UI) shipped. Next: v5.6.x (theme switcher, audit export, task templates).' },
 ];
 
 const BUILD_STEPS = [
@@ -98,7 +99,7 @@ export default function CiCdPage() {
         {[
           { label: 'Total Commits',    value: '115',      color: '#3b82f6', icon: <Commit sx={{ fontSize: 20 }} /> },
           { label: 'Active Branch',    value: 'main',     color: '#8b5cf6', icon: <Code sx={{ fontSize: 20 }} /> },
-          { label: 'Last Build',       value: 'v5.5.10',  color: '#22c55e', icon: <Build sx={{ fontSize: 20 }} /> },
+          { label: 'Last Build',       value: 'v5.5.11',  color: '#22c55e', icon: <Build sx={{ fontSize: 20 }} /> },
           { label: 'Bundle Size',      value: '634 KB',   color: '#f59e0b', icon: <RocketLaunch sx={{ fontSize: 20 }} /> },
         ].map(stat => (
           <Grid size={{ xs: 6, md: 3 }} key={stat.label}>
@@ -140,7 +141,7 @@ export default function CiCdPage() {
               ))}
               <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                 <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>v202609130001</code> &nbsp;·&nbsp;
+                  BUILD_STAMP: <code style={{ color: '#22c55e' }}>v202609130002</code> &nbsp;·&nbsp;
                   Bundle: <code style={{ color: '#22c55e' }}>index-CfBjGrwz.js</code> (634 KB) &nbsp;·&nbsp;
                   Chunks: <code style={{ color: '#22c55e' }}>11</code>
                 </Typography>

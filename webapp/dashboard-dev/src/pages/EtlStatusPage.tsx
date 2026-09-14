@@ -84,7 +84,7 @@ export default function EtlStatusPage() {
             Data synchronization between SQL Server (MDM/CEGID) and Magento.
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.65rem' }}>
-            v5.3.1&nbsp;·&nbsp;Auto-refreshes every 30s&nbsp;·&nbsp;Last: {lastRefresh.toLocaleTimeString()}
+            v5.5.11&nbsp;·&nbsp;Auto-refreshes every 30s&nbsp;·&nbsp;Last: {lastRefresh.toLocaleTimeString()}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>

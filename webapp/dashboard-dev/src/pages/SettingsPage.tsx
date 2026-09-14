@@ -1,11 +1,13 @@
-import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip, Select, MenuItem, FormControl, InputLabel, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings, ErrorOutlined, Lock, Tune as TuneIcon, OpenInNew, SmartToy, NotificationsActive } from '@mui/icons-material';
+import { Box, Typography, Grid, Card, CardContent, Switch, FormControlLabel, TextField, Button, Divider, Alert, Tabs, Tab, List, ListItem, ListItemText, InputAdornment, IconButton, Chip, Select, MenuItem, FormControl, InputLabel, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, CircularProgress, LinearProgress } from '@mui/material';
+import { Settings as SettingsIcon, Notifications, Security, Storage, Language, Api, Visibility, VisibilityOff, Code, Info, Refresh, CheckCircle, Person, Palette, Save, Delete, Laptop, Smartphone, Tablet, Email, Send, AdminPanelSettings, ErrorOutlined, Lock, Tune as TuneIcon, OpenInNew, SmartToy, NotificationsActive, ExpandMore, VpnKey, FiberManualRecord } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchSettings, saveSettings, fetchPushSubscriptions, unsubscribeDevice, type UserSettings, type PushSubscription } from '../api/settings';
 import { fetchEmailSettings, saveEmailSettings, testEmailSettings, fetchEmailLogs, fetchEmailLogStats, clearEmailLogs, type EmailSettings, type EmailLog, type EmailLogStats } from '../api/notifications';
 import { fetchNotificationPreferences, saveNotificationPreferences, DEFAULT_PREFERENCES, type NotificationPreferences } from '../api/notificationPreferences';
 import { useWebpushrSubscription } from '../hooks/useWebpushrSubscription';
+import { fetchSystemConfig, saveSystemConfig, type SystemConfigData, type EnvGroup } from '../api/systemConfig';
+import { useAuth } from '../hooks/useAuth';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -29,6 +31,8 @@ const defaultGeneral: UserSettings['general'] = { notifications_enabled: true, a
 export default function SettingsPage() {
   const [tab, setTab] = useState(0);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [showKey, setShowKey] = useState(false);
   
   // API-loaded settings
@@ -45,7 +49,7 @@ export default function SettingsPage() {
     from_name: 'Techno Dashboard',
     admin_email_1: 'admin@dashboard.technostationery.com',
     admin_email_2: 'webmaster@techno-dz.com',
-    enabled: 'true',
+    enabled: '1',
     smtp_host: '',
     smtp_port: '587',
     smtp_user: '',
@@ -64,6 +68,14 @@ export default function SettingsPage() {
   // Push subscriptions
   const [subscriptions, setSubscriptions] = useState<PushSubscription[]>([]);
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = useWebpushrSubscription();
+
+  // System Config (.env keys) — admin only
+  const [sysConfig, setSysConfig] = useState<SystemConfigData | null>(null);
+  const [sysConfigEdits, setSysConfigEdits] = useState<Record<string, string>>({});
+  const [sysConfigLoading, setSysConfigLoading] = useState(false);
+  const [sysConfigSaving, setSysConfigSaving] = useState(false);
+  const [sysConfigMsg, setSysConfigMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [sysConfigShowPass, setSysConfigShowPass] = useState<Record<string, boolean>>({});
 
   // Notification preferences
   const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>(DEFAULT_PREFERENCES);
@@ -217,7 +229,14 @@ export default function SettingsPage() {
         .catch(() => { /* keep defaults */ })
         .finally(() => setNotifPrefsLoading(false));
     }
-  }, [tab, loadEmailLogs]);
+    if (tab === 8 && isAdmin && !sysConfig && !sysConfigLoading) {
+      setSysConfigLoading(true);
+      fetchSystemConfig()
+        .then(d => { setSysConfig(d); setSysConfigEdits({}); })
+        .catch(e => setSysConfigMsg({ type: 'error', text: e.message }))
+        .finally(() => setSysConfigLoading(false));
+    }
+  }, [tab, loadEmailLogs, isAdmin, sysConfig, sysConfigLoading]);
 
   const handleClearEmailLogs = async () => {
     try {
@@ -270,6 +289,7 @@ export default function SettingsPage() {
             <Tab icon={<Security sx={{ fontSize: 18 }} />} iconPosition="start" label="Access Control" />
             <Tab icon={<Info sx={{ fontSize: 18 }} />} iconPosition="start" label="About" />
             <Tab icon={<TuneIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Alert Prefs" />
+            {isAdmin && <Tab icon={<VpnKey sx={{ fontSize: 18 }} />} iconPosition="start" label="System Config" />}
           </Tabs>
         </Box>
         
@@ -819,8 +839,8 @@ export default function SettingsPage() {
                   <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>Techno Monitor</Typography>
                   <Typography variant="body2" sx={{ mb: 2 }}>The comprehensive infrastructure management platform for TechnoStationery e-commerce systems.</Typography>
                   <Box sx={{ display: 'grid', gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.5.10</strong></Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>index-CfBjGrwz.js (v202609130001)</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Platform Version: <strong>v5.5.11</strong></Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>Build Hash: <strong>index-CfBjGrwz.js (v202609130002)</strong></Typography>
                     <Typography variant="caption" sx={{ color: 'text.disabled' }}>Deployment Date: <strong>September 13, 2026</strong></Typography>
                   </Box>
                 </Box>
@@ -923,6 +943,138 @@ export default function SettingsPage() {
               </TableContainer>
             )}
           </TabPanel>
+
+          {/* ── Tab 8: System Config (.env keys) — admin only ── */}
+          {isAdmin && (
+            <TabPanel value={tab} index={8}>
+              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>System Configuration</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Manage sensitive environment keys stored in <code>.env</code>. Changes take effect immediately on next PHP request.
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button size="small" variant="outlined" startIcon={<Refresh />}
+                    onClick={() => { setSysConfig(null); setSysConfigEdits({}); setSysConfigLoading(true);
+                      fetchSystemConfig().then(d => { setSysConfig(d); }).catch(e => setSysConfigMsg({ type: 'error', text: e.message })).finally(() => setSysConfigLoading(false)); }}
+                    disabled={sysConfigLoading}>
+                    Reload
+                  </Button>
+                  <Button size="small" variant="contained" startIcon={sysConfigSaving ? <Refresh sx={{ animation: 'spin 1s linear infinite' }} /> : <Save />}
+                    disabled={sysConfigSaving || Object.keys(sysConfigEdits).length === 0}
+                    onClick={async () => {
+                      setSysConfigSaving(true); setSysConfigMsg(null);
+                      try {
+                        const res = await saveSystemConfig(sysConfigEdits);
+                        setSysConfigEdits({});
+                        setSysConfigMsg({ type: 'success', text: res.message });
+                        // Refresh to show updated 'set' indicators
+                        const fresh = await fetchSystemConfig();
+                        setSysConfig(fresh);
+                      } catch (e: any) {
+                        setSysConfigMsg({ type: 'error', text: e.message });
+                      } finally { setSysConfigSaving(false); }
+                    }}>
+                    {sysConfigSaving ? 'Saving…' : `Save Changes${Object.keys(sysConfigEdits).length > 0 ? ` (${Object.keys(sysConfigEdits).length})` : ''}`}
+                  </Button>
+                </Box>
+              </Box>
+
+              {sysConfigMsg && (
+                <Alert severity={sysConfigMsg.type} onClose={() => setSysConfigMsg(null)} sx={{ mb: 2 }}>
+                  {sysConfigMsg.text}
+                </Alert>
+              )}
+
+              <Alert severity="warning" sx={{ mb: 2, fontSize: '0.78rem' }}>
+                ⚠️ <strong>Admin-only.</strong> These keys control third-party API access. Changes write directly to the server's <code>.env</code> file and affect all running PHP processes immediately. Use with care.
+              </Alert>
+
+              {sysConfigLoading ? (
+                <Box sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <CircularProgress size={32} />
+                  <Typography variant="caption" color="text.secondary">Loading environment configuration…</Typography>
+                </Box>
+              ) : !sysConfig ? (
+                <Alert severity="info">No configuration loaded. Click Reload to fetch.</Alert>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {Object.entries(sysConfig.groups).map(([groupName, keys]) => (
+                    <Accordion key={groupName} disableGutters elevation={0}
+                      sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '8px !important', '&:before': { display: 'none' }, overflow: 'hidden' }}>
+                      <AccordionSummary expandIcon={<ExpandMore />} sx={{ bgcolor: 'rgba(255,255,255,0.02)', minHeight: 48 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <VpnKey sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 700 }}>{groupName}</Typography>
+                          <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
+                            {Object.entries(keys as EnvGroup).map(([k, meta]) => (
+                              <FiberManualRecord key={k} sx={{ fontSize: 8,
+                                color: sysConfigEdits[k] !== undefined
+                                  ? '#f59e0b'
+                                  : (meta.set ? '#22c55e' : '#ef4444') }} />
+                            ))}
+                          </Box>
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ p: 2, pt: 1.5 }}>
+                        <Grid container spacing={2}>
+                          {Object.entries(keys as EnvGroup).map(([envKey, meta]) => {
+                            const edited = sysConfigEdits[envKey] !== undefined;
+                            const currentVal = edited ? sysConfigEdits[envKey] : meta.value;
+                            const showKey = `${groupName}__${envKey}`;
+                            return (
+                              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={envKey}>
+                                <Box>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                                    <FiberManualRecord sx={{ fontSize: 8,
+                                      color: edited ? '#f59e0b' : (meta.set ? '#22c55e' : '#ef4444') }} />
+                                    <Typography variant="caption" sx={{ fontWeight: 700, fontFamily: 'monospace', fontSize: '0.68rem' }}>
+                                      {envKey}
+                                    </Typography>
+                                    {edited && <Chip label="modified" size="small" color="warning" sx={{ fontSize: '0.58rem', height: 16, ml: 0.5 }} />}
+                                  </Box>
+                                  <TextField
+                                    size="small"
+                                    fullWidth
+                                    label={meta.label}
+                                    type={meta.type === 'password' && !sysConfigShowPass[showKey] ? 'password' : 'text'}
+                                    value={currentVal}
+                                    placeholder={meta.set && !edited ? '(saved — enter new to override)' : meta.hint}
+                                    onChange={e => setSysConfigEdits(prev => ({ ...prev, [envKey]: e.target.value }))}
+                                    helperText={meta.hint}
+                                    slotProps={meta.type === 'password' ? {
+                                      input: {
+                                        endAdornment: (
+                                          <InputAdornment position="end">
+                                            <IconButton size="small" edge="end"
+                                              onClick={() => setSysConfigShowPass(prev => ({ ...prev, [showKey]: !prev[showKey] }))}>
+                                              {sysConfigShowPass[showKey] ? <VisibilityOff sx={{ fontSize: 16 }} /> : <Visibility sx={{ fontSize: 16 }} />}
+                                            </IconButton>
+                                          </InputAdornment>
+                                        ),
+                                      }
+                                    } : undefined}
+                                    sx={{
+                                      '& .MuiInputBase-input': { fontFamily: 'monospace', fontSize: '0.78rem' },
+                                      ...(edited ? { '& fieldset': { borderColor: '#f59e0b !important' } } : {}),
+                                    }}
+                                  />
+                                </Box>
+                              </Grid>
+                            );
+                          })}
+                        </Grid>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                  <Typography variant="caption" sx={{ color: 'text.disabled', mt: 1 }}>
+                    Env file: <code>{sysConfig.env_file}</code> · Legend: <FiberManualRecord sx={{ fontSize: 8, color: '#22c55e', verticalAlign: 'middle' }} /> set · <FiberManualRecord sx={{ fontSize: 8, color: '#ef4444', verticalAlign: 'middle' }} /> empty · <FiberManualRecord sx={{ fontSize: 8, color: '#f59e0b', verticalAlign: 'middle' }} /> modified (unsaved)
+                  </Typography>
+                </Box>
+              )}
+            </TabPanel>
+          )}
         </CardContent>
         
         <Divider />
