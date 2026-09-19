@@ -3,8 +3,10 @@
  * ============================================================================
  * Technostationery Varnish Cache Warmup - Per Device
  * ============================================================================
- * Warms Varnish cache for desktop, mobile, and tablet devices separately.
+ * Warms Varnish cache for desktop and mobile separately (tablet removed
+ * 2026-09-14: iPad serves the desktop theme = identical cache entries).
  * Uses curl_multi for high-performance parallel requests with load monitoring.
+ * Ends with a verification pass reporting the TRUE post-warmup hit rate.
  * 
  * Usage: php warmup_per_device.php [--urls=3000] [--parallel=8] [--max-load=12]
  * 
@@ -28,7 +30,12 @@ $defaults = [
     'timeout'     => 15,      // Seconds per request
 ];
 
-// Device profiles with realistic user agents
+// Device profiles with realistic user agents.
+// NOTE (2026-09-14): tablet profile REMOVED — iPad Safari serves the desktop
+// theme (Sm/market, id 8), identical Varnish cache entries as desktop.
+// The old 3000-request tablet pass only re-warmed desktop entries (~13 min
+// wasted + needless backend load). Re-add only if a tablet-specific theme
+// is ever configured in design exceptions.
 $DEVICES = [
     'desktop' => [
         'ua' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -38,10 +45,21 @@ $DEVICES = [
         'ua' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
         'label' => 'Mobile (Safari/iPhone)',
     ],
-    'tablet' => [
-        'ua' => 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-        'label' => 'Tablet (Safari/iPad)',
-    ],
+];
+
+// Highest-traffic pages warmed FIRST so a restart/abort still leaves the
+// most valuable entries cached.
+// NOTE (2026-09-19): the previous entries /tous-les-produits/bureau.html and
+// /tous-les-produits/papeterie.html are 302 redirects to /search/... (stale
+// URLs) — they burned the first priority requests on redirects instead of
+// warming the real top categories. Paths below were re-verified against the
+// live backend: all return HTTP 200 and Cache-Control "public, max-age=86400".
+$PRIORITY_URLS = [
+    '/',
+    '/tous-les-produits/scolaire.html',
+    '/tous-les-produits/bureautique.html',
+    '/tous-les-produits/loisirs-creatifs.html',
+    '/tous-les-produits/beaux-arts.html',
 ];
 
 // Paths to exclude from warmup (private, dynamic, or non-HTML)
@@ -65,12 +83,17 @@ $EXCLUDE_EXTENSIONS = ['.xml', '.json', '.pdf', '.zip', '.gz', '.tar'];
 
 // ─── Parse CLI Arguments ────────────────────────────────────────────────────
 $options = $defaults;
+// Aliases accepted from orchestrator/cron (orchestrator passes --urls).
+$aliases = ['urls' => 'max_urls', 'parallelism' => 'parallel', 'load' => 'max_load'];
 foreach ($_SERVER['argv'] as $arg) {
     if (preg_match('/^--(\w+)=(.+)$/', $arg, $m)) {
         $key = $m[1];
-        $val = $m[2];
+        if (isset($aliases[$key])) {
+            $key = $aliases[$key];
+        }
         if (isset($options[$key])) {
-            $options[$key] = is_float($options[$key]) ? (float) $val : (int) $val;
+            $raw = $m[2];
+            $options[$key] = is_float($options[$key]) ? (float)$raw : (int)$raw;
         }
     }
 }
@@ -286,12 +309,46 @@ log_msg("");
 
 // Extract URLs
 log_msg("Extracting URLs from sitemap...");
+if (file_exists($SITEMAP_FILE)) {
+    $sitemap_age_h = (time() - filemtime($SITEMAP_FILE)) / 3600;
+    log_msg(sprintf("Sitemap age: %.1f hours", $sitemap_age_h));
+    if ($sitemap_age_h > 48) {
+        log_msg("WARNING: sitemap older than 48h — new products may be missing. Regenerate via Magento admin (Marketing > SEO & Search > Site Map) or bin/magento sitemap:generate.");
+    }
+}
 $urls = extract_urls($SITEMAP_FILE, $EXCLUDE_PATHS, $EXCLUDE_EXTENSIONS, $max_urls);
 if (isset($urls['error'])) {
     log_msg("ERROR: " . $urls['error']);
     exit(1);
 }
-log_msg("Found " . count($urls) . " URLs (after filtering)");
+// Priority pages first (homepage + top categories), then sitemap order.
+// Guard (2026-09-19): validate each hardcoded priority URL against the live
+// backend and drop the ones that do not return 200, so a stale/renamed path
+// can never silently waste the first (most valuable) warmup requests.
+global $PRIORITY_URLS;
+$valid_priority = [];
+foreach ($PRIORITY_URLS as $purl) {
+    $ch = curl_init($VARNISH_HOST . $purl);
+    curl_setopt_array($ch, [
+        CURLOPT_NOBODY         => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_HTTPHEADER     => ["Host: {$DOMAIN}"],
+    ]);
+    curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($code === 200) {
+        $valid_priority[] = $purl;
+    } else {
+        log_msg("WARNING: priority URL {$purl} returned HTTP {$code} — dropped from warmup (fix \$PRIORITY_URLS).");
+    }
+}
+$PRIORITY_URLS = $valid_priority;
+$urls = array_values(array_unique(array_merge($PRIORITY_URLS, $urls)));
+$urls = array_slice($urls, 0, $max_urls + count($PRIORITY_URLS));
+log_msg("Found " . count($urls) . " URLs (after filtering, priority pages first)");
 
 // Check initial load
 $initial_load = get_load();
@@ -312,6 +369,23 @@ foreach ($DEVICES as $key => $info) {
     );
     $overall_stats[$key] = $result;
 }
+
+// ─── Verification pass: re-request a sample to measure the TRUE post-warmup
+// hit rate (first-touch MISSes during priming are expected and meaningless).
+// Uses desktop UA on a stride sample across the warmed URL set.
+$verify_sample = [];
+$stride = max(1, (int)floor(count($urls) / 50));
+for ($i = 0; $i < count($urls) && count($verify_sample) < 50; $i += $stride) {
+    $verify_sample[] = $urls[$i];
+}
+log_msg("");
+log_msg("Verification pass: re-requesting " . count($verify_sample) . " sampled URLs (true hit rate)...");
+$verify = warm_device_urls(
+    $verify_sample, 'verify', ['ua' => $DEVICES['desktop']['ua'], 'label' => 'Verify (Desktop sample)'],
+    $VARNISH_HOST, $DOMAIN,
+    $parallel, $max_load, $batch_delay, $timeout
+);
+$overall_stats['verify'] = $verify;
 
 $total_elapsed = round(microtime(true) - $warmup_start, 1);
 
@@ -341,6 +415,20 @@ foreach ($DEVICES as $key => $info) {
     $total_hits += $s['hits'];
     $total_misses += $s['misses'];
     $total_errors += $s['errors'];
+}
+
+// Verification sample = the TRUE post-warmup hit rate (prime-pass MISSes excluded).
+if (isset($overall_stats['verify'])) {
+    $v = $overall_stats['verify'];
+    log_msg(sprintf(
+        "  %-10s: %5d HIT / %5d MISS / %4d ERR (%.1f%% TRUE hit rate) - %.1fs",
+        'VERIFY',
+        $v['hits'],
+        $v['misses'],
+        $v['errors'],
+        $v['hit_rate'],
+        $v['elapsed']
+    ));
 }
 
 $grand_total = $total_hits + $total_misses;
