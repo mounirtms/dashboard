@@ -65,16 +65,32 @@ try {
                 // DB not ready yet — return without last_run data
             }
             $response = [];
+            // Map script keys to categories for the ActionsPage tabs
+            $categories = [
+                'monitoring' => ['system_monitor', 'cpu_monitor', 'queue_monitor'],
+                'optimization' => ['cpu_optimize', 'emergency_throttle', 'queue_optimize'],
+                'maintenance' => ['master_cleanup'],
+                'deployment' => ['deploy_dev', 'deploy_beta', 'deploy_prod', 'deploy_tsdnd', 'deploy_pim', 'deploy_dashboard', 'deploy_env'],
+                'build' => ['build_all', 'build_dashboard'],
+                'verification' => ['verify_deployment', 'health_check'],
+            ];
+            $categoryMap = [];
+            foreach ($categories as $cat => $keys) {
+                foreach ($keys as $key) {
+                    $categoryMap[$key] = $cat;
+                }
+            }
             foreach ($scripts as $key => $path) {
                 $response[] = array_merge([
                     'id'          => $key,
                     'path'        => $path,
                     'name'        => ucwords(str_replace('_', ' ', $key)),
+                    'category'    => $categoryMap[$key] ?? 'other',
                     'last_run'    => null,
                     'last_status' => null,
                 ], $lastRuns[$key] ?? []);
             }
-            echo json_encode(['scripts' => $response]);
+            echo json_encode(['categories' => array_keys($categories), 'scripts' => $response]);
             break;
 
         case 'execute':

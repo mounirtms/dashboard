@@ -173,6 +173,49 @@ switch ($action) {
         echo json_encode(['success' => true, 'environments' => $ENVIRONMENTS]);
         break;
 
+    case 'releases':
+        $out = [];
+        foreach ($ENVIRONMENTS as $key => $env) {
+            $root = $env['path'];
+            $releasesDir = rtrim($root, '/') . '/releases';
+            $current = @readlink("$releasesDir/../current");
+            $currentId = $current ? basename($current) : null;
+            $releases = [];
+            if (is_dir($releasesDir)) {
+                foreach (scandir($releasesDir) as $entry) {
+                    if ($entry === '.' || $entry === '..') continue;
+                    $path = "$releasesDir/$entry";
+                    if (!is_dir($path)) continue;
+                    $biPath = "$path/build-info.json";
+                    $bi = null;
+                    if (is_file($biPath)) {
+                        $raw = file_get_contents($biPath);
+                        if ($raw !== false) {
+                            $decoded = json_decode($raw, true);
+                            if (is_array($decoded)) $bi = $decoded;
+                        }
+                    }
+                    $releases[] = [
+                        'id' => $entry,
+                        'is_current' => $entry === $currentId,
+                        'build_info' => $bi,
+                    ];
+                }
+                usort($releases, function($a, $b) { return strcmp($b['id'], $a['id']); });
+            }
+            $out[$key] = [
+                'env' => $key,
+                'name' => $env['name'],
+                'url' => $env['url'],
+                'root' => $root,
+                'current_release' => $currentId,
+                'releases' => $releases,
+                'last_release' => reset($releases),
+            ];
+        }
+        echo json_encode(['success' => true, 'releases' => $out], JSON_PRETTY_PRINT);
+        break;
+
     case 'jobs':
         echo json_encode(['success' => true, 'jobs' => getRecentJobs(30)]);
         break;
@@ -272,11 +315,12 @@ switch ($action) {
         $jobId = generateJobId();
         $logFile = "/home/dashboard/public_html/logs/cicd/{$jobId}.log";
         
-        $script = "/home/beta/public_html/deploy.sh";
+        $script = "/home/dashboard/public_html/scripts/deployment/deploy.sh";
+        $envPath = $config['path'] ?? '';
         if ($type === 'full') {
-            $cmd = "bash {$script} {$env} build 2>&1";
+            $cmd = "bash {$script} {$env} 2>&1";
         } elseif ($type === 'quick') {
-            $cmd = "bash {$script} {$env} build --quick 2>&1";
+            $cmd = "bash {$script} {$env} --quick 2>&1";
         } elseif ($type === 'flush') {
             $cmd = "bash {$script} {$env} flush 2>&1";
         } elseif ($type === 'static-only') {

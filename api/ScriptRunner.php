@@ -32,6 +32,20 @@ class ScriptRunner {
             'emergency_throttle'=> 'optimization/emergency_cpu_throttle.sh',
             'queue_optimize'    => 'maintenance/queue_optimize.sh',
             'master_cleanup'    => 'maintenance/master_cleanup.sh',
+            // Deployment scripts
+            'deploy_dev'        => 'deployment/deploy.sh',
+            'deploy_beta'       => 'deployment/deploy.sh',
+            'deploy_prod'       => 'deployment/deploy.sh',
+            'deploy_tsdnd'      => 'deployment/deploy.sh',
+            'deploy_pim'        => 'deployment/deploy.sh',
+            'deploy_dashboard'  => 'deployment/deploy.sh',
+            'deploy_env'        => 'deployment/deploy-env.sh',
+            // Build scripts
+            'build_all'         => 'build/build-all.sh',
+            'build_dashboard'   => 'build/build-dashboard.sh',
+            // Verification
+            'verify_deployment' => 'deployment/verify_deployment.sh',
+            'health_check'      => 'deployment/health-check.sh',
         ];
     }
 

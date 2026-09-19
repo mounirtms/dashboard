@@ -2,13 +2,32 @@
 export PATH="/usr/local/bin:/usr/bin:/bin:/opt/cpanel/ea-php82/root/usr/bin:/usr/sbin:/sbin:/usr/local/sbin:$SITE_PATH"
 
 # ═══════════════════════════════════════════════════════════════════════
-# Production Deployment Script
+# Multi-Environment Deployment Script
 # Deploys code changes, runs migrations, rebuilds, and verifies
-# Usage: bash /home/dashboard/public_html/scripts/deployment/deploy.sh
-#        bash deploy.sh prod|beta|dev|pim|dashboard
+# Usage: bash deploy.sh <env> [options]
+#   env: prod|beta|dev|pim|dashboard
+#   options: --quick  (skip heavy steps: composer, DI compile details)
+#            flush    (only flush cache, no deploy)
+#            build    (build only, no deploy to other envs)
 # ═══════════════════════════════════════════════════════════════════════
 
+set -e
+
 ENV="${1:-prod}"
+shift || true
+
+# ── Memory-safe settings ───────────────────────────────────────────────
+# The "Application code generator" (setup:di:compile) and Composer can
+# fail with mmap() errors on memory-constrained CI runners. On the server
+# (31GB RAM) these are not an issue, but we set sane defaults anyway.
+export MALLOC_ARENA_MAX="${MALLOC_ARENA_MAX:-2}"
+export COMPOSER_MEMORY_LIMIT="${COMPOSER_MEMORY_LIMIT:--1}"
+export PHP_CLI_MEMORY_LIMIT="${PHP_CLI_MEMORY_LIMIT:-4G}"
+export MAGENTO_CUSTOM_MEMORY_LIMIT="${MAGENTO_CUSTOM_MEMORY_LIMIT:-2G}"
+
+PHP="${PHP_BIN[$ENV]:-/opt/cpanel/ea-php82/root/usr/bin/php}"
+PHP_BUILD_CMD="$PHP -d memory_limit=$MAGENTO_CUSTOM_MEMORY_LIMIT"
+
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG="/home/dashboard/public_html/logs/deploy_${ENV}_${TIMESTAMP}.log"
 
@@ -36,8 +55,21 @@ declare -A SITE_USERS=(
 )
 
 SITE_PATH="${SITES[$ENV]}"
-PHP="${PHP_BIN[$ENV]}"
 USER="${SITE_USERS[$ENV]}"
+
+# ── Parse options ─────────────────────────────────────────────────────
+QUICK=false
+FLUSH_ONLY=false
+BUILD_ONLY=false
+ARGS=("$@")
+
+for arg in "${ARGS[@]}"; do
+    case "$arg" in
+        --quick) QUICK=true ;;
+        flush)   FLUSH_ONLY=true ;;
+        build)   BUILD_ONLY=true ;;
+    esac
+done
 
 if [ -z "$SITE_PATH" ]; then
     echo "Unknown environment: $ENV. Use: prod, beta, dev, pim, dashboard"
@@ -47,57 +79,102 @@ fi
 log() { echo "[$(date '+%H:%M:%S')] $1" | tee -a "$LOG"; }
 
 log "=========================================="
-log "  DEPLOYMENT: $ENV"
-log "  Path: $SITE_PATH"
+log "  DEPLOYMENT: $ENV to $SITE_PATH"
+[ "$QUICK" = true ] && log "  Mode: quick (lightweight)"
+[ "$FLUSH_ONLY" = true ] && log "  Mode: flush only"
+[ "$BUILD_ONLY" = true ] && log "  Mode: build only"
 log "=========================================="
+
+# ── Handle special modes ──────────────────────────────────────────────────────────────────
+if [ "$FLUSH_ONLY" = true ]; then
+    log "[FLUSH] Flushing cache only (no deployment steps)..."
+    cd "$SITE_PATH" && $PHP_BUILD_CMD bin/magento cache:flush 2>&1 | tee -a "$LOG"
+    cd "$SITE_PATH" && $PHP bin/magento maintenance:disable 2>&1 | tee -a "$LOG" || true
+    log "=========================================="
+    log "  CACHE FLUSHED: $ENV"
+    log "=========================================="
+    exit 0
+fi
 
 # ── Step 1: Backup ──
 log "[1/8] Creating backup..."
-BACKUP_DIR="/home/${USER}/backups/deploy_${TIMESTAMP}"
-mkdir -p "$BACKUP_DIR"
-if [ -d "$SITE_PATH/var" ]; then
-    tar czf "$BACKUP_DIR/var_backup.tar.gz" -C "$SITE_PATH" var/ 2>/dev/null || true
+if [ "$QUICK" = true ] || [ "$BUILD_ONLY" = true ]; then
+    log "  Skipped (quick/build mode)"
+else
+    BACKUP_DIR="/home/${USER}/backups/deploy_${TIMESTAMP}"
+    mkdir -p "$BACKUP_DIR"
+    if [ -d "$SITE_PATH/var" ]; then
+        tar czf "$BACKUP_DIR/var_backup.tar.gz" -C "$SITE_PATH" var/ 2>/dev/null || true
+    fi
+    if [ -d "$SITE_PATH/pub/media" ]; then
+        tar czf "$BACKUP_DIR/media_backup.tar.gz" -C "$SITE_PATH" pub/media/ 2>/dev/null || true
+    fi
+    log "  Backup: $BACKUP_DIR"
 fi
-if [ -d "$SITE_PATH/pub/media" ]; then
-    tar czf "$BACKUP_DIR/media_backup.tar.gz" -C "$SITE_PATH" pub/media/ 2>/dev/null || true
-fi
-log "  Backup: $BACKUP_DIR"
 
 # ── Step 2: Maintenance mode ──
 log "[2/8] Enabling maintenance mode..."
-cd "$SITE_PATH" && $PHP bin/magento maintenance:enable 2>/dev/null || true
+cd "$SITE_PATH" && $PHP bin/magento maintenance:enable 2>/dev/null || log "  Maintenance mode skipped (may already be enabled)"
 
 # ── Step 3: Pull latest code (if git repo) ──
-if [ -d "$SITE_PATH/.git" ]; then
+if [ "$BUILD_ONLY" = true ]; then
+    log "[3/8] Skipped (build only mode)"
+elif [ -d "$SITE_PATH/.git" ]; then
     log "[3/8] Pulling latest code..."
     cd "$SITE_PATH" && git pull origin $(git branch --show-current) 2>&1 | tee -a "$LOG" || log "  Git pull skipped"
 else
     log "[3/8] Not a git repo — skipping code pull"
 fi
 
-# ── Step 4: Composer install ──
-if [ -f "$SITE_PATH/composer.json" ]; then
-    log "[4/8] Running composer install..."
-    cd "$SITE_PATH" && composer install --no-dev --no-interaction 2>&1 | tail -5 | tee -a "$LOG" || log "  Composer skipped"
+# ── Step 4: Composer install (conditional) ──
+if [ "$BUILD_ONLY" = true ] || [ "$QUICK" = true ]; then
+    log "[4/8] Skipped (quick/build mode)"
+elif [ -f "$SITE_PATH/composer.json" ]; then
+    LOCK_HASH=$(md5sum "$SITE_PATH/composer.lock" "$SITE_PATH/composer.json" 2>/dev/null | md5sum | awk '{print $1}')
+    if [ -d "$SITE_PATH/vendor" ] && [ -f "$SITE_PATH/vendor/.composer_lock_hash" ] && [ "$(cat "$SITE_PATH/vendor/.composer_lock_hash" 2>/dev/null)" = "$LOCK_HASH" ] && [ -f "$SITE_PATH/vendor/autoload.php" ]; then
+        log "[4/8] Composer lock unchanged ($LOCK_HASH) — skipping composer install"
+    else
+        log "[4/8] Dependencies changed or vendor missing — Running composer install..."
+        cd "$SITE_PATH" && $PHP_BUILD_CMD -d memory_limit=-1 composer install --no-dev --no-interaction 2>&1 | tail -5 | tee -a "$LOG" || log "  Composer skipped"
+        echo "$LOCK_HASH" > "$SITE_PATH/vendor/.composer_lock_hash" 2>/dev/null || true
+    fi
 fi
 
 # ── Step 5: Database upgrades ──
-log "[5/8] Running database upgrades..."
-cd "$SITE_PATH" && $PHP bin/magento setup:upgrade 2>&1 | tail -10 | tee -a "$LOG" || log "  Setup upgrade skipped"
+if [ "$BUILD_ONLY" = true ] || [ "$QUICK" = true ]; then
+    log "[5/8] Skipped (quick/build mode)"
+else
+    log "[5/8] Running database upgrades..."
+    cd "$SITE_PATH" && $PHP_BUILD_CMD bin/magento setup:upgrade 2>&1 | tail -10 | tee -a "$LOG" || log "  Setup upgrade skipped"
+fi
 
 # ── Step 6: Compile & deploy static content ──
-log "[6/8] Compiling and deploying static content..."
-cd "$SITE_PATH" && $PHP bin/magento setup:di:compile 2>&1 | tail -5 | tee -a "$LOG" || log "  DI compile skipped"
-cd "$SITE_PATH" && $PHP bin/magento setup:static-content:deploy -f 2>&1 | tail -5 | tee -a "$LOG" || log "  Static deploy skipped"
+if [ "$BUILD_ONLY" = true ]; then
+    log "[6/8] Building (compile + static deploy)..."
+elif [ "$QUICK" = true ]; then
+    log "[6/8] Skipped (quick mode)"
+else
+    log "[6/8] Compiling and deploying static content..."
+fi
+# Always attempt DI compile (memory-safe) — this is the "Application code generator"
+if [ "$QUICK" = false ]; then
+    cd "$SITE_PATH" && export MALLOC_ARENA_MAX=2 && $PHP_BUILD_CMD bin/magento setup:di:compile 2>&1 | tail -5 | tee -a "$LOG" || log "  DI compile failed (check memory)"
+fi
+# Static content deployment — use SCOUT_DISABLE=1 to reduce memory for product/category pages
+cd "$SITE_PATH" && export MALLOC_ARENA_MAX=2 && export SCOUT_DISABLE=1 && $PHP_BUILD_CMD bin/magento setup:static-content:deploy -f 2>&1 | tail -5 | tee -a "$LOG" || log "  Static deploy skipped"
 
 # ── Step 7: Reindex ──
-log "[7/8] Reindexing..."
-cd "$SITE_PATH" && $PHP bin/magento indexer:reindex 2>&1 | tail -10 | tee -a "$LOG" || log "  Reindex skipped"
+if [ "$BUILD_ONLY" = true ] || [ "$QUICK" = true ]; then
+    log "[7/8] Skipped (quick/build mode)"
+else
+    log "[7/8] Reindexing..."
+    cd "$SITE_PATH" && $PHP_BUILD_CMD bin/magento indexer:reindex 2>&1 | tail -10 | tee -a "$LOG" || log "  Reindex skipped"
+fi
 
 # ── Step 8: Disable maintenance & flush cache ──
 log "[8/8] Flushing cache and disabling maintenance..."
 cd "$SITE_PATH" && $PHP bin/magento cache:flush 2>&1 | tee -a "$LOG"
-cd "$SITE_PATH" && $PHP bin/magento maintenance:disable 2>&1 | tee -a "$LOG"
+cd "$SITE_PATH" && $PHP bin/magento maintenance:disable 2>&1 | tee -a "$LOG" || true
 
 # ── Fix permissions ──
 log "Fixing permissions..."
