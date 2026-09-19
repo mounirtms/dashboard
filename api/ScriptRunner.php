@@ -65,13 +65,48 @@ class ScriptRunner {
             throw new Exception("Unauthorized or unknown script: $scriptKey");
         }
 
-        $scriptPath = $this->scriptsDir . '/' . $allowed[$scriptKey];
+                $scriptPath = $this->scriptsDir . '/' . $allowed[$scriptKey];
         if (!file_exists($scriptPath)) {
             throw new Exception("Script file not found: " . $allowed[$scriptKey]);
         }
 
+        // Determine category from script key (mirrors mapping in scripts.php)
+        $categoryMap = [
+            'monitoring'   => ['system_monitor', 'cpu_monitor', 'queue_monitor'],
+            'optimization' => ['cpu_optimize', 'emergency_throttle', 'queue_optimize'],
+            'maintenance'  => ['master_cleanup'],
+            'deployment'   => ['deploy_dev', 'deploy_beta', 'deploy_prod', 'deploy_tsdnd', 'deploy_pim', 'deploy_dashboard', 'deploy_env'],
+            'build'        => ['build_all', 'build_dashboard'],
+            'verification' => ['verify_deployment', 'health_check'],
+        ];
+        $scriptCategory = 'other';
+        foreach ($categoryMap as $cat => $keys) {
+            if (in_array($scriptKey, $keys, true)) {
+                $scriptCategory = $cat;
+                break;
+            }
+        }
+
+        // For deploy_* scripts, the environment is encoded in the key
+        // (e.g. deploy_dev → deploy.sh dev <args>)
+        $deployEnvMap = [
+            'deploy_dev'      => 'dev',
+            'deploy_beta'     => 'beta',
+            'deploy_prod'     => 'prod',
+            'deploy_tsdnd'    => 'tsdnd',
+            'deploy_pim'      => 'pim',
+            'deploy_dashboard'=> 'dashboard',
+        ];
+        $envArg = '';
+        if (isset($deployEnvMap[$scriptKey])) {
+            $envArg = $deployEnvMap[$scriptKey];
+        }
+
         // Sanitize arguments to prevent injection
         $escapedArgs = array_map('escapeshellarg', $args);
+        if ($envArg !== '') {
+            array_unshift($escapedArgs, escapeshellarg($envArg));
+        }
         $commandStr  = 'bash ' . escapeshellarg($scriptPath) . ' ' . implode(' ', $escapedArgs);
 
         // Get human-readable script name from key
@@ -79,10 +114,10 @@ class ScriptRunner {
 
         // Record execution start — store both script_id (key) and script_name (human label)
         $stmt = $this->pdo->prepare(
-            "INSERT INTO script_executions (script_id, script_name, executed_by, status, started_at)
-             VALUES (?, ?, 'running', NOW())"
+                        "INSERT INTO script_executions (script_id, script_name, category, executed_by, status, started_at)
+             VALUES (?, ?, ?, ?, 'running', NOW())"
         );
-        $stmt->execute([$scriptKey, $scriptName, $userId]);
+        $stmt->execute([$scriptKey, $scriptName, $scriptCategory, $userId]);
         $executionId = $this->pdo->lastInsertId();
 
         $descriptorspec = [
@@ -176,8 +211,8 @@ class ScriptRunner {
     }
 
     public function getLogs($limit = 50) {
-        $stmt = $this->pdo->prepare(
-            "SELECT id, script_id, script_name, status, exit_code, output,
+                $stmt = $this->pdo->prepare(
+            "SELECT id, script_id, script_name, category, status, exit_code, output,
                     started_at, finished_at, duration_ms, executed_by
              FROM script_executions
              ORDER BY id DESC

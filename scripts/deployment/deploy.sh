@@ -25,13 +25,7 @@ export COMPOSER_MEMORY_LIMIT="${COMPOSER_MEMORY_LIMIT:--1}"
 export PHP_CLI_MEMORY_LIMIT="${PHP_CLI_MEMORY_LIMIT:-4G}"
 export MAGENTO_CUSTOM_MEMORY_LIMIT="${MAGENTO_CUSTOM_MEMORY_LIMIT:-2G}"
 
-PHP="${PHP_BIN[$ENV]:-/opt/cpanel/ea-php82/root/usr/bin/php}"
-PHP_BUILD_CMD="$PHP -d memory_limit=$MAGENTO_CUSTOM_MEMORY_LIMIT"
-
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-LOG="/home/dashboard/public_html/logs/deploy_${ENV}_${TIMESTAMP}.log"
-
-# Site paths
+# Site paths (declared before PHP assignment below)
 declare -A SITES=(
     [prod]="/home/technadminy7/public_html"
     [beta]="/home/beta/public_html"
@@ -54,6 +48,12 @@ declare -A SITE_USERS=(
     [dashboard]="dashboard"
 )
 
+PHP="${PHP_BIN[$ENV]:-/opt/cpanel/ea-php82/root/usr/bin/php}"
+PHP_BUILD_CMD="$PHP -d memory_limit=$MAGENTO_CUSTOM_MEMORY_LIMIT"
+
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+LOG="/home/dashboard/public_html/logs/deploy_${ENV}_${TIMESTAMP}.log"
+
 SITE_PATH="${SITES[$ENV]}"
 USER="${SITE_USERS[$ENV]}"
 
@@ -61,13 +61,15 @@ USER="${SITE_USERS[$ENV]}"
 QUICK=false
 FLUSH_ONLY=false
 BUILD_ONLY=false
+DRY_RUN=false
 ARGS=("$@")
 
 for arg in "${ARGS[@]}"; do
     case "$arg" in
-        --quick) QUICK=true ;;
-        flush)   FLUSH_ONLY=true ;;
-        build)   BUILD_ONLY=true ;;
+        --quick)         QUICK=true ;;
+        --flush|flush)   FLUSH_ONLY=true ;;
+        --build|build)   BUILD_ONLY=true ;;
+        --dry-run|--dry) DRY_RUN=true ;;
     esac
 done
 
@@ -83,7 +85,44 @@ log "  DEPLOYMENT: $ENV to $SITE_PATH"
 [ "$QUICK" = true ] && log "  Mode: quick (lightweight)"
 [ "$FLUSH_ONLY" = true ] && log "  Mode: flush only"
 [ "$BUILD_ONLY" = true ] && log "  Mode: build only"
+[ "$DRY_RUN" = true ] && log "  Mode: DRY RUN (no actual changes)"
 log "=========================================="
+
+# ── Dry run: just validate and exit ─────────────────────────────────────
+if [ "$DRY_RUN" = true ]; then
+    log "[DRY-RUN] Environment: $ENV"
+    log "[DRY-RUN] Site path: $SITE_PATH"
+    log "[DRY-RUN] PHP binary: $PHP"
+    log "[DRY-RUN] Would run deployment steps here"
+    log "[DRY-RUN] Deployment steps that would be executed:"
+    if [ "$QUICK" = true ]; then
+        log "  - [SKIPPED] Backup (quick mode)"
+        log "  - [SKIPPED] Git pull (quick mode)"
+        log "  - [SKIPPED] Composer install (quick mode)"
+    else
+        log "  - Backup var/ and pub/media/"
+        log "  - Enable maintenance mode"
+        log "  - Git pull origin"
+        log "  - Composer install --no-dev"
+        log "  - bin/magento setup:upgrade"
+    fi
+    if [ "$QUICK" = false ]; then
+        log "  - bin/magento setup:di:compile (MALLOC_ARENA_MAX=2, SCOUT_DISABLE=1)"
+    fi
+    log "  - bin/magento setup:static-content:deploy -f (MALLOC_ARENA_MAX=2, SCOUT_DISABLE=1)"
+    if [ "$BUILD_ONLY" = true ]; then
+        log "  - [SKIPPED] Git pull, composer, setup:upgrade, reindex (build only)"
+    fi
+    log "  - bin/magento cache:flush"
+    log "  - Disable maintenance mode"
+    log "  - Fix permissions (chown/chmod)"
+    log "[DRY-RUN] Skipping actual deployment."
+    log "=========================================="
+    log "  DRY RUN COMPLETE: $ENV"
+    log "  No changes were made."
+    log "=========================================="
+exit 0
+fi
 
 # ── Handle special modes ──────────────────────────────────────────────────────────────────
 if [ "$FLUSH_ONLY" = true ]; then
