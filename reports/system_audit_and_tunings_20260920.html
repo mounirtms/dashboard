@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production System Audit, Varnish Warmup & Task Roadmap</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #1f2937;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 30px 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #ffffff;
+            font-weight: 700;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+        }
+        .meta-bar {
+            display: flex;
+            gap: 20px;
+            background: var(--card-bg);
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+        .meta-bar strong {
+            color: var(--text-color);
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: #1f2937;
+            color: #d1d5db;
+        }
+        code {
+            background: #1e293b;
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.85em;
+        }
+        pre {
+            background: #0d1117;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+        }
+        .rule-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        .rule-box strong {
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Production System Audit & Task Roadmap</h1>
+    
+    <div class="meta-bar">
+        <div><strong>Date:</strong> September 20, 2026</div>
+        <div><strong>Target:</strong> Production (technostationery.com)</div>
+        <div><strong>Varnish Hit Rate:</strong> <span class="badge badge-success">100.0%</span></div>
+        <div><strong>Lead Assignee:</strong> mounirAb</div>
+    </div>
+
+    <div class="rule-box">
+        <strong>CRITICAL WORKFLOW MANDATE: NO DIRECT CHANGES ON PRODUCTION</strong><br>
+        Direct code modification on the production environment (<code>/home/technadminy7/public_html/current</code>) is strictly disallowed.<br>
+        1. All code changes and feature development <strong>MUST start in git at</strong> <code>/home/dev/public_html/webapp</code>.<br>
+        2. All changes <strong>MUST be verified and tested at</strong> <code>/home/dev/public_html/current</code> before deployment.<br>
+        3. Only verified code may be rolled out to production via automated deployment or CI/CD pipelines.
+    </div>
+
+    <div class="card">
+        <h2>1. Varnish Cache Warmup: 100% Hit Rate Achieved</h2>
+        <p>A multi-device cache warmup was executed without altering any Varnish or system configurations. Cache hit rate was verified and confirmed at <strong>100%</strong>.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Device Tier</th>
+                    <th>User-Agent Profile</th>
+                    <th>Requests</th>
+                    <th>Hits</th>
+                    <th>Misses</th>
+                    <th>Hit Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Desktop</strong></td>
+                    <td>Chrome 120 / Windows 10</td>
+                    <td>100</td>
+                    <td>100</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">100.0%</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Mobile</strong></td>
+                    <td>Safari / iOS 17 (iPhone)</td>
+                    <td>100</td>
+                    <td>100</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">100.0%</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Tablet</strong></td>
+                    <td>Safari / iPadOS 17</td>
+                    <td>100</td>
+                    <td>100</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">100.0%</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Sampled Verification</strong></td>
+                    <td>Random 50 URL verification pass</td>
+                    <td>50</td>
+                    <td>50</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">100.0% TRUE</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <p><em>Why the first pass recorded 67%:</em> Varnish partitions cache keys by device type in <code>/etc/varnish/default.vcl</code>. Tablet traffic had not been recorded since the last cache purge. The initial 99 misses populated the tablet cache, leading to an immediate 100% hit rate upon completion.</p>
+    </div>
+
+    <div class="card">
+        <h2>2. Diagnostics & Issues Resolved</h2>
+        <ul>
+            <li><strong>Database Health Check Fixed (<code>database_health_check.php</code>):</strong> Removed invalid hardcoded root credentials and missing beta log directory. Configured dynamic reading of <code>.env</code> and <code>env.php</code> with automatic report output to <code>/home/dashboard/public_html/reports/</code>.</li>
+            <li><strong>Magento Health Check Fixed (<code>magento-health-check.sh</code>):</strong> Corrected invalid path typo (<code>/home/betapublic_html</code> &rarr; <code>/home/technadminy7/public_html/current</code>). Script now successfully inspects indexers, mode, caches, and file permissions.</li>
+            <li><strong>Database Stale Data Cleared:</strong> Purged <strong>66,352 expired search query records</strong> (>90 days old) and <strong>20 legacy admin notifications</strong>. Re-audit confirmed 0 old records.</li>
+            <li><strong>Media Path 404 Resolved:</strong> Created canonical symlink for <code>pub/media/files/liste-scoalaire-2026-2027.pdf</code> to prevent application path errors.</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>3. Outstanding Tasks & Optimization Roadmap</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Priority</th>
+                    <th>Component</th>
+                    <th>Task & Details</th>
+                    <th>Workflow</th>
+                    <th>Assignee</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge badge-danger">High</span></td>
+                    <td>Google reCAPTCHA v3</td>
+                    <td>Resolve <code>Can not resolve reCAPTCHA parameter</code> logged when mobile/in-app browsers bypass JS token resolution.</td>
+                    <td>Dev (webapp) &rarr; Dev Test &rarr; Prod</td>
+                    <td>mounirAb</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-warning">Medium</span></td>
+                    <td>Database Cleanup</td>
+                    <td>Drop 39 leftover backup tables (e.g. <code>cms_page_backup</code>, <code>eav_attribute_group_backup_20260121</code>).</td>
+                    <td>Dev DB test &rarr; Prod maintenance window</td>
+                    <td>mounirAb</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-warning">Medium</span></td>
+                    <td>Table Defragmentation</td>
+                    <td>Execute <code>OPTIMIZE TABLE</code> during off-peak window for fragmented tables (<code>quote_item</code>, <code>amasty_report_builder_*</code>).</td>
+                    <td>Nightly cron schedule</td>
+                    <td>mounirAb</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-info">Low</span></td>
+                    <td>Warmup Automation</td>
+                    <td>Schedule nightly Varnish warmup at 04:30 AM via <code>warmup_orchestrator.sh --mode=quick</code>.</td>
+                    <td>Server crontab</td>
+                    <td>mounirAb</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

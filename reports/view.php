@@ -14,6 +14,8 @@ $allowed = [
     'MARIADB_LOAD_FIX_SUMMARY.md',
     'OPENCODE_UPDATE_SUMMARY.md',
     'gift_card_status_report.md',
+    'system_audit_and_tunings_20260920.html',
+    'system_audit_and_tunings_20260920.md',
 ];
 
 if (!in_array($file, $allowed, true)) {

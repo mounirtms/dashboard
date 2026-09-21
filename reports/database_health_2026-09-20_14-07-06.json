@@ -1,0 +1,32 @@
+{
+    "production": {
+        "database": "Production",
+        "timestamp": "2026-09-20 14:07:00",
+        "issues": [
+            "High fragmentation: 470.00 MB",
+            "Table amasty_audit_log_details has 10.47% fragmentation",
+            "Table amasty_report_builder_eav_index_int has 16.40% fragmentation",
+            "Table amasty_report_builder_eav_index_int_replica has 17.35% fragmentation",
+            "Table url_rewrite has 12.44% fragmentation",
+            "Table quote_item has 21.47% fragmentation",
+            "Table quote_item_option has 22.19% fragmentation",
+            "Table catalog_product_entity_varchar has 14.25% fragmentation",
+            "Table mageworx_order_editor_webhook_queue has 22.94% fragmentation",
+            "Table amasty_quote has 15.05% fragmentation",
+            "Old search queries: 66346 records",
+            "Old admin notifications: 20 records",
+            "39 tables without primary keys"
+        ],
+        "optimizations": [],
+        "stats": {
+            "total_size_mb": "1558.11",
+            "free_space_mb": "470.00",
+            "large_tables": 15,
+            "connections_used": "5",
+            "connections_max": "200",
+            "connections_percent": 2.5,
+            "tables_without_pk": 39,
+            "innodb_history_length": "0"
+        }
+    }
+}
