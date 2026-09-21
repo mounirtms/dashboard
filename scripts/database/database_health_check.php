@@ -40,25 +40,70 @@ foreach ($args as $arg) {
     }
 }
 
+// Load environment variables from /home/dashboard/public_html/.env if available
+$envFile = '/home/dashboard/public_html/.env';
+$dbHost = '127.0.0.1';
+$dbPort = '3307';
+$dbUser = 'root';
+$dbPass = '';
+$dbProd = 'technadminy7_dBT8x12y22';
+$dbBeta = 'beta_dBT8x12y22';
+
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $val) = explode('=', $line, 2);
+            $key = trim($key);
+            $val = trim($val, " \t\n\r\0\x0B\"'");
+            if ($key === 'DB_HOST') $dbHost = $val;
+            if ($key === 'DB_PORT') $dbPort = $val;
+            if ($key === 'DB_USER') $dbUser = $val;
+            if ($key === 'DB_PASS') $dbPass = $val;
+            if ($key === 'DB_PROD') $dbProd = $val;
+            if ($key === 'DB_BETA') $dbBeta = $val;
+        }
+    }
+}
+
+// Fallback to Magento env.php if .env pass is empty
+if (empty($dbPass)) {
+    $magentoEnv = '/home/technadminy7/public_html/current/app/etc/env.php';
+    if (file_exists($magentoEnv)) {
+        $mEnv = include $magentoEnv;
+        if (!empty($mEnv['db']['connection']['default'])) {
+            $def = $mEnv['db']['connection']['default'];
+            $dbUser = $def['username'] ?? $dbUser;
+            $dbPass = $def['password'] ?? $dbPass;
+            $dbProd = $def['dbname'] ?? $dbProd;
+        }
+    }
+}
+
 // Database configurations
 $databases = [
     'production' => [
-        'host' => '127.0.0.1',
-        'port' => '3307',
-        'user' => 'root',
-        'pass' => 'YourNewStrongPassword',
-        'name' => 'technadminy7_dBT8x12y22',
+        'host' => $dbHost,
+        'port' => $dbPort,
+        'user' => $dbUser,
+        'pass' => $dbPass,
+        'name' => $dbProd,
         'label' => 'Production'
-    ],
-    'beta' => [
-        'host' => '127.0.0.1',
-        'port' => '3307',
-        'user' => 'root',
-        'pass' => 'YourNewStrongPassword',
-        'name' => 'beta_dBT8x12y22',
-        'label' => 'Beta'
     ]
 ];
+
+// If checking beta
+if (!empty($dbBeta)) {
+    $databases['beta'] = [
+        'host' => $dbHost,
+        'port' => $dbPort,
+        'user' => $dbUser,
+        'pass' => $dbPass,
+        'name' => $dbBeta,
+        'label' => 'Beta'
+    ];
+}
 
 // Determine which databases to check
 $databasesToCheck = [];
@@ -583,7 +628,11 @@ if ($applyFix) {
 }
 
 // Generate JSON report
-$reportFile = '/home/beta/public_html/var/log/database_health_' . date('Y-m-d_H-i-s') . '.json';
+$reportDir = '/home/dashboard/public_html/reports';
+if (!is_dir($reportDir)) {
+    @mkdir($reportDir, 0755, true);
+}
+$reportFile = $reportDir . '/database_health_' . date('Y-m-d_H-i-s') . '.json';
 file_put_contents($reportFile, json_encode($overallReport, JSON_PRETTY_PRINT));
 printInfo("\nDetailed JSON report saved to: {$reportFile}");
 

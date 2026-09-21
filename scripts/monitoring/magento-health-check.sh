@@ -7,7 +7,8 @@ echo "Magento Production Health Check"
 echo "========================================="
 echo ""
 
-cd /home/betapublic_html
+MAGENTO_ROOT="/home/technadminy7/public_html/current"
+cd "$MAGENTO_ROOT" || exit 1
 
 echo "1. Magento Version:"
 php bin/magento --version
@@ -54,7 +55,7 @@ tail -10 var/log/exception.log 2>/dev/null | grep -i "CRITICAL\|ERROR" || echo "
 echo ""
 
 echo "11. Disk Space:"
-df -h /home/betapublic_html | tail -1
+df -h "$MAGENTO_ROOT" | tail -1
 echo ""
 
 echo "12. File Permissions:"
