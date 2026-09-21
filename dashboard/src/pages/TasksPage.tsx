@@ -1,7 +1,7 @@
-import { Box, Typography, Card, CardContent, Button, Chip, IconButton, Tooltip, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, InputLabel, Menu, Avatar, Checkbox, Slide } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Chip, IconButton, Tooltip, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, InputLabel, Menu, Avatar, Checkbox, Slide, Popover, FormGroup, FormControlLabel, Divider } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { Add, Edit, Delete, CheckCircle, Refresh, FilterList, MoreVert, Notes, Download, Person, LinkOff, Schedule } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { Add, Edit, Delete, CheckCircle, Refresh, FilterList, MoreVert, Notes, Download, Person, LinkOff, Schedule, ViewColumn, DensityMedium, DensitySmall, DensityLarge, FormatListBulleted } from '@mui/icons-material';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchTasks, createTask, updateTask, deleteTask, fetchTaskStats, fetchTaskNotesCount, bulkUpdate, type Task, type TaskStats, getTaskStatusColor, getTaskPriorityColor, TASK_CATEGORIES, TASK_STATUSES, TASK_PRIORITIES, type TaskFilters } from '../api/tasks';
 import { fetchUsers, type User } from '../api/users';
@@ -30,12 +30,41 @@ export default function TasksPage() {
   const [filterAssignee, setFilterAssignee] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('');
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
-  const [myTasksOnly, setMyTasksOnly] = useState(true);
+  const [myTasksOnly, setMyTasksOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [bulkActionMenu, setBulkActionMenu] = useState<null | HTMLElement>(null);
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [moreAnchor, setMoreAnchor] = useState<null | HTMLElement>(null);
-  const [formData, setFormData] = useState({ title: '', description: '', priority: 'medium' as any, status: 'pending' as any, assigned_to: '', due_date: '', category: 'general' });
+  const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
+  const [density, setDensity] = useState<'compact' | 'standard' | 'comfortable'>('standard');
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('tasks_column_visibility_v2');
+    if (saved) {
+      try { return JSON.parse(saved); } catch {}
+    }
+    return {
+      id: true,
+      title: true,
+      description: false,
+      priority: true,
+      status: true,
+      category: true,
+      assigned_to: true,
+      notes: true,
+      due_date: true,
+      actions: true,
+    };
+  });
+
+  const toggleColumn = (field: string) => {
+    setColumnVisibility(prev => {
+      const next = { ...prev, [field]: !prev[field] };
+      localStorage.setItem('tasks_column_visibility_v2', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const [formData, setFormData] = useState({ title: '', description: '', priority: 'medium' as any, status: 'pending' as any, assigned_to: 'mounirAb', due_date: '', category: 'general' });
   const [pagination, setPagination] = useState({ page: 1, perPage: 25, total: 0, totalPages: 0 });
   const [deleteTaskDialog, setDeleteTaskDialog] = useState<{ open: boolean; id?: number }>({ open: false });
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -76,7 +105,7 @@ export default function TasksPage() {
 
   const openCreate = () => {
     setEditingTask(null);
-    setFormData({ title: '', description: '', priority: 'medium', status: 'pending', assigned_to: '', due_date: '', category: 'general' });
+    setFormData({ title: '', description: '', priority: 'medium', status: 'pending', assigned_to: 'mounirAb', due_date: '', category: 'general' });
     setDialogOpen(true);
   };
 
@@ -201,64 +230,289 @@ export default function TasksPage() {
     return days;
   };
 
-  const columns: GridColDef[] = [
-    { field: 'title', headerName: 'Task', flex: 1.5, renderCell: (p: GridRenderCellParams) => (
-      <Typography variant="body2" sx={{ fontWeight: 600, cursor: 'pointer', '&:hover': { color: 'primary.main' } }} onClick={() => navigate(`/tasks/${p.row.id}`)}>{p.value}</Typography>
-    )},
-    { field: 'priority', headerName: 'Priority', width: 100, renderCell: (p: GridRenderCellParams) => <Chip label={p.value.toUpperCase()} size="small" color={getTaskPriorityColor(p.value)} sx={{ fontWeight: 700, fontSize: '0.6rem' }} /> },
-    { field: 'status', headerName: 'Status', width: 120, renderCell: (p: GridRenderCellParams) => <StatusBadge label={p.value.toUpperCase().replace('-', ' ')} color={getTaskStatusColor(p.value)} /> },
-    { field: 'assigned_to', headerName: 'Assigned', width: 120, renderCell: (p: GridRenderCellParams) => (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        {p.value ? <Avatar sx={{ width: 20, height: 20, fontSize: '0.6rem', bgcolor: 'primary.main' }}>{p.value.charAt(0).toUpperCase()}</Avatar> : null}
-        <Typography variant="caption">{p.value || '—'}</Typography>
-      </Box>
-    )},
-    { field: 'notes', headerName: 'Notes', width: 70, align: 'center', renderCell: (p: GridRenderCellParams) => {
-      const count = notesCount[p.row.id] || 0;
-      return count > 0 ? (
-        <Tooltip title={`${count} note${count > 1 ? 's' : ''}`}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, cursor: 'pointer' }} onClick={() => navigate(`/tasks/${p.row.id}?tab=notes`)}>
-            <Notes sx={{ fontSize: 14, color: 'text.secondary' }} />
-            <Typography variant="caption" sx={{ fontWeight: 600 }}>{count}</Typography>
-          </Box>
-        </Tooltip>
-      ) : <Typography variant="caption" sx={{ color: 'text.disabled' }}>—</Typography>;
-    }},
-    { field: 'due_date', headerName: 'Due', width: 110, renderCell: (p: GridRenderCellParams) => {
-      const urgency = dueDateUrgency(p.row);
-      const overdue = isOverdue(p.row);
-      return (
-        <Tooltip title={urgency?.label || (p.value ? new Date(p.value).toLocaleDateString() : 'No due date')}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            {p.value ? (
-              <>
-                <Typography variant="caption" sx={{ color: overdue ? 'error.main' : urgency ? 'warning.main' : 'inherit' }}>
-                  {new Date(p.value).toLocaleDateString()}
-                </Typography>
-                {overdue && <Chip label="Overdue" size="small" color="error" sx={{ height: 16, fontSize: '0.55rem', fontWeight: 700 }} />}
-              </>
-            ) : (
-              <Typography variant="caption" sx={{ color: 'text.disabled' }}>—</Typography>
+  const getCategoryStyle = (cat: string) => {
+    switch (cat?.toLowerCase()) {
+      case 'optimization':
+        return { bgcolor: 'rgba(6, 182, 212, 0.15)', color: '#22d3ee', border: '1px solid rgba(6, 182, 212, 0.3)' };
+      case 'bugfix':
+        return { bgcolor: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)' };
+      case 'database':
+        return { bgcolor: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.3)' };
+      case 'maintenance':
+        return { bgcolor: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' };
+      case 'security':
+        return { bgcolor: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' };
+      case 'frontend':
+        return { bgcolor: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.3)' };
+      default:
+        return { bgcolor: 'rgba(148, 163, 184, 0.12)', color: '#94a3b8', border: '1px solid rgba(148, 163, 184, 0.2)' };
+    }
+  };
+
+  const allColumns: GridColDef[] = [
+    {
+      field: 'id',
+      headerName: 'ID',
+      width: 75,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (p: GridRenderCellParams) => (
+        <Chip
+          label={`#${p.value}`}
+          size="small"
+          variant="outlined"
+          sx={{
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontWeight: 700,
+            fontSize: '0.72rem',
+            color: 'text.secondary',
+            borderColor: 'rgba(255,255,255,0.12)',
+            height: 22,
+            cursor: 'pointer',
+            '&:hover': { color: 'primary.main', borderColor: 'primary.main', bgcolor: 'rgba(59,130,246,0.08)' }
+          }}
+          onClick={() => navigate(`/tasks/${p.row.id}`)}
+        />
+      )
+    },
+    {
+      field: 'title',
+      headerName: 'Task',
+      flex: 2,
+      minWidth: 260,
+      renderCell: (p: GridRenderCellParams) => {
+        const descSnippet = p.row.description
+          ? p.row.description.split('\n')[0].replace(/[#*`_]/g, '').trim()
+          : '';
+        return (
+          <Box
+            sx={{
+              py: 0.6,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              overflow: 'hidden',
+              width: '100%'
+            }}
+            onClick={() => navigate(`/tasks/${p.row.id}`)}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 650,
+                fontSize: '0.84rem',
+                color: p.row.status === 'completed' ? 'text.secondary' : 'text.primary',
+                textDecoration: p.row.status === 'completed' ? 'line-through' : 'none',
+                '&:hover': { color: 'primary.main' },
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {p.value}
+            </Typography>
+            {descSnippet && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  fontSize: '0.72rem',
+                  mt: 0.2,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  opacity: 0.8
+                }}
+              >
+                {descSnippet}
+              </Typography>
             )}
           </Box>
+        );
+      }
+    },
+    {
+      field: 'description',
+      headerName: 'Full Description',
+      flex: 1.8,
+      minWidth: 200,
+      renderCell: (p: GridRenderCellParams) => (
+        <Tooltip title={p.value || 'No description'} placement="bottom-start">
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: 1.3,
+              fontSize: '0.75rem',
+            }}
+          >
+            {p.value || '—'}
+          </Typography>
         </Tooltip>
-      );
-    }},
-    { field: 'category', headerName: 'Category', width: 100, renderCell: (p: GridRenderCellParams) => <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>{p.value}</Typography> },
-    { field: 'actions', headerName: '', width: 120, sortable: false, renderCell: (p: GridRenderCellParams) => {
-      const isOwner = p.row.created_by === currentUsername || p.row.assigned_to === currentUsername;
-      // can_update_any_task lets moderators/admins edit any task; otherwise only owner
-      const canEdit = isOwner || !!permissions?.can_update_any_task;
-      const canDelete = permissions?.can_delete_tasks;
-      return (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Tooltip title={p.row.status === 'completed' ? 'Reopen' : 'Complete'}><IconButton size="small" color={p.row.status === 'completed' ? 'default' : 'success'} onClick={() => handleComplete(p.row)}><CheckCircle sx={{ fontSize: 16 }} /></IconButton></Tooltip>
-          {canEdit && <Tooltip title="Edit"><IconButton size="small" onClick={() => openEdit(p.row)}><Edit sx={{ fontSize: 16 }} /></IconButton></Tooltip>}
-          {canDelete && <Tooltip title="Delete"><IconButton size="small" color="error" onClick={() => handleDelete(p.row.id)}><Delete sx={{ fontSize: 16 }} /></IconButton></Tooltip>}
+      )
+    },
+    {
+      field: 'priority',
+      headerName: 'Priority',
+      width: 105,
+      renderCell: (p: GridRenderCellParams) => (
+        <Chip
+          label={p.value?.toUpperCase()}
+          size="small"
+          color={getTaskPriorityColor(p.value)}
+          sx={{ fontWeight: 700, fontSize: '0.62rem', height: 22 }}
+        />
+      )
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 130,
+      renderCell: (p: GridRenderCellParams) => (
+        <StatusBadge
+          label={p.value?.toUpperCase().replace('-', ' ').replace('_', ' ')}
+          color={getTaskStatusColor(p.value)}
+        />
+      )
+    },
+    {
+      field: 'category',
+      headerName: 'Category',
+      width: 125,
+      renderCell: (p: GridRenderCellParams) => {
+        const style = getCategoryStyle(p.value);
+        return (
+          <Chip
+            label={p.value || 'General'}
+            size="small"
+            sx={{
+              fontSize: '0.68rem',
+              fontWeight: 650,
+              textTransform: 'capitalize',
+              height: 22,
+              ...style
+            }}
+          />
+        );
+      }
+    },
+    {
+      field: 'assigned_to',
+      headerName: 'Assigned',
+      width: 130,
+      renderCell: (p: GridRenderCellParams) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+          {p.value ? (
+            <Avatar sx={{ width: 22, height: 22, fontSize: '0.65rem', bgcolor: 'primary.main', fontWeight: 700 }}>
+              {p.value.charAt(0).toUpperCase()}
+            </Avatar>
+          ) : null}
+          <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+            {p.value || 'Unassigned'}
+          </Typography>
         </Box>
-      );
-    }},
+      )
+    },
+    {
+      field: 'notes',
+      headerName: 'Notes',
+      width: 75,
+      align: 'center',
+      renderCell: (p: GridRenderCellParams) => {
+        const count = notesCount[p.row.id] || 0;
+        return count > 0 ? (
+          <Tooltip title={`${count} note${count > 1 ? 's' : ''}`}>
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.4,
+                cursor: 'pointer',
+                bgcolor: 'rgba(255,255,255,0.04)',
+                px: 0.8,
+                py: 0.2,
+                borderRadius: 1,
+                border: '1px solid rgba(255,255,255,0.08)',
+                '&:hover': { bgcolor: 'rgba(59,130,246,0.1)', borderColor: 'primary.main' }
+              }}
+              onClick={() => navigate(`/tasks/${p.row.id}?tab=notes`)}
+            >
+              <Notes sx={{ fontSize: 13, color: 'text.secondary' }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.72rem' }}>{count}</Typography>
+            </Box>
+          </Tooltip>
+        ) : <Typography variant="caption" sx={{ color: 'text.disabled' }}>—</Typography>;
+      }
+    },
+    {
+      field: 'due_date',
+      headerName: 'Due',
+      width: 120,
+      renderCell: (p: GridRenderCellParams) => {
+        const urgency = dueDateUrgency(p.row);
+        const overdue = isOverdue(p.row);
+        return (
+          <Tooltip title={urgency?.label || (p.value ? new Date(p.value).toLocaleDateString() : 'No due date')}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              {p.value ? (
+                <>
+                  <Typography variant="caption" sx={{ color: overdue ? 'error.main' : urgency ? 'warning.main' : 'inherit', fontSize: '0.75rem' }}>
+                    {new Date(p.value).toLocaleDateString()}
+                  </Typography>
+                  {overdue && <Chip label="Overdue" size="small" color="error" sx={{ height: 16, fontSize: '0.55rem', fontWeight: 700 }} />}
+                </>
+              ) : (
+                <Typography variant="caption" sx={{ color: 'text.disabled' }}>—</Typography>
+              )}
+            </Box>
+          </Tooltip>
+        );
+      }
+    },
+    {
+      field: 'actions',
+      headerName: '',
+      width: 110,
+      sortable: false,
+      renderCell: (p: GridRenderCellParams) => {
+        const isOwner = p.row.created_by === currentUsername || p.row.assigned_to === currentUsername;
+        const canEdit = isOwner || !!permissions?.can_update_any_task;
+        const canDelete = permissions?.can_delete_tasks;
+        return (
+          <Box sx={{ display: 'flex', gap: 0.4 }}>
+            <Tooltip title={p.row.status === 'completed' ? 'Reopen' : 'Complete'}>
+              <IconButton size="small" color={p.row.status === 'completed' ? 'default' : 'success'} onClick={() => handleComplete(p.row)}>
+                <CheckCircle sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+            {canEdit && (
+              <Tooltip title="Edit">
+                <IconButton size="small" onClick={() => openEdit(p.row)}>
+                  <Edit sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+            {canDelete && (
+              <Tooltip title="Delete">
+                <IconButton size="small" color="error" onClick={() => handleDelete(p.row.id)}>
+                  <Delete sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        );
+      }
+    },
   ];
+
+  const columns = useMemo(() => {
+    return allColumns.filter(col => columnVisibility[col.field] !== false);
+  }, [allColumns, columnVisibility]);
 
   if (loading && tasks.length === 0) return <LoadingState message="Loading tasks..." />;
 
@@ -280,16 +534,25 @@ export default function TasksPage() {
         {/* Compact Toolbar */}
         <Card sx={{ py: 0.75, px: 1.5, background: 'rgba(255,255,255,0.02)', border: '1px solid #1e293b' }}>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* My Tasks Filter */}
+            {/* View Mode: All Tasks vs My Tasks */}
             <Chip
-              label="My Tasks"
+              label={`All Tasks (${stats.total || tasks.length})`}
+              onClick={() => setMyTasksOnly(false)}
+              color={!myTasksOnly ? 'primary' : 'default'}
+              variant={!myTasksOnly ? 'filled' : 'outlined'}
+              clickable
+              size="small"
+              sx={{ fontSize: '0.72rem', height: 26, fontWeight: !myTasksOnly ? 700 : 500 }}
+            />
+            <Chip
+              label="Assigned to Me"
               icon={<Person sx={{ fontSize: 14 }} />}
-              onClick={() => setMyTasksOnly(!myTasksOnly)}
+              onClick={() => setMyTasksOnly(true)}
               color={myTasksOnly ? 'primary' : 'default'}
               variant={myTasksOnly ? 'filled' : 'outlined'}
               clickable
               size="small"
-              sx={{ fontSize: '0.7rem', height: 24 }}
+              sx={{ fontSize: '0.72rem', height: 26, fontWeight: myTasksOnly ? 700 : 500 }}
             />
 
             {/* Search */}
@@ -361,6 +624,64 @@ export default function TasksPage() {
 
             <Box sx={{ flexGrow: 1 }} />
 
+            {/* Columns Customizer */}
+            <Tooltip title="Customize Columns">
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<ViewColumn sx={{ fontSize: 16 }} />}
+                onClick={(e) => setColumnMenuAnchor(e.currentTarget)}
+                sx={{ fontSize: '0.72rem', height: 26, py: 0.2, px: 1, borderColor: 'rgba(255,255,255,0.15)' }}
+              >
+                Columns
+              </Button>
+            </Tooltip>
+            <Popover
+              open={Boolean(columnMenuAnchor)}
+              anchorEl={columnMenuAnchor}
+              onClose={() => setColumnMenuAnchor(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              slotProps={{ paper: { sx: { p: 1.5, width: 220, bgcolor: '#111827', border: '1px solid #1f2937' } } }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, fontSize: '0.8rem' }}>Display Columns</Typography>
+              <Divider sx={{ mb: 1, borderColor: 'rgba(255,255,255,0.08)' }} />
+              <FormGroup>
+                {[
+                  { field: 'id', label: 'Task ID' },
+                  { field: 'title', label: 'Task & Snippet' },
+                  { field: 'description', label: 'Full Description' },
+                  { field: 'priority', label: 'Priority' },
+                  { field: 'status', label: 'Status' },
+                  { field: 'category', label: 'Category' },
+                  { field: 'assigned_to', label: 'Assignee' },
+                  { field: 'notes', label: 'Notes Count' },
+                  { field: 'due_date', label: 'Due Date' },
+                  { field: 'actions', label: 'Actions' },
+                ].map(col => (
+                  <FormControlLabel
+                    key={col.field}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={columnVisibility[col.field] !== false}
+                        onChange={() => toggleColumn(col.field)}
+                        sx={{ py: 0.3 }}
+                      />
+                    }
+                    label={<Typography variant="caption" sx={{ fontSize: '0.75rem' }}>{col.label}</Typography>}
+                  />
+                ))}
+              </FormGroup>
+              <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.08)' }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, fontSize: '0.8rem' }}>Grid Density</Typography>
+              <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                <Button size="small" variant={density === 'compact' ? 'contained' : 'outlined'} onClick={() => setDensity('compact')} sx={{ fontSize: '0.65rem', py: 0.2, minWidth: 55 }}>Compact</Button>
+                <Button size="small" variant={density === 'standard' ? 'contained' : 'outlined'} onClick={() => setDensity('standard')} sx={{ fontSize: '0.65rem', py: 0.2, minWidth: 55 }}>Standard</Button>
+                <Button size="small" variant={density === 'comfortable' ? 'contained' : 'outlined'} onClick={() => setDensity('comfortable')} sx={{ fontSize: '0.65rem', py: 0.2, minWidth: 55 }}>Spacious</Button>
+              </Box>
+            </Popover>
+
             {/* More Actions */}
             <Tooltip title="More Actions">
               <IconButton size="small" onClick={(e) => setMoreAnchor(e.currentTarget)}>
@@ -423,16 +744,16 @@ export default function TasksPage() {
       )}
 
       {/* DataGrid */}
-      <Card sx={{ flexGrow: 1, mb: 2 }}>
+      <Card sx={{ flexGrow: 1, mb: 2, border: '1px solid #1e293b' }}>
         <DataGrid 
           rows={tasks} 
           columns={columns} 
           getRowId={(r) => r.id} 
-          density="compact" 
-          pageSizeOptions={[10, 25, 50]} 
+          density={density} 
+          pageSizeOptions={[10, 25, 50, 100]} 
           initialState={{ 
             pagination: { paginationModel: { pageSize: 25 } },
-            sorting: { sortModel: [{ field: 'priority', sort: 'desc' }, { field: 'due_date', sort: 'asc' }] }
+            sorting: { sortModel: [{ field: 'id', sort: 'desc' }] }
           }}
           checkboxSelection
           onRowSelectionModelChange={(model) => {
@@ -441,7 +762,12 @@ export default function TasksPage() {
             setSelectedIds(ids as number[]);
           }}
           disableRowSelectionOnClick 
-          sx={{ border: 'none' }} 
+          sx={{
+            border: 'none',
+            '& .MuiDataGrid-row:hover': {
+              bgcolor: 'rgba(255,255,255,0.03)'
+            }
+          }} 
         />
       </Card>
 

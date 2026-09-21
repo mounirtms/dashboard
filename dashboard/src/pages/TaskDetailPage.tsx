@@ -403,8 +403,10 @@ export default function TaskDetailPage() {
         <Box sx={{ display: 'grid', gap: 3 }}>
           <Card>
             <CardContent>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Description</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', whiteSpace: 'pre-wrap' }}>{task.description || 'No description provided.'}</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>Description</Typography>
+              <Box sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+                {task.description ? renderContent(task.description) : <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>No description provided.</Typography>}
+              </Box>
             </CardContent>
           </Card>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
