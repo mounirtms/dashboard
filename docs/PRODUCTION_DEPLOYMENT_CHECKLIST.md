@@ -3,6 +3,23 @@
 **Project:** Beta Magento E-commerce Platform  
 **Session:** 35 - Production Deployment
 
+> **2026-09-22 UPDATE — production promotion now goes through GitLab CI/CD
+> (dev-first, build-once-promote; assignee: mounirAb — dashboard task #51).**
+> This legacy session-35 checklist is kept for reference. The current, only
+> supported path to production is:
+>
+> 1. Develop/test in `dev` (`/home/dev/public_html/webapp`, branch `dev` — always ahead).
+> 2. Run GitLab manual job `promote:dev-to-tsdnd` → verify staging.
+> 3. Run GitLab manual job `promote:tsdnd-to-master` → production
+>    (runs with `VERIFY_STRICT=1` + `VARNISH_DOMAIN=technostationery.com`;
+>    session DB renumbered off shared Redis db5 → db8 on 2026-09-22; prod
+>    `shared/opcache-purge-token` provisioned 2026-09-22).
+> 4. Post-checks: prod HTTP 200, no maintenance flag, `build-info.json`
+>    present in `current/`, `.deploy-tmp/` empty, releases kept ≤ 5.
+>
+> Canonical standard: techno-magento `docs/CD.md` + dashboard
+> `api/cicd.php?action=standards`. Direct edits on production remain prohibited.
+
 ---
 
 ## 📋 Pre-Deployment Checklist
