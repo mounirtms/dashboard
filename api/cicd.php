@@ -1,19 +1,36 @@
 <?php
 /**
  * CI/CD Pipeline API Service
- * 
- * Manages build, deploy, test, and migration operations
- * between BETA and DEV environments ONLY.
- * PRODUCTION (technadminy7) is NEVER touched.
- * 
+ *
+ * ENVIRONMENT STANDARD (2026-09-22 audit — dev-first, build-once-promote):
+ *   dev   = /home/dev/public_html          (LEAD — all development happens here,
+ *           branch `dev`, always ahead of tsdnd/master; ONLY env with a git repo)
+ *   tsdnd = /home/tsdnd/public_html        (staging mirror — receives dev builds
+ *           ONLY via GitLab promote:dev-to-tsdnd, never by direct code edits)
+ *   prod  = /home/technadminy7/public_html (production — receives tested builds
+ *           ONLY via GitLab promote:tsdnd-to-master, never by direct code edits)
+ *
+ * All three environments share the SAME folder standard:
+ *   current -> releases/<timestamp>/   (atomic symlink cutover)
+ *   pub     -> current/pub              (Apache docroot target)
+ *   shared/{app/etc/env.php,pub/media,var}  (per-env state, symlinked in)
+ *   releases/  (last KEEP_RELEASES=5 kept)   .deploy-tmp/ (empty unless a job runs)
+ *
+ * This API exposes read-only status helpers for dev/tsdnd (+ blocked prod) and
+ * job runners for NON-PRODUCTION environments only. PRODUCTION
+ * (technadminy7) is NEVER touched by the runners — production promotion goes
+ * through the GitLab `promote:tsdnd-to-master` manual job (see docs/CD.md in
+ * the techno-magento repo). Track that work in dashboard task #51.
+ *
  * Operations:
  * - Build (clean, compile, deploy static content)
  * - Flush caches (Redis, Magento, Varnish, OPcache)
  * - Test runners (HTTP checks, log analysis, module status)
- * - Database migrations (sync structure/data between beta/dev)
+ * - Database migrations (sync structure/data between tsdnd/dev)
  * - Code migrations (rsync app/code between environments)
- * - Module management (enable/disable on beta/dev)
+ * - Module management (enable/disable on tsdnd/dev)
  * - Reindex, health checks
+ * - standards (this file's canonical env/folder standard as JSON for the UI)
  */
 
 header('Content-Type: application/json');
@@ -40,24 +57,45 @@ if (empty($_SESSION['logged_in'])) {
 $dbPass = Config::get('db.pass', '');
 
 // ── Environment Configuration ──
+// STANDARD: dev is the LEAD environment (all development + git repo live here).
+// tsdnd is the staging mirror (receives dev builds via GitLab promotion only).
+// There is no `beta` environment on this host — the legacy `beta` key is kept
+// as a deprecated alias of tsdnd so old callers fail soft, not hard.
 $ENVIRONMENTS = [
-    'beta' => [
-        'name' => 'Beta',
-        'path' => '/home/beta/public_html',
-        'user' => 'beta',
-        'db' => 'beta_dBT8x12y22',
-        'url' => 'https://beta.technostationery.com',
-        'redis_dbs' => [0, 1, 2],
-        'allowed' => true,
-    ],
     'dev' => [
-        'name' => 'Development',
+        'name' => 'Development (LEAD — all changes start here)',
         'path' => '/home/dev/public_html',
         'user' => 'dev',
         'db' => 'dev_dBT8x12y22',
         'url' => 'https://dev.technostationery.com',
         'redis_dbs' => [5, 6, 7],
         'allowed' => true,
+        'role' => 'lead',
+        'branch' => 'dev',
+    ],
+    'tsdnd' => [
+        'name' => 'Staging mirror (promoted dev builds only)',
+        'path' => '/home/tsdnd/public_html',
+        'user' => 'tsdnd',
+        'db' => 'tsdnd_dBT8x12y22',
+        'url' => 'https://tsdnd.technostationery.com',
+        'redis_dbs' => [3, 4, 8],
+        'allowed' => true,
+        'role' => 'staging',
+        'branch' => 'tsdnd',
+    ],
+    // DEPRECATED alias: no /home/beta exists on this host. Resolves to tsdnd
+    // so legacy callers keep working while they are migrated to 'tsdnd'.
+    'beta' => [
+        'name' => 'DEPRECATED alias of tsdnd (use tsdnd)',
+        'path' => '/home/tsdnd/public_html',
+        'user' => 'tsdnd',
+        'db' => 'tsdnd_dBT8x12y22',
+        'url' => 'https://tsdnd.technostationery.com',
+        'redis_dbs' => [3, 4, 8],
+        'allowed' => true,
+        'role' => 'staging',
+        'deprecated_alias_of' => 'tsdnd',
     ],
 ];
 
@@ -170,7 +208,42 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 switch ($action) {
     case 'environments':
-        echo json_encode(['success' => true, 'environments' => $ENVIRONMENTS]);
+        // The deprecated `beta` alias is server-side only — the UI lists the
+        // three canonical environments (dev lead / tsdnd staging / prod blocked).
+        $visible = array_filter($ENVIRONMENTS, function ($key) {
+            return $key !== 'beta';
+        }, ARRAY_FILTER_USE_KEY);
+        echo json_encode(['success' => true, 'environments' => $visible]);
+        break;
+
+    case 'standards':
+        // Canonical environment + folder standard for the /cicd dashboard page.
+        // Lets the UI document the dev-first rule and the identical folder
+        // layout without hardcoding it in the frontend bundle.
+        $visible = array_filter($ENVIRONMENTS, function ($key) {
+            return $key !== 'beta';
+        }, ARRAY_FILTER_USE_KEY);
+        echo json_encode(['success' => true, 'standard' => [
+            'policy' => 'dev-first: all development in /home/dev/public_html/webapp (branch dev, always ahead); tsdnd receives dev builds via GitLab promote:dev-to-tsdnd; production via promote:tsdnd-to-master (dashboard task #51). Direct edits on tsdnd/production are prohibited.',
+            'folders' => [
+                'current' => 'current -> releases/<timestamp>/ (atomic symlink cutover)',
+                'pub' => 'pub -> current/pub (Apache docroot target)',
+                'shared' => 'shared/{app/etc/env.php,pub/media,var} (per-env state, symlinked into each release)',
+                'releases' => 'releases/ keeps last KEEP_RELEASES=5; build-info.json + .promoted-from record provenance',
+                'deploy_tmp' => '.deploy-tmp/ empty unless a deploy/promote job is running',
+            ],
+            'known_drift_2026_09_22' => [
+                'prod_pub_htaccess_differs_by_design' => 'production sits behind Varnish (.dz redirect + /sysadminy + proxy rules); dev/tsdnd share the Apache-direct variant',
+                'prod_shared_has_no_opcache_token' => 'production release predates the token-based opcache-purge-mab.php flow; regenerated on next promote:tsdnd-to-master',
+                'redis_db5_collision' => 'dev cache frontend (db5) shares Redis db5 with tsdnd sessions — flagged, awaiting low-traffic renumber (see task #51)',
+            ],
+            'fixes_2026_09_22' => [
+                'mmap_ENOMEM_root_cause' => 'cPanel Limit Protections capped deploy shells at ~195 MiB (ulimit -d/-m 200000); setup:di:compile peaks ~390 MiB — fixed via provision-host-limits.sh + ensure_build_limits() fail-fast gate',
+                'tmp_cleaned' => 'stale Sep-01 activate-release.sh removed from tsdnd .deploy-tmp; incomplete 20260919142334 junk release removed from dev releases/',
+            ],
+            'environments' => $visible,
+            'production' => $PRODUCTION + ['note' => 'read-only from this API; promotion only via GitLab manual job'],
+        ]], JSON_PRETTY_PRINT);
         break;
 
     case 'releases':
@@ -602,7 +675,7 @@ switch ($action) {
 
     case 'scripts':
         // List available scripts for an environment
-        $env = $_POST['env'] ?? 'beta';
+        $env = $_POST['env'] ?? 'dev';
         $config = getEnvConfig($env);
         if (!$config) {
             echo json_encode(['error' => 'Invalid environment']);
