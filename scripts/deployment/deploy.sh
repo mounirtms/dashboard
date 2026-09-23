@@ -5,7 +5,7 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/opt/cpanel/ea-php82/root/usr/bin:/usr
 # Multi-Environment Deployment Script
 # Deploys code changes, runs migrations, rebuilds, and verifies
 # Usage: bash deploy.sh <env> [options]
-#   env: prod|beta|dev|pim|dashboard
+#   env: prod|dev|tsdnd|pim|dashboard   (beta = deprecated alias of tsdnd)
 #   options: --quick  (skip heavy steps: composer, DI compile details)
 #            flush    (only flush cache, no deploy)
 #            build    (build only, no deploy to other envs)
@@ -28,13 +28,16 @@ export MAGENTO_CUSTOM_MEMORY_LIMIT="${MAGENTO_CUSTOM_MEMORY_LIMIT:-2G}"
 # Site paths (declared before PHP assignment below)
 declare -A SITES=(
     [prod]="/home/technadminy7/public_html"
-    [beta]="/home/beta/public_html"
+    [tsdnd]="/home/tsdnd/public_html"
+    # DEPRECATED: /home/beta was removed — beta now maps to tsdnd (staging mirror)
+    [beta]="/home/tsdnd/public_html"
     [dev]="/home/dev/public_html"
     [pim]="/home/pim/public_html"
     [dashboard]="/home/dashboard/public_html"
 )
 declare -A PHP_BIN=(
     [prod]="/opt/cpanel/ea-php82/root/usr/bin/php"
+    [tsdnd]="/opt/cpanel/ea-php82/root/usr/bin/php"
     [beta]="/opt/cpanel/ea-php82/root/usr/bin/php"
     [dev]="/opt/cpanel/ea-php82/root/usr/bin/php"
     [pim]="/opt/cpanel/ea-php82/root/usr/bin/php"
@@ -42,7 +45,8 @@ declare -A PHP_BIN=(
 )
 declare -A SITE_USERS=(
     [prod]="technadminy7"
-    [beta]="beta"
+    [tsdnd]="tsdnd"
+    [beta]="tsdnd"
     [dev]="dev"
     [pim]="pim"
     [dashboard]="dashboard"
@@ -74,8 +78,17 @@ for arg in "${ARGS[@]}"; do
 done
 
 if [ -z "$SITE_PATH" ]; then
-    echo "Unknown environment: $ENV. Use: prod, beta, dev, pim, dashboard"
+    echo "Unknown environment: $ENV. Use: prod, tsdnd, dev, pim, dashboard (beta=deprecated alias of tsdnd)"
     exit 1
+fi
+
+# Release-based layout standard: $SITE_PATH/current -> releases/<ts>/.
+# Every bin/magento + composer invocation must run from the ACTIVE release;
+# the root-level bin/ dirs left behind by the pre-rebuild flat installs on
+# tsdnd/production are stale and must never execute. dev has no root bin/ at all.
+MROOT="${SITE_PATH}/current"
+if [ ! -f "$MROOT/bin/magento" ]; then
+    MROOT="$SITE_PATH"   # legacy flat install fallback
 fi
 
 log() { echo "[$(date '+%H:%M:%S')] $1" | tee -a "$LOG"; }
@@ -127,8 +140,8 @@ fi
 # ── Handle special modes ──────────────────────────────────────────────────────────────────
 if [ "$FLUSH_ONLY" = true ]; then
     log "[FLUSH] Flushing cache only (no deployment steps)..."
-    cd "$SITE_PATH" && $PHP_BUILD_CMD bin/magento cache:flush 2>&1 | tee -a "$LOG"
-    cd "$SITE_PATH" && $PHP bin/magento maintenance:disable 2>&1 | tee -a "$LOG" || true
+    cd "$MROOT" && $PHP_BUILD_CMD bin/magento cache:flush 2>&1 | tee -a "$LOG"
+    cd "$MROOT" && $PHP bin/magento maintenance:disable 2>&1 | tee -a "$LOG" || true
     log "=========================================="
     log "  CACHE FLUSHED: $ENV"
     log "=========================================="
@@ -153,14 +166,14 @@ fi
 
 # ── Step 2: Maintenance mode ──
 log "[2/8] Enabling maintenance mode..."
-cd "$SITE_PATH" && $PHP bin/magento maintenance:enable 2>/dev/null || log "  Maintenance mode skipped (may already be enabled)"
+cd "$MROOT" && $PHP bin/magento maintenance:enable 2>/dev/null || log "  Maintenance mode skipped (may already be enabled)"
 
 # ── Step 3: Pull latest code (if git repo) ──
 if [ "$BUILD_ONLY" = true ]; then
     log "[3/8] Skipped (build only mode)"
-elif [ -d "$SITE_PATH/.git" ]; then
+elif [ -d "$MROOT/.git" ]; then
     log "[3/8] Pulling latest code..."
-    cd "$SITE_PATH" && git pull origin $(git branch --show-current) 2>&1 | tee -a "$LOG" || log "  Git pull skipped"
+    cd "$MROOT" && git pull origin $(git branch --show-current) 2>&1 | tee -a "$LOG" || log "  Git pull skipped"
 else
     log "[3/8] Not a git repo — skipping code pull"
 fi
@@ -168,14 +181,14 @@ fi
 # ── Step 4: Composer install (conditional) ──
 if [ "$BUILD_ONLY" = true ] || [ "$QUICK" = true ]; then
     log "[4/8] Skipped (quick/build mode)"
-elif [ -f "$SITE_PATH/composer.json" ]; then
-    LOCK_HASH=$(md5sum "$SITE_PATH/composer.lock" "$SITE_PATH/composer.json" 2>/dev/null | md5sum | awk '{print $1}')
-    if [ -d "$SITE_PATH/vendor" ] && [ -f "$SITE_PATH/vendor/.composer_lock_hash" ] && [ "$(cat "$SITE_PATH/vendor/.composer_lock_hash" 2>/dev/null)" = "$LOCK_HASH" ] && [ -f "$SITE_PATH/vendor/autoload.php" ]; then
+elif [ -f "$MROOT/composer.json" ]; then
+    LOCK_HASH=$(md5sum "$MROOT/composer.lock" "$MROOT/composer.json" 2>/dev/null | md5sum | awk '{print $1}')
+    if [ -d "$MROOT/vendor" ] && [ -f "$MROOT/vendor/.composer_lock_hash" ] && [ "$(cat "$MROOT/vendor/.composer_lock_hash" 2>/dev/null)" = "$LOCK_HASH" ] && [ -f "$MROOT/vendor/autoload.php" ]; then
         log "[4/8] Composer lock unchanged ($LOCK_HASH) — skipping composer install"
     else
         log "[4/8] Dependencies changed or vendor missing — Running composer install..."
-        cd "$SITE_PATH" && $PHP_BUILD_CMD -d memory_limit=-1 composer install --no-dev --no-interaction 2>&1 | tail -5 | tee -a "$LOG" || log "  Composer skipped"
-        echo "$LOCK_HASH" > "$SITE_PATH/vendor/.composer_lock_hash" 2>/dev/null || true
+        cd "$MROOT" && $PHP_BUILD_CMD -d memory_limit=-1 composer install --no-dev --no-interaction 2>&1 | tail -5 | tee -a "$LOG" || log "  Composer skipped"
+        echo "$LOCK_HASH" > "$MROOT/vendor/.composer_lock_hash" 2>/dev/null || true
     fi
 fi
 
@@ -184,7 +197,7 @@ if [ "$BUILD_ONLY" = true ] || [ "$QUICK" = true ]; then
     log "[5/8] Skipped (quick/build mode)"
 else
     log "[5/8] Running database upgrades..."
-    cd "$SITE_PATH" && $PHP_BUILD_CMD bin/magento setup:upgrade 2>&1 | tail -10 | tee -a "$LOG" || log "  Setup upgrade skipped"
+    cd "$MROOT" && $PHP_BUILD_CMD bin/magento setup:upgrade 2>&1 | tail -10 | tee -a "$LOG" || log "  Setup upgrade skipped"
 fi
 
 # ── Step 6: Compile & deploy static content ──
@@ -197,23 +210,23 @@ else
 fi
 # Always attempt DI compile (memory-safe) — this is the "Application code generator"
 if [ "$QUICK" = false ]; then
-    cd "$SITE_PATH" && export MALLOC_ARENA_MAX=2 && $PHP_BUILD_CMD bin/magento setup:di:compile 2>&1 | tail -5 | tee -a "$LOG" || log "  DI compile failed (check memory)"
+    cd "$MROOT" && export MALLOC_ARENA_MAX=2 && $PHP_BUILD_CMD bin/magento setup:di:compile 2>&1 | tail -5 | tee -a "$LOG" || log "  DI compile failed (check memory)"
 fi
 # Static content deployment — use SCOUT_DISABLE=1 to reduce memory for product/category pages
-cd "$SITE_PATH" && export MALLOC_ARENA_MAX=2 && export SCOUT_DISABLE=1 && $PHP_BUILD_CMD bin/magento setup:static-content:deploy -f 2>&1 | tail -5 | tee -a "$LOG" || log "  Static deploy skipped"
+cd "$MROOT" && export MALLOC_ARENA_MAX=2 && export SCOUT_DISABLE=1 && $PHP_BUILD_CMD bin/magento setup:static-content:deploy -f 2>&1 | tail -5 | tee -a "$LOG" || log "  Static deploy skipped"
 
 # ── Step 7: Reindex ──
 if [ "$BUILD_ONLY" = true ] || [ "$QUICK" = true ]; then
     log "[7/8] Skipped (quick/build mode)"
 else
     log "[7/8] Reindexing..."
-    cd "$SITE_PATH" && $PHP_BUILD_CMD bin/magento indexer:reindex 2>&1 | tail -10 | tee -a "$LOG" || log "  Reindex skipped"
+    cd "$MROOT" && $PHP_BUILD_CMD bin/magento indexer:reindex 2>&1 | tail -10 | tee -a "$LOG" || log "  Reindex skipped"
 fi
 
 # ── Step 8: Disable maintenance & flush cache ──
 log "[8/8] Flushing cache and disabling maintenance..."
-cd "$SITE_PATH" && $PHP bin/magento cache:flush 2>&1 | tee -a "$LOG"
-cd "$SITE_PATH" && $PHP bin/magento maintenance:disable 2>&1 | tee -a "$LOG" || true
+cd "$MROOT" && $PHP bin/magento cache:flush 2>&1 | tee -a "$LOG"
+cd "$MROOT" && $PHP bin/magento maintenance:disable 2>&1 | tee -a "$LOG" || true
 
 # ── Fix permissions ──
 log "Fixing permissions..."

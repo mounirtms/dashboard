@@ -50,8 +50,40 @@ interface GitStatus {
   build: { bundle: string; size_kb: number; stamp: string; assets: number };
 }
 
+// Per-environment build provenance served by api/cicd.php?action=releases
+// (reads current/build-info.json + .promoted-from from each env's releases/).
+interface EnvBuildInfo {
+  pipeline_id?: string;
+  commit_sha?: string;
+  commit_short_sha?: string;
+  branch?: string;
+  built_at?: string;
+  artifact?: string;
+}
+
+interface EnvStatus {
+  env: string;
+  name: string;
+  url: string;
+  read_only: boolean;
+  current_release: string | null;
+  current_build: EnvBuildInfo | null;
+  promoted_from: string | null;
+  release_count: number;
+}
+
+// Canonical display order of the three environments (dev-first standard).
+const ENV_ORDER = ['dev', 'tsdnd', 'production'];
+
+const ENV_META: Record<string, { chip: string; color: string; bg: string }> = {
+  dev:       { chip: 'LEAD',        color: '#22c55e', bg: 'rgba(34,197,94,0.10)' },
+  tsdnd:     { chip: 'STAGING',     color: '#3b82f6', bg: 'rgba(59,130,246,0.10)' },
+  production:{ chip: 'PROD · RO',   color: '#f59e0b', bg: 'rgba(245,158,11,0.10)' },
+};
+
 export default function CiCdPage() {
   const [git, setGit] = useState<GitStatus | null>(null);
+  const [envs, setEnvs] = useState<EnvStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,6 +97,16 @@ export default function CiCdPage() {
       })
       .catch((e: any) => setError(e.response?.data?.error || e.message || 'Failed to load git status'))
       .finally(() => setLoading(false));
+    // Per-env build info — independent request so a failure here never
+    // breaks the rest of the page (section simply stays hidden).
+    apiClient.get('/api/cicd.php?action=releases')
+      .then(({ data }) => {
+        if (!data.error && data.releases) {
+          const map = data.releases as Record<string, EnvStatus>;
+          setEnvs(ENV_ORDER.filter(k => map[k]).map(k => map[k]));
+        }
+      })
+      .catch(() => { /* non-fatal */ });
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -80,7 +122,7 @@ export default function CiCdPage() {
             CI/CD Pipeline
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Build pipeline, deploy history, branch status — {git?.repo || 'dashboard'}
+            Build pipeline, deploy history, branch status &amp; per-env build info — dev-first, build-once-promote
           </Typography>
         </Box>
         <Button
@@ -123,6 +165,64 @@ export default function CiCdPage() {
           </Grid>
         ))}
       </Grid>
+
+      {/* Per-environment build info (dev → tsdnd → production) */}
+      {envs.length > 0 && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <RocketLaunch sx={{ fontSize: 16, color: '#22c55e' }} /> Environment Build Info — dev (LEAD) · tsdnd (staging) · production (read-only)
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+              All development happens in dev and flows forward only through GitLab <code>promote:dev-to-tsdnd</code> → <code>promote:tsdnd-to-master</code>. Source: each environment's <code>current/build-info.json</code> + <code>.promoted-from</code>.
+            </Typography>
+            <Grid container spacing={2}>
+              {envs.map(e => {
+                const meta = ENV_META[e.env] || { chip: e.env.toUpperCase(), color: '#8b5cf6', bg: 'rgba(139,92,246,0.10)' };
+                const b = e.current_build;
+                return (
+                  <Grid size={{ xs: 12, md: 4 }} key={e.env}>
+                    <Box sx={{ p: 1.75, borderRadius: 2, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.25 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, textTransform: 'capitalize' }}>{e.env}</Typography>
+                        <Chip label={meta.chip} size="small" sx={{ fontSize: '0.6rem', height: 18, fontWeight: 800, color: meta.color, background: meta.bg, border: `1px solid ${meta.color}44` }} />
+                      </Box>
+                      {[
+                        ['Release', e.current_release || '—'],
+                        ['Pipeline', b?.pipeline_id ? `#${b.pipeline_id}` : '—'],
+                        ['Commit', b?.commit_short_sha ? `${b.commit_short_sha} (${b.branch || '?'})` : '—'],
+                        ['Built', b?.built_at || '—'],
+                        ['Artifact', b?.artifact || '—'],
+                      ].map(([k, v]) => (
+                        <Box key={k} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, py: 0.35 }}>
+                          <Typography variant="caption" color="text.disabled">{k}</Typography>
+                          <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 700, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '62%' }} title={String(v)}>{v}</Typography>
+                        </Box>
+                      ))}
+                      {!b && e.current_release && (
+                        <Alert severity="info" sx={{ mt: 1, py: 0, fontSize: '0.7rem' }}>
+                          pre-CI release (no build-info.json) — appears after next deploy/promote
+                        </Alert>
+                      )}
+                      {e.promoted_from && (
+                        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1, fontSize: '0.62rem', wordBreak: 'break-all' }}>
+                          ↪ {e.promoted_from}
+                        </Typography>
+                      )}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.25 }}>
+                        <Typography variant="caption" color="text.disabled">{e.release_count} release{e.release_count === 1 ? '' : 's'}</Typography>
+                        <Button size="small" href={e.url} target="_blank" rel="noreferrer" sx={{ textTransform: 'none', fontSize: '0.68rem', fontWeight: 700 }}>
+                          Open ↗
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {/* Build Steps */}

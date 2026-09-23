@@ -119,6 +119,20 @@ function getEnvConfig(string $env): ?array {
     return $ENVIRONMENTS[$env] ?? null;
 }
 
+/**
+ * Resolve the ACTIVE Magento root for a release-based environment.
+ * Standard layout: $path/current -> releases/<ts>/. All bin/magento commands
+ * must run from there — the legacy flat-install bin/ dirs still sitting at the
+ * docroot root of tsdnd/production are STALE (pre-rebuild) and must never be
+ * executed; dev has no root bin/ at all. Falls back to $path for a hypothetical
+ * legacy flat install that still has bin/magento inside current AND at root.
+ */
+function magentoRoot(array $config): string {
+    $path = rtrim($config['path'] ?? '', '/');
+    if ($path !== '' && is_file("{$path}/current/bin/magento")) return "{$path}/current";
+    return $path; // legacy flat layout (bin/magento directly at root)
+}
+
 function isProduction(string $env): bool {
     return in_array($env, ['prod', 'production', 'technadminy7']);
 }
@@ -197,7 +211,8 @@ function runMagentoCommand(string $env, string $command, string $jobId): string 
     if (!$config) return "ERROR: Invalid environment";
     
     $logFile = "/home/dashboard/public_html/logs/cicd/{$jobId}.log";
-    $fullCmd = "cd {$config['path']} && {$PHP_BIN} bin/magento {$command} 2>&1";
+    $mroot = magentoRoot($config);
+    $fullCmd = "cd {$mroot} && {$PHP_BIN} bin/magento {$command} 2>&1";
     execAsync($fullCmd, $jobId, $logFile);
     return "Command started: {$command}";
 }
@@ -234,8 +249,8 @@ switch ($action) {
             ],
             'known_drift_2026_09_22' => [
                 'prod_pub_htaccess_differs_by_design' => 'production sits behind Varnish (.dz redirect + /sysadminy + proxy rules); dev/tsdnd share the Apache-direct variant',
-                'prod_shared_has_no_opcache_token' => 'production release predates the token-based opcache-purge-mab.php flow; regenerated on next promote:tsdnd-to-master',
-                'redis_db5_collision' => 'dev cache frontend (db5) shares Redis db5 with tsdnd sessions — flagged, awaiting low-traffic renumber (see task #51)',
+                'prod_shared_has_no_opcache_token' => 'FIXED 2026-09-22 — shared/opcache-purge-token created on production (64-hex, technadminy7-owned)',
+                'redis_db5_collision' => 'FIXED 2026-09-22 — tsdnd sessions renumbered Redis db5 -> db8 (env.php.bak-20260922-redisfix); db5 is now exclusively the dev cache frontend',
             ],
             'fixes_2026_09_22' => [
                 'mmap_ENOMEM_root_cause' => 'cPanel Limit Protections capped deploy shells at ~195 MiB (ulimit -d/-m 200000); setup:di:compile peaks ~390 MiB — fixed via provision-host-limits.sh + ensure_build_limits() fail-fast gate',
@@ -247,13 +262,30 @@ switch ($action) {
         break;
 
     case 'releases':
+        // Per-environment build info for the /cicd page. Includes PRODUCTION
+        // as a READ-ONLY target (file reads only — no commands are executed
+        // against it; production changes still flow exclusively through the
+        // GitLab promote:tsdnd-to-master job). The deprecated `beta` alias is
+        // not listed.
+        $targets = [];
+        foreach (['dev', 'tsdnd'] as $k) {
+            if (isset($ENVIRONMENTS[$k])) $targets[$k] = $ENVIRONMENTS[$k];
+        }
+        $targets['production'] = [
+            'name' => 'Production (READ-ONLY — promote via GitLab)',
+            'path' => $PRODUCTION['path'],
+            'url'  => 'https://technostationery.com',
+            'read_only' => true,
+        ];
         $out = [];
-        foreach ($ENVIRONMENTS as $key => $env) {
+        foreach ($targets as $key => $env) {
             $root = $env['path'];
             $releasesDir = rtrim($root, '/') . '/releases';
             $current = @readlink("$releasesDir/../current");
             $currentId = $current ? basename($current) : null;
             $releases = [];
+            $currentBuild = null;
+            $promotedFrom = null;
             if (is_dir($releasesDir)) {
                 foreach (scandir($releasesDir) as $entry) {
                     if ($entry === '.' || $entry === '..') continue;
@@ -268,9 +300,15 @@ switch ($action) {
                             if (is_array($decoded)) $bi = $decoded;
                         }
                     }
+                    $isCurrent = $entry === $currentId;
+                    if ($isCurrent) {
+                        $currentBuild = $bi;
+                        $pf = @file_get_contents("$path/.promoted-from");
+                        $promotedFrom = ($pf !== false && trim($pf) !== '') ? trim($pf) : null;
+                    }
                     $releases[] = [
                         'id' => $entry,
-                        'is_current' => $entry === $currentId,
+                        'is_current' => $isCurrent,
                         'build_info' => $bi,
                     ];
                 }
@@ -281,9 +319,13 @@ switch ($action) {
                 'name' => $env['name'],
                 'url' => $env['url'],
                 'root' => $root,
+                'read_only' => !empty($env['read_only']),
                 'current_release' => $currentId,
+                'current_build' => $currentBuild,
+                'promoted_from' => $promotedFrom,
+                'release_count' => count($releases),
                 'releases' => $releases,
-                'last_release' => reset($releases),
+                'last_release' => reset($releases) ?: null,
             ];
         }
         echo json_encode(['success' => true, 'releases' => $out], JSON_PRETTY_PRINT);
@@ -390,6 +432,7 @@ switch ($action) {
         
         $script = "/home/dashboard/public_html/scripts/deployment/deploy.sh";
         $envPath = $config['path'] ?? '';
+        $mroot = magentoRoot($config);
         if ($type === 'full') {
             $cmd = "bash {$script} {$env} 2>&1";
         } elseif ($type === 'quick') {
@@ -397,9 +440,9 @@ switch ($action) {
         } elseif ($type === 'flush') {
             $cmd = "bash {$script} {$env} flush 2>&1";
         } elseif ($type === 'static-only') {
-            $cmd = "cd {$config['path']} && {$PHP_BIN} bin/magento setup:static-content:deploy fr_FR en_US -f 2>&1";
+            $cmd = "cd {$mroot} && {$PHP_BIN} bin/magento setup:static-content:deploy fr_FR en_US -f 2>&1";
         } elseif ($type === 'compile-only') {
-            $cmd = "cd {$config['path']} && {$PHP_BIN} -d memory_limit=2G bin/magento setup:di:compile 2>&1";
+            $cmd = "cd {$mroot} && {$PHP_BIN} -d memory_limit=2G bin/magento setup:di:compile 2>&1";
         } else {
             echo json_encode(['error' => 'Invalid build type']);
             break;
@@ -436,25 +479,27 @@ switch ($action) {
         
         $jobId = generateJobId();
         $logFile = "/home/dashboard/public_html/logs/cicd/{$jobId}.log";
+        $mroot = magentoRoot($config);
         
         switch ($type) {
             case 'http':
                 $cmd = "echo '=== HTTP Health Check ===' && for page in / /checkout/cart/ /customer/account/login/ /contact/; do status=\$(curl -s -o /dev/null -w '%{http_code}' {$config['url']}\$page 2>/dev/null); echo \"\$page -> HTTP \$status\"; done && echo '=== Done ==='";
                 break;
             case 'comprehensive':
-                $cmd = "bash {$config['path']}/comprehensive_test.sh 2>&1";
+                // Deep HTTP check (the old comprehensive_test.sh never shipped with the release).
+                $cmd = "echo '=== Deep HTTP Check: {$config['name']} ===' && for page in / /checkout/ /checkout/cart/ /customer/account/login/ /wishlist/ /contact/ /searchresult/?q=test; do status=\$(curl -s -o /dev/null -w '%{http_code}' {$config['url']}\$page 2>/dev/null); echo \"\$page -> HTTP \$status\"; done; echo '=== Cache verify report ==='; cat {$config['path']}/shared/cache-verify.json 2>/dev/null || echo '(none)'; echo '=== Done ==='";
                 break;
             case 'module-status':
-                $cmd = "cd {$config['path']} && {$PHP_BIN} bin/magento module:status 2>&1";
+                $cmd = "cd {$mroot} && {$PHP_BIN} bin/magento module:status 2>&1";
                 break;
             case 'logs':
-                $cmd = "echo '=== Exception Log (last 50 lines) ===' && tail -50 {$config['path']}/var/log/exception.log 2>/dev/null && echo '=== System Log Errors ===' && grep -ciE 'ERR|CRIT|EMERG' {$config['path']}/var/log/system.log 2>/dev/null && echo '=== PHP Error Log (last 20) ===' && tail -20 {$config['path']}/error_log 2>/dev/null";
+                $cmd = "echo '=== Exception Log (last 50 lines) ===' && tail -50 {$mroot}/var/log/exception.log 2>/dev/null && echo '=== System Log Errors ===' && grep -ciE 'ERR|CRIT|EMERG' {$mroot}/var/log/system.log 2>/dev/null && echo '=== PHP Error Log (last 20) ===' && tail -20 {$config['path']}/error_log 2>/dev/null";
                 break;
             case 'indexer':
-                $cmd = "cd {$config['path']} && {$PHP_BIN} bin/magento indexer:status 2>&1";
+                $cmd = "cd {$mroot} && {$PHP_BIN} bin/magento indexer:status 2>&1";
                 break;
             case 'cache-status':
-                $cmd = "cd {$config['path']} && {$PHP_BIN} bin/magento cache:status 2>&1";
+                $cmd = "cd {$mroot} && {$PHP_BIN} bin/magento cache:status 2>&1";
                 break;
             default:
                 echo json_encode(['error' => 'Invalid test type']);
@@ -544,8 +589,10 @@ switch ($action) {
         $jobId = generateJobId();
         $logFile = "/home/dashboard/public_html/logs/cicd/{$jobId}.log";
         
-        $srcPath = $srcConfig['path'];
-        $tgtPath = $tgtConfig['path'];
+        // Sync the ACTIVE releases (current/), never the legacy flat-install
+        // leftovers that still sit at the docroot root of tsdnd/production.
+        $srcPath = magentoRoot($srcConfig);
+        $tgtPath = magentoRoot($tgtConfig);
         
         if ($scope === 'modules') {
             $cmd = "echo '=== Code Migration: Modules ===' && rsync -avz --delete --exclude='vendor' --exclude='var' --exclude='generated' --exclude='pub/static' --exclude='pub/media' --exclude='.git' {$srcPath}/app/code/ {$tgtPath}/app/code/ 2>&1 && echo 'Module sync complete' && echo 'Setting permissions...' && chown -R {$tgtConfig['user']}:{$tgtConfig['user']} {$tgtPath}/app/code/ && chmod -R 775 {$tgtPath}/app/code/ && echo 'Permissions set'";
@@ -592,7 +639,8 @@ switch ($action) {
         $jobId = generateJobId();
         $logFile = "/home/dashboard/public_html/logs/cicd/{$jobId}.log";
         
-        $cmd = "cd {$config['path']} && {$PHP_BIN} bin/magento module:{$action_type} " . escapeshellarg($module) . " 2>&1";
+        $mroot = magentoRoot($config);
+        $cmd = "cd {$mroot} && {$PHP_BIN} bin/magento module:{$action_type} " . escapeshellarg($module) . " 2>&1";
         
         writeJobStatus($jobId, [
             'id' => $jobId,
@@ -626,7 +674,8 @@ switch ($action) {
         $jobId = generateJobId();
         $logFile = "/home/dashboard/public_html/logs/cicd/{$jobId}.log";
         
-        $cmd = "cd {$config['path']} && {$PHP_BIN} -d memory_limit=2G bin/magento indexer:reindex 2>&1";
+        $mroot = magentoRoot($config);
+        $cmd = "cd {$mroot} && {$PHP_BIN} -d memory_limit=2G bin/magento indexer:reindex 2>&1";
         
         writeJobStatus($jobId, [
             'id' => $jobId,
@@ -658,7 +707,8 @@ switch ($action) {
         $jobId = generateJobId();
         $logFile = "/home/dashboard/public_html/logs/cicd/{$jobId}.log";
         
-        $cmd = "echo '=== Health Check: {$config['name']} ===' && echo 'PHP: ' && {$PHP_BIN} -v | head -1 && echo 'Magento: ' && cd {$config['path']} && {$PHP_BIN} bin/magento --version 2>&1 && echo 'Mode: ' && {$PHP_BIN} bin/magento deploy:mode:show 2>&1 && echo 'Cache: ' && {$PHP_BIN} bin/magento cache:status 2>&1 && echo 'Indexers: ' && {$PHP_BIN} bin/magento indexer:status 2>&1 | head -15 && echo 'HTTP: ' && curl -s -o /dev/null -w '%{http_code}' {$config['url']}/ 2>/dev/null && echo '' && echo 'Disk: ' && du -sh . 2>/dev/null | cut -f1 && echo '=== Done ==='";
+        $mroot = magentoRoot($config);
+        $cmd = "echo '=== Health Check: {$config['name']} ===' && echo 'PHP: ' && {$PHP_BIN} -v | head -1 && echo 'Magento: ' && cd {$mroot} && {$PHP_BIN} bin/magento --version 2>&1 && echo 'Mode: ' && {$PHP_BIN} bin/magento deploy:mode:show 2>&1 && echo 'Cache: ' && {$PHP_BIN} bin/magento cache:status 2>&1 && echo 'Indexers: ' && {$PHP_BIN} bin/magento indexer:status 2>&1 | head -15 && echo 'HTTP: ' && curl -s -o /dev/null -w '%{http_code}' {$config['url']}/ 2>/dev/null && echo '' && echo 'Disk: ' && du -sh . 2>/dev/null | cut -f1 && echo '=== Done ==='";
         
         writeJobStatus($jobId, [
             'id' => $jobId,
