@@ -40,6 +40,20 @@ uploads/
 # Root-level docs (keep only README)
 *.md
 !README.md
+!CICD-FULL-REPORT.md
+!docs/CI_CDARCHITECTURE_MAX.md
+!docs/CD.md
+!docs/CI_CD/index.md
+!docs/CI_CD/FILE_MAP.md
+!docs/CI_CD/TECHNICAL-SUMMARY.md
+!docs/CI_CD/QUICK-REFERENCE.md
+!docs/CI_CD/scripts/
+
+# Operational scripts
+fix-*.sh
+verify-*.sh
+scripts/
+!.gitkeep
 
 # Operational scripts
 fix-*.sh

@@ -31,6 +31,7 @@ export const PERMISSION_PATHS: Record<string, PermissionKey> = {
   '/tools/system-audit':     'can_access_system_audit',
   '/plans':                  'can_access_plans',
   '/cicd':                   'can_access_cicd',
+  '/cicd-report':             'can_access_cicd',
   '/scripts':                'can_access_script_runner',
   '/commerce/settings':      'can_access_magento_settings',
   '/commerce/sales':         'can_access_magento_orders',
@@ -46,4 +47,6 @@ export const PERMISSION_PATHS: Record<string, PermissionKey> = {
   '/commerce/customers':     'can_access_magento_customers',
   '/commerce/orders':        'can_access_magento_orders',
   '/commerce/cms':           'can_access_magento_cms',
+  '/commerce/stores':        'can_access_magento_products',
 };
+

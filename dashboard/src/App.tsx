@@ -50,7 +50,9 @@ import MagentoCustomersPage from './pages/MagentoCustomersPage.tsx';
 import MagentoOrdersPage from './pages/MagentoOrdersPage.tsx';
 import MagentoCmsPage from './pages/MagentoCmsPage.tsx';
 import MagentoSettingsPage from './pages/MagentoSettingsPage.tsx';
+import StoreLocationsPage from './pages/StoreLocationsPage.tsx';
 import CiCdPage from './pages/CiCdPage.tsx';
+import CiCdReportPage from './pages/CiCdReportPage.tsx';
 import NetdataPage from './pages/NetdataPage.tsx';
 
 export default function App() {
@@ -101,10 +103,12 @@ export default function App() {
                 <Route path="commerce/inventory" element={<InventoryPage />} />
                 <Route path="commerce/cms" element={<MagentoCmsPage />} />
                 <Route path="commerce/indexers" element={<IndexersPage />} />
+                <Route path="commerce/stores" element={<StoreLocationsPage />} />
                 <Route path="commerce/settings" element={<MagentoSettingsPage />} />
 
                 {/* Dev & CI/CD */}
                 <Route path="cicd" element={<CiCdPage />} />
+                <Route path="cicd-report" element={<CiCdReportPage />} />
                 <Route path="scripts" element={<ActionsPage />} />
 
                 {/* Automation */}

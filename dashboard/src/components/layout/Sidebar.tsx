@@ -54,6 +54,7 @@ import {
   TrendingUp,
   CloudDownload,
   MonitorHeart,
+  LocationOn as StoreLocationIcon,
 } from '@mui/icons-material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -98,6 +99,7 @@ const navItems: NavItem[] = [
       { path: '/commerce/inventory', label: 'Inventory', icon: <Inventory /> },
       { path: '/commerce/cms', label: 'CMS & Content', icon: <DocsIcon /> },
       { path: '/commerce/indexers', label: 'Indexers', icon: <Refresh /> },
+      { path: '/commerce/stores', label: 'Store Locations', icon: <StoreLocationIcon /> },
       { path: '/commerce/settings', label: 'Magento Settings', icon: <SettingsIcon /> },
     ]
   },
@@ -106,6 +108,7 @@ const navItems: NavItem[] = [
     icon: <CicdIcon />,
     children: [
       { path: '/cicd', label: 'Pipeline', icon: <CicdIcon /> },
+      { path: '/cicd-report', label: 'Report', icon: <DocsIcon /> },
       { path: '/scripts', label: 'Script Runner', icon: <ScriptsIcon /> },
     ]
   },

@@ -331,6 +331,97 @@ switch ($action) {
         echo json_encode(['success' => true, 'releases' => $out], JSON_PRETTY_PRINT);
         break;
 
+    case 'report': {
+        // Full CI/CD change report (docs/CI_CDARCHITECTURE_MAX.md) served as HTML
+        // for the /cicd-report dashboard page.
+        function _md_inline(string $text): string {
+            $text = preg_replace('/`([^`]+)`/', '<code>$1</code>', $text);
+            $text = preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $text);
+            $text = preg_replace('/(?<!\*)\*([^*]+)\*(?!\*)/', '<em>$1</em>', $text);
+            $text = preg_replace('/\~\~([^\~]+)\~\~/', '<del>$1</del>', $text);
+            $text = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank" rel="noopener">$1</a>', $text);
+            return $text;
+        }
+        function _md_to_html(string $md): string {
+            $md = str_replace(["\r\n", "\r"], "\n", $md);
+            $blocks = [];
+            while (preg_match('/```(\w*)\n(.*?)```/s', $md, $m)) {
+                $ph = "\n__CB" . count($blocks) . "__\n";
+                $lang = $m[1] ? " class=\"language-{$m[1]}\"" : '';
+                $blocks[$ph] = '<pre><code' . $lang . '>' . htmlspecialchars($m[2], ENT_QUOTES, 'UTF-8') . '</code></pre>';
+                $md = preg_replace('/```(\w*)\n(.*?)```/s', $ph, $md, 1);
+            }
+            $md = preg_replace_callback('/^\|(.+)\|\s*$\n^\|[\s\-|:]+\|\s*$\n((?:^\|.+\|\s*$\n?)+)/m', function($m) {
+                $header = array_map('trim', explode('|', $m[1]));
+                $header = array_filter($header, fn($h) => $h !== '');
+                preg_match_all('/^\|.+\|\s*$/', $m[2], $dm);
+                $rows = [];
+                foreach ($dm[0] as $line) {
+                    $cells = array_map('trim', explode('|', $line));
+                    $cells = array_filter($cells, fn($c) => $c !== '');
+                    if (count($cells) === count($header)) $rows[] = $cells;
+                }
+                $out = "<table>\n<thead><tr>";
+                foreach ($header as $h) $out .= "<th>" . _md_inline($h) . "</th>";
+                $out .= "</tr></thead>\n<tbody>\n";
+                foreach ($rows as $row) {
+                    $out .= "<tr>";
+                    foreach ($row as $c) $out .= "<td>" . _md_inline($c) . "</td>";
+                    $out .= "</tr>\n";
+                }
+                return $out . "</tbody>\n</table>\n";
+            }, $md);
+            $md = preg_replace('/^### (.+)$/m', '<h3>$1</h3>', $md);
+            $md = preg_replace('/^## (.+)$/m', '<h2>$1</h2>', $md);
+            $md = preg_replace('/^# (.+)$/m', '<h1>$1</h1>', $md);
+            $md = preg_replace('/^(?:---|\*\*\*|___)$/m', '<hr>', $md);
+            $md = preg_replace_callback('/^(?:   )?(?:[-*]) (.+)$/m', fn($m) => "<li>" . _md_inline($m[1]) . "</li>", $md);
+            $md = preg_replace('/((?:<li>.*<\/li>\n?)+)/', '<ul>$1</ul>', $md);
+            $md = preg_replace_callback('/^(?:   )?(\d+)\. (.+)$/m', fn($m) => "<li>" . _md_inline($m[2]) . "</li>", $md);
+            $md = preg_replace('/((?:<li>.*<\/li>\n?)+)/', '<ol>$1</ol>', $md);
+            $lines = explode("\n", $md);
+            $out = '';
+            $buf = '';
+            foreach ($lines as $line) {
+                $t = trim($line);
+                if ($t === '') {
+                    if ($buf !== '') { $out .= "<p>" . _md_inline(trim($buf)) . "</p>\n"; $buf = ''; }
+                    $out .= "\n";
+                } elseif (preg_match('/^<(h[1-3]|ul|ol|li|pre|table|thead|tbody|tr|th|td|hr)/', $t)) {
+                    if ($buf !== '') { $out .= "<p>" . _md_inline(trim($buf)) . "</p>\n"; $buf = ''; }
+                    $out .= $line . "\n";
+                } else {
+                    $buf .= ($buf ? ' ' : '') . $line;
+                }
+            }
+            if ($buf !== '') $out .= "<p>" . _md_inline(trim($buf)) . "</p>\n";
+            $md = $out;
+            foreach ($blocks as $ph => $html) $md = str_replace($ph, $html, $md);
+            return $md;
+        }
+        $reportFile = __DIR__ . '/../docs/CI_CDARCHITECTURE_MAX.md';
+        if (!file_exists($reportFile)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Report file not found']);
+            break;
+        }
+        $md = file_get_contents($reportFile);
+        $html = _md_to_html($md);
+        echo json_encode([
+            'success' => true,
+            'report' => [
+                'title'     => 'CI/CD Pipeline Evolution & Dashboard Integration — Full Change Report',
+                'project'   => 'techno-magento (technowebmaster-group/techno-magento)',
+                'dashboard' => 'mounirtms/dashboard (/home/dashboard/public_html)',
+                'coverage'  => '2026-07-01 → 2026-09-22',
+                'owner'     => 'mounirAb',
+                'generated' => '2026-09-22 (post fixes + build)',
+                'content'   => $html,
+            ],
+        ], JSON_PRETTY_PRINT);
+        break;
+    }
+
     case 'jobs':
         echo json_encode(['success' => true, 'jobs' => getRecentJobs(30)]);
         break;
