@@ -19,6 +19,10 @@
 >
 > Canonical standard: techno-magento `docs/CD.md` + dashboard
 > `api/cicd.php?action=standards`. Direct edits on production remain prohibited.
+>
+> **Full change report:** [`docs/CI_CDARCHITECTURE_MAX.md`](./CI_CDARCHITECTURE_MAX.md)
+> (CI/CD pipeline evolution + dashboard integration, 2026-07-01 → 2026-09-22)
+> + `api/cicd.php?action=releases` (per-env build info) + `/cicd-report` in dashboard.
 
 ---
 

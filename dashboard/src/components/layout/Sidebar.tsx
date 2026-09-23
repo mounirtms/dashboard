@@ -109,6 +109,8 @@ const navItems: NavItem[] = [
     children: [
       { path: '/cicd', label: 'Pipeline', icon: <CicdIcon /> },
       { path: '/cicd-report', label: 'Report', icon: <DocsIcon /> },
+      { path: '/cicd-comparison', label: 'Jul 1 vs Today', icon: <CicdIcon /> },
+      { path: '/docs', label: 'Reports & Docs', icon: <DocsIcon /> },
       { path: '/scripts', label: 'Script Runner', icon: <ScriptsIcon /> },
     ]
   },
@@ -173,6 +175,7 @@ const navItems: NavItem[] = [
     icon: <DocsIcon />,
     children: [
       { path: '/docs/index.html', label: 'System Docs', icon: <DocsIcon /> },
+      { path: '/docs', label: 'All Reports & Docs', icon: <DocsIcon /> },
       { path: '/docs/ARCHITECTURE.md', label: 'Architecture', icon: <DocsIcon /> },
       { path: '/reports/view.php?file=security_audit_report.html', label: 'Security Audit Report', icon: <SecurityIcon /> },
       { path: '/reports/view.php?file=ssh_hardening_report.html', label: 'SSH Hardening Report', icon: <SecurityIcon /> },

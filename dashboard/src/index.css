@@ -59,3 +59,34 @@ body {
 .section-header {
   text-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
 }
+
+/* Rendered markdown documents (Reports & Docs hub, CI/CD report/comparison pages) */
+.doc-reader blockquote,
+div[class*="MuiCardContent-root"] blockquote {
+  border-left: 4px solid #a78bfa;
+  margin: 12px 0;
+  padding: 6px 14px;
+  background: rgba(167, 139, 250, 0.08);
+}
+div[class*="MuiCardContent-root"] table {
+  border-collapse: collapse;
+  margin: 12px 0;
+  width: 100%;
+}
+div[class*="MuiCardContent-root"] th,
+div[class*="MuiCardContent-root"] td {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 0.85rem;
+}
+div[class*="MuiCardContent-root"] th {
+  background: rgba(255, 255, 255, 0.07);
+  font-weight: 700;
+}
+div[class*="MuiCardContent-root"] pre {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px 14px;
+  overflow-x: auto;
+  border-radius: 6px;
+}

@@ -422,6 +422,45 @@ switch ($action) {
         break;
     }
 
+    case 'docs': {
+        // Catalog of markdown reports/docs for the /docs hub.
+        require_once __DIR__ . '/cicd_md.php';
+        echo json_encode(['success' => true, 'docs' => _cicd_doc_catalog()], JSON_PRETTY_PRINT);
+        break;
+    }
+
+    case 'doc': {
+        // Serve one catalog doc as HTML: api/cicd.php?action=doc&file=docs/CD_JULY1_VS_TODAY.md
+        require_once __DIR__ . '/cicd_md.php';
+        $file = trim($_GET['file'] ?? '');
+        $hit = null;
+        foreach (_cicd_doc_catalog() as $d) {
+            if ($d['file'] === $file) { $hit = $d; break; }
+        }
+        if (!$hit) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Unknown doc: ' . $file]);
+            break;
+        }
+        $abs = realpath(__DIR__ . '/../' . $hit['file']);
+        if (!$abs || !is_file($abs)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Doc file missing: ' . $file]);
+            break;
+        }
+        echo json_encode([
+            'success' => true,
+            'doc' => [
+                'file'     => $hit['file'],
+                'title'    => $hit['title'],
+                'category' => $hit['category'],
+                'mtime'    => $hit['mtime'],
+                'html'     => _md_to_html(file_get_contents($abs)),
+            ],
+        ], JSON_PRETTY_PRINT);
+        break;
+    }
+
     case 'jobs':
         echo json_encode(['success' => true, 'jobs' => getRecentJobs(30)]);
         break;

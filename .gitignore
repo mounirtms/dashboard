@@ -43,17 +43,17 @@ uploads/
 !CICD-FULL-REPORT.md
 !docs/CI_CDARCHITECTURE_MAX.md
 !docs/CD.md
+!docs/CD_JULY1_VS_TODAY.md
 !docs/CI_CD/index.md
 !docs/CI_CD/FILE_MAP.md
 !docs/CI_CD/TECHNICAL-SUMMARY.md
 !docs/CI_CD/QUICK-REFERENCE.md
-!docs/CI_CD/scripts/
+!docs/CI_CD/
 
 # Operational scripts
 fix-*.sh
 verify-*.sh
 scripts/
-!.gitkeep
 
 # Operational scripts
 fix-*.sh
