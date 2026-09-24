@@ -44,3 +44,11 @@
 - [ ] Reconcile dashboard version/build metadata with the deployment process.
 - [ ] Remove stale generated build chunks only during a planned build/deploy window; do not delete user-generated assets.
 - [ ] Schedule off-peak table optimization only after database backup and explicit DBA approval.
+
+## Security pass (2026-09-24, dev-first)
+- Production incident documented as task #62: Nx/xhsjrf dropper wave in technadminy7 pub/media since Sep 4 (upload-gateway shells + PNG polyglot loaders + CVE-2026-53787 webshells). Production untouched — quarantine/rotation/forensics checklist lives in the task.
+- Dev verified clean (0 malware); execution tests confirm .php under /media and /static cannot run (404, no payload output).
+- Dev hardening: pub/static/.htaccess now generated with script-execution block (webapp release.yml heredoc); shared/pub/media/.htaccess restored php_flag engine 0 on dev (backups in /home/dev/security_backups_20260924/).
+- Scanner fixes: malware_scan.sh catches new dropper signatures + polyglot images, dereferences env.php symlinks (kills 777 FP), downgrades benign SCD .phtml templates to LOW, excludes runtime dirs from world-writable noise; ecomscan_all.sh now stores Sansec report_url + raw_log per account (trial license strips findings).
+- Vulnerable modules: composer audit = 52 advisories / 17 packages on dev (twig via amasty/export-pro, dompdf via amasty/gift-card, guzzle, jmespath CRITICAL, hybridauth via amasty/social-login, otphp via disabled TwoFactorAuth...). Lock updates need CI composer auth (no auth.json on host) — tracked on task #62 remediation step 6/#61 test pass.
+- Magefan logs clean (INFO menu entries only, no errors/warnings); no composer-patch warnings in var/log.
