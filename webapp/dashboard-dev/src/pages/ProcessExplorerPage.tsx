@@ -46,7 +46,7 @@ export default function ProcessExplorerPage() {
     setConfirmPid(null);
     setKilling(prev => new Set(prev).add(pid));
     try {
-      const { data } = await apiClient.get(`/api/monitor.php?action=process_action&op=kill&pid=${pid}`);
+      const { data } = await apiClient.post('/api/monitor.php?action=process_action', { op: 'kill', pid });
       setNotify({ open: true, message: data.message || 'Action executed', severity: data.success ? 'success' : 'error' });
       if (data.success) loadData();
     } catch (e: any) {

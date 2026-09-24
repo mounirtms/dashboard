@@ -27,21 +27,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/session_helper.php';
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/PermissionChecker.php';
 Config::load();
 
-// ── Auth guard ────────────────────────────────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────────────────────
 if (empty($_SESSION['logged_in'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
     exit;
 }
 
-// ── GitLab configuration ──────────────────────────────────────────────────────
-// Token stored in .env as GITLAB_TOKEN; project ID fetched below if needed.
-// Never expose the token to the client.
-define('GITLAB_TOKEN',      Config::get('gitlab.token',      'glpat-gPgQ8GUZjH6su9Is8jqufWM6MQpvOjEKdTpud3lwOQ8.01.171w1abqr'));
-define('GITLAB_PROJECT_ID', Config::get('gitlab.project_id', 'technowebmaster-group%2Ftechno-magento'));
-define('GITLAB_API',        'https://gitlab.com/api/v4');
+function gitlab_require_read(): void {
+    if (empty($_SESSION['logged_in'])) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        exit;
+    }
+}
+
+function gitlab_require_write(): void {
+    if (empty($_SESSION['logged_in'])) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        exit;
+    }
+    $isAdmin = ($_SESSION['role'] ?? '') === 'admin';
+    $hasCicd = PermissionChecker::hasPermission('can_access_cicd');
+    if (!$isAdmin && !$hasCicd) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Insufficient permissions to trigger/play pipeline jobs']);
+        exit;
+    }
+}
+
+// ── GitLab configuration (.env via Config) ────────────────────────────────────
+define('GITLAB_TOKEN',      Config::get('gitlab.token',      ''));
+define('GITLAB_PROJECT_ID', Config::get('gitlab.project_id', '83067970'));
+define('GITLAB_API',        Config::get('gitlab.api',        'https://gitlab.com/api/v4'));
 define('GITLAB_TIMEOUT',    15);
 
 /**
@@ -139,6 +161,7 @@ try {
 
         // ── List latest pipelines (all branches) ──────────────────────────────
         case 'pipelines': {
+            gitlab_require_read();
             $perPage = min((int)($_GET['per_page'] ?? 30), 100);
             $page    = max((int)($_GET['page']     ?? 1), 1);
             $ref     = $_GET['ref'] ?? '';
@@ -167,6 +190,7 @@ try {
 
         // ── Single pipeline detail + job summary ──────────────────────────────
         case 'pipeline_detail': {
+            gitlab_require_read();
             $id = (int)($_GET['pipeline_id'] ?? 0);
             if (!$id) { http_response_code(400); echo json_encode(['error' => 'pipeline_id required']); exit; }
 
@@ -203,6 +227,7 @@ try {
 
         // ── Branch list ───────────────────────────────────────────────────────
         case 'branches': {
+            gitlab_require_read();
             $result = gitlab_request('/repository/branches?per_page=50&order_by=updated_at&sort=desc');
 
             if ($result['code'] !== 200) {
@@ -218,10 +243,11 @@ try {
 
         // ── Jobs for a pipeline ───────────────────────────────────────────────
         case 'jobs': {
+            gitlab_require_read();
             $id = (int)($_GET['pipeline_id'] ?? 0);
             if (!$id) { http_response_code(400); echo json_encode(['error' => 'pipeline_id required']); exit; }
 
-            $result = gitlab_request("/pipelines/{$id}/jobs?per_page=50");
+            $result = gitlab_request("/pipelines/{$id}/jobs?per_page=100");
 
             if ($result['code'] !== 200) {
                 http_response_code(502);
@@ -235,17 +261,17 @@ try {
 
         // ── Trigger a new pipeline ────────────────────────────────────────────
         case 'trigger': {
+            gitlab_require_write();
             if ($method !== 'POST') { http_response_code(405); echo json_encode(['error' => 'POST required']); exit; }
 
-            // Admin-only action
-            if (($_SESSION['role'] ?? '') !== 'admin') {
+            if (!PermissionChecker::isAdmin()) {
                 http_response_code(403);
                 echo json_encode(['error' => 'Admin role required to trigger pipelines']);
                 exit;
             }
 
             $input = json_decode(file_get_contents('php://input'), true) ?? [];
-            $branch = trim($input['branch'] ?? '');
+            $branch = trim($input['branch'] ?? $_POST['branch'] ?? '');
             $allowed = ['tsdnd', 'dev', 'master'];
 
             if (!in_array($branch, $allowed, true)) {
@@ -271,8 +297,153 @@ try {
             break;
         }
 
+        // ── Play a manual job (deploy:*, promote:*) ───────────────────────────
+        // POST action=play_job  body: { job_id }  OR { pipeline_id, job_name }
+        case 'play_job': {
+            gitlab_require_write();
+            if ($method !== 'POST') { http_response_code(405); echo json_encode(['error' => 'POST required']); exit; }
+
+            $input = json_decode(file_get_contents('php://input'), true) ?? [];
+            $jobId = (int)($input['job_id'] ?? $_POST['job_id'] ?? 0);
+            $pipelineId = (int)($input['pipeline_id'] ?? $_POST['pipeline_id'] ?? 0);
+            $jobName = trim($input['job_name'] ?? $_POST['job_name'] ?? '');
+
+            if (!$jobId && $pipelineId && $jobName !== '') {
+                $jobsRes = gitlab_request("/pipelines/{$pipelineId}/jobs?per_page=100");
+                if ($jobsRes['code'] === 200) {
+                    foreach ((array)$jobsRes['body'] as $j) {
+                        if (($j['name'] ?? '') === $jobName) { $jobId = (int)$j['id']; break; }
+                    }
+                }
+            }
+
+            if (!$jobId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'job_id or (pipeline_id + job_name) required']);
+                exit;
+            }
+
+            // Production promote requires admin
+            if (!PermissionChecker::isAdmin() && $jobName !== '' && str_starts_with($jobName, 'promote:tsdnd-to-master')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Admin role required to promote to production']);
+                exit;
+            }
+
+            $result = gitlab_request("/jobs/{$jobId}/play", 'POST');
+            if ($result['code'] < 200 || $result['code'] >= 300) {
+                http_response_code(502);
+                echo json_encode(['error' => 'Job play failed', 'code' => $result['code'], 'detail' => $result['body']]);
+                exit;
+            }
+
+            $job = $result['body'];
+            $jobNameOut = (string)($job['name'] ?? $jobName);
+            $jobStatusOut = (string)($job['status'] ?? 'unknown');
+            echo json_encode([
+                'status'  => 'ok',
+                'message' => "Job '{$jobNameOut}' triggered (status: {$jobStatusOut})",
+                'job'     => [
+                    'id'     => $job['id'] ?? $jobId,
+                    'name'   => $jobNameOut,
+                    'status' => $jobStatusOut,
+                    'web_url'=> $job['web_url'] ?? '',
+                ],
+            ]);
+            break;
+        }
+
+        // ── Play a named manual job by env shortcut ───────────────────────────
+        // POST action=play_env  body: { env: dev|tsdnd|prod, pipeline_id? }
+        case 'play_env': {
+            gitlab_require_write();
+            if ($method !== 'POST') { http_response_code(405); echo json_encode(['error' => 'POST required']); exit; }
+
+            $input = json_decode(file_get_contents('php://input'), true) ?? [];
+            $env = strtolower(trim($input['env'] ?? $_POST['env'] ?? ''));
+            $map = [
+                'dev'   => ['ref' => 'dev',   'job' => 'deploy:dev'],
+                'tsdnd' => ['ref' => 'tsdnd', 'job' => 'deploy:tsdnd'],
+                'prod'  => ['ref' => 'master','job' => 'deploy:master'],
+                'master'=> ['ref' => 'master','job' => 'deploy:master'],
+                'promote_dev_tsdnd' => ['ref' => 'dev', 'job' => 'promote:dev-to-tsdnd'],
+                'promote_tsdnd_master' => ['ref' => 'tsdnd', 'job' => 'promote:tsdnd-to-master'],
+            ];
+            if (!isset($map[$env])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid env. Allowed: ' . implode(', ', array_keys($map))]);
+                exit;
+            }
+            if (!PermissionChecker::isAdmin() && ($env === 'prod' || $env === 'master' || $env === 'promote_tsdnd_master')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Admin role required for production actions']);
+                exit;
+            }
+
+            $pipelineId = (int)($input['pipeline_id'] ?? $_POST['pipeline_id'] ?? 0);
+            if (!$pipelineId) {
+                // Find latest pipeline for that ref
+                $ps = gitlab_request('/pipelines?per_page=5&ref=' . urlencode($map[$env]['ref']) . '&order_by=id&sort=desc');
+                $list = (array)($ps['body'] ?? []);
+                if (!$list) {
+                    // Create a new pipeline first (admin only for new pipelines)
+                    if (!PermissionChecker::isAdmin()) {
+                        http_response_code(404);
+                        echo json_encode(['error' => 'No pipeline found on ref and admin required to create one']);
+                        exit;
+                    }
+                    $created = gitlab_request('/pipeline', 'POST', ['ref' => $map[$env]['ref']]);
+                    if ($created['code'] !== 201) {
+                        http_response_code(502);
+                        echo json_encode(['error' => 'Pipeline create failed', 'detail' => $created['body']]);
+                        exit;
+                    }
+                    $pipelineId = (int)($created['body']['id'] ?? 0);
+                    // Wait briefly for jobs to be generated
+                    usleep(1500000);
+                } else {
+                    $pipelineId = (int)($list[0]['id'] ?? 0);
+                }
+            }
+
+            $input2 = ['pipeline_id' => $pipelineId, 'job_name' => $map[$env]['job']];
+            // Reuse play_job logic inline
+            $jobsRes = gitlab_request("/pipelines/{$pipelineId}/jobs?per_page=100");
+            $jobId = 0;
+            if ($jobsRes['code'] === 200) {
+                foreach ((array)$jobsRes['body'] as $j) {
+                    if (($j['name'] ?? '') === $map[$env]['job']) { $jobId = (int)$j['id']; break; }
+                }
+            }
+            if (!$jobId) {
+                http_response_code(404);
+                echo json_encode(['error' => "Manual job '{$map[$env]['job']}' not found on pipeline #{$pipelineId}", 'pipeline_id' => $pipelineId]);
+                exit;
+            }
+            $result = gitlab_request("/jobs/{$jobId}/play", 'POST');
+            if ($result['code'] < 200 || $result['code'] >= 300) {
+                http_response_code(502);
+                echo json_encode(['error' => 'Job play failed', 'code' => $result['code'], 'detail' => $result['body']]);
+                exit;
+            }
+            $job = $result['body'];
+            echo json_encode([
+                'status'  => 'ok',
+                'message' => "Played {$map[$env]['job']} on pipeline #{$pipelineId}",
+                'pipeline_id' => $pipelineId,
+                'job' => [
+                    'id' => $job['id'] ?? $jobId,
+                    'name' => $job['name'] ?? $map[$env]['job'],
+                    'status' => $job['status'] ?? 'pending',
+                    'web_url' => $job['web_url'] ?? '',
+                ],
+            ]);
+            break;
+        }
+
         // ── Project info ──────────────────────────────────────────────────────
         case 'project': {
+            gitlab_require_read();
             $result = gitlab_request('');  // /projects/{id}
             // Strip sensitive fields
             if (is_array($result['body'])) {
@@ -299,7 +470,7 @@ try {
 
         default:
             http_response_code(400);
-            echo json_encode(['error' => "Unknown action: {$action}", 'available' => ['pipelines', 'pipeline_detail', 'branches', 'jobs', 'trigger', 'project']]);
+            echo json_encode(['error' => "Unknown action: {$action}", 'available' => ['pipelines', 'pipeline_detail', 'branches', 'jobs', 'trigger', 'play_job', 'play_env', 'project']]);
     }
 
 } catch (\Throwable $e) {

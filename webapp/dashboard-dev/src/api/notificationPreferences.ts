@@ -21,6 +21,18 @@ export interface NotificationPreferences {
   task_assigned_telegram: boolean;
   task_assigned_push: boolean;
 
+  task_status_email: boolean;
+  task_status_telegram: boolean;
+  task_status_push: boolean;
+
+  task_completed_email: boolean;
+  task_completed_telegram: boolean;
+  task_completed_push: boolean;
+
+  task_note_email: boolean;
+  task_note_telegram: boolean;
+  task_note_push: boolean;
+
   task_approved_email: boolean;
   task_approved_telegram: boolean;
   task_approved_push: boolean;
@@ -59,6 +71,9 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
   security_alert_email: true, security_alert_telegram: true, security_alert_push: true,
   login_alert_email: true, login_alert_telegram: true, login_alert_push: false,
   task_assigned_email: true, task_assigned_telegram: true, task_assigned_push: true,
+  task_status_email: true, task_status_telegram: false, task_status_push: true,
+  task_completed_email: true, task_completed_telegram: false, task_completed_push: true,
+  task_note_email: true, task_note_telegram: false, task_note_push: true,
   task_approved_email: true, task_approved_telegram: false, task_approved_push: false,
   cron_failure_email: true, cron_failure_telegram: true, cron_failure_push: false,
   deploy_complete_email: false, deploy_complete_telegram: true, deploy_complete_push: false,

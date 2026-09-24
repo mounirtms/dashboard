@@ -113,8 +113,8 @@ export async function fetchSecurityScan(): Promise<SecurityScanResult> {
 }
 
 export async function runSecurityScan(account?: string): Promise<SecurityScanResult> {
-  const params = account ? `&account=${encodeURIComponent(account)}` : '';
-  const { data } = await apiClient.get(`/api/monitor.php?action=security_scan_run${params}`);
+  const body = account ? { account } : {};
+  const { data } = await apiClient.post('/api/monitor.php?action=security_scan_run', body);
   return data;
 }
 
@@ -124,11 +124,10 @@ export async function fetchSecurityHarden(): Promise<SecurityHardenResult> {
 }
 
 export async function runSecurityHarden(account?: string, checkOnly = false): Promise<SecurityHardenResult> {
-  const params = new URLSearchParams();
-  if (account) params.set('account', account);
-  if (checkOnly) params.set('check_only', 'true');
-  const qs = params.toString() ? `&${params.toString()}` : '';
-  const { data } = await apiClient.get(`/api/monitor.php?action=security_harden_run${qs}`);
+  const body: Record<string, string> = {};
+  if (account) body.account = account;
+  if (checkOnly) body.check_only = 'true';
+  const { data } = await apiClient.post('/api/monitor.php?action=security_harden_run', body);
   return data;
 }
 
@@ -166,7 +165,7 @@ export async function fetchEcomscan(): Promise<EcomscanResult> {
 }
 
 export async function runEcomscan(account?: string): Promise<EcomscanResult> {
-  const params = account ? `&account=${encodeURIComponent(account)}` : '';
-  const { data } = await apiClient.get(`/api/monitor.php?action=ecomscan_run${params}`);
+  const body = account ? { account } : {};
+  const { data } = await apiClient.post('/api/monitor.php?action=ecomscan_run', body);
   return data;
 }

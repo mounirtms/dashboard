@@ -157,14 +157,14 @@ export default function CiCdPage() {
             <RocketLaunch sx={{ fontSize: 16, color: '#f59e0b' }} /> Trigger Magento Deployment (GitLab API)
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Button 
-              variant="contained" 
-              color="primary" 
+            <Button
+              variant="contained"
+              color="primary"
               onClick={() => {
-                fetch('/api/gitlab-pipeline.php', {
+                fetch('/api/gitlab-pipeline.php?action=play_env', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'trigger', env: 'dev', branch: 'dev' })
+                  body: JSON.stringify({ env: 'dev' })
                 })
                 .then(r => r.json())
                 .then(data => alert(data.message || data.error))
@@ -173,14 +173,14 @@ export default function CiCdPage() {
             >
               Deploy to Dev
             </Button>
-            <Button 
-              variant="contained" 
-              color="secondary" 
+            <Button
+              variant="contained"
+              color="secondary"
               onClick={() => {
-                fetch('/api/gitlab-pipeline.php', {
+                fetch('/api/gitlab-pipeline.php?action=play_env', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'trigger', env: 'tsdnd', branch: 'tsdnd' })
+                  body: JSON.stringify({ env: 'tsdnd' })
                 })
                 .then(r => r.json())
                 .then(data => alert(data.message || data.error))
@@ -189,15 +189,15 @@ export default function CiCdPage() {
             >
               Deploy to TSDND
             </Button>
-            <Button 
-              variant="contained" 
-              color="error" 
+            <Button
+              variant="contained"
+              color="error"
               onClick={() => {
                 if (window.confirm("Are you sure you want to deploy to PRODUCTION?")) {
-                  fetch('/api/gitlab-pipeline.php', {
+                  fetch('/api/gitlab-pipeline.php?action=play_env', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'trigger', env: 'prod', branch: 'master' })
+                    body: JSON.stringify({ env: 'promote_tsdnd_master' })
                   })
                   .then(r => r.json())
                   .then(data => alert(data.message || data.error))
@@ -205,7 +205,7 @@ export default function CiCdPage() {
                 }
               }}
             >
-              Deploy to Master (Prod)
+              Promote to Master (Prod)
             </Button>
           </Box>
         </CardContent>
