@@ -14,8 +14,10 @@ DB_PORT="3307"
 DB_USER="root"
 DB_NAME="technadminy7_dBT8x12y22"
 MYSQL_CMD="/opt/mariadb10.6/mariadb/bin/mysql"
-MAGENTO_ROOT="/home/betapublic_html"
-LOG_FILE="$MAGENTO_ROOT/var/log/cron_health.log"
+# Production Magento root. Override with MAGENTO_ROOT=... when running against beta/dev.
+MAGENTO_ROOT="${MAGENTO_ROOT:-/home/technadminy7/public_html/current}"
+MAGENTO_CRON_USER="${MAGENTO_CRON_USER:-technadminy7}"
+LOG_FILE="${CRON_HEALTH_LOG:-/home/dashboard/public_html/logs/cron_health.log}"
 
 # Pull real DB password from dashboard .env (never hardcode it here)
 ENV_FILE="/home/dashboard/public_html/.env"
@@ -24,10 +26,12 @@ if [ -f "$ENV_FILE" ]; then
 fi
 DB_PASS="${DB_PASS:-}"
 
-# Thresholds
-PENDING_JOB_THRESHOLD=50
-OLD_PENDING_MINUTES=30
-MISSING_ORDER_THRESHOLD=5
+# Thresholds (override via environment for other environments)
+# Due pending jobs cycle every minute; the real stuck-job signal is
+# OLD_PENDING_MINUTES below. 500 avoids paging on normal scheduling churn.
+PENDING_JOB_THRESHOLD="${PENDING_JOB_THRESHOLD:-500}"
+OLD_PENDING_MINUTES="${OLD_PENDING_MINUTES:-30}"
+MISSING_ORDER_THRESHOLD="${MISSING_ORDER_THRESHOLD:-5}"
 
 # Colors
 RED='\033[0;31m'
@@ -51,21 +55,23 @@ log_error() {
 check_pending_jobs() {
     log_info "Checking pending cron jobs..."
     
+    # Only jobs whose scheduled time has passed are actionable backlog;
+    # Magento also stores future schedule rows with status 'pending'.
     local pending_count=$($MYSQL_CMD -u $DB_USER -p$DB_PASS -h $DB_HOST -P $DB_PORT $DB_NAME -N -e "
-        SELECT COUNT(*) FROM cron_schedule WHERE status = 'pending';
+        SELECT COUNT(*) FROM cron_schedule WHERE status = 'pending' AND scheduled_at <= NOW();
     ")
     
-    log_info "Pending cron jobs: $pending_count"
+    log_info "Due pending cron jobs: $pending_count"
     
     if [ "$pending_count" -gt "$PENDING_JOB_THRESHOLD" ]; then
-        log_warn "High pending job count: $pending_count (threshold: $PENDING_JOB_THRESHOLD)"
+        log_warn "High due pending job count: $pending_count (threshold: $PENDING_JOB_THRESHOLD)"
         
         # Show top pending jobs
-        log_info "Top pending jobs:"
+        log_info "Top due pending jobs:"
         $MYSQL_CMD -u $DB_USER -p$DB_PASS -h $DB_HOST -P $DB_PORT $DB_NAME -e "
             SELECT job_code, COUNT(*) as count 
             FROM cron_schedule 
-            WHERE status = 'pending' 
+            WHERE status = 'pending' AND scheduled_at <= NOW()
             GROUP BY job_code 
             ORDER BY count DESC 
             LIMIT 10;
@@ -149,13 +155,23 @@ check_missing_orders() {
 check_cron_config() {
     log_info "Checking Magento cron configuration..."
     
-    # Check if Magento cron is in crontab
-    if crontab -l 2>/dev/null | grep -q "bin/magento cron:run"; then
+    # Magento cron may live in another user's crontab (or root cron.d), not the
+    # crontab of the account running this health check. Check all readable sources.
+    local cron_sources=()
+    cron_sources+=( "$(crontab -l 2>/dev/null || true)" )
+    for f in /var/spool/cron/$MAGENTO_CRON_USER /var/spool/cron/crontabs/$MAGENTO_CRON_USER; do
+        [ -r "$f" ] && cron_sources+=( "$(cat "$f" 2>/dev/null || true)" )
+    done
+    for f in /etc/cron.d/*; do
+        [ -r "$f" ] && cron_sources+=( "$(cat "$f" 2>/dev/null || true)" )
+    done
+
+    if printf '%s\n' "${cron_sources[@]}" | grep -q "bin/magento cron:run"; then
         log_info "✓ Magento cron is configured"
     else
         log_warn "Magento cron NOT found in crontab!"
         log_info "Add this line to crontab:"
-        log_info "*/10 * * * * /opt/cpanel/ea-php82/root/usr/bin/php $MAGENTO_ROOT/bin/magento cron:run"
+        log_info "* * * * * /opt/cpanel/ea-php82/root/usr/bin/php $MAGENTO_ROOT/bin/magento cron:run"
         return 1
     fi
     
@@ -166,15 +182,17 @@ check_cron_config() {
 check_last_execution() {
     log_info "Checking last cron execution..."
     
+    # Not all Magento versions ship the indexer_reindex_all_database job, so use
+    # the most recent successful execution of ANY job to detect a dead cron runner.
     local last_run=$($MYSQL_CMD -u $DB_USER -p$DB_PASS -h $DB_HOST -P $DB_PORT $DB_NAME -N -e "
         SELECT MAX(executed_at) 
         FROM cron_schedule 
         WHERE status = 'success' 
-        AND job_code = 'indexer_reindex_all_database';
+        AND executed_at IS NOT NULL;
     ")
     
     if [ -z "$last_run" ] || [ "$last_run" = "NULL" ]; then
-        log_warn "No successful cron execution found for indexer_reindex_all_database"
+        log_warn "No successful cron execution found in cron_schedule"
         return 1
     fi
     
@@ -182,7 +200,7 @@ check_last_execution() {
     local now_ts=$(date +%s)
     local diff_minutes=$(( (now_ts - last_run_ts) / 60 ))
     
-    log_info "Last successful indexer run: $last_run (${diff_minutes} minutes ago)"
+    log_info "Last successful cron run: $last_run (${diff_minutes} minutes ago)"
     
     if [ "$diff_minutes" -gt 60 ]; then
         log_warn "Last cron execution was more than 60 minutes ago!"

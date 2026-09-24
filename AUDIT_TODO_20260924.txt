@@ -15,6 +15,7 @@
 - Removed dead sidebar link `/api/info.php` (HTTP 404) and pointed the entry to `/docs/CONFIGURATION.md`.
 - Added in-flight guard and 429-tolerant fallback to `useCloudflareData` to prevent overlapping Cloudflare polls.
 - Removed unused imports/variables in touched components (lint debt reduction).
+- `scripts/monitoring/cron_health_check.sh`: corrected Magento root to `/home/technadminy7/public_html/current` (configurable via `MAGENTO_ROOT`), moved log to dashboard logs, detected Magento cron across user crontabs/cron.d, based the last-run check on the newest successful job instead of a job code that does not exist, and counted only *due* pending jobs. Health check now passes.
 
 ## High priority
 - [ ] Add CSRF token enforcement to authenticated mutating `api/monitor.php` actions; current POST method protection prevents link-triggered mutations but does not replace CSRF protection.
