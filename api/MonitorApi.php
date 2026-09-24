@@ -274,8 +274,8 @@ class MonitorApi extends BaseApi {
 
     public function manageCache() {
         require_once __DIR__ . '/AuditLogger.php';
-        $site = $_GET['site'] ?? '';
-        $op = $_GET['op'] ?? '';
+        $site = $_POST['site'] ?? $_GET['site'] ?? '';
+        $op = $_POST['op'] ?? $_GET['op'] ?? '';
         
         AuditLogger::log('CACHE', "$site:$op", "User triggered cache operation");
         
@@ -424,7 +424,8 @@ class MonitorApi extends BaseApi {
 
     public function getLogs() {
         $type = $_GET['type'] ?? 'system';
-        $lines = (int)($_GET['lines'] ?? 100);
+        // Clamp to a bounded window: prevents unbounded file reads on a hostile/typo query.
+        $lines = min(max((int)($_GET['lines'] ?? 100), 1), 2000);
         $site = $_GET['site'] ?? '';
         
         // Detect PHP version dynamically for PHP-FPM log path
@@ -485,7 +486,7 @@ class MonitorApi extends BaseApi {
             }
 
             $rawLines = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            $limit = (int)($_GET['lines'] ?? 100);
+            $limit = min(max((int)($_GET['lines'] ?? 100), 1), 2000);
             $recentLines = array_slice(array_reverse($rawLines), 0, $limit);
 
             $entries = [];
@@ -760,7 +761,8 @@ class MonitorApi extends BaseApi {
 
     public function runCleanup($type = 'all') {
         $results = [];
-        if ($type === 'all' || $type === 'messenger') {
+        // 'queues' is the dashboard label for restarting Magento messenger consumers.
+        if ($type === 'all' || $type === 'messenger' || $type === 'queues') {
             $r = $this->cmd("ps aux | grep 'messenger:consume' | grep -v grep | awk '{print $2}' | xargs -r kill -9 2>&1");
             $results['messenger'] = ['killed' => true, 'output' => $r['output']];
         }
@@ -1195,7 +1197,7 @@ class MonitorApi extends BaseApi {
     }
 
     public function cronAction() {
-        $command = $_GET['command'] ?? '';
+        $command = $_POST['command'] ?? $_GET['command'] ?? '';
         if (!$command) return ['success' => false, 'message' => 'Command required'];
         
         $output = $this->cmd("nohup $command > /dev/null 2>&1 & echo $!", 5);

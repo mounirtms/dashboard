@@ -1,7 +1,6 @@
-import { Box, Typography, Divider, Tooltip, Link } from '@mui/material';
-import { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Divider, Link } from '@mui/material';
+import { useState, useEffect } from 'react';
 import { useSystemOverviewContext } from '../../contexts/SystemOverviewContext.tsx';
-import { Speed, Memory, Storage } from '@mui/icons-material';
 import mounirSignature from '../../assets/mounir-signature.svg';
 
 const APP_VERSION = '4.3.0';
@@ -10,7 +9,6 @@ export default function Footer() {
   const [time, setTime] = useState(new Date());
   const { data } = useSystemOverviewContext();
   const [latency, setLatency] = useState<number | null>(null);
-  const pingRef = useRef(0);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -39,7 +37,6 @@ export default function Footer() {
 
   const loadVal = data?.load['1min'] || 0;
   const memVal = data?.memory.used_pct || 0;
-  const diskPct = data ? parseInt(data.disk.pct) : 0;
 
   return (
     <Box sx={{

@@ -1,9 +1,8 @@
-import { Box, Typography, Card, Button, IconButton, Tooltip, Chip, TextField, InputAdornment, Alert, Snackbar, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControlLabel, Switch } from '@mui/material';
+import { Box, Typography, Card, Button, IconButton, Tooltip, Chip, TextField, Alert, Snackbar, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControlLabel, Switch } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Refresh, Search, Dangerous, PowerSettingsNew, Warning } from '@mui/icons-material';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api/client';
-import LoadingState from '../components/common/LoadingState';
 
 export default function ProcessExplorerPage() {
   const [procs, setProcs] = useState<any[]>([]);
@@ -49,7 +48,7 @@ export default function ProcessExplorerPage() {
     setConfirmPid(null);
     setKilling(prev => new Set(prev).add(pid));
     try {
-      const { data } = await apiClient.get(`/api/monitor.php?action=process_action&op=kill&pid=${pid}`);
+      const { data } = await apiClient.post('/api/monitor.php?action=process_action', { op: 'kill', pid });
       setNotify({ open: true, message: data.message || 'Action executed', severity: data.success ? 'success' : 'error' });
       if (data.success) loadData();
     } catch (e: any) {

@@ -145,7 +145,7 @@ try {
             $data = $monitorApi->getQueues(); 
             break;
         case 'cleanup': 
-            $data = $monitorApi->runCleanup($_GET['type'] ?? 'all'); 
+            $data = $monitorApi->runCleanup($_POST['type'] ?? $_GET['type'] ?? 'all');
             break;
         case 'indexer': 
             $data = $monitorApi->getIndexerStatus($_GET['env'] ?? 'prod'); 
@@ -158,8 +158,10 @@ try {
                 $data = $monitorApi->getScripts();
             } else {
                 require_once __DIR__ . '/AuditLogger.php';
-                AuditLogger::log('EXECUTE', $_GET['script'] ?? 'unknown', "Args: " . ($_GET['args'] ?? 'none'));
-                $data = $monitorApi->runScript($_GET['script'] ?? '', $_GET['args'] ?? ''); 
+                $execScript = $_POST['script'] ?? $_GET['script'] ?? '';
+                $execArgs = $_POST['args'] ?? $_GET['args'] ?? '';
+                AuditLogger::log('EXECUTE', $execScript ?: 'unknown', "Args: " . ($execArgs ?: 'none'));
+                $data = $monitorApi->runScript($execScript, $execArgs);
             }
             break;
         case 'dbhealth': 
@@ -281,7 +283,7 @@ try {
             break;
         case 'security_scan_run':
             require_once __DIR__ . '/AuditLogger.php';
-            AuditLogger::log('SECURITY', 'scan_run', "Account: " . ($_GET['account'] ?? 'all'));
+            AuditLogger::log('SECURITY', 'scan_run', "Account: " . ($_POST['account'] ?? $_GET['account'] ?? 'all'));
             $data = $monitorApi->runSecurityScan();
             break;
         case 'security_harden':
@@ -290,7 +292,7 @@ try {
         case 'security_harden_run':
             require_once __DIR__ . '/AuditLogger.php';
             $checkOnly = ($_POST['check_only'] ?? $_GET['check_only'] ?? '') === 'true';
-            AuditLogger::log('SECURITY', 'harden_run', "Account: " . ($_GET['account'] ?? 'all') . " check_only: " . ($checkOnly ? 'yes' : 'no'));
+            AuditLogger::log('SECURITY', 'harden_run', "Account: " . ($_POST['account'] ?? $_GET['account'] ?? 'all') . " check_only: " . ($checkOnly ? 'yes' : 'no'));
             $data = $monitorApi->runSecurityHarden();
             break;
         case 'ecomscan':
@@ -298,7 +300,7 @@ try {
             break;
         case 'ecomscan_run':
             require_once __DIR__ . '/AuditLogger.php';
-            AuditLogger::log('SECURITY', 'ecomscan_run', "Account: " . ($_GET['account'] ?? 'all'));
+            AuditLogger::log('SECURITY', 'ecomscan_run', "Account: " . ($_POST['account'] ?? $_GET['account'] ?? 'all'));
             $data = $monitorApi->runEcomscan();
             break;
         case 'geography_orders':

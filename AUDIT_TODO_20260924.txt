@@ -7,6 +7,15 @@
 - Required POST for mutating monitor actions and updated affected dashboard clients.
 - Validated TypeScript compilation and reviewed monitoring/cron/security logs.
 
+### Follow-up pass (2026-09-24)
+- Fixed POST migration gaps: `manageCache()` and `cronAction()` now read the POST body; `execute` router uses POST params.
+- Migrated remaining mutation clients to POST: process kill, SSHD restart, security scan/harden, eComscan.
+- Fixed `runCleanup('queues')` no-op: the queue page button now actually restarts messenger consumers.
+- Clamped `getLogs` line limits (1–2000) to prevent unbounded file reads.
+- Removed dead sidebar link `/api/info.php` (HTTP 404) and pointed the entry to `/docs/CONFIGURATION.md`.
+- Added in-flight guard and 429-tolerant fallback to `useCloudflareData` to prevent overlapping Cloudflare polls.
+- Removed unused imports/variables in touched components (lint debt reduction).
+
 ## High priority
 - [ ] Add CSRF token enforcement to authenticated mutating `api/monitor.php` actions; current POST method protection prevents link-triggered mutations but does not replace CSRF protection.
 - [ ] Replace remaining shell command execution in `api/MonitorApi.php` with bounded process execution and per-action allowlists; audit every command path before exposure.

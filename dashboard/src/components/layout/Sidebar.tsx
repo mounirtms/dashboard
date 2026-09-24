@@ -1,14 +1,10 @@
 import { 
   List, 
-  ListItem, 
   ListItemButton, 
   ListItemIcon, 
   ListItemText, 
-  Divider, 
-  Toolbar, 
   Typography, 
   Box, 
-  useTheme,
   Collapse,
   TextField,
   InputAdornment,
@@ -43,7 +39,6 @@ import {
   DataObject as EtlIcon,
   Cloud as CloudIcon,
   Description as DocsIcon,
-  Api as ApiIcon,
   Terminal,
   History as HistoryIcon,
   AutoAwesome,
@@ -183,7 +178,7 @@ const navItems: NavItem[] = [
       { path: '/reports/view.php?file=MARIADB_LOAD_FIX_SUMMARY.md', label: 'MariaDB Fix Report', icon: <DocsIcon /> },
       { path: '/reports/view.php?file=OPENCODE_UPDATE_SUMMARY.md', label: 'Opencode Update', icon: <DocsIcon /> },
       { path: '/reports/view.php?file=gift_card_status_report.md', label: 'Gift Card Report', icon: <DocsIcon /> },
-      { path: '/api/info.php', label: 'API Explorer', icon: <ApiIcon /> },
+      { path: '/docs/CONFIGURATION.md', label: 'Configuration', icon: <DocsIcon /> },
     ]
   }
 ];
@@ -192,7 +187,6 @@ interface SidebarProps { onClose?: () => void }
 
 export default function Sidebar({ onClose }: SidebarProps) {
   const location = useLocation();
-  const theme = useTheme();
   const { isAdmin, hasPermission } = usePermissions();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
     'Monitoring': true,
@@ -213,7 +207,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
           const stats = await response.json();
           setTaskBadgeCount(stats.pending || 0);
         }
-      } catch (e) {
+      } catch {
         // Silently ignore badge fetch errors
       }
     };

@@ -118,7 +118,7 @@ export default function SshSessionsPage() {
     setKillDialog({ open: false });
     try {
       if (restartSshd) {
-        const { data } = await apiClient.get('/api/monitor.php?action=sshd_restart');
+        const { data } = await apiClient.post('/api/monitor.php?action=sshd_restart', {});
         setSnackbar({ open: true, message: data.message || 'SSHD restarted', severity: data.success ? 'success' : 'error' });
         if (data.success) { loadData(); loadSshUsers(); }
       } else if (killAll) {
