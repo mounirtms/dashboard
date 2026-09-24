@@ -78,7 +78,7 @@ const InfraMonitoring = () => {
     if (!window.confirm('Are you sure you want to purge ALL Varnish cache?')) return;
     
     try {
-      const { data } = await apiClient.get('/api/monitor.php?action=cache_manage&site=prod&op=varnish_purge');
+      const { data } = await apiClient.post('/api/monitor.php?action=cache_manage', { site: 'prod', op: 'varnish_purge' });
       
       if (data.success) {
         alert('Cache purged successfully!');

@@ -12,6 +12,13 @@ header('Access-Control-Allow-Origin: *');
 require_once __DIR__ . '/config.php';
 Config::load();
 
+// HEAD is used by the dashboard footer as a latency probe. Avoid opening DB/network
+// connections for a request that explicitly does not need a response body.
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'HEAD') {
+    http_response_code(200);
+    exit;
+}
+
 $load = sys_getloadavg();
 
 // Memory from /proc/meminfo

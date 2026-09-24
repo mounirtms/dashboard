@@ -62,6 +62,18 @@ if (!in_array($action, $allowedActions)) {
     exit;
 }
 
+$mutationActions = [
+    'cleanup', 'execute', 'db_action', 'cron_action', 'process_action', 'site_action', 'indexer_action',
+    'ssh_kill', 'ssh_kill_single', 'sshd_restart', 'ssh_user_add', 'ssh_user_remove', 'csf_action',
+    'cloudflare_action', 'telegram_action', 'security_scan_run', 'security_harden_run', 'ecomscan_run', 'cache_manage'
+];
+if (in_array($action, $mutationActions, true) && ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    echo json_encode(['error' => 'Mutating actions require POST']);
+    exit;
+}
+
 // Router
 try {
     $data = null;

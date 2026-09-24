@@ -61,47 +61,52 @@ function getElasticsearchHealth() {
 }
 
 function getMariaDBHealth() {
-    global $dbPass;
-    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SELECT COUNT(*) as active FROM INFORMATION_SCHEMA.PROCESSLIST WHERE COMMAND != 'Sleep';\" 2>&1", $output, $return);
-    
-    $active_queries = 0;
-    foreach ($output as $line) {
-        if (preg_match('/(\d+)/', $line, $matches)) {
-            $active_queries = (int)$matches[1];
-        }
+    try {
+        $db = Config::getDbConnection();
+        $activeResult = $db->query("SELECT COUNT(*) AS active FROM INFORMATION_SCHEMA.PROCESSLIST WHERE COMMAND != 'Sleep'");
+        $activeQueries = $activeResult ? (int)($activeResult->fetch_assoc()['active'] ?? 0) : 0;
+
+        $deadlockResult = $db->query('SHOW ENGINE INNODB STATUS');
+        $deadlockOutput = $deadlockResult ? (string)($deadlockResult->fetch_assoc()['Status'] ?? '') : '';
+        $hasDeadlock = stripos($deadlockOutput, 'LATEST DETECTED DEADLOCK') !== false;
+        $db->close();
+
+        return [
+            'status' => 'ok',
+            'active_queries' => $activeQueries,
+            'has_recent_deadlock' => $hasDeadlock ? 'yes' : 'no'
+        ];
+    } catch (Throwable $e) {
+        return [
+            'status' => 'error',
+            'active_queries' => 0,
+            'has_recent_deadlock' => 'unknown',
+            'message' => 'Database health check failed'
+        ];
     }
-    
-    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SHOW ENGINE INNODB STATUS\\G\" 2>&1 | grep -A 5 'DEADLOCK' | head -10", $deadlock_output);
-    
-    return [
-        'status' => $return === 0 ? 'ok' : 'error',
-        'active_queries' => $active_queries,
-        'has_recent_deadlock' => !empty($deadlock_output) ? 'yes' : 'no'
-    ];
 }
 
 function getCronStatus() {
-    global $dbPass;
-    exec("/opt/mariadb10.6/mariadb/bin/mysql -u root -p'{$dbPass}' -h 127.0.0.1 -P 3307 technadminy7_dBT8x12y22 -e \"SELECT status, COUNT(*) as count FROM cron_schedule GROUP BY status;\" 2>&1", $output);
-    
-    $status = ['pending' => 0, 'success' => 0, 'error' => 0, 'missed' => 0];
-    foreach ($output as $line) {
-        if (preg_match('/(\w+)\s+(\d+)/', $line, $matches)) {
-            $status[$matches[1]] = (int)$matches[2];
+    try {
+        $db = Config::getDbConnection();
+        $result = $db->query("SELECT status, COUNT(*) AS count FROM cron_schedule GROUP BY status");
+        $status = ['pending' => 0, 'success' => 0, 'error' => 0, 'missed' => 0];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $key = (string)($row['status'] ?? '');
+                if (array_key_exists($key, $status)) $status[$key] = (int)$row['count'];
+            }
         }
+        $db->close();
+
+        $health = 'ok';
+        if ($status['missed'] > 100) $health = 'warning';
+        if ($status['missed'] > 500 || $status['error'] > 50) $health = 'critical';
+
+        return array_merge($health ? ['status' => $health] : [], $status);
+    } catch (Throwable $e) {
+        return ['status' => 'error', 'pending' => 0, 'success' => 0, 'error' => 0, 'missed' => 0, 'message' => 'Cron health check failed'];
     }
-    
-    $health = 'ok';
-    if ($status['missed'] > 100) $health = 'warning';
-    if ($status['missed'] > 500 || $status['error'] > 50) $health = 'critical';
-    
-    return [
-        'status' => $health,
-        'pending' => $status['pending'],
-        'success' => $status['success'],
-        'error' => $status['error'],
-        'missed' => $status['missed']
-    ];
 }
 
 function getVarnishHealth() {

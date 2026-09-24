@@ -171,17 +171,17 @@ export async function fetchDbHealth(): Promise<any> {
 }
 
 export async function performDbAction(op: string, db: string, table: string): Promise<any> {
-  const { data } = await apiClient.get(`/api/monitor.php?action=db_action&op=${op}&db=${db}&table=${table}`);
+  const { data } = await apiClient.post('/api/monitor.php?action=db_action', { op, db, table });
   return data;
 }
 
 export async function runCron(command: string): Promise<any> {
-  const { data } = await apiClient.get(`/api/monitor.php?action=cron_action&command=${encodeURIComponent(command)}`);
+  const { data } = await apiClient.post('/api/monitor.php?action=cron_action', { command });
   return data;
 }
 
 export async function performSiteAction(site: string, op: string): Promise<any> {
-  const { data } = await apiClient.get(`/api/monitor.php?action=site_action&site=${site}&op=${op}`);
+  const { data } = await apiClient.post('/api/monitor.php?action=site_action', { site, op });
   return data;
 }
 
@@ -192,12 +192,12 @@ export async function fetchScripts(): Promise<any> {
 }
 
 export async function executeScript(script: string, args: string = ''): Promise<any> {
-  const { data } = await apiClient.get(`/api/monitor.php?action=execute&script=${script}&args=${args}`);
+  const { data } = await apiClient.post('/api/monitor.php?action=execute', { script, args });
   return data;
 }
 
 export async function runEmergencyCleanup(type: string = 'all'): Promise<any> {
-  const { data } = await apiClient.get(`/api/monitor.php?action=cleanup&type=${type}`);
+  const { data } = await apiClient.post('/api/monitor.php?action=cleanup', { type });
   return data;
 }
 

@@ -97,7 +97,7 @@ export default function ActionsPage() {
         setExecuting(op);
         setOutput(`> Initiating Global Cache Operation: ${op}...\n`);
         try {
-          const { data } = await apiClient.get(`/api/monitor.php?action=cache_manage&op=${op}`);
+          const { data } = await apiClient.post('/api/monitor.php?action=cache_manage', { op });
           setOutput(prev => prev + (data.output?.join('\n') || data.message || 'Operation completed.'));
         } catch (e: any) {
           setOutput(prev => prev + `Error: ${e.message}`);

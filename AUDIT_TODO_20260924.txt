@@ -1,0 +1,25 @@
+# Dashboard Audit TODO — 2026-09-24
+
+## Completed in this audit
+- Removed password interpolation and hardcoded production DB name from `api/health.php` database/cron checks.
+- Added safe failure responses for DB health checks instead of leaking command output.
+- Made `api/status.php` HEAD latency probes exit before database/network work.
+- Required POST for mutating monitor actions and updated affected dashboard clients.
+- Validated TypeScript compilation and reviewed monitoring/cron/security logs.
+
+## High priority
+- [ ] Add CSRF token enforcement to authenticated mutating `api/monitor.php` actions; current POST method protection prevents link-triggered mutations but does not replace CSRF protection.
+- [ ] Replace remaining shell command execution in `api/MonitorApi.php` with bounded process execution and per-action allowlists; audit every command path before exposure.
+- [ ] Investigate the monitoring warning from `scripts/monitoring/cron_health_check.sh`: the report detects a stale beta path (`/home/betapublic_html`) and missing Magento cron execution.
+- [ ] Review queue backlog (11 messages observed 2026-09-24) and confirm consumers are processing the oldest gift-card notification jobs.
+
+## Medium priority
+- [ ] Add integration tests for unauthorized, GET-mutation rejection, health failure fallback, and log parameter bounds.
+- [ ] Replace `any`-heavy monitoring components (`InfraMonitoring`, `SystemHealthPage`) with typed API contracts.
+- [ ] Add a shared request cancellation strategy so page unmounts do not update state after navigation.
+- [ ] Add bounded pagination/retention for monitoring logs and alert history.
+
+## Low priority / operational
+- [ ] Reconcile dashboard version/build metadata with the deployment process.
+- [ ] Remove stale generated build chunks only during a planned build/deploy window; do not delete user-generated assets.
+- [ ] Schedule off-peak table optimization only after database backup and explicit DBA approval.
