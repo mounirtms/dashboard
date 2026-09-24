@@ -7,8 +7,7 @@
 ## Quick access
 
 - **API endpoint:** `api/cicd.php?action=report` (full) · `?action=docs` (catalog) · `?action=doc&file=…` (single doc)
-- **Dashboard pages:** `/cicd-report` (full report) · `/cicd-comparison` (July 1 vs today) · `/docs` (all reports & docs)
-- **CI/CD dashboard:** `/cicd`
+- **Dashboard pages:** `/cicd` (GitLab pipelines) · `/docs` (all reports & docs — full report, July 1 vs today; the standalone `/cicd-report` and `/cicd-comparison` routes were consolidated here)
 
 ## Files in this directory
 

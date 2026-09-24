@@ -29,6 +29,17 @@
 - [ ] Add a shared request cancellation strategy so page unmounts do not update state after navigation.
 - [ ] Add bounded pagination/retention for monitoring logs and alert history.
 
+## Cleanup pass (2026-09-24, webapp + duplicates)
+- `webapp/dashboard-dev`: completed the POST migration for destructive monitor actions (db/cron/site/execute/cleanup, security scan/harden/eComscan, process kill, SSHD restart, cache manage) so the webapp matches the hardened backend.
+- `webapp/dashboard-dev`: committed task notification events (`task_status`, `task_completed`, `task_note`) wiring in `notificationPreferences`, `NotificationsHubPage`, `SettingsPage`; verified against `api/notification_preferences.php` + `api/TaskNotifier.php`.
+- Removed duplicate/orphaned files:
+  - `dashboard/src/pages/CiCdReportPage.tsx`, `dashboard/src/pages/CiCdComparisonPage.tsx` (unreferenced after routes/sidebar were consolidated into `CiCdPage`).
+  - Root-level `favicon.svg` / `icons.svg` copies in `dashboard/` and `webapp/dashboard-dev/` (Vite serves the `public/` copies).
+  - Stale unreferenced build chunk `build/assets/rolldown-runtime-QTnfLwEv.js`.
+  - Duplicate `scripts/maintenance/quick_status.sh` (kept the referenced `scripts/quick_status.sh`).
+  - Temporary `webapp/orders_page*.json` fetch artifacts (gitignored).
+- Not removed: `webapp/magento-audit/` (gitignored ~824 MB clone) still holds a unique `audit_2026_h1.html` report; decide with the owner before deleting.
+- Still duplicated by design: `dashboard/` and `webapp/dashboard-dev/` are two app copies (canonical = `dashboard/`, last built 2026-09-24; webapp-dev last touched 2026-08-31). Consolidation is a larger migration and is left as an explicit TODO.
 ## Low priority / operational
 - [ ] Reconcile dashboard version/build metadata with the deployment process.
 - [ ] Remove stale generated build chunks only during a planned build/deploy window; do not delete user-generated assets.

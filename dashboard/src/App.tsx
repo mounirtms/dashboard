@@ -52,8 +52,6 @@ import MagentoCmsPage from './pages/MagentoCmsPage.tsx';
 import MagentoSettingsPage from './pages/MagentoSettingsPage.tsx';
 import StoreLocationsPage from './pages/StoreLocationsPage.tsx';
 import CiCdPage from './pages/CiCdPage.tsx';
-import CiCdReportPage from './pages/CiCdReportPage.tsx';
-import CiCdComparisonPage from './pages/CiCdComparisonPage.tsx';
 import DocsHubPage from './pages/DocsHubPage.tsx';
 import NetdataPage from './pages/NetdataPage.tsx';
 
@@ -110,8 +108,6 @@ export default function App() {
 
                 {/* Dev & CI/CD */}
                 <Route path="cicd" element={<CiCdPage />} />
-                <Route path="cicd-report" element={<CiCdReportPage />} />
-                <Route path="cicd-comparison" element={<CiCdComparisonPage />} />
                 <Route path="docs" element={<DocsHubPage />} />
                 <Route path="scripts" element={<ActionsPage />} />
 

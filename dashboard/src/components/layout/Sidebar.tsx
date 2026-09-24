@@ -103,8 +103,6 @@ const navItems: NavItem[] = [
     icon: <CicdIcon />,
     children: [
       { path: '/cicd', label: 'Pipeline', icon: <CicdIcon /> },
-      { path: '/cicd-report', label: 'Report', icon: <DocsIcon /> },
-      { path: '/cicd-comparison', label: 'Jul 1 vs Today', icon: <CicdIcon /> },
       { path: '/docs', label: 'Reports & Docs', icon: <DocsIcon /> },
       { path: '/scripts', label: 'Script Runner', icon: <ScriptsIcon /> },
     ]

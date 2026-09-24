@@ -15,7 +15,7 @@ This directory contains the CI/CD pipeline change report in multiple formats for
 ## Programmatic access
 
 - API: `GET /api/cicd.php?action=report`
-- Dashboard: `/cicd-report` page
+- Dashboard: `/docs` hub (the standalone `/cicd-report` page was consolidated into `CiCdPage`/`DocsHubPage`)
 
 ## Coverage
 

@@ -104,8 +104,8 @@ export default function DocsHubPage() {
                     today&apos;s — additions, tunings, fixes, runner analysis, scripts, discussion points.
                   </Typography>
                 </Box>
-                <Button component={Link} to="/cicd-comparison" variant="contained" color="primary">
-                  Open comparison page
+                <Button component={Link} to="/cicd" variant="contained" color="primary">
+                  Open GitLab pipelines
                 </Button>
                 <Button variant="outlined" onClick={() => openDoc(featured)}>Read inline</Button>
               </Box>
