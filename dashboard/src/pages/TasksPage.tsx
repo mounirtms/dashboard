@@ -28,6 +28,7 @@ export default function TasksPage() {
   const [filterPriority, setFilterPriority] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterAssignee, setFilterAssignee] = useState('');
+  const [filterRequester, setFilterRequester] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('');
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const [myTasksOnly, setMyTasksOnly] = useState(false);
@@ -85,6 +86,7 @@ export default function TasksPage() {
       if (myTasksOnly) filters.assigned_to = currentUsername;
       else if (filterAssignee) filters.assigned_to = filterAssignee;
       if (filterDepartment) filters.department = filterDepartment;
+      if (filterRequester) filters.created_by = filterRequester;
       if (search) filters.search = search;
       if (showOverdueOnly) filters.overdue = true;
 
@@ -99,7 +101,7 @@ export default function TasksPage() {
     } finally {
       setLoading(false);
     }
-  }, [filterStatus, filterPriority, filterCategory, filterAssignee, myTasksOnly, showOverdueOnly, search, pagination.page, pagination.perPage, currentUsername, filterDepartment]);
+  }, [filterStatus, filterPriority, filterCategory, filterAssignee, filterRequester, myTasksOnly, showOverdueOnly, search, pagination.page, pagination.perPage, currentUsername, filterDepartment]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -616,6 +618,17 @@ export default function TasksPage() {
               </Select>
             </FormControl>
 
+            {/* Requested By (created_by) Filter */}
+            <FormControl size="small" sx={{ minWidth: 130 }}>
+              <Select value={filterRequester} displayEmpty onChange={(e) => setFilterRequester(e.target.value)} sx={{ fontSize: '0.75rem' }}>
+                <MenuItem value="">All Requesters</MenuItem>
+                {Array.from(new Set(tasks.map(t => t.created_by).filter(Boolean)))
+                  .sort()
+                  .map(u => <MenuItem key={u} value={u}>{u}</MenuItem>)}
+                <MenuItem value="none">(no requester)</MenuItem>
+              </Select>
+            </FormControl>
+
             {/* Department / Role Filter */}
             <FormControl size="small" sx={{ minWidth: 140 }}>
               <Select value={filterDepartment} displayEmpty onChange={(e) => setFilterDepartment(e.target.value)} sx={{ fontSize: '0.75rem' }}>
@@ -638,7 +651,7 @@ export default function TasksPage() {
             />
 
             <Tooltip title="Clear Filters">
-              <IconButton size="small" onClick={() => { setSearch(''); setFilterStatus(''); setFilterPriority(''); setFilterCategory(''); setFilterAssignee(''); setMyTasksOnly(false); setShowOverdueOnly(false); }}>
+              <IconButton size="small" onClick={() => { setSearch(''); setFilterStatus(''); setFilterPriority(''); setFilterCategory(''); setFilterAssignee(''); setFilterRequester(''); setMyTasksOnly(false); setShowOverdueOnly(false); }}>
                 <FilterList sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>

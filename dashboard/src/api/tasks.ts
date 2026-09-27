@@ -19,7 +19,7 @@ export const NOTE_CATEGORIES = [
 ] as const;
 
 export const TASK_STATUSES = ['pending', 'in-progress', 'completed', 'cancelled'] as const;
-export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;
+export const TASK_PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
 
 export const getTaskStatusColor = (status: string): 'success' | 'info' | 'error' | 'default' => {
   switch (status) {
@@ -32,6 +32,7 @@ export const getTaskStatusColor = (status: string): 'success' | 'info' | 'error'
 
 export const getTaskPriorityColor = (priority: string): 'error' | 'warning' | 'default' => {
   switch (priority) {
+    case 'critical':
     case 'high': return 'error';
     case 'medium': return 'warning';
     default: return 'default';
@@ -42,7 +43,7 @@ export interface Task {
   id: number;
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high';
+  priority: 'low' | 'medium' | 'high' | 'critical';
   status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
   assigned_to: string;
   due_date: string | null;
@@ -96,6 +97,8 @@ export interface TaskFilters {
   priority?: string;
   category?: string;
   assigned_to?: string;
+  /** "Requested By" — the creator. Use 'none' for tasks with no requester. */
+  created_by?: string;
   department?: string;
   search?: string;
   overdue?: boolean;

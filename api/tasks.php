@@ -8,6 +8,7 @@ require_once __DIR__ . '/session_helper.php';
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/PermissionChecker.php';
 require_once __DIR__ . '/Mailer.php';
+require_once __DIR__ . '/TaskNotifier.php';
 Config::load();
 
 // Require authentication
@@ -184,6 +185,20 @@ try {
                 $params[] = $_GET['assigned_to'];
             }
 
+            // Filter by "Requested By" (created_by).
+            // Added because the column is now shown in the grid but had no
+            // server-side filter, so "show me everything X asked for" was
+            // impossible without exporting the table.
+            if (!empty($_GET['created_by'])) {
+                // Allow the special value "none" for tasks with no requester.
+                if ($_GET['created_by'] === 'none') {
+                    $where[] = "(created_by IS NULL OR created_by = '')";
+                } else {
+                    $where[] = "created_by = ?";
+                    $params[] = $_GET['created_by'];
+                }
+            }
+
             // Filter by department (match assigned user's role)
             if (!empty($_GET['department'])) {
                 // Uses users.role as department — no schema changes required
@@ -324,81 +339,43 @@ try {
             $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'created', ?, ?)")
                 ->execute([$taskId, $currentUser, "Task created: $title"]);
 
-            // Send email notification if task is assigned
-            $assignedTo = $input['assigned_to'] ?? '';
-            if (!empty($assignedTo)) {
-                try {
-                    $assignedUser = $getUserInfo($assignedTo);
-                    if ($assignedUser) {
-                        // Send assignment notification to the assigned user
-                        Mailer::sendTaskAssignment(
-                            $assignedUser['email'],
-                            $assignedUser['full_name'] ?: $assignedTo,
-                            $title,
-                            $input['description'] ?? '',
-                            $input['priority'] ?? 'medium',
-                            $currentUser,
-                            $input['due_date'] ?? null,
-                            $taskId
-                        );
-                        
-                        // If creator is different from assignee, notify the creator
-                        if ($currentUser !== $assignedTo) {
-                            $creatorUser = $getUserInfo($currentUser);
-                            if ($creatorUser) {
-                                Mailer::sendTaskCreatedNotification(
-                                    $creatorUser['email'],
-                                    $creatorUser['full_name'] ?: $currentUser,
-                                    $title,
-                                    $input['description'] ?? '',
-                                    $input['priority'] ?? 'medium',
-                                    $currentUser,
-                                    $assignedTo,
-                                    $input['due_date'] ?? null,
-                                    $taskId
-                                );
-                            }
-                        }
-                    }
-                } catch (\Exception $e) {
-                    error_log("[tasks.php] Task creation email failed: " . $e->getMessage());
-                }
-            }
-            
-            // Send admin notification for high priority tasks
-            if (($input['priority'] ?? 'medium') === 'high') {
-                try {
-                    $priorityLabels = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'];
-                    $priorityLabel = $priorityLabels[$input['priority'] ?? 'medium'] ?? 'High';
-                    $dueDateText = !empty($input['due_date']) ? "Due: " . date('F j, Y', strtotime($input['due_date'])) : "No due date";
-                    
-                    $reportContent = "
-<p><strong>New High Priority Task Created</strong></p>
-<table style=\"background:#f3f4f6;padding:12px;border-radius:6px;margin:16px 0;\">
-<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">$title</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Priority</td><td style=\"font-size:14px;\">$priorityLabel</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Due Date</td><td style=\"font-size:14px;\">$dueDateText</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Created by</td><td style=\"font-size:14px;\">$currentUser</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned to</td><td style=\"font-size:14px;\">$assignedTo</td></tr>
-</table>
-";
-                    if (!empty($input['description'])) {
-                        $reportContent .= "<p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(htmlspecialchars(mb_substr($input['description'], 0, 300))) . "</p>";
-                    }
-                    
-                    Mailer::sendAdminNotification(
-                        "High Priority Task: $title",
-                        'High Priority Task Alert',
-                        $reportContent
-                    );
-                } catch (\Exception $e) {
-                    error_log("[tasks.php] Admin notification failed: " . $e->getMessage());
-                }
-            }
+            // General notification fan-out (2026-09-20 refactor): assignee,
+            // creator + auto-registered task_watchers requesters; email +
+            // realtime Webpushr push; admin alert on high/critical priority.
+            // Replaces per-task hardcoded recipients (no IDs/emails here).
+            TaskNotifier::onCreated(
+                $pdo,
+                (int)$taskId,
+                $title,
+                $input['description'] ?? '',
+                $input['priority'] ?? 'medium',
+                $input['assigned_to'] ?? '',
+                $currentUser,
+                $input['due_date'] ?? null
+            );
 
             echo json_encode(['success' => true, 'id' => $taskId]);
             break;
 
+        // ── General task notification dispatcher (documented 2026-09-20) ──
+        // All tasks, all users — no hardcoded IDs or emails. Implemented in
+        // api/TaskNotifier.php and wired into create/update/dispatch/
+        // add_note/bulk_update. Rules:
+        //   - assignee  : email + push on assigned, status change, note,
+        //                 reassignment, completion
+        //   - creator   : email + push on status change, completion, note
+        //   - requester : email on status change + completion — resolved
+        //                 dynamically from dashboard_auth.task_watchers.
+        //                 (For this task: kacem.ba@techno-dz.com, replacing
+        //                 the former hardcoded #24 watcher rule.)
+        //   - admins    : every completion + high/critical creation via
+        //                 sendAdminNotification (webmaster@techno-dz.com +
+        //                 admin_email_1/2 from email_settings)
+        //   - push      : realtime Webpushr broadcast, gated per user via
+        //                 notification_preferences (task_assigned_push,
+        //                 task_status_push, task_completed_push,
+        //                 task_note_push — new toggles exposed in the
+        //                 Notifications Hub + Settings preference matrix).
         case 'update':
             if (!$checkRateLimit()) break;
 
@@ -494,58 +471,21 @@ try {
                 $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'status_changed', ?, ?)")
                     ->execute([$id, $currentUser, "Status: {$statusFromDb($oldStatusDb)} → {$statusFromDb($newStatus)}"]);
 
-                // Send email notification for status change
-                $assignedTo = $oldTask['assigned_to'] ?? '';
-                if (!empty($assignedTo)) {
-                    try {
-                        $assignedUser = $getUserInfo($assignedTo);
-                        if ($assignedUser) {
-                            Mailer::sendTaskStatusChange(
-                                $assignedUser['email'],
-                                $assignedUser['full_name'] ?: $assignedTo,
-                                $oldTask['title'],
-                                $oldTask['status'],
-                                $newStatus,
-                                $currentUser,
-                                $id
-                            );
-                            
-                            // If task is completed, send additional completion notification
-                            if ($newStatus === 'completed') {
-                                Mailer::sendTaskCompleted(
-                                    $assignedUser['email'],
-                                    $assignedUser['full_name'] ?: $assignedTo,
-                                    $oldTask['title'],
-                                    $currentUser,
-                                    $id
-                                );
-                            }
-                        }
-                    } catch (\Exception $e) {
-                        error_log("[tasks.php] Status change email failed: " . $e->getMessage());
-                    }
-                }
-                
-                // Send admin notification for task completion
-                if ($newStatus === 'completed') {
-                    try {
-                        $reportContent = "
-<p><strong>Task Completed</strong></p>
-<table style=\"background:#f3f4f6;padding:12px;border-radius:6px;margin:16px 0;\">
-<tr><td style=\"color:#6b7280;font-size:12px;\">Task</td><td style=\"font-size:14px;font-weight:600;\">{$oldTask['title']}</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Completed by</td><td style=\"font-size:14px;\">$currentUser</td></tr>
-<tr><td style=\"color:#6b7280;font-size:12px;\">Assigned to</td><td style=\"font-size:14px;\">$assignedTo</td></tr>
-</table>
-";
-                        Mailer::sendAdminNotification(
-                            "Task Completed: {$oldTask['title']}",
-                            'Task Completion Report',
-                            $reportContent
-                        );
-                    } catch (\Exception $e) {
-                        error_log("[tasks.php] Completion admin notification failed: " . $e->getMessage());
-                    }
-                }
+                // General notification fan-out (2026-09-20 refactor):
+                // assignee + creator + task_watchers requesters get email,
+                // realtime Webpushr push fires per user preferences, and
+                // admins (webmaster@techno-dz.com) are notified on every
+                // completion. Replaces the hardcoded task #24 watcher rule.
+                TaskNotifier::onStatusChange(
+                    $pdo,
+                    (int)$id,
+                    $oldTask['title'],
+                    $oldStatusDb,
+                    $newStatus,
+                    $currentUser,
+                    $oldTask['assigned_to'] ?? '',
+                    $oldTask['created_by'] ?? ''
+                );
             } else {
                 $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'updated', ?, ?)")
                     ->execute([$id, $currentUser, "Task updated"]);
@@ -608,17 +548,19 @@ try {
             $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'dispatched', ?, ?)")
                 ->execute([$id, $currentUser, $detail]);
 
-            // Email notification to new assignee
-            if ($assignedTo && !empty($targetUser['email'])) {
-                try {
-                    Mailer::sendTaskAssignment(
-                        $targetUser['email'],
-                        $targetUser['full_name'] ?: $assignedTo,
-                        $tRow['title'], '', 'medium', $currentUser, null, $id
-                    );
-                } catch (\Exception $e) {
-                    error_log("[tasks.php] dispatch email failed: " . $e->getMessage());
-                }
+            // General notification fan-out: email + realtime Webpushr push
+            // to the new assignee (per notification_preferences).
+            if ($assignedTo !== '') {
+                TaskNotifier::onDispatch(
+                    $pdo,
+                    (int)$id,
+                    $tRow['title'],
+                    '',
+                    'medium',
+                    $assignedTo,
+                    $currentUser,
+                    null
+                );
             }
 
             echo json_encode(['success' => true, 'assigned_to' => $assignedTo]);
@@ -716,6 +658,16 @@ try {
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
             $values = array_merge($values, $ids);
 
+            // Capture pre-update state for notification fan-out below
+            $beforeByTask = [];
+            if (isset($input['status'])) {
+                $beforeStmt = $pdo->prepare("SELECT id, status, assigned_to, created_by FROM tasks WHERE id IN ($placeholders)");
+                $beforeStmt->execute($ids);
+                foreach ($beforeStmt->fetchAll(PDO::FETCH_ASSOC) as $bRow) {
+                    $beforeByTask[$bRow['id']] = $bRow;
+                }
+            }
+
             $stmt = $pdo->prepare("UPDATE tasks SET " . implode(', ', $fields) . " WHERE id IN ($placeholders)");
             $stmt->execute($values);
             $updated = $stmt->rowCount();
@@ -755,7 +707,30 @@ try {
                 $sql = "INSERT INTO task_activity (task_id, action, actor, details) VALUES " . implode(',', $activityValues);
                 $pdo->prepare($sql)->execute($activityParams);
             }
-            
+
+            // General notification fan-out per task (2026-09-20 refactor):
+            // assignee + creator + task_watchers requesters get email, and
+            // realtime Webpushr push fires per user preferences. The admin
+            // completion report is suppressed per task because a single
+            // aggregated bulk report is sent below.
+            if (isset($input['status'])) {
+                foreach ($ids as $taskId) {
+                    $before = $beforeByTask[$taskId] ?? null;
+                    if (!$before || $before['status'] === $input['status']) continue;
+                    TaskNotifier::onStatusChange(
+                        $pdo,
+                        (int)$taskId,
+                        $taskTitles[$taskId] ?? 'Unknown Task',
+                        $before['status'],
+                        $input['status'],
+                        $currentUser,
+                        $before['assigned_to'] ?? '',
+                        $before['created_by'] ?? '',
+                        false  // aggregated admin report below instead
+                    );
+                }
+            }
+
             // Send admin notification for bulk completion
             if (!empty($completedTasks)) {
                 try {
@@ -906,29 +881,20 @@ $taskListItems
             $pdo->prepare("INSERT INTO task_activity (task_id, action, actor, details) VALUES (?, 'commented', ?, ?)")
                 ->execute([$taskId, $currentUser, "Note added: " . mb_substr($content, 0, 50)]);
 
-            // Send email notification to task assignee
-            try {
-                $taskStmt = $pdo->prepare("SELECT title, assigned_to FROM tasks WHERE id = ?");
-                $taskStmt->execute([$taskId]);
-                $task = $taskStmt->fetch();
-                
-                if ($task && !empty($task['assigned_to'])) {
-                    $assignedUser = $getUserInfo($task['assigned_to']);
-                    
-                    if ($assignedUser && $task['assigned_to'] !== $currentUser) {
-                        Mailer::sendTaskNoteAdded(
-                            $assignedUser['email'],
-                            $assignedUser['full_name'] ?: $task['assigned_to'],
-                            $task['title'],
-                            $content,
-                            $currentUser,
-                            $taskId
-                        );
-                    }
-                }
-            } catch (\Exception $e) {
-                error_log("[tasks.php] Task note email failed: " . $e->getMessage());
-            }
+            // General notification fan-out: assignee + creator get email +
+            // realtime Webpushr push (author excluded, per preferences).
+            $taskStmt = $pdo->prepare("SELECT title, assigned_to, created_by FROM tasks WHERE id = ?");
+            $taskStmt->execute([$taskId]);
+            $task = $taskStmt->fetch();
+            TaskNotifier::onNote(
+                $pdo,
+                (int)$taskId,
+                $task['title'] ?? '',
+                $content,
+                $currentUser,
+                $task['assigned_to'] ?? '',
+                $task['created_by'] ?? ''
+            );
 
             echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
             break;
