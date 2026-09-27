@@ -43,7 +43,24 @@ try {
     }
     
     $body = file_get_contents('php://input');
-    
+
+    // ── Authenticate the caller BEFORE parsing or acting on anything ──────
+    // Without this check anyone on the internet could POST a forged update
+    // with the admin's chat id in the body and drive the bot's privileged
+    // commands (system / database / cache / admin), which shell out.
+    // Rejecting here also stops unauthenticated junk being written to the log.
+    if (!$bot->validateWebhook($headers, (string) $body)) {
+        @file_put_contents(
+            __DIR__ . '/logs/webhook.log',
+            date('Y-m-d H:i:s') . " REJECTED unauthenticated webhook request (ip=" .
+            ($_SERVER['REMOTE_ADDR'] ?? '?') . ")\n",
+            FILE_APPEND
+        );
+        http_response_code(403);
+        echo json_encode(['error' => 'Forbidden']);
+        exit;
+    }
+
     // Log webhook
     @file_put_contents(__DIR__ . '/logs/webhook.log', date('Y-m-d H:i:s') . " Webhook received: " . substr($body, 0, 100) . "\n", FILE_APPEND);
 

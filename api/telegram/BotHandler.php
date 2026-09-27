@@ -211,6 +211,18 @@ class BotHandler {
     }
 
     /**
+     * Verify the Telegram webhook secret for an incoming delivery.
+     *
+     * Telegram returns the secret_token given to setWebhook in the
+     * X-Telegram-Bot-Api-Secret-Token header. This must be checked before any
+     * update is processed, because the chat id used for authorisation arrives
+     * inside the (attacker-controllable) request body.
+     */
+    public function validateWebhook(array $headers, string $body): bool {
+        return $this->security->validateWebhook($headers, $body);
+    }
+
+    /**
      * Set webhook for this bot
      */
     public function setWebhook(string $webhookUrl): array {

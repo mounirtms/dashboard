@@ -23,13 +23,36 @@ $_dbPassFromEnv = $_envValues['DB_PASS'] ?? null;
 $_serverBotToken = $_envValues['TELEGRAM_SERVER_BOT_TOKEN'] ?? '';
 $_customerBotToken = $_envValues['TELEGRAM_CUSTOMER_BOT_TOKEN'] ?? '';
 
+// Webhook secret MUST come from the environment, never from this file.
+// This file is tracked in git; a secret committed here is a secret leaked to
+// the whole repository history and to anyone with read access. The previous
+// value was a hardcoded placeholder (whsec_a1b2c3d4...) that was never even
+// used for validation, so the webhook accepted unauthenticated POSTs.
+// An empty value is handled fail-closed in Security::validateWebhook().
+$_webhookSecret = $_envValues['TELEGRAM_WEBHOOK_SECRET'] ?? '';
+
+// Per-environment database credentials must also come from the environment.
+$_betaDbPass = $_envValues['BETA_DB_PASS'] ?? '';
+$_devDbPass  = $_envValues['DEV_DB_PASS'] ?? '';
+$_pimDbPass  = $_envValues['PIM_DB_PASS'] ?? '';
+
+// Chat IDs are not secrets but they are authorisation data, so they are read
+// from the environment as well to keep this file free of anything sensitive.
+$_serverChats = array_values(array_filter(array_map(
+    'trim',
+    explode(',', $_envValues['TELEGRAM_AUTHORIZED_CHATS'] ?? '')
+)));
+if (!$_serverChats) {
+    $_serverChats = [6972138184]; // Mounir's chat ID (fallback for continuity)
+}
+
 return [
     'bots' => [
         'server' => [
             'token' => $_serverBotToken,
             'name' => 'ServerNotif205bot',
             'enabled' => true,
-            'authorized_chats' => [6972138184], // Mounir's chat ID
+            'authorized_chats' => array_map('intval', $_serverChats),
             'commands' => ['system', 'magento', 'queue', 'database', 'admin', 'cache', 'log'],
             'alert_types' => ['service', 'load', 'memory', 'queue', 'http_error'],
         ],
@@ -66,8 +89,11 @@ return [
     ],
 
     'security' => [
-        'webhook_secret' => 'whsec_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6', // Fixed webhook secret
-        'rate_limit' => 20,        // messages per minute per chat (increased from 10)
+        // Supplied by Telegram in X-Telegram-Bot-Api-Secret-Token and verified
+        // with hash_equals() before any update is processed. Empty means the
+        // webhook is closed (fail-closed) rather than open.
+        'webhook_secret' => $_webhookSecret,
+        'rate_limit' => 20,        // messages per minute per chat
         'rate_window' => 60,       // window in seconds
         'command_timeout' => 30,   // max seconds for command execution
     ],
@@ -105,7 +131,7 @@ return [
             'path' => '/home/beta/public_html',
             'db' => 'beta_dBT8x12y22',
             'db_user' => 'beta_ntdbusr24',
-            'db_pass' => 'the-correct-password',
+            'db_pass' => $_betaDbPass,
             'type' => 'magento',
             'version' => '2.4.6',
             'mode' => 'developer',
@@ -116,7 +142,7 @@ return [
             'path' => '/home/dev/public_html',
             'db' => 'dev_dBT8x12y22',
             'db_user' => 'dev_ntdbusr24',
-            'db_pass' => 'the-correct-password',
+            'db_pass' => $_devDbPass,
             'type' => 'magento',
             'version' => '2.4.6',
             'mode' => 'production',
@@ -127,7 +153,7 @@ return [
             'path' => '/home/pim/public_html',
             'db' => 'akeneo_pim',
             'db_user' => 'akeneo_pim',
-            'db_pass' => 'akeneo_pim',
+            'db_pass' => $_pimDbPass,
             'type' => 'akeneo',
             'version' => '6.0.113',
         ],

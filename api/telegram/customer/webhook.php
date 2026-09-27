@@ -27,6 +27,42 @@ if (!($config['bots']['customer']['enabled'] ?? false)) {
 
 // Get raw POST data
 $input = file_get_contents('php://input');
+
+// ── Authenticate the delivery before acting on it ────────────────────────
+// The customer bot is internet-facing, so without this check anyone could
+// POST forged updates and drive the shopping bot's behaviour (browsing, cart,
+// account actions) at will. Telegram echoes the secret_token supplied to
+// setWebhook back in X-Telegram-Bot-Api-Secret-Token.
+$headers = function_exists('getallheaders') ? getallheaders() : [];
+if (empty($headers)) {
+    foreach ($_SERVER as $key => $value) {
+        if (strpos($key, 'HTTP_') === 0) {
+            $headers[str_replace('_', '-', substr($key, 5))] = $value;
+        }
+    }
+}
+
+$secret = (string)($config['security']['webhook_secret'] ?? '');
+$received = '';
+foreach ($headers as $name => $value) {
+    if (strcasecmp($name, 'X-Telegram-Bot-Api-Secret-Token') === 0) {
+        $received = (string) $value;
+        break;
+    }
+}
+
+// Fail closed: an unset secret disables the webhook rather than opening it.
+if ($secret === '' || $received === '' || !hash_equals($secret, $received)) {
+    error_log(sprintf(
+        '[%s] REJECTED unauthenticated customer webhook request (ip=%s)',
+        date('Y-m-d H:i:s'),
+        $_SERVER['REMOTE_ADDR'] ?? '?'
+    ));
+    http_response_code(403);
+    echo "Forbidden";
+    exit;
+}
+
 $update = json_decode($input, true);
 
 if (!$update) {

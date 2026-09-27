@@ -151,15 +151,39 @@ class Security {
     }
 
     /**
-     * Validate webhook signature (if provided by Telegram)
+     * Validate the Telegram webhook secret.
+     *
+     * Telegram echoes the secret_token supplied to setWebhook back in the
+     * X-Telegram-Bot-Api-Secret-Token header of every delivery. Verifying it is
+     * the ONLY thing standing between the public internet and this bot's
+     * privileged commands, because isAuthorized() trusts the chat id that
+     * arrives *inside the attacker-controllable request body* — without this
+     * check anyone could POST a forged update claiming to be the admin chat.
+     *
+     * Fails CLOSED: if no secret is configured the webhook rejects everything
+     * rather than accepting everything.
      */
     public function validateWebhook(array $headers, string $body): bool {
-        // Telegram doesn't sign webhooks by default, but we can add our own secret
-        $secret = $this->config['security']['webhook_secret'] ?? null;
-        if (!$secret) return true; // No secret configured, allow all
+        $secret = $this->config['security']['webhook_secret'] ?? '';
+        if (!is_string($secret) || $secret === '') {
+            $this->logInteraction(0, 'system', 'webhook', 'rejected_no_secret');
+            return false; // fail closed — never accept unauthenticated updates
+        }
 
-        $receivedSecret = $headers['X-Telegram-Bot-Api-Secret-Token'] ?? '';
-        return hash_equals($secret, $receivedSecret);
+        $received = '';
+        foreach ($headers as $name => $value) {
+            if (strcasecmp($name, 'X-Telegram-Bot-Api-Secret-Token') === 0) {
+                $received = (string) $value;
+                break;
+            }
+        }
+
+        if ($received === '') {
+            $this->logInteraction(0, 'system', 'webhook', 'rejected_missing_header');
+            return false;
+        }
+
+        return hash_equals($secret, $received);
     }
 
     /**
