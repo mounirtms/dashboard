@@ -419,6 +419,26 @@ export default function TasksPage() {
       )
     },
     {
+      // "Requested By" — populated from tasks.created_by. The API returns the
+      // column (it does SELECT *), but the grid never rendered it, so the
+      // requester was invisible on every row.
+      field: 'created_by',
+      headerName: 'Requested By',
+      width: 140,
+      renderCell: (p: GridRenderCellParams) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+          {p.value ? (
+            <Avatar sx={{ width: 22, height: 22, fontSize: '0.65rem', bgcolor: 'secondary.main', fontWeight: 700 }}>
+              {String(p.value).charAt(0).toUpperCase()}
+            </Avatar>
+          ) : null}
+          <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+            {p.value || 'Unknown'}
+          </Typography>
+        </Box>
+      )
+    },
+    {
       field: 'notes',
       headerName: 'Notes',
       width: 75,
@@ -573,6 +593,7 @@ export default function TasksPage() {
             <FormControl size="small" sx={{ minWidth: 110 }}>
               <Select value={filterPriority} displayEmpty onChange={(e) => setFilterPriority(e.target.value)} sx={{ fontSize: '0.75rem' }}>
                 <MenuItem value="">All Priority</MenuItem>
+                <MenuItem value="critical">Critical</MenuItem>
                 <MenuItem value="high">High</MenuItem>
                 <MenuItem value="medium">Medium</MenuItem>
                 <MenuItem value="low">Low</MenuItem>
@@ -709,6 +730,7 @@ export default function TasksPage() {
             </Box>
             <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', mr: 0.5 }}>Set priority:</Typography>
+              <Button size="small" variant="outlined" color="error" onClick={() => handleBulkAction('priority', 'critical')} disabled={bulkUpdating}>Critical</Button>
               <Button size="small" variant="outlined" color="error" onClick={() => handleBulkAction('priority', 'high')} disabled={bulkUpdating}>High</Button>
               <Button size="small" variant="outlined" color="warning" onClick={() => handleBulkAction('priority', 'medium')} disabled={bulkUpdating}>Medium</Button>
               <Button size="small" variant="outlined" onClick={() => handleBulkAction('priority', 'low')} disabled={bulkUpdating}>Low</Button>
@@ -799,7 +821,7 @@ export default function TasksPage() {
             <TextField label="Title" fullWidth value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
             <TextField label="Description" fullWidth multiline rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <FormControl fullWidth size="small"><InputLabel>Priority</InputLabel><Select value={formData.priority} label="Priority" onChange={(e) => setFormData({ ...formData, priority: e.target.value })}><MenuItem value="low">Low</MenuItem><MenuItem value="medium">Medium</MenuItem><MenuItem value="high">High</MenuItem></Select></FormControl>
+              <FormControl fullWidth size="small"><InputLabel>Priority</InputLabel><Select value={formData.priority} label="Priority" onChange={(e) => setFormData({ ...formData, priority: e.target.value })}><MenuItem value="low">Low</MenuItem><MenuItem value="medium">Medium</MenuItem><MenuItem value="high">High</MenuItem><MenuItem value="critical">Critical</MenuItem></Select></FormControl>
               <FormControl fullWidth size="small"><InputLabel>Status</InputLabel><Select value={formData.status} label="Status" onChange={(e) => setFormData({ ...formData, status: e.target.value })}><MenuItem value="pending">Pending</MenuItem><MenuItem value="in-progress">In Progress</MenuItem><MenuItem value="completed">Completed</MenuItem><MenuItem value="cancelled">Cancelled</MenuItem></Select></FormControl>
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>

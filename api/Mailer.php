@@ -10,13 +10,13 @@ class Mailer {
     private const FROM_EMAIL = 'alerts@dashboard.technostationery.com';
     private const FROM_NAME = 'Techno Dashboard';
     private const ADMIN_EMAILS = [
-        'admin@dashboard.technostationery.com',
+        'mounir.webdev.tms@gmail.com',
         'webmaster@techno-dz.com'
     ];
     
     // Email template constants
-    private const PRIORITY_LABELS = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'];
-    private const STATUS_LABELS = ['pending' => 'Pending', 'in-progress' => 'In Progress', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
+    private const PRIORITY_LABELS = ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High', 'critical' => 'Critical'];
+    private const STATUS_LABELS = ['pending' => 'Pending', 'in-progress' => 'In Progress', 'in_progress' => 'In Progress', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
     private const DASHBOARD_URL = 'https://dashboard.technostationery.com';
     private const MAX_REPORT_LENGTH = 5000;
     
@@ -582,6 +582,25 @@ HTML;
 <p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(self::escape(self::truncate($noteContent, 500))) . "</p>
 " . self::buildCTA($taskUrl);
         return self::send($to, "New Note on Task: $taskTitle", self::wrapTemplate('Task Note Added', $content));
+    }
+
+    /**
+     * Send a task mention notification (@username in a task or note)
+     */
+    public static function sendTaskMention($to, $userName, $taskTitle, $context, $mentionedBy, $taskId = null) {
+        $taskUrl = self::buildTaskUrl($taskId);
+
+        $content = "
+<p>Hello <strong>" . self::escape($userName) . "</strong>,</p>
+<p>You were <strong>mentioned</strong> on task <strong>\"" . self::escape($taskTitle) . "\"</strong>.</p>
+<table style=\"background:#f3f4f6;padding:16px;border-radius:6px;margin:16px 0;\">
+<tr><td style=\"color:#6b7280;font-size:12px;\">Mentioned by</td><td style=\"font-size:14px;\">" . self::escape($mentionedBy) . "</td></tr>
+</table>
+<p><strong>Context:</strong></p>
+<p style=\"background:#f9fafb;padding:12px;border-radius:4px;font-size:13px;\">" . nl2br(self::escape(self::truncate($context, 500))) . "</p>
+" . self::buildCTA($taskUrl);
+
+        return self::send($to, "You were mentioned on: $taskTitle", self::wrapTemplate('Task Mention', $content));
     }
 
     /**
