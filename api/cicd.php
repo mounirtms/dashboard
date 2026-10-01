@@ -821,7 +821,13 @@ switch ($action) {
         break;
 
     case 'health':
-        $env = $_POST['env'] ?? '';
+        // Read-only diagnostic (deploy:mode:show, cache:status, indexer:status,
+        // curl, du), so GET is safe and expected here. Reading $_POST['env'] only
+        // meant every GET caller - a browser bookmark, curl, the CI/CD page's
+        // status poll - silently got "Invalid environment" back. GET first, then
+        // POST. The state-changing actions in this file (build, reindex,
+        // module_toggle, run_script, rollback) deliberately stay POST-only.
+        $env = $_GET['env'] ?? $_POST['env'] ?? '';
         
         if (isProduction($env)) {
             echo json_encode(['error' => 'PRODUCTION operations are blocked']);
