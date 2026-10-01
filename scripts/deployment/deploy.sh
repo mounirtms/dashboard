@@ -193,11 +193,52 @@ elif [ -f "$MROOT/composer.json" ]; then
 fi
 
 # ── Step 5: Database upgrades ──
+# The schema guard (#110) brackets setup:upgrade. That command has silently
+# dropped tables before: the deploy carried on and the loss surfaced much later as
+# an unrelated-looking error. Its own exit code said nothing about it, so the
+# before/after snapshots are what actually prove the schema survived.
+schema_guard() {
+    local out rc
+    out=$("$@" 2>&1); rc=$?
+    printf '%s\n' "$out" | while IFS= read -r l; do [ -n "$l" ] && log "  [guard] $l"; done
+    return $rc
+}
+
 if [ "$BUILD_ONLY" = true ] || [ "$QUICK" = true ]; then
     log "[5/8] Skipped (quick/build mode)"
 else
     log "[5/8] Running database upgrades..."
+    SCHEMA_GUARD="/home/dashboard/public_html/scripts/ci/verify-schema-guard.sh"
+    SCHEMA_BEFORE="/tmp/schema-before-${ENV}-${TIMESTAMP}.json"
+    SCHEMA_AFTER="/tmp/schema-after-${ENV}-${TIMESTAMP}.json"
+    GUARD_ARMED=false
+
+    if [ -x "$SCHEMA_GUARD" ]; then
+        if schema_guard bash "$SCHEMA_GUARD" snapshot --out "$SCHEMA_BEFORE" --magento-root "$MROOT"; then
+            GUARD_ARMED=true
+            log "  [guard] pre-snapshot armed: $SCHEMA_BEFORE"
+        else
+            log "  [guard] PRE-SNAPSHOT FAILED - schema safety cannot be proven this run"
+        fi
+    else
+        log "  [guard] MISSING $SCHEMA_GUARD - setup:upgrade is running unguarded"
+    fi
+
     cd "$MROOT" && $PHP_BUILD_CMD bin/magento setup:upgrade 2>&1 | tail -10 | tee -a "$LOG" || log "  Setup upgrade skipped"
+
+    if [ "$GUARD_ARMED" = true ]; then
+        if ! schema_guard bash "$SCHEMA_GUARD" snapshot --out "$SCHEMA_AFTER" --magento-root "$MROOT"; then
+            log "  [guard] POST-SNAPSHOT FAILED - aborting deploy, cannot prove the schema survived"
+            exit 1
+        fi
+        if schema_guard bash "$SCHEMA_GUARD" compare "$SCHEMA_BEFORE" "$SCHEMA_AFTER"; then
+            log "  [guard] schema intact after setup:upgrade"
+        else
+            log "  [guard] DESTRUCTIVE SCHEMA CHANGE - aborting deploy before promotion"
+            log "  [guard] snapshots kept for inspection: $SCHEMA_BEFORE / $SCHEMA_AFTER"
+            exit 1
+        fi
+    fi
 fi
 
 # ── Step 6: Compile & deploy static content ──

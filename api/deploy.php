@@ -188,6 +188,19 @@ function getGitInfo($path) {
 }
 
 // ── Actions ──
+// cmd() returns 'output' as an ARRAY of lines, so schema-guard output has to be
+// flattened before it can go into a JSON result field. Trimmed and capped so a
+// verbose report cannot bloat the deploy history rows.
+function guard_output(array $res, int $maxLines = 80): string {
+    $lines = $res['output'] ?? [];
+    if (!is_array($lines)) return (string)$lines;
+    if (count($lines) > $maxLines) {
+        $lines = array_slice($lines, 0, $maxLines);
+        $lines[] = sprintf('... (%d more lines)', count($res['output']) - $maxLines);
+    }
+    return trim(implode("\n", $lines));
+}
+
 function handleDeploy($env, $options = []) {
     global $environments;
     $envConfig = getEnvConfig($env);
@@ -234,9 +247,66 @@ function handleDeploy($env, $options = []) {
     if (is_file("$path/bin/magento")) {
         $php = '/opt/cpanel/ea-php82/root/usr/bin/php';
 
+        // Schema guard (#110): setup:upgrade has silently dropped tables before.
+        // Its exit code says nothing about that, so bracket it with a before/after
+        // snapshot and compare. A destructive change fails this deploy rather than
+        // being logged and shipped.
+        $schemaGuard = '/home/dashboard/public_html/scripts/ci/verify-schema-guard.sh';
+        $guardTag = date('Ymd_His') . '_' . getmypid();
+        $before = "/tmp/schema-before-deploy_{$guardTag}.json";
+        $after  = "/tmp/schema-after-deploy_{$guardTag}.json";
+        $guardArmed = false;
+        if (is_file($schemaGuard)) {
+            $pre = cmd("bash " . escapeshellarg($schemaGuard) . " snapshot --out " . escapeshellarg($before)
+                     . " --magento-root " . escapeshellarg($path) . " 2>&1", 300);
+            $results['steps'][] = [
+                'step'   => 'schema_snapshot_before',
+                'status' => $pre['return'] === 0 ? 'passed' : 'warning',
+                'output' => guard_output($pre),
+            ];
+            $guardArmed = ($pre['return'] === 0);
+        } else {
+            $results['steps'][] = [
+                'step'   => 'schema_snapshot_before',
+                'status' => 'warning',
+                'output' => "schema guard missing at $schemaGuard - setup:upgrade is running unguarded",
+            ];
+        }
+
         // Setup upgrade
         $upgrade = cmd("cd $path && $php bin/magento setup:upgrade 2>&1", 300);
         $results['steps'][] = ['step' => 'setup_upgrade', 'status' => $upgrade['return'] === 0 ? 'passed' : 'failed'];
+
+        if ($guardArmed) {
+            $post = cmd("bash " . escapeshellarg($schemaGuard) . " snapshot --out " . escapeshellarg($after)
+                      . " --magento-root " . escapeshellarg($path) . " 2>&1", 300);
+            $results['steps'][] = [
+                'step'   => 'schema_snapshot_after',
+                'status' => $post['return'] === 0 ? 'passed' : 'failed',
+                'output' => guard_output($post),
+            ];
+            if ($post['return'] === 0) {
+                $cmp = cmd("bash " . escapeshellarg($schemaGuard) . " compare "
+                         . escapeshellarg($before) . " " . escapeshellarg($after) . " 2>&1", 120);
+                $cmpOk  = ($cmp['return'] === 0);
+                $results['steps'][] = [
+                    'step'   => 'schema_guard',
+                    'status' => $cmpOk ? 'passed' : 'failed',
+                    'output' => guard_output($cmp),
+                ];
+                if (!$cmpOk) {
+                    $results['success'] = false;
+                    $results['error'] = 'schema guard: setup:upgrade destroyed schema objects - '
+                                      . 'deploy stopped before promotion. Snapshots: ' . $before . ' , ' . $after;
+                    return $results;
+                }
+            } else {
+                $results['success'] = false;
+                $results['error'] = 'schema guard: could not take the post-upgrade snapshot, so the schema '
+                                  . 'could not be proven intact. Deploy stopped.';
+                return $results;
+            }
+        }
 
         // DI Compile
         $compile = cmd("cd $path && timeout 600 $php bin/magento setup:di:compile 2>&1", 600);
