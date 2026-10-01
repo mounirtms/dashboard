@@ -46,10 +46,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // ── Security: Only allow authenticated users ──
 require_once __DIR__ . '/session_helper.php';
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/PermissionChecker.php';
 Config::load();
 if (empty($_SESSION['logged_in'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
+// Authorise BEFORE any action runs. Read-only actions (pipelines, jobs, releases,
+// environments, standards, docs, git_status, job_status) stay open to any
+// authenticated user; everything that executes a command or mutates state needs
+// the CI/CD permission.
+$CICD_WRITE_ACTIONS = ['build', 'test', 'migrate_db', 'migrate_code', 'module_toggle', 'reindex', 'run_script', 'job_kill'];
+if (in_array($_GET['action'] ?? $_POST['action'] ?? '', $CICD_WRITE_ACTIONS, true)
+    && !cicdUserCanWrite()) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Insufficient permissions for this CI/CD action']);
     exit;
 }
 
@@ -113,6 +126,15 @@ $PID_DIR = '/home/dashboard/public_html/tmp/cicd';
 @mkdir($PID_DIR, 0755, true);
 
 // ── Helper Functions ──
+
+function cicdUserCanWrite(): bool {
+    if (PermissionChecker::isAdmin()) return true;
+    $action = $_POST['action'] ?? $_GET['action'] ?? '';
+    if ($action === 'run_script' && PermissionChecker::hasPermission('can_access_script_runner')) {
+        return true;
+    }
+    return PermissionChecker::hasPermission('can_access_cicd');
+}
 
 function getEnvConfig(string $env): ?array {
     global $ENVIRONMENTS;

@@ -30,10 +30,12 @@ if (!PermissionChecker::isAdmin() && !PermissionChecker::hasPermission('can_acce
     exit;
 }
 
-// Configuration
-$GITLAB_API_URL = 'https://gitlab.com/api/v4';
-$PROJECT_ID = '83067970'; // technowebmaster-group/techno-magento
-$PRIVATE_TOKEN = 'glpat-TC8N70-9QYn20qTa4VvDeWM6MQpvOjEKdTpud3lwOQ8.01.170cmjo9t'; // Provided by user
+// Configuration — single source of truth via Config (.env)
+require_once __DIR__ . '/config.php';
+Config::load();
+$GITLAB_API_URL   = Config::get('gitlab.api', 'https://gitlab.com/api/v4');
+$PROJECT_ID       = Config::get('gitlab.project_id', '83067970');
+$PRIVATE_TOKEN    = Config::get('gitlab.token', '');
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
@@ -75,10 +77,36 @@ try {
     if ($method === 'POST' && $action === 'trigger') {
         $rawInput = file_get_contents('php://input');
         $input = json_decode($rawInput, true) ?? $_POST;
-        
-        $ref = $input['branch'] ?? 'dev';
-        $env = $input['env'] ?? 'dev'; // dev, tsdnd, prod
+
+        $ref = (string)($input['branch'] ?? 'dev');
+        $env = (string)($input['env'] ?? 'dev'); // dev, tsdnd, prod
         if ($env === 'prod') $env = 'production';
+
+        // Branch whitelist. Without it any ref could be built, and combined with
+        // the env mapping below, {branch: master, env: master} auto-played
+        // deploy:master = a PRODUCTION deploy.
+        $allowedBranches = ['tsdnd', 'dev', 'master'];
+        if (!in_array($ref, $allowedBranches, true)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid branch. Allowed: ' . implode(', ', $allowedBranches)]);
+            exit;
+        }
+
+        $allowedEnvs = ['dev', 'tsdnd', 'production', 'master'];
+        if (!in_array($env, $allowedEnvs, true)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid env. Allowed: ' . implode(', ', $allowedEnvs)]);
+            exit;
+        }
+
+        // This endpoint auto-plays the deploy job it finds, so anything that can
+        // change production must be admin-only - can_access_cicd alone is not
+        // enough (matches gitlab-pipeline.php play_env).
+        if (in_array($env, ['production', 'master'], true) && !PermissionChecker::isAdmin()) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Admin role required for production deployments']);
+            exit;
+        }
         
         // 1. Create Pipeline
         $res = gitlabRequest("/projects/{$PROJECT_ID}/pipeline", 'POST', ['ref' => $ref]);
