@@ -229,7 +229,31 @@ try {
             
             // Pagination
             $page = max(1, intval($_GET['page'] ?? 1));
-            $perPage = min(100, max(10, intval($_GET['per_page'] ?? 50))); // Clamp between 10 and 100
+
+            // per_page contract:
+            //   - a number      : clamped to 10..$maxPerPage for normal paging
+            //   - 'all'/'unlimited' : explicit opt-in for aggregate views (board,
+            //                         export, report) that need every matching row
+            // Anything above the ceiling used to be clamped with no signal, so a
+            // fetch-all view silently received 100 of N rows and looked complete.
+            // Because the default sort is updated_at DESC, the dropped rows were
+            // the OLDEST — exactly the stale backlog such a view exists to
+            // surface. 'all' additionally parsed as intval('all') === 0 and was
+            // therefore clamped UP to 10, so there was no expressible way to ask
+            // for everything. The response now states whether it was cut short
+            // instead of leaving clients to infer it.
+            $maxPerPage = 100;    // documented ceiling for numeric requests
+            $allCap     = 5000;   // safety ceiling for an explicit fetch-all
+            $rawPerPage = strtolower(trim((string)($_GET['per_page'] ?? '50')));
+            $wantAll    = in_array($rawPerPage, ['all', 'unlimited'], true);
+            $requested  = $wantAll ? null : intval($rawPerPage);
+            if ($wantAll) {
+                $perPage = $allCap;
+                $clamped = false;
+            } else {
+                $perPage = min($maxPerPage, max(10, $requested));
+                $clamped = $requested > $maxPerPage; // asked for more than we serve
+            }
             $offset = ($page - 1) * $perPage;
             
             // Get total count for pagination
@@ -253,7 +277,15 @@ try {
                 'total' => (int)$total,
                 'page' => $page,
                 'per_page' => $perPage,
-                'total_pages' => ceil($total / $perPage),
+                'total_pages' => $perPage > 0 ? (int)ceil($total / $perPage) : 1,
+                // Explicit pagination signals, so a client never has to infer
+                // whether it received everything:
+                //   truncated -> this response does not contain every matching row
+                //   clamped   -> the request asked for more than max_per_page
+                'truncated' => ($offset + count($tasks)) < (int)$total,
+                'clamped'   => $clamped,
+                'max_per_page' => $maxPerPage,
+                'requested_per_page' => $wantAll ? 'all' : $requested,
             ]);
             break;
 
