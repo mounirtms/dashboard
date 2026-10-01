@@ -165,31 +165,124 @@ function getRecentJobs(int $limit = 20): array {
     return $jobs;
 }
 
-function execAsync(string $command, string $jobId, string $logFile): void {
-    $cmd = "({$command}) > " . escapeshellarg($logFile) . " 2>&1 & echo \$!";
-    $pid = trim(shell_exec($cmd));
-    if ($pid) {
-        file_put_contents("/home/dashboard/public_html/tmp/cicd/{$jobId}.pid", $pid);
+/**
+ * Run a shell command and collect its output.
+ *
+ * The dashboard FPM pool sets disable_functions = exec,passthru,shell_exec,system
+ * (deliberate hardening), so those four functions do not exist and calling them
+ * throws "Call to undefined function ..." -> HTTP 500 on every local job action.
+ * proc_open is NOT disabled and is what the rest of this codebase already uses
+ * (see MonitorApi::cmd), so it is the portable choice here.
+ *
+ * @return array{lines: string[], code: int}
+ */
+function shellCapture(string $command, int $timeout = 120): array
+{
+    if (!function_exists('proc_open')) {
+        return ['lines' => ['ERROR: proc_open unavailable on this SAPI'], 'code' => 127];
+    }
+    $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $proc = @proc_open($command, $descriptors, $pipes);
+    if (!is_resource($proc)) {
+        return ['lines' => ['ERROR: could not start command'], 'code' => 127];
+    }
+    fclose($pipes[0]);
+    stream_set_blocking($pipes[1], false);
+    stream_set_blocking($pipes[2], false);
+
+    $stdout = '';
+    $stderr = '';
+    $deadline = time() + $timeout;
+    $status = ['running' => true, 'exitcode' => -1];
+    while (true) {
+        $stdout .= (string)stream_get_contents($pipes[1]);
+        $stderr .= (string)stream_get_contents($pipes[2]);
+        $status = proc_get_status($proc);
+        if (!$status['running']) break;
+        if (time() > $deadline) {
+            proc_terminate($proc, 9);
+            break;
+        }
+        usleep(50000);
+    }
+    $stdout .= (string)stream_get_contents($pipes[1]);
+    $stderr .= (string)stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    $exit = proc_close($proc);
+
+    $text = trim($stdout . ($stderr !== '' ? ($stdout !== '' ? "\n" : '') . $stderr : ''));
+    $lines = ($text === '') ? [] : preg_split('/\r?\n/', $text);
+
+    return ['lines' => $lines, 'code' => (int)$exit];
+}
+
+/**
+ * Start a background job writing all output to $logFile.
+ *
+ * Same contract as the previous shell_exec version - records the child pid so
+ * isJobRunning()/killJob() keep working; only the spawning call changed.
+ * setsid detaches the child from the FPM worker's process group so it survives
+ * the request that started it.
+ */
+function execAsync(string $command, string $jobId, string $logFile): void
+{
+    $pidFile = "/home/dashboard/public_html/tmp/cicd/{$jobId}.pid";
+    @mkdir(dirname($logFile), 0755, true);
+    @mkdir(dirname($pidFile), 0755, true);
+
+    if (!function_exists('proc_open')) {
+        @file_put_contents($logFile, "ERROR: proc_open unavailable - cannot start job\n");
+        writeJobStatus($jobId, ['status' => 'failed', 'message' => 'proc_open unavailable']);
+        return;
+    }
+
+    // The redirect MUST sit outside the inner sh -c, attached to setsid itself.
+    // Appending ">> log" inside the inner string would bind only to the LAST
+    // command of a compound list ("echo A && echo B >> log"), silently dropping
+    // everything written before it. Wrapping the whole thing (as the previous
+    // shell_exec version did with braces) captures all output.
+    $cmd = 'setsid /bin/sh -c ' . escapeshellarg($command)
+         . ' >> ' . escapeshellarg($logFile) . ' 2>&1 & echo $!';
+    $res = shellCapture($cmd, 15);
+    $pid = trim((string)($res['lines'][0] ?? ''));
+
+    // Touch the log so the UI has a file to read even before the first flush.
+    if (!file_exists($logFile)) {
+        @file_put_contents($logFile, "Starting: {$command}\n\n");
+    }
+
+    if ($pid !== '' && ctype_digit($pid)) {
+        @file_put_contents($pidFile, $pid);
+    } else {
+        @file_put_contents($logFile, "ERROR: could not start background job\n", FILE_APPEND);
+        writeJobStatus($jobId, ['status' => 'failed', 'message' => 'Could not start background job']);
     }
 }
 
 function isJobRunning(string $jobId): bool {
     $pidFile = "/home/dashboard/public_html/tmp/cicd/{$jobId}.pid";
     if (!file_exists($pidFile)) return false;
-    $pid = trim(file_get_contents($pidFile));
-    if (!$pid) return false;
-    $output = [];
-    exec("ps -p " . escapeshellarg($pid) . " 2>/dev/null", $output, $returnCode);
-    return $returnCode === 0;
+    $pid = (int)trim((string)file_get_contents($pidFile));
+    if ($pid <= 0) return false;
+    // Signal 0 only probes for existence, so no shell is needed.
+    if (function_exists('posix_kill')) return @posix_kill($pid, 0);
+    return shellCapture('ps -p ' . escapeshellarg((string)$pid), 10)['code'] === 0;
 }
 
 function killJob(string $jobId): bool {
     $pidFile = "/home/dashboard/public_html/tmp/cicd/{$jobId}.pid";
     if (!file_exists($pidFile)) return false;
-    $pid = trim(file_get_contents($pidFile));
-    if (!$pid) return false;
-    exec("kill " . escapeshellarg($pid) . " 2>/dev/null");
-    exec("kill -9 " . escapeshellarg($pid) . " 2>/dev/null");
+    $pid = (int)trim((string)file_get_contents($pidFile));
+    if ($pid <= 0) return false;
+    if (function_exists('posix_kill')) {
+        @posix_kill($pid, 15);
+        usleep(300000);
+        @posix_kill($pid, 9);
+    } else {
+        shellCapture('kill ' . escapeshellarg((string)$pid) . ' 2>/dev/null', 5);
+        shellCapture('kill -9 ' . escapeshellarg((string)$pid) . ' 2>/dev/null', 5);
+    }
     @unlink($pidFile);
     writeJobStatus($jobId, ['status' => 'cancelled', 'message' => 'Job cancelled by user']);
     return true;
@@ -198,12 +291,12 @@ function killJob(string $jobId): bool {
 function getJobLog(string $jobId, int $lines = 50): array {
     $logFile = "/home/dashboard/public_html/logs/cicd/{$jobId}.log";
     if (!file_exists($logFile)) return ['lines' => [], 'total' => 0];
-    $output = [];
-    exec("tail -n {$lines} " . escapeshellarg($logFile), $output);
-    $total = 0;
-    exec("wc -l < " . escapeshellarg($logFile), $totalArr);
-    $total = (int)($totalArr[0] ?? 0);
-    return ['lines' => $output, 'total' => $total];
+    // Pure-PHP tail: tail/wc needed exec(), which this pool disables.
+    $contents = @file_get_contents($logFile);
+    if ($contents === false) return ['lines' => [], 'total' => 0];
+    $all   = preg_split('/\r?\n/', rtrim($contents, "\r\n"));
+    $total = count($all);
+    return ['lines' => array_slice($all, -max(1, $lines)), 'total' => $total];
 }
 
 function runMagentoCommand(string $env, string $command, string $jobId): string {
@@ -214,8 +307,116 @@ function runMagentoCommand(string $env, string $command, string $jobId): string 
     $mroot = magentoRoot($config);
     $fullCmd = "cd {$mroot} && {$PHP_BIN} bin/magento {$command} 2>&1";
     execAsync($fullCmd, $jobId, $logFile);
-    return "Command started: {$command}";
+        return "Command started: {$command}";
 }
+
+/**
+ * Fetch the live build/release info for an environment over HTTP.
+ *
+ * The dashboard user is filesystem-isolated from the per-env cPanel accounts
+ * (dev/tsdnd/prod), so it cannot `file_get_contents` a release's build-info.json
+ * directly (Permission denied). Now that pub/build-info.php serves the same
+ * build facts publicly (no token, Cache-Control: no-store) this API simply
+ * polls that endpoint — it always reflects whichever release symlink is
+ * currently active, immune to opcache/Varnish staleness (no-store). Local file
+ * read is the fallback for environments that don't expose the public endpoint
+ * (e.g. production, which is read-only and promoted only via GitLab).
+ *
+ * Returns the public endpoint's shape: {environment,current_release,checked_at,
+ *   cache_verify, releases:[{id,is_current,build_info,promoted_from}]} or null.
+ */
+function fetchBuildInfo(string $envUrl, ?string $envPath = null): ?array
+{
+    $data = null;
+
+    if ($envUrl !== '') {
+        $url = rtrim($envUrl, '/') . '/build-info.php';
+
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS      => 3,
+                CURLOPT_TIMEOUT        => 15,
+                CURLOPT_HTTPHEADER     => ['Accept: application/json'],
+            ]);
+            $raw  = curl_exec($ch);
+            $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $err  = curl_error($ch);
+            curl_close($ch);
+            if ($code === 200 && $raw !== false && $err === '') {
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded)) {
+                    $data = $decoded;
+                }
+            }
+        }
+
+        // Fallback to fopen-based HTTP if the curl extension is unavailable.
+        if (!$data) {
+            $ctx = stream_context_create(['http' => ['method' => 'GET', 'timeout' => 15, 'ignore_errors' => true]]);
+            $raw = @file_get_contents($url, false, $ctx);
+            if ($raw !== false) {
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded)) {
+                    $data = $decoded;
+                }
+            }
+        }
+    }
+
+    // Local FS fallback (works only when perms allow; otherwise stays null).
+    if (!$data && $envPath) {
+        $root = rtrim($envPath, '/');
+        $current = @readlink($root . '/current');
+        $currentId = $current ? basename($current) : null;
+        $releases = [];
+        $currentBuild = null;
+        $promotedFrom = null;
+        $releasesDir = $root . '/releases';
+        if (is_dir($releasesDir)) {
+            foreach (scandir($releasesDir) as $entry) {
+                if ($entry === '.' || $entry === '..') continue;
+                $p = $releasesDir . '/' . $entry;
+                if (!is_dir($p)) continue;
+                $bi = null;
+                if (is_file($p . '/build-info.json')) {
+                    $raw = @file_get_contents($p . '/build-info.json');
+                    if ($raw !== false) {
+                        $d = json_decode($raw, true);
+                        if (is_array($d)) $bi = $d;
+                    }
+                }
+                $isCurrent = $entry === $currentId;
+                if ($isCurrent) {
+                    $currentBuild = $bi;
+                    $pf = @file_get_contents($p . '/.promoted-from');
+                    $promotedFrom = ($pf !== false && trim($pf) !== '') ? trim($pf) : null;
+                }
+                $releases[] = ['id' => $entry, 'is_current' => $isCurrent, 'build_info' => $bi, 'promoted_from' => $promotedFrom];
+            }
+            usort($releases, function ($a, $b) { return strcmp((string) $b['id'], (string) $a['id']); });
+        }
+        if ($releases || $currentId) {
+            $data = [
+                'environment'  => basename(rtrim($root, '/')),
+                'current_release' => $currentId,
+                'checked_at'   => null,
+                'cache_verify' => null,
+                'releases'     => $releases,
+                '_local'       => true,
+            ];
+            // Stash current build/promoted_from on the env payload for parity.
+            $data['current_build']    = $currentBuild;
+            $data['promoted_from']    = $promotedFrom;
+        }
+    }
+
+    return $data;
+}
+
+
 
 // ── Route Actions ──
 
@@ -261,6 +462,101 @@ switch ($action) {
         ]], JSON_PRETTY_PRINT);
         break;
 
+    case 'rollback':
+        // Cut an environment back to a previously deployed release by
+        // atomically repointing the `current` symlink (the same mechanism the
+        // deploy/promote jobs use), then flushing caches so the storefront
+        // never serves a mix of two releases.
+        //
+        // Deliberately NOT exposed for production: prod changes must flow
+        // through the GitLab promote:tsdnd-to-master manual job so they stay
+        // auditable. Rolling prod back by symlink would silently bypass that.
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Rollback requires POST']);
+            break;
+        }
+
+        // Destructive action: restrict to admins/editors. A viewer who can log
+        // in must not be able to repoint a live environment.
+        $role = strtolower((string)($_SESSION['role'] ?? 'viewer'));
+        if (!in_array($role, ['admin', 'editor'], true)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Rollback requires admin or editor role']);
+            break;
+        }
+
+        $envKey    = $_POST['env'] ?? '';
+        $releaseId = trim($_POST['release'] ?? '');
+        $confirm   = ($_POST['confirm'] ?? '') === 'ROLLBACK';
+
+        if (!in_array($envKey, ['dev', 'tsdnd'], true)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Rollback is only available for dev and tsdnd. Production rollbacks must run through the GitLab promote:tsdnd-to-master job.']);
+            break;
+        }
+        if (!preg_match('/^\d{8,14}$/', $releaseId)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid release id']);
+            break;
+        }
+        if (!$confirm) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Confirmation required']);
+            break;
+        }
+
+        $root        = rtrim($ENVIRONMENTS[$envKey]['path'] ?? '', '/');
+        $target      = "$root/releases/$releaseId";
+        $currentLink = "$root/current";
+        if ($root === '' || !is_dir($target)) {
+            http_response_code(404);
+            echo json_encode(['error' => "Release $releaseId not found for $envKey"]);
+            break;
+        }
+
+        $liveTarget = @readlink($currentLink);
+        if ($liveTarget && basename($liveTarget) === $releaseId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'That release is already live']);
+            break;
+        }
+        $previous = $liveTarget ? basename($liveTarget) : null;
+
+        // Atomic symlink swap: symlink to a temp name, then rename over the live
+        // link (rename is atomic, so the site never sees a missing `current`).
+        // Done in-process rather than by shelling out to a second php -r: exec()
+        // is disabled on this FPM pool.
+        $tmpLink = $currentLink . '.rb.' . getmypid();
+        if (!@symlink($target, $tmpLink)) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Rollback failed: could not create temporary symlink']);
+            break;
+        }
+        if (!@rename($tmpLink, $currentLink)) {
+            @unlink($tmpLink);
+            http_response_code(500);
+            echo json_encode(['error' => 'Rollback failed: could not swap the current symlink']);
+            break;
+        }
+
+        // Flush Magento caches inside the restored release so no generated
+        // code or config cache from the newer release survives the cutover.
+        if (is_file("$target/bin/magento")) {
+            shellCapture(sprintf('cd %s && %s -d memory_limit=-1 bin/magento cache:flush 2>&1 | tail -2',
+                escapeshellarg($target), escapeshellarg($PHP_BIN)), 300);
+        }
+
+        echo json_encode([
+            'success'      => true,
+            'env'          => $envKey,
+            'release'      => $releaseId,
+            'previous'     => $previous,
+            'message'      => 'Rolled back ' . $envKey . ' from ' . ($previous ?: 'unknown') . ' to ' . $releaseId,
+            'cache_flush'  => $clean ? trim(implode(' | ', $clean)) : 'skipped (no bin/magento in release)',
+        ]);
+        break;
+
     case 'releases':
         // Per-environment build info for the /cicd page. Includes PRODUCTION
         // as a READ-ONLY target (file reads only — no commands are executed
@@ -277,47 +573,37 @@ switch ($action) {
             'url'  => 'https://technostationery.com',
             'read_only' => true,
         ];
-        $out = [];
+                $out = [];
         foreach ($targets as $key => $env) {
-            $root = $env['path'];
-            $releasesDir = rtrim($root, '/') . '/releases';
-            $current = @readlink("$releasesDir/../current");
-            $currentId = $current ? basename($current) : null;
+            $root  = $env['path'];
+            $live  = fetchBuildInfo($env['url'] ?? '', $root);
             $releases = [];
-            $currentBuild = null;
-            $promotedFrom = null;
-            if (is_dir($releasesDir)) {
-                foreach (scandir($releasesDir) as $entry) {
-                    if ($entry === '.' || $entry === '..') continue;
-                    $path = "$releasesDir/$entry";
-                    if (!is_dir($path)) continue;
-                    $biPath = "$path/build-info.json";
-                    $bi = null;
-                    if (is_file($biPath)) {
-                        $raw = file_get_contents($biPath);
-                        if ($raw !== false) {
-                            $decoded = json_decode($raw, true);
-                            if (is_array($decoded)) $bi = $decoded;
-                        }
-                    }
-                    $isCurrent = $entry === $currentId;
-                    if ($isCurrent) {
-                        $currentBuild = $bi;
-                        $pf = @file_get_contents("$path/.promoted-from");
-                        $promotedFrom = ($pf !== false && trim($pf) !== '') ? trim($pf) : null;
-                    }
+            $currentBuild = $promotedFrom = $currentId = null;
+            if (is_array($live)) {
+                $currentId = $live['current_release'] ?? null;
+                foreach (($live['releases'] ?? []) as $r) {
                     $releases[] = [
-                        'id' => $entry,
-                        'is_current' => $isCurrent,
-                        'build_info' => $bi,
+                        'id' => $r['id'] ?? null,
+                        'is_current' => !empty($r['is_current']),
+                        'build_info' => $r['build_info'] ?? null,
+                        'promoted_from' => $r['promoted_from'] ?? null,
                     ];
+                    if (!empty($r['is_current'])) {
+                        $currentBuild  = $r['build_info'] ?? null;
+                        $promotedFrom  = $r['promoted_from'] ?? null;
+                    }
                 }
-                usort($releases, function($a, $b) { return strcmp($b['id'], $a['id']); });
+                // FS-fallback shape stashes these directly on the payload.
+                if (isset($live['current_build'])) {
+                    $currentBuild = $live['current_build'];
+                    $promotedFrom = $live['promoted_from'] ?? $promotedFrom;
+                }
+                usort($releases, function ($a, $b) { return strcmp((string) $b['id'], (string) $a['id']); });
             }
             $out[$key] = [
                 'env' => $key,
                 'name' => $env['name'],
-                'url' => $env['url'],
+                'url' => $env['url'] ?? null,
                 'root' => $root,
                 'read_only' => !empty($env['read_only']),
                 'current_release' => $currentId,
@@ -326,6 +612,9 @@ switch ($action) {
                 'release_count' => count($releases),
                 'releases' => $releases,
                 'last_release' => reset($releases) ?: null,
+                'last_checked' => $live['checked_at'] ?? null,
+                'cache_verify' => $live['cache_verify'] ?? null,
+                'source' => !empty($live['_local']) ? 'local' : 'http',
             ];
         }
         echo json_encode(['success' => true, 'releases' => $out], JSON_PRETTY_PRINT);
@@ -461,18 +750,53 @@ switch ($action) {
         break;
     }
 
-    case 'jobs':
-        echo json_encode(['success' => true, 'jobs' => getRecentJobs(30)]);
+        case 'jobs':
+        // Attach this environment's CURRENT build info (pipeline id / commit /
+        // release / promo source) to every recent action/job, so the /cicd page
+        // can display "which build did this action run against" alongside each
+        // job log/status. Built info is polled live over HTTP from each env's
+        // public /build-info.php (the dashboard user cannot read the env FS
+        // directly), with a small per-env cache so we only hit each endpoint once.
+        $snapshots = [];
+        foreach (['dev', 'tsdnd'] as $k) {
+            $cfg = getEnvConfig($k);
+            if ($cfg) {
+                $snap = fetchBuildInfo($cfg['url'] ?? '', $cfg['path'] ?? null);
+                if (is_array($snap)) $snapshots[$k] = $snap;
+            }
+        }
+        $jobs = getRecentJobs(30);
+        foreach ($jobs as &$j) {
+            $env = $j['env'] ?? '';
+            if (isset($snapshots[$env])) {
+                $s  = $snapshots[$env];
+                $cur = null;
+                foreach ($s['releases'] ?? [] as $r) {
+                    if (!empty($r['is_current'])) { $cur = $r['build_info'] ?? null; break; }
+                }
+                if ($cur === null && isset($s['current_build'])) $cur = $s['current_build'];
+                $j['build'] = [
+                    'environment'      => $s['environment'] ?? $env,
+                    'current_release'  => $s['current_release'] ?? null,
+                    'pipeline_id'      => $cur['pipeline_id'] ?? null,
+                    'commit_sha'       => $cur['commit_sha'] ?? null,
+                    'commit_short_sha' => $cur['commit_short_sha'] ?? null,
+                    'branch'           => $cur['branch'] ?? null,
+                    'built_at'         => $cur['built_at'] ?? null,
+                    'promoted_from'    => $cur['promoted_from'] ?? $s['promoted_from'] ?? null,
+                ];
+            }
+        }
+        unset($j);
+        echo json_encode(['success' => true, 'jobs' => $jobs, 'current_builds' => $snapshots], JSON_PRETTY_PRINT);
         break;
 
     case 'git_status':
         $repo = dirname(__DIR__);
         $git = function (string $cmd, int $timeout = 5) use ($repo) {
-            $cmd = 'cd ' . escapeshellarg($repo) . ' && ' . $cmd . ' 2>/dev/null';
-            $out = [];
-            $code = 0;
-            exec($cmd . ' </dev/null', $out, $code);
-            return $code === 0 ? trim(implode("\n", $out)) : '';
+            $full = 'cd ' . escapeshellarg($repo) . ' && ' . $cmd . ' 2>/dev/null </dev/null';
+            $res  = shellCapture($full, $timeout);
+            return $res['code'] === 0 ? trim(implode("\n", $res['lines'])) : '';
         };
         $buildAssets = glob(__DIR__ . '/../build/assets/index-*.js');
         $bundleFile  = $buildAssets ? basename($buildAssets[0]) : 'n/a';

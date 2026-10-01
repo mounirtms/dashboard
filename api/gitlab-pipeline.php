@@ -228,11 +228,15 @@ try {
         // ── Branch list ───────────────────────────────────────────────────────
         case 'branches': {
             gitlab_require_read();
-            $result = gitlab_request('/repository/branches?per_page=50&order_by=updated_at&sort=desc');
+            // No order_by/sort here: GitLab's /repository/branches accepts ONLY
+            // order_by=name, and rejects any sort value ("sort does not have a
+            // valid value" -> HTTP 400). That 400 surfaced to the page as a 502
+            // and left the BranchCard section of the CI/CD page empty.
+            $result = gitlab_request('/repository/branches?per_page=50');
 
             if ($result['code'] !== 200) {
                 http_response_code(502);
-                echo json_encode(['error' => 'GitLab API error', 'code' => $result['code']]);
+                echo json_encode(['error' => 'GitLab API error', 'code' => $result['code'], 'detail' => $result['body']]);
                 exit;
             }
 
@@ -323,15 +327,63 @@ try {
                 exit;
             }
 
-            // Production promote requires admin
-            if (!PermissionChecker::isAdmin() && $jobName !== '' && str_starts_with($jobName, 'promote:tsdnd-to-master')) {
-                http_response_code(403);
-                echo json_encode(['error' => 'Admin role required to promote to production']);
-                exit;
+            // Resolve the job's REAL identity from GitLab rather than trusting
+            // what the caller claimed. The UI only ever sends { job_id }, so a
+            // guard keyed on the caller-supplied $jobName was skipped entirely
+            // and a non-admin could play any job by id - including
+            // promote:tsdnd-to-master, which deploys to PRODUCTION.
+            $actualNameForGuard = '';
+            if (!PermissionChecker::isAdmin()) {
+                $jobRes = gitlab_request("/jobs/{$jobId}");
+                if ($jobRes['code'] !== 200) {
+                    http_response_code(502);
+                    echo json_encode(['error' => 'Could not verify job', 'code' => $jobRes['code']]);
+                    exit;
+                }
+                $actualName = (string)($jobRes['body']['name'] ?? '');
+                $actualRef  = (string)($jobRes['body']['ref']  ?? '');
+                if ($actualName === '') {
+                    http_response_code(502);
+                    echo json_encode(['error' => 'Could not verify job name']);
+                    exit;
+                }
+                $actualNameForGuard = $actualName;
+                // Anything that can end up changing production - the prod promote
+                // and the prod deploy - stays admin-only. Non-admins keep the dev
+                // and staging jobs they are meant to be able to run.
+                $touchesProduction = str_starts_with($actualName, 'promote:tsdnd-to-master')
+                                  || $actualName === 'deploy:master'
+                                  || ($actualRef === 'master' && in_array($actualName, ['deploy:master', 'promote:tsdnd-to-master'], true));
+                if ($touchesProduction) {
+                    http_response_code(403);
+                    echo json_encode([
+                        'error' => 'Admin role required to run production jobs',
+                        'job'   => $actualName,
+                    ]);
+                    exit;
+                }
             }
+
+            // Name from GitLab when we know it, else the caller-supplied hint.
+            $jobLabel = $actualNameForGuard ?? ($jobName !== '' ? $jobName : ('job#' . $jobId));
 
             $result = gitlab_request("/jobs/{$jobId}/play", 'POST');
             if ($result['code'] < 200 || $result['code'] >= 300) {
+                // GitLab answers 400 "Unplayable Job" when the job is still gated
+                // on its `needs` (a deploy:dev that waits for a release that has
+                // not run yet). Report that as a 409 with an actionable message:
+                // a 5xx here gets its JSON body replaced by Cloudflare's bare
+                // "error code: 502", so the user sees nothing useful.
+                if ($result['code'] === 400) {
+                    http_response_code(409);
+                    echo json_encode([
+                        'error'  => 'Job is not playable yet - it is still waiting for an earlier job in the pipeline to finish (for a deploy, the release must run first).',
+                        'job'    => $jobLabel,
+                        'code'   => 400,
+                        'detail' => $result['body'],
+                    ]);
+                    exit;
+                }
                 http_response_code(502);
                 echo json_encode(['error' => 'Job play failed', 'code' => $result['code'], 'detail' => $result['body']]);
                 exit;
@@ -422,6 +474,20 @@ try {
             }
             $result = gitlab_request("/jobs/{$jobId}/play", 'POST');
             if ($result['code'] < 200 || $result['code'] >= 300) {
+                // Same "Unplayable Job" case as play_job: a deploy stays `created`
+                // until its `needs` (the release) has run. Answer 409 with a real
+                // message - Cloudflare replaces any 5xx body with a bare
+                // "error code: 502", which told the user nothing.
+                if ($result['code'] === 400) {
+                    http_response_code(409);
+                    echo json_encode([
+                        'error'  => "Job '{$map[$env]['job']}' is not playable yet - the release job for this pipeline must run first.",
+                        'job'    => $map[$env]['job'],
+                        'code'   => 400,
+                        'detail' => $result['body'],
+                    ]);
+                    exit;
+                }
                 http_response_code(502);
                 echo json_encode(['error' => 'Job play failed', 'code' => $result['code'], 'detail' => $result['body']]);
                 exit;
