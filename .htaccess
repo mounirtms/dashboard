@@ -109,6 +109,27 @@ RewriteRule ^\.git - [F,L]
     Require all denied
 </FilesMatch>
 
+# ============================================
+# Block working directories from the web
+# ============================================
+# These hold source, dependencies and fetched data that were being served as
+# plain files. Verified 2026-10-03: /webapp/dashboard-dev/src/api/client.ts,
+# /webapp/magento_data.json, /webapp/magento_fetch.py and /webapp/api/ all
+# returned 200 to an unauthenticated request. The SPA catch-all at line ~93
+# rewrites unknown paths to index.html, so these must be denied AFTER it.
+#
+# Nothing under these paths is meant to be served:
+#   webapp/          - second (stale) copy of the dashboard app, Playwright
+#                      browsers, fetched Magento data, scratch scripts
+#   node_modules/    - dependency tree, includes full package metadata
+#   dashboard/,      - the canonical app SOURCE tree; only /build/ is deployed
+#   webapp/*/src/    - frontend sources
+<IfModule mod_rewrite.c>
+  RewriteRule ^webapp(/.*)?$ - [F,L]
+  RewriteRule ^node_modules(/.*)?$ - [F,L]
+  RewriteRule ^dashboard(/.*)?$ - [F,L]
+</IfModule>
+
 # php -- BEGIN cPanel-generated handler, do not edit
 # Set the “ea-php82” package as the default “PHP” programming language.
 <IfModule mime_module>

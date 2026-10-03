@@ -1,32 +1,16 @@
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /cloudflare/
-
-  # Serve existing files directly
-  RewriteCond %{REQUEST_FILENAME} -f
-  RewriteRule ^ - [L]
-
-  # Serve existing directories directly
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
-
-  # All other requests go to index.html (SPA routing)
-  RewriteRule ^ index.html [L]
+# This directory is a STALE, NON-CANONICAL copy of the dashboard frontend.
+# It exists only as a development scratch tree: canonical source is ../../dashboard/
+# and the only deployed bundle is /build/. Nothing here should be web-reachable.
+#
+# The parent /webapp/.htaccess denies the whole webapp tree, but a nested
+# .htaccess cannot be relied on to inherit that: the rules below used to
+# re-enable rewrite and `[L]`-serve existing files, which made
+# /webapp/dashboard-dev/src/api/client.ts publicly readable (verified HTTP 200
+# on 2026-10-03). This file therefore denies outright rather than routing.
+<IfModule mod_authz_core.c>
+  Require all denied
 </IfModule>
-
-# Cache static assets
-<IfModule mod_expires.c>
-  ExpiresActive On
-  ExpiresByType text/html "access plus 0 seconds"
-  ExpiresByType application/javascript "access plus 1 month"
-  ExpiresByType text/css "access plus 1 month"
-  ExpiresByType image/png "access plus 1 month"
-  ExpiresByType image/svg+xml "access plus 1 month"
-</IfModule>
-
-# Security headers
-<IfModule mod_headers.c>
-  Header set X-Content-Type-Options "nosniff"
-  Header set X-Frame-Options "SAMEORIGIN"
-  Header set X-XSS-Protection "1; mode=block"
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
 </IfModule>
