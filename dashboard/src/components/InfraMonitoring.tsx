@@ -68,7 +68,11 @@ const InfraMonitoring = () => {
         setLogs(data.lines);
       }
     } catch (err) {
-      if (err?.response?.status !== 429) console.error('Failed to fetch logs:', err);
+      // axios rejects with an AxiosError, but TS types the catch binding as
+      // unknown, so narrow before reading .response. A 429 is the expected
+      // back-pressure case and must stay silent, not log as an error.
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status !== 429) console.error('Failed to fetch logs:', err);
     }
   };
 

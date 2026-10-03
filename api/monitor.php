@@ -74,6 +74,54 @@ if (in_array($action, $mutationActions, true) && ($_SERVER['REQUEST_METHOD'] ?? 
     exit;
 }
 
+// CSRF enforcement for mutating actions (task #155).
+//
+// Requiring POST is NOT CSRF protection. A cross-origin form POST cannot set
+// application/json, so the POST requirement does block a simple link/img-tag
+// forgery — but it does not block:
+//   - a same-origin XSS, which can set any content type it likes;
+//   - any endpoint that also accepts form-encoded input;
+//   - a forged request from a page that can issue a JSON POST, e.g. via fetch()
+//     after a permissive CORS misconfiguration.
+//
+// The session cookie is the ambient authority here, and monitor.php exposes
+// process kill, SSHD restart, eComscan and shell execution. That is exactly the
+// surface CSRF exists to protect, so the token is now mandatory and the check
+// fails closed.
+//
+// The token is the one auth.php already issues and stores in
+// $_SESSION['csrf_token'] (see handleCsrfToken). Reading it from the session
+// directly rather than through CSRFManager avoids two token stores, and the
+// constant-time comparison is the same hash_equals CSRFManager uses.
+if (in_array($action, $mutationActions, true)) {
+    // The token may arrive in the X-CSRF-TOKEN header (what the SPA sends) or in
+    // the JSON body (what a form-ish client would send). $_POST is checked too
+    // so a form-encoded client is not silently rejected with a confusing error.
+    $raw = file_get_contents('php://input');
+    $body = json_decode($raw ?: 'true', true);
+    $sent = $_SERVER['HTTP_X_CSRF_TOKEN']
+        ?? $_POST['csrf_token']
+        ?? (is_array($body) ? ($body['csrf_token'] ?? null) : null);
+
+    $expected = $_SESSION['csrf_token'] ?? null;
+
+    if (empty($sent) || empty($expected) || !hash_equals((string)$expected, (string)$sent)) {
+        error_log(sprintf(
+            '[CSRF] rejected %s by %s (action=%s, ip=%s)',
+            $_SERVER['REQUEST_METHOD'] ?? '?',
+            $_SESSION['username'] ?? 'unknown',
+            $action,
+            $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+        ));
+        http_response_code(403);
+        echo json_encode([
+            'error' => 'Invalid or missing CSRF token',
+            'hint'  => 'Fetch a token from /api/auth.php?action=csrf_token and send it as the X-CSRF-TOKEN header.',
+        ]);
+        exit;
+    }
+}
+
 // Router
 try {
     $data = null;

@@ -20,8 +20,10 @@ export default function TelegramPage() {
     fetchTelegramStats()
       .then(setStats)
       .catch(() => {
-        // Keep empty on failure — no fabricated fallback that could mislead
-        setStats(undefined);
+        // Keep empty on failure — no fabricated fallback that could mislead.
+        // null, not undefined: the state is TelegramStats | null, and a failed
+        // load means "no data yet", which is exactly what null already means.
+        setStats(null);
       })
       .finally(() => setLoading(false));
   }, []);

@@ -24,10 +24,84 @@ function isAuthUrl(url?: string): boolean {
 
 let _redirectingToLogin = false;
 
+/**
+ * CSRF token for mutating requests (task #155).
+ *
+ * api/monitor.php now rejects mutating actions without a valid
+ * X-CSRF-TOKEN, so every POST must carry one. The token is issued by
+ * /api/auth.php?action=csrf_token and stored in the session.
+ *
+ * It is cached in memory and refreshed lazily: one GET serves any number of
+ * POSTs, and a 403 triggers a single refetch and replay rather than logging
+ * the user out, since a stale token is not an auth failure.
+ */
+let csrfToken: string | null = null;
+let csrfFetchInFlight: Promise<string> | null = null;
+
+async function fetchCsrfToken(): Promise<string> {
+  if (csrfToken) return csrfToken;
+  // Collapse concurrent callers onto one request.
+  if (csrfFetchInFlight) return csrfFetchInFlight;
+
+  csrfFetchInFlight = apiClient
+    .get('/api/auth.php?action=csrf_token')
+    .then((res) => {
+      const token = res.data?.csrf_token;
+      if (!token) throw new Error('CSRF endpoint returned no token');
+      csrfToken = token;
+      return token as string;
+    })
+    .finally(() => {
+      csrfFetchInFlight = null;
+    });
+
+  return csrfFetchInFlight;
+}
+
+const SAFE_METHODS = new Set(['get', 'head', 'options']);
+
+apiClient.interceptors.request.use(async (config) => {
+  const method = (config.method || 'get').toLowerCase();
+  if (SAFE_METHODS.has(method)) return config;
+
+  // Skip the CSRF fetch for the endpoint that hands out the token.
+  if (config.url?.includes('/api/auth.php')) return config;
+
+  try {
+    const token = await fetchCsrfToken();
+    config.headers = config.headers ?? {};
+    (config.headers as Record<string, string>)['X-CSRF-TOKEN'] = token;
+  } catch {
+    // Send the request without a token; the server will 403 and the response
+    // interceptor below will retry once with a fresh token. Failing here
+    // silently is deliberate — it avoids turning a transient token-fetch
+    // failure into a silent no-op.
+  }
+  return config;
+});
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const config = error.config;
+
+    // 403 with a CSRF complaint: the cached token went stale (session
+    // regenerated, or the token was minted before this tab loaded).
+    // Refetch once and replay. Guarded so we cannot loop.
+    if (error.response?.status === 403 && config && !config.__csrfRetried
+        && (config.url || '').includes('action=')
+        && !SAFE_METHODS.has((config.method || 'get').toLowerCase())) {
+      config.__csrfRetried = true;
+      csrfToken = null;
+      try {
+        const token = await fetchCsrfToken();
+        config.headers = config.headers ?? {};
+        (config.headers as Record<string, string>)['X-CSRF-TOKEN'] = token;
+        return await apiClient(config);
+      } catch {
+        return Promise.reject(error);
+      }
+    }
 
     if (error.response?.status === 401) {
       error.isAuthError = true;
