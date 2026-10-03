@@ -111,13 +111,53 @@ create_backup() {
         return 0
     fi
 
-    DB_HOST=$(php -r "include '$env_file'; echo \$_ENV['db']['connection']['default']['host'] ?? '127.0.0.1';")
-    DB_NAME=$(php -r "include '$env_file'; echo \$_ENV['db']['connection']['default']['dbname'] ?? '';" )
-    DB_USER=$(php -r "include '$env_file'; echo \$_ENV['db']['connection']['default']['username'] ?? 'root';")
-    DB_PASS=$(php -r "include '$env_file'; echo \$_ENV['db']['connection']['default']['password'] ?? '';" )
+    # Read the four credentials in ONE php invocation instead of four.
+    #
+    # This used to be four separate `php -r` calls whose payloads had no
+    # opening tag. Under cron the shell's handling of the nested quotes
+    # differs, the calls return empty, DB_NAME comes back empty, and the
+    # script falls through to "Could not determine database name, skipping
+    # backup" — a deploy proceeds with NO BACKUP and only a warning.
+    # That is the exact failure mode of incident #136 (a dev deploy dropped
+    # six tables), so the path is now fail-closed rather than advisory.
+    #
+    # Each value is emitted on its own line with a fixed prefix so parsing
+    # cannot be confused by a value containing spaces or '='.
+    local creds
+    creds=$(php -r '
+        $f = $argv[1];
+        if (!is_readable($f)) { fwrite(STDERR, "unreadable\n"); exit(1); }
+        $cfg = include $f;
+        $d = $cfg["db"]["connection"]["default"] ?? [];
+        foreach (["host", "dbname", "username", "password"] as $k) {
+            echo $k, "=", base64_encode((string)($d[$k] ?? "")), "\n";
+        }
+    ' "$env_file" 2>>"$DEPLOY_LOG")
+
+    if [ $? -ne 0 ] || [ -z "$creds" ]; then
+        error "Could not read database credentials from $env_file — aborting."
+        if [ "${SKIP_DB_BACKUP:-0}" != "1" ]; then
+            error "Refusing to deploy without a database backup."
+            error "Re-run with SKIP_DB_BACKUP=1 only if a verified backup already exists."
+            return 1
+        fi
+        warning "SKIP_DB_BACKUP=1 set — continuing with NO database backup."
+        return 0
+    fi
+
+    DB_HOST=$(printf '%s\n' "$creds" | sed -n 's/^host=//p'     | base64 -d 2>/dev/null)
+    DB_NAME=$(printf '%s\n' "$creds" | sed -n 's/^dbname=//p'   | base64 -d 2>/dev/null)
+    DB_USER=$(printf '%s\n' "$creds" | sed -n 's/^username=//p' | base64 -d 2>/dev/null)
+    DB_PASS=$(printf '%s\n' "$creds" | sed -n 's/^password=//p' | base64 -d 2>/dev/null)
+    DB_HOST=${DB_HOST:-127.0.0.1}
 
     if [ -z "$DB_NAME" ]; then
-        warning "Could not determine database name, skipping backup"
+        error "env.php parsed but contains no database name — refusing to deploy."
+        if [ "${SKIP_DB_BACKUP:-0}" != "1" ]; then
+            error "Re-run with SKIP_DB_BACKUP=1 only if a verified backup already exists."
+            return 1
+        fi
+        warning "SKIP_DB_BACKUP=1 set — continuing with NO database backup."
         return 0
     fi
 
@@ -330,7 +370,17 @@ main() {
     run_pre_deploy_tests
 
     # Create backup
-    create_backup
+    #
+    # create_backup is fail-closed: it returns non-zero when the database
+    # credentials cannot be read or no database name is present, instead of
+    # warning and continuing. The return value MUST be honoured, otherwise
+    # the fail-closed behaviour is decorative and the deploy proceeds with no
+    # backup — which is what incident #136 was able to do.
+    if ! create_backup; then
+        error "Pre-deploy backup failed — ABORTING deployment."
+        error "The code has NOT been pulled and nothing has been deployed."
+        exit 1
+    fi
 
     # Pull latest code
     pull_latest_code
