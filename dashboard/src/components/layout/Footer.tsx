@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSystemOverviewContext } from '../../contexts/SystemOverviewContext.tsx';
 import mounirSignature from '../../assets/mounir-signature.svg';
 
-const APP_VERSION = '4.3.0';
+const APP_VERSION = '4.3.0-TSM';
 
 export default function Footer() {
   const [time, setTime] = useState(new Date());

@@ -376,7 +376,7 @@ export default function LoginPage() {
         </Card>
         <Box sx={{ textAlign: 'center', mt: 3 }}>
           <Typography sx={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500, mb: 1 }}>
-            v4.3.0 &nbsp;·&nbsp; {new Date().toLocaleTimeString()}
+            v4.3.0-TSM &nbsp;·&nbsp; {new Date().toLocaleTimeString()}
           </Typography>
           <Typography sx={{ color: '#475569', fontSize: '0.62rem' }}>
             TSM Platform v4.3.0-TSM
