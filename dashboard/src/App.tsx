@@ -1,7 +1,7 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { darkTheme } from './theme/theme.ts';
+import { ThemeProvider as ThemeManager } from './theme/ThemeContext';
 import AppLayout from './components/layout/AppLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import LoginPage from './pages/LoginPage.tsx';
@@ -36,6 +36,7 @@ import AuditTrailPage from './pages/AuditTrailPage.tsx';
 import TerminalAiPage from './pages/TerminalAiPage.tsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.tsx';
 import TasksPage from './pages/TasksPage.tsx';
+import KanbanPage from './pages/KanbanPage.tsx';
 import TaskDetailPage from './pages/TaskDetailPage.tsx';
 import PermissionsPage from './pages/PermissionsPage.tsx';
 import SystemAuditPage from './pages/SystemAuditPage.tsx';
@@ -57,7 +58,7 @@ import NetdataPage from './pages/NetdataPage.tsx';
 
 export default function App() {
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeManager>
       <CssBaseline />
       <AuthProvider>
         <SystemOverviewProvider>
@@ -132,6 +133,7 @@ export default function App() {
                 <Route path="tools/system-audit" element={<SystemAuditPage />} />
                 <Route path="plans" element={<PlansPage />} />
                 <Route path="tasks" element={<TasksPage />} />
+                <Route path="kanban" element={<KanbanPage />} />
                 <Route path="tasks/:id" element={<TaskDetailPage />} />
 
                 {/* ETL */}
