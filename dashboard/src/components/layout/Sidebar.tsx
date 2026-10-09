@@ -50,6 +50,7 @@ import {
   CloudDownload,
   MonitorHeart,
   LocationOn as StoreLocationIcon,
+  ViewKanban,
 } from '@mui/icons-material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -102,7 +103,7 @@ const navItems: NavItem[] = [
     label: 'Dev & CI/CD',
     icon: <CicdIcon />,
     children: [
-      { path: '/cicd', label: 'Pipeline', icon: <CicdIcon /> },
+      { path: '/cicd', label: 'GitLab Pipelines', icon: <CicdIcon /> },
       { path: '/docs', label: 'Reports & Docs', icon: <DocsIcon /> },
       { path: '/scripts', label: 'Script Runner', icon: <ScriptsIcon /> },
     ]
@@ -129,6 +130,7 @@ const navItems: NavItem[] = [
     children: [
       { path: '/plans', label: 'Plans & Roadmap', icon: <TrendingUp /> },
       { path: '/tasks', label: 'Tasks', icon: <Task /> },
+      { path: '/kanban', label: 'Task Board', icon: <ViewKanban /> },
       { path: '/tools/audit', label: 'Audit Trail', icon: <HistoryIcon /> },
     ]
   },
@@ -168,7 +170,6 @@ const navItems: NavItem[] = [
     icon: <DocsIcon />,
     children: [
       { path: '/docs/index.html', label: 'System Docs', icon: <DocsIcon /> },
-      { path: '/docs', label: 'All Reports & Docs', icon: <DocsIcon /> },
       { path: '/docs/ARCHITECTURE.md', label: 'Architecture', icon: <DocsIcon /> },
       { path: '/reports/view.php?file=security_audit_report.html', label: 'Security Audit Report', icon: <SecurityIcon /> },
       { path: '/reports/view.php?file=ssh_hardening_report.html', label: 'SSH Hardening Report', icon: <SecurityIcon /> },
@@ -442,7 +443,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
                     {item.children.map((child) => (
                       <ListItemButton
                         key={child.path}
-                        {...(child.path?.startsWith('/docs') || child.path?.startsWith('/api') || child.path?.startsWith('/reports') 
+                        {...(child.path?.startsWith('/api') || child.path?.startsWith('/reports') || child.path?.endsWith('.md') || child.path?.endsWith('.html') 
                           ? { component: 'a', href: child.path } 
                           : { component: Link, to: child.path! }
                         )}
